@@ -1,5 +1,11 @@
 # PlayERP portal — DEV
 
+PE-322.2 branch status: **blocked; not deployed**. The frontend implementation and passing
+local/live checks are saved here, but a final real DEV probe confirmed an invitation
+acceptance authorization defect in the existing backend. See
+[PE-322 evidence](docs/evidence/pe322/README.md). Do not publish this branch as a completed
+acceptance result.
+
 Independent owner (`/`) and platform staff (`/admin`) portal. Official target:
 https://playerp.dev.bmore.app · Supabase **PlayERP-dev** (`fzwzmwstxlsxdzdmphyq`).
 

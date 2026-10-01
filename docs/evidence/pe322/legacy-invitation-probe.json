@@ -1,0 +1,33 @@
+{
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "startedAt": "2026-10-01T16:56:30.089Z",
+  "temporaryIdentityOnly": true,
+  "initialMembership": {
+    "role": "super_admin",
+    "active": false,
+    "invited_at": null,
+    "accepted_at": null
+  },
+  "before": {
+    "http": 200,
+    "isPlatformStaff": false
+  },
+  "acceptance": {
+    "http": 200,
+    "status": "accepted"
+  },
+  "after": {
+    "http": 200,
+    "isPlatformStaff": true,
+    "active": true,
+    "invited_at": null,
+    "accepted_at_present": true,
+    "staffManagementHttp": 200
+  },
+  "reproduced": true,
+  "cleanup": {
+    "testUserRemoved": true,
+    "remainingTestMemberships": 0
+  },
+  "finishedAt": "2026-10-01T16:56:34.853Z"
+}
