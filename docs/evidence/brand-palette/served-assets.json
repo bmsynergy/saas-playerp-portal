@@ -1,0 +1,17 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "checkedAt": "2026-10-01T19:15:26.889Z",
+  "implementationCommit": "e202f4dd81e96c7a2c62c3bd347a3797bb3faf03",
+  "assets": [
+    {
+      "path": "/assets/index-D6x1_8zN.js",
+      "served": "6e3994bca65111cb84616878d3db463ebe5b708848665bccf7979ba1ae8f88e7",
+      "local": "6e3994bca65111cb84616878d3db463ebe5b708848665bccf7979ba1ae8f88e7"
+    },
+    {
+      "path": "/assets/index-Bw7xmoGX.css",
+      "served": "dcd79cb154efb8595d427d7f034037c393dcce742de4fba2dc5778064b62f392",
+      "local": "dcd79cb154efb8595d427d7f034037c393dcce742de4fba2dc5778064b62f392"
+    }
+  ]
+}

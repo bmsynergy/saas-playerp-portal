@@ -1,0 +1,710 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "startedAt": "2026-10-01T19:15:08.291Z",
+  "mocks": false,
+  "viewportWidths": [
+    1440,
+    834
+  ],
+  "locales": [
+    "en",
+    "es"
+  ],
+  "screens": [
+    {
+      "name": "login-1440-en",
+      "path": "/auth/login",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 10,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "login-1440-en.png"
+    },
+    {
+      "name": "login-1440-es",
+      "path": "/auth/login",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 10,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "login-1440-es.png"
+    },
+    {
+      "name": "login-required-error-1440",
+      "path": "/auth/login",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 11,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "login-required-error-1440.png"
+    },
+    {
+      "name": "admin-1440-en",
+      "path": "/admin",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "admin-1440-en.png"
+    },
+    {
+      "name": "directory-1440-en",
+      "path": "/admin/tenants",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "directory-1440-en.png"
+    },
+    {
+      "name": "detail-1440-en",
+      "path": "/admin/tenants/a0000000-0000-0000-0000-000000000001",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 47,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "detail-1440-en.png"
+    },
+    {
+      "name": "staff-1440-en",
+      "path": "/admin/staff",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 59,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "staff-1440-en.png"
+    },
+    {
+      "name": "admin-1440-es",
+      "path": "/admin",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "admin-1440-es.png"
+    },
+    {
+      "name": "directory-1440-es",
+      "path": "/admin/tenants",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "directory-1440-es.png"
+    },
+    {
+      "name": "detail-1440-es",
+      "path": "/admin/tenants/a0000000-0000-0000-0000-000000000001",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 47,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "detail-1440-es.png"
+    },
+    {
+      "name": "staff-1440-es",
+      "path": "/admin/staff",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 59,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "staff-1440-es.png"
+    },
+    {
+      "name": "owner-1440-en",
+      "path": "/",
+      "lang": "en",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 32,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "owner-1440-en.png"
+    },
+    {
+      "name": "owner-1440-es",
+      "path": "/",
+      "lang": "es",
+      "width": 1440,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 32,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "owner-1440-es.png"
+    },
+    {
+      "name": "login-834-en",
+      "path": "/auth/login",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 10,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "login-834-en.png"
+    },
+    {
+      "name": "login-834-es",
+      "path": "/auth/login",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 10,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "login-834-es.png"
+    },
+    {
+      "name": "login-required-error-834",
+      "path": "/auth/login",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 11,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "login-required-error-834.png"
+    },
+    {
+      "name": "admin-834-en",
+      "path": "/admin",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "admin-834-en.png"
+    },
+    {
+      "name": "navigation-834-en",
+      "path": "/admin",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "navigation-834-en.png"
+    },
+    {
+      "name": "directory-834-en",
+      "path": "/admin/tenants",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "directory-834-en.png"
+    },
+    {
+      "name": "detail-834-en",
+      "path": "/admin/tenants/a0000000-0000-0000-0000-000000000001",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 47,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "detail-834-en.png"
+    },
+    {
+      "name": "staff-834-en",
+      "path": "/admin/staff",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "staff-834-en.png"
+    },
+    {
+      "name": "admin-834-es",
+      "path": "/admin",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "admin-834-es.png"
+    },
+    {
+      "name": "navigation-834-es",
+      "path": "/admin",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 40,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "navigation-834-es.png"
+    },
+    {
+      "name": "directory-834-es",
+      "path": "/admin/tenants",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 5.65366241332203,
+      "screenshot": "directory-834-es.png"
+    },
+    {
+      "name": "detail-834-es",
+      "path": "/admin/tenants/a0000000-0000-0000-0000-000000000001",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 47,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "detail-834-es.png"
+    },
+    {
+      "name": "staff-834-es",
+      "path": "/admin/staff",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 54,
+      "minimumTextRatio": 4.732930973730954,
+      "screenshot": "staff-834-es.png"
+    },
+    {
+      "name": "owner-834-en",
+      "path": "/",
+      "lang": "en",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 32,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "owner-834-en.png"
+    },
+    {
+      "name": "owner-834-es",
+      "path": "/",
+      "lang": "es",
+      "width": 834,
+      "noHorizontalOverflow": true,
+      "logos": [
+        {
+          "src": "/brand/playerp-logo-horizontal-white.png",
+          "loaded": true,
+          "inverse": true
+        }
+      ],
+      "textContrastSamples": 32,
+      "minimumTextRatio": 5.821043657292957,
+      "screenshot": "owner-834-es.png"
+    }
+  ],
+  "functional": [
+    {
+      "profile": "staff_activo",
+      "width": 1440,
+      "lang": "en",
+      "login": "/admin",
+      "directoryRows": 9,
+      "detail": "adventure-park-demo",
+      "printServerRows": 2,
+      "reload": true
+    },
+    {
+      "profile": "staff_activo",
+      "width": 1440,
+      "lang": "es",
+      "login": "/admin",
+      "directoryRows": 9,
+      "detail": "adventure-park-demo",
+      "printServerRows": 2,
+      "reload": true
+    },
+    {
+      "profile": "staff_activo",
+      "width": 1440,
+      "logout": true,
+      "authStorageCleared": true,
+      "reload": "login"
+    },
+    {
+      "profile": "owner_varios",
+      "width": 1440,
+      "lang": "en",
+      "login": "/",
+      "selectionPersists": true,
+      "adminDenied": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 1440,
+      "lang": "es",
+      "login": "/",
+      "selectionPersists": true,
+      "adminDenied": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 1440,
+      "logout": true,
+      "authStorageCleared": true,
+      "reload": "login"
+    },
+    {
+      "profile": "staff_activo",
+      "width": 834,
+      "lang": "en",
+      "login": "/admin",
+      "directoryRows": 9,
+      "detail": "adventure-park-demo",
+      "printServerRows": 2,
+      "reload": true
+    },
+    {
+      "profile": "staff_activo",
+      "width": 834,
+      "lang": "es",
+      "login": "/admin",
+      "directoryRows": 9,
+      "detail": "adventure-park-demo",
+      "printServerRows": 2,
+      "reload": true
+    },
+    {
+      "profile": "staff_activo",
+      "width": 834,
+      "logout": true,
+      "authStorageCleared": true,
+      "reload": "login"
+    },
+    {
+      "profile": "owner_varios",
+      "width": 834,
+      "lang": "en",
+      "login": "/",
+      "selectionPersists": true,
+      "adminDenied": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 834,
+      "lang": "es",
+      "login": "/",
+      "selectionPersists": true,
+      "adminDenied": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 834,
+      "logout": true,
+      "authStorageCleared": true,
+      "reload": "login"
+    }
+  ],
+  "assetHashes": [
+    {
+      "asset": "playerp-logo-horizontal.png",
+      "served": "bb17b26974bdde9cde1ee599cf0c1a950d741d692a50bc8a45b6b81843055e86",
+      "repo": "bb17b26974bdde9cde1ee599cf0c1a950d741d692a50bc8a45b6b81843055e86"
+    },
+    {
+      "asset": "playerp-logo-horizontal-white.png",
+      "served": "075893cea9499b64ee8ef887946fe3e201b73489c26a8186eb18cea9767aa997",
+      "repo": "075893cea9499b64ee8ef887946fe3e201b73489c26a8186eb18cea9767aa997"
+    },
+    {
+      "asset": "playerp-favicon-32.png",
+      "served": "2caf8c484085e75b55dbb421bb83b7382bfc4ec110cc1d8eb689da3757ad90ae",
+      "repo": "2caf8c484085e75b55dbb421bb83b7382bfc4ec110cc1d8eb689da3757ad90ae"
+    },
+    {
+      "asset": "playerp-favicon-192.png",
+      "served": "57f026816d3f755a1aa2b792c5949d301f8822b8e806629c89d8046290ea309a",
+      "repo": "57f026816d3f755a1aa2b792c5949d301f8822b8e806629c89d8046290ea309a"
+    }
+  ],
+  "pageErrors": [],
+  "tokenContrast": [
+    {
+      "fg": "#F4F8FF",
+      "bg": "#0B2B59",
+      "pair": "on-navy/navy-raised",
+      "min": 4.5,
+      "ratio": 13.109796630839437
+    },
+    {
+      "fg": "#C7D7EE",
+      "bg": "#0B2B59",
+      "pair": "on-navy-muted/navy-raised",
+      "min": 4.5,
+      "ratio": 9.563086677712878
+    },
+    {
+      "fg": "#1268FE",
+      "bg": "#02193F",
+      "pair": "blue/navy",
+      "min": 3,
+      "ratio": 3.6566352169312806
+    },
+    {
+      "fg": "#7A8AA3",
+      "bg": "#F5F8FC",
+      "pair": "control-line/canvas",
+      "min": 3,
+      "ratio": 3.290362216942713
+    },
+    {
+      "fg": "#0646AD",
+      "bg": "#E8F0FF",
+      "pair": "blue-text/blue-soft",
+      "min": 4.5,
+      "ratio": 7.373332103366593
+    },
+    {
+      "fg": "#52627A",
+      "bg": "#EFF3F9",
+      "pair": "muted/surface-soft",
+      "min": 4.5,
+      "ratio": 5.5680609653848245
+    },
+    {
+      "fg": "#17663B",
+      "bg": "#E8F5EC",
+      "pair": "success/success-soft",
+      "min": 4.5,
+      "ratio": 6.234172492303635
+    },
+    {
+      "fg": "#825809",
+      "bg": "#FFF2D7",
+      "pair": "warning/warning-soft",
+      "min": 4.5,
+      "ratio": 5.65366241332203
+    },
+    {
+      "fg": "#A23431",
+      "bg": "#FCECEB",
+      "pair": "danger/danger-soft",
+      "min": 4.5,
+      "ratio": 5.969387144423028
+    }
+  ],
+  "gradientContrastNote": "Login text checked against navy-raised, the lighter endpoint and radial color of its navy gradient; decorative circles excluded.",
+  "controlStates": [
+    {
+      "width": 1440,
+      "inputFocus": {
+        "border": "rgb(18, 104, 254)",
+        "shadow": "rgb(232, 240, 255) 0px 0px 0px 3px"
+      },
+      "buttonHover": {
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgb(7, 83, 214)"
+      },
+      "requiredFieldError": true
+    },
+    {
+      "width": 834,
+      "inputFocus": {
+        "border": "rgb(18, 104, 254)",
+        "shadow": "rgb(232, 240, 255) 0px 0px 0px 3px"
+      },
+      "buttonHover": {
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgb(7, 83, 214)"
+      },
+      "requiredFieldError": true
+    }
+  ],
+  "passed": true,
+  "completedAt": "2026-10-01T19:15:37.302Z"
+}
