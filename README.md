@@ -1,10 +1,12 @@
 # PlayERP portal — DEV
 
-PE-322.2 branch status: **blocked; not deployed**. The frontend implementation and passing
-local/live checks are saved here, but a final real DEV probe confirmed an invitation
-acceptance authorization defect in the existing backend. See
-[PE-322 evidence](docs/evidence/pe322/README.md). Do not publish this branch as a completed
-acceptance result.
+PE-322 access and staff portal is deployed in DEV. Its original invitation blocker was
+resolved in backend commit `43607056bf2f7cfdd74efed9831c58143606b5a5` before the portal
+commit `887ba1032efdda1150f1fb73785535f75eef57c9` was published (accepted successor work
+`639fa38d-8075-44a0-aebd-04aa444553cc`). The older PE-322 evidence remains historical.
+
+This branch applies the official navy/electric-blue palette through shared CSS tokens,
+with separate success/warning/error colors and unchanged official logo assets.
 
 Independent owner (`/`) and platform staff (`/admin`) portal. Official target:
 https://playerp.dev.bmore.app · Supabase **PlayERP-dev** (`fzwzmwstxlsxdzdmphyq`).
@@ -56,3 +58,13 @@ DEV venue-superadmin test identity. It accepts only the local test origin or off
 Use `PE322_OUTPUT` for sanitized evidence, and `PLAYWRIGHT_CHROMIUM_EXECUTABLE` for a browser.
 It sends email only to Resend test sinks. Never print the environment or record token URLs.
 No personal account is modified by the test.
+
+## Brand presentation check
+
+`tests/brand-live.mjs` uses existing DEV test accounts from `PORTAL_DEV_FIXTURES`, without
+creating identities or changing business data, staff, passwords or emails. Set
+`PORTAL_TEST_ORIGIN` to the local test server or the official DEV portal and
+`BRAND_OUTPUT_DIR` for its report and screenshots. It checks login, tenant/admin pages,
+staff presentation, real venue/Print Server reads, route restrictions and local logout
+in English/Spanish at 1440/834 px. Text contrast is measured on opaque surfaces; gradient
+surfaces require visual and token-pair review. It checks asset hashes against this repo.

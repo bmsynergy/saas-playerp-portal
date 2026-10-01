@@ -2,7 +2,7 @@
 
 Lily: owns src/components, src/pages, src/locales, src/styles.css. Uma: src/lib, src/hooks, App.tsx, main.tsx, config/tests. No borrar cambios ajenos.
 
-React 18 + react-router-dom 6 + lucide-react. Sin framework de estilos; CSS propio. Interfaz final sobria de producto: PlayERP, verde bosque, fondos cálidos, buen espaciado, navegación lateral, encabezado contextual, detalles legibles. 1440/834 px. Ningún control no implementado. Lecturas solamente. Sin gráficos ficticios.
+React 18 + react-router-dom 6 + lucide-react. Sin framework de estilos; CSS propio. Interfaz final sobria de producto: PlayERP, navy profundo #02193F, azul eléctrico #1268FE, blanco y neutros fríos claros, buen espaciado, navegación lateral, encabezado contextual, detalles legibles. 1440/834 px. Ningún control no implementado. Lecturas solamente. Sin gráficos ficticios.
 
 Tipos src/lib/types.ts: OwnerVenue, TenantDetail, PrintServerSummary, UiError, PortalAccess. Campo tenant = venue confirmado por Tom PE-320.2. No exponer datos sensibles.
 
@@ -17,3 +17,5 @@ Implementar exports nombrados:
 - pages/TenantDetailPage.tsx: TenantDetailPage({detail:TenantDetail}). Info venue y tabla Print Servers: identificador, software_version, última señal Intl, estado. Importar signalState(server) de ../lib/status. Revoked prima; pending se muestra Pendiente; active con señal < 3 min online, antigua offline, null noSignal. Umbral alineado con ps_panel_state según confirmación de Tom. Etiquetas comprensibles EN/ES; ausentes como no informados. Sin cloud_printers ni secretos.
 
 Uma integra routing, sesión, permisos, RPC y efectos. No llamar API ni crear mocks dentro UI. La UI recibe datos por props y nunca concede permisos por sí misma.
+
+Paleta de marca vigente en DEV: tokens en `src/styles.css` para navy, azul, superficies y contraste. El logo inverso se usa sobre navy; el logo oscuro, sobre blanco o superficies claras. Verde, ámbar y rojo quedan reservados para éxito, aviso y error reales.
