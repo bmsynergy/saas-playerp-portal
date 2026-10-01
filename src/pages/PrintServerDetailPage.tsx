@@ -6,6 +6,7 @@ import { psErrorKey, type PanelPrinter, type PanelScan, type PanelState, type Pr
 import { slugLabel } from '../lib/identity';
 import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
+import { PortalDialog } from '../components/PortalDialog';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
 type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean };
@@ -70,9 +71,9 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       if (typeof out === 'string') setResult({ ok: true, text: out }); else next = out;
     } catch (error) { setResult({ ok: false, text: t(psErrorKey(error)) }); }
     if (!alive.current) return;
-    setConfirm(next);
     await reload();
-    if (alive.current) setBusy(false);
+    // Close only when controls are enabled again, so dialog focus can return.
+    if (alive.current) { setBusy(false); setConfirm(next); }
   }
 
   // --- Print Server: assign / replace / revoke -------------------------------
@@ -307,28 +308,24 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       })}</tbody></table></div>}
     </section>
 
-    {confirm && <div className="ps-dialog-backdrop"><div className="ps-dialog" role="alertdialog" aria-modal="true" aria-labelledby="ps-confirm-title" aria-describedby="ps-confirm-body" data-testid="confirm-dialog">
-      <h2 id="ps-confirm-title">{confirm.title}</h2>
+    {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>
+        <button type="button" className={`button button-primary ${confirm.danger ? 'ps-danger-solid' : ''}`} data-testid="confirm-accept" disabled={busy} onClick={() => void accept()}><Check size={15}/>{t(busy ? 'ps.working' : 'staff.confirm')}</button>
+        <button type="button" className="button button-secondary" data-testid="confirm-cancel" disabled={busy} onClick={() => setConfirm(null)}><X size={15}/>{t('staff.cancel')}</button>
+      </>}>
       <p className="ps-dialog-venue">{t('ps.confirm.venue')}: <strong>{venueName}</strong></p>
       <p id="ps-confirm-body" data-testid="confirm-text">{confirm.body}</p>
       {confirm.detail}
-      <div className="ps-dialog-actions">
-        <button type="button" className={`button button-primary ${confirm.danger ? 'ps-danger-solid' : ''}`} data-testid="confirm-accept" disabled={busy} onClick={() => void accept()}><Check size={15}/>{t(busy ? 'ps.working' : 'staff.confirm')}</button>
-        <button type="button" className="button button-secondary" data-testid="confirm-cancel" disabled={busy} onClick={() => setConfirm(null)}><X size={15}/>{t('staff.cancel')}</button>
-      </div>
-    </div></div>}
+    </PortalDialog>}
 
-    {enrollment && !confirm && <div className="ps-dialog-backdrop"><div className="ps-dialog" role="dialog" aria-modal="true" aria-labelledby="ps-enrollment-title" data-testid="enrollment-dialog">
-      <h2 id="ps-enrollment-title">{t('ps.enrollment.title')}</h2>
+    {enrollment && !confirm && <PortalDialog title={t('ps.enrollment.title')} titleId="ps-enrollment-title" testId="enrollment-dialog" onClose={() => { setEnrollment(null); setCopied(false); }} actions={<>
+        <button type="button" className="button button-primary" data-testid="enrollment-copy" onClick={() => void copyCode()}><Copy size={15}/>{t(copied ? 'ps.enrollment.copied' : 'ps.enrollment.copy')}</button>
+        <button type="button" className="button button-secondary" data-testid="enrollment-close" onClick={() => { setEnrollment(null); setCopied(false); }}><X size={15}/>{t('ps.enrollment.close')}</button>
+      </>}>
       <p className="ps-dialog-venue">{t('ps.confirm.venue')}: <strong>{venueName}</strong></p>
       <p>{t('ps.enrollment.lead')}</p>
       <code className="ps-code" data-testid="enrollment-code">{enrollment.code}</code>
       <p className="ps-dialog-sub" data-testid="enrollment-expires">{fill(t('ps.enrollment.expires'), { time: date(enrollment.expires_at) })}</p>
       <p className="ps-dialog-warning"><AlertTriangle size={16}/>{t('ps.enrollment.once')}</p>
-      <div className="ps-dialog-actions">
-        <button type="button" className="button button-primary" data-testid="enrollment-copy" onClick={() => void copyCode()}><Copy size={15}/>{t(copied ? 'ps.enrollment.copied' : 'ps.enrollment.copy')}</button>
-        <button type="button" className="button button-secondary" data-testid="enrollment-close" onClick={() => { setEnrollment(null); setCopied(false); }}><X size={15}/>{t('ps.enrollment.close')}</button>
-      </div>
-    </div></div>}
+    </PortalDialog>}
   </div>;
 }

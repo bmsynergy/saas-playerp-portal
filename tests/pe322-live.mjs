@@ -53,7 +53,7 @@ async function loginUi(page,c,path='/'){
 async function snapshot(page,name){assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow ${name}`);await page.screenshot({path:`${out}/${name}.png`,fullPage:true});report.screenshots.push(name+'.png');}
 async function accountMenu(page){await page.locator('.account-trigger').click();}
 async function logout(page,locale='en'){
- await accountMenu(page);await page.getByRole('menuitem',{name:locale==='es'?'Cerrar sesión':'Sign out',exact:true}).click();
+ await accountMenu(page);await page.locator('.account-popover').getByRole('button',{name:locale==='es'?'Cerrar sesión':'Sign out',exact:true}).click();
  await heading(page,locale==='es'?'Accede a tu espacio':'Sign in to your workspace');
  assert.equal(await page.evaluate(()=>localStorage.getItem('playerp.portal.dev.auth')),null);
  assert.equal(await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('playerp.portal.scope.')).length),0);
@@ -80,9 +80,9 @@ async function staffAction(page,email,action,value){
  const row=page.getByRole('row').filter({hasText:email});
  if(action==='set_role')await row.getByRole('combobox').selectOption(value);
  else await row.getByRole('button',{name:value==='active'?'Reactivate':action==='send_recovery'?'Send recovery':value==='cancel'?'Cancel invitation':'Revoke access',exact:true}).click();
- const pending=waitAction(page,action);await row.getByRole('button',{name:'Confirm',exact:true}).click();
+ const pending=waitAction(page,action);await page.getByRole('alertdialog').getByRole('button',{name:'Confirm',exact:true}).click();
  const r=await pending;assert.equal(r.status(),200,`UI ${action}`);const data=await r.json();
- await row.getByRole('button',{name:'Confirm',exact:true}).waitFor({state:'hidden'});return data;
+ await page.getByRole('alertdialog').getByRole('button',{name:'Confirm',exact:true}).waitFor({state:'hidden'});return data;
 }
 try {
  const keys=await http(mgmt+'/api-keys?reveal=true',undefined,pat,'GET',null);assert.equal(keys.status,200,'DEV keys');
@@ -120,14 +120,14 @@ try {
   const scopes=await page.evaluate(()=>window.__scopes);
   if(name==='owner')assert(!scopes.includes('Platform administration'));
   if(['admin','mixed','support'].includes(name))assert(!scopes.includes('Owner workspace'));
-  if(!target)assert.equal(await page.locator('.portal-layout').count(),0);
+  if(!target){assert.equal(await page.locator('.portal-layout').count(),1);assert.equal(await page.locator('.sidebar-nav a,.topbar-subnav a').count(),0);}
   if(name==='owner')assert.equal(await page.locator('.account-trigger-name').innerText(),o.email);
-  if(name==='admin')assert.equal(await page.locator('.account-trigger-name').innerText(),'QA admin');
+  if(name==='admin')assert.equal(await page.locator('.account-trigger-name').innerText(),credentials[name].email); // full_name metadata is intentionally ignored
   if(['owner','support','revoked','venue-superadmin','outsider'].includes(name))assert(!calls.some(p=>p.endsWith('portal_tenant_directory')||p.endsWith('platform-staff-admin')));
   if(name==='mixed'){
-   await accountMenu(page);await page.getByRole('menuitem',{name:'Owner workspace',exact:true}).click();await heading(page,'Your spaces, in one place.');
+   await accountMenu(page);await page.locator('.account-popover').getByRole('link',{name:'Owner workspace',exact:true}).click();await heading(page,'Your spaces, in one place.');
    await page.reload();await heading(page,'Your spaces, in one place.');assert.equal(new URL(page.url()).pathname,'/');
-   await accountMenu(page);await page.getByRole('menuitem',{name:'Platform administration',exact:true}).click();await heading(page,'A clear view across PlayERP.');
+   await accountMenu(page);await page.locator('.account-popover').getByRole('link',{name:'Platform administration',exact:true}).click();await heading(page,'A clear view across PlayERP.');
    await page.goto(origin+'/');await heading(page,'A clear view across PlayERP.');
    await logout(page);await loginUi(page,m);await heading(page,'A clear view across PlayERP.');ok('Mixed explicit scope switch persists reload and login resets to admin');
   }

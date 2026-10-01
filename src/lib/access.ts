@@ -23,13 +23,12 @@ export function platformAccess(staff: boolean, admin: boolean, role: unknown): P
   return { is_platform_staff: staff, can_manage_staff, platform_role,
     can_view_tenants: platform_role ? platform_role !== 'support' : can_manage_staff };
 }
-export function displayName(user: { email?: string; user_metadata?: Record<string, unknown> }): string {
-  // Display only. These user-editable values are never authorization inputs.
-  for (const key of ['full_name', 'name', 'display_name']) {
-    const value = user.user_metadata?.[key];
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
-  return user.email?.trim() || 'PlayERP';
+export function displayName(user: { email?: string }, profile?: { first_name?: unknown; last_name?: unknown } | null): string {
+  // staff_profiles is presentation only, never an authorization input.
+  const name = [profile?.first_name, profile?.last_name]
+    .filter((part): part is string => typeof part === 'string' && !!part.trim())
+    .map(part => part.trim()).join(' ');
+  return name || user.email?.trim() || 'PlayERP';
 }
 const key = (id: string) => `playerp.portal.scope.${id}`;
 export function preferredScope(id: string): Scope | null {

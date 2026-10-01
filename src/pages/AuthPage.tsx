@@ -5,9 +5,9 @@ import { useLocale } from '../locales';
 import type { UiError } from '../lib/types';
 import { Brand } from '../components/Brand';
 
-type Props = { mode: 'login' | 'forgot' | 'password'; onSubmit: (email: string, password: string) => Promise<void>; error: UiError | null; busy: boolean; success: boolean; recovery?: boolean; invitation?: boolean };
+type Props = { mode: 'login' | 'forgot' | 'password'; onSubmit: (email: string, password: string) => Promise<void>; error: UiError | null; busy: boolean; success: boolean; recovery?: boolean; invitation?: boolean; embedded?: boolean };
 
-export function AuthPage({ mode, onSubmit, error, busy, success, recovery = false, invitation = false }: Props) {
+export function AuthPage({ mode, onSubmit, error, busy, success, recovery = false, invitation = false, embedded = false }: Props) {
   const { locale, setLocale, t } = useLocale();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +17,7 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
   const isLogin = mode === 'login';
   const isForgot = mode === 'forgot';
   const key = isLogin ? 'login' : isForgot ? 'forgot' : invitation ? 'invitation' : 'password';
+  const MainTag = embedded ? 'section' : 'main';
 
   useEffect(() => {
     if (success) { setPassword(''); setConfirmation(''); }
@@ -38,18 +39,18 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
     await onSubmit(email.trim(), password);
   }
 
-  return <div className="auth-layout">
-    <div className="auth-side">
+  return <div className={`auth-layout ${embedded ? 'auth-embedded' : ''}`}>
+    {!embedded && <div className="auth-side">
       <div className="auth-side-content">
         <Link to="/auth/login" className="brand auth-brand"><Brand inverse /></Link>
         <div className="auth-side-message"><span className="auth-side-eyebrow"><span/> {t('workspace')}</span><h2>{t('tagline')}.</h2><p>{t('securityNote')}</p></div>
         <div className="auth-side-decoration" aria-hidden="true"><span/><span/><span/></div>
       </div>
       <span className="auth-side-footer">© {new Date().getFullYear()} PlayERP</span>
-    </div>
-    <main className="auth-main">
-      <div className="auth-top"><div className="language-switch" role="group" aria-label={t('language')}><button type="button" className={locale === 'en' ? 'selected' : ''} aria-pressed={locale === 'en'} onClick={() => setLocale('en')}>EN</button><button type="button" className={locale === 'es' ? 'selected' : ''} aria-pressed={locale === 'es'} onClick={() => setLocale('es')}>ES</button></div></div>
-      <div className="auth-content"><div className="auth-mobile-brand"><Brand /></div>
+    </div>}
+    <MainTag className="auth-main">
+      {!embedded && <div className="auth-top"><div className="language-switch" role="group" aria-label={t('language')}><button type="button" className={locale === 'en' ? 'selected' : ''} aria-pressed={locale === 'en'} onClick={() => setLocale('en')}>EN</button><button type="button" className={locale === 'es' ? 'selected' : ''} aria-pressed={locale === 'es'} onClick={() => setLocale('es')}>ES</button></div></div>}
+      <div className="auth-content">{!embedded && <div className="auth-mobile-brand"><Brand /></div>}
         <div className="auth-icon"><ShieldCheck size={24} strokeWidth={1.7}/></div>
         <p className="eyebrow">{t(`${key}Eyebrow`)}</p><h1>{t(`${key}Title`)}</h1><p className="auth-lead">{t(`${key}Lead`)}</p>
         {success ? <div className="auth-success" role="status"><div className="success-icon"><CheckCircle2 size={25}/></div><h2>{t(isForgot ? 'resetSentTitle' : invitation ? 'invitationSavedTitle' : 'passwordSavedTitle')}</h2><p>{t(isForgot ? 'resetSentBody' : invitation ? 'invitationSavedBody' : 'passwordSavedBody')}</p><Link className="button button-primary button-wide" to={isForgot ? '/auth/login' : '/auth/complete'}>{t(isForgot ? 'backToSignIn' : 'continuePortal')}<ArrowRight size={18}/></Link></div> : <>
@@ -64,7 +65,7 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
           {!isLogin && <div className="auth-back"><Link to={recovery && mode === 'password' ? '/auth/forgot' : '/auth/login'}>{t(recovery && mode === 'password' ? 'forgotPassword' : 'backToSignIn')}</Link></div>}
         </>}
       </div>
-      <div className="auth-bottom"><ShieldCheck size={16}/>{t('securityNote')}</div>
-    </main>
+      {!embedded && <div className="auth-bottom"><ShieldCheck size={16}/>{t('securityNote')}</div>}
+    </MainTag>
   </div>;
 }

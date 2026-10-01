@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
-import { destination, displayName, preferredScope, chooseScope, safeNext } from './lib/access';
+import { destination, preferredScope, chooseScope, safeNext } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
 import { StaffPage, type StaffMember } from './pages/StaffPage';
 import { getIdentities, getIdentity, identityRequest } from './lib/identityApi';
@@ -15,6 +15,7 @@ import { Brand } from './components/Brand';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { useOwnDisplayName } from './hooks/useOwnProfile';
 import { useAccess, useDirectory, useOwnerVenue, useTenantDetail } from './hooks/usePortalData';
 import { errorCode } from './lib/errors';
 import { persist, stored } from './lib/storage';
@@ -30,16 +31,16 @@ import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage } from './pages/TenantDetailPage';
 
 function Standalone({children}:{children:ReactNode}) {
-  const {session,logout}=useAuth(); const {t}=useLocale();
-  return <div className="standalone"><header className="standalone-header"><Link className="brand" to="/auth/complete"><Brand/></Link><div className="topbar-actions"><LanguageSelector/>{session&&<button className="button button-secondary" onClick={()=>void logout()}>{t('signOut')}</button>}</div></header>{children}</div>;
+  const {session}=useAuth();
+  if (session) return <>{children}</>;
+  return <div className="standalone"><header className="standalone-header"><Link className="brand" to="/auth/complete"><Brand/></Link><div className="topbar-actions"><LanguageSelector/></div></header>{children}</div>;
 }
 function OutsideState(props:Parameters<typeof StateView>[0]) {
   const {session}=useAuth(); const {t}=useLocale();
-  return <Standalone><StateView {...props}/>{props.kind==='denied'&&session&&<div className="auth-invalid"><Link className="button button-secondary" to="/auth/invitation">{t('staff.acceptInvitation')}</Link></div>}</Standalone>;
+  return <Standalone><StateView {...props} allowHome={!session}/>{props.kind==='denied'&&session&&<div className="auth-invalid"><Link className="button button-secondary" to="/auth/invitation">{t('staff.acceptInvitation')}</Link></div>}</Standalone>;
 }
 function Scope({scope,children}:{scope:'owner'|'admin';children:ReactNode}) {
   const auth=useAuth(); const access=useAccess(); const location=useLocation();
-  const {t}=useLocale();
   useEffect(() => { if (access.error && errorCode(access.error)==='sessionExpired') void auth.expire(); },[access.error, auth.expire]);
   if (auth.loading) return <OutsideState kind="loading"/>;
   if (!auth.session) return <Navigate to={`/auth/login?next=${encodeURIComponent(location.pathname+location.search)}`} replace/>;
@@ -49,15 +50,13 @@ function Scope({scope,children}:{scope:'owner'|'admin';children:ReactNode}) {
   const canAdmin=access.data.is_platform_staff;
   const canOwner=access.data.owner_venues.length>0;
   const allowed=scope==='admin'?canAdmin:canOwner;
-  // Resolve authorization before mounting a shell or any scoped data query.
+  // Mount protected route components only after resolving authorization.
   if (!allowed) {
     const target=destination(access.data);
     return target ? <Navigate to={target} replace/> : <OutsideState kind="denied"/>;
   }
   if (scope==='owner' && canAdmin && preferredScope(auth.session.user.id)!=='owner') return <Navigate to="/admin" replace/>;
-  return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={displayName(auth.session.user)} canAdmin={canAdmin} canOwner={canOwner} canManageStaff={access.data.can_manage_staff} canViewTenants={access.data.can_view_tenants} onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
-    {children}
-  </PortalShell>;
+  return <>{children}</>;
 }
 function Complete() {
   const auth=useAuth(); const access=useAccess(); const [params]=useSearchParams();
@@ -90,7 +89,7 @@ function AuthRoute({mode}:{mode:'login'|'forgot'|'password'}) {
   if(auth.loading)return <OutsideState kind="loading"/>;
   if(mode==='login'&&auth.session) return <Navigate to={auth.recovery||auth.invitation?'/auth/password':complete} replace/>;
   if(invalid) return <Standalone><div className="auth-invalid"><StateView kind="error" message="invalidLink"/><Link className="button button-primary" to="/auth/forgot">{t('auth.forgotPassword')}</Link></div></Standalone>;
-  return <AuthPage mode={mode} onSubmit={submit} error={error??(mode==='login'&&auth.expired?'sessionExpired':null)} busy={busy} success={success} recovery={auth.recovery||recoveryRequest} invitation={auth.invitation||invitationRequest}/>;
+  return <AuthPage embedded={!!auth.session} mode={mode} onSubmit={submit} error={error??(mode==='login'&&auth.expired?'sessionExpired':null)} busy={busy} success={success} recovery={auth.recovery||recoveryRequest} invitation={auth.invitation||invitationRequest}/>;
 }
 function OwnerRoute() {
   const access=useAccess(); const {session}=useAuth(); const [params,setParams]=useSearchParams();
@@ -271,8 +270,30 @@ function PrintServerDetailData({venueId}:{venueId:string}) {
   if(state.data===null||(fleet.data&&!venue))return <StateView kind="notFound"/>;
   return <StateView kind="loading"/>;
 }
+// One shell instance survives route changes, including access checks and auth flows.
+// Its visual structure grants no permission: Scope remains the data-mount gate.
+function AuthenticatedLayout({children}:{children:ReactNode}) {
+  const auth=useAuth(); const {pathname}=useLocation();
+  const restricted=pathname.startsWith('/auth/');
+  const access=useAccess(!restricted);
+  useEffect(() => { if (access.error && errorCode(access.error)==='sessionExpired') void auth.expire(); },[access.error, auth.expire]);
+  const canAdmin=!!access.data?.is_platform_staff;
+  const canOwner=!!access.data?.owner_venues.length;
+  const scope=pathname.startsWith('/admin')?'admin':pathname==='/'?'owner':
+    canAdmin&&preferredScope(auth.session?.user.id??'')!=='owner'?'admin':'owner';
+  const navigationAllowed=!!auth.session&&!auth.loading&&!auth.recovery&&!auth.invitation&&!restricted&&access.isSuccess&&
+    (scope==='admin'?canAdmin:canOwner&&(!canAdmin||preferredScope(auth.session?.user.id??'')==='owner'));
+  const name=useOwnDisplayName(navigationAllowed);
+  if (!auth.session) return <>{children}</>;
+  return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={name}
+    navigationAllowed={navigationAllowed} canAdmin={navigationAllowed&&canAdmin} canOwner={navigationAllowed&&canOwner}
+    canManageStaff={navigationAllowed&&!!access.data?.can_manage_staff} canViewTenants={navigationAllowed&&!!access.data?.can_view_tenants}
+    onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
+    {children}
+  </PortalShell>;
+}
 export default function App() {
-  return <Routes>
+  return <AuthenticatedLayout><Routes>
     <Route path="/auth/login" element={<AuthRoute key="login" mode="login"/>}/>
     <Route path="/auth/forgot" element={<AuthRoute key="forgot" mode="forgot"/>}/>
     <Route path="/auth/password" element={<AuthRoute key="password" mode="password"/>}/>
@@ -288,5 +309,5 @@ export default function App() {
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>
-  </Routes>;
+  </Routes></AuthenticatedLayout>;
 }

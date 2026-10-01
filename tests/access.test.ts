@@ -93,9 +93,13 @@ describe('identity directory helpers',()=>{
   });
 });
 describe('display name never implies access',()=>{
-  it('uses a nonblank name, then email, then brand',()=>{
-    expect(displayName({email:'a@example.invalid',user_metadata:{full_name:'  Ada  '}})).toBe('Ada');
-    expect(displayName({email:'a@example.invalid',user_metadata:{full_name:' ',name:{role:'super_admin'}}})).toBe('a@example.invalid');
+  it('uses staff profile first and last name, then the full email',()=>{
+    const user={email:'info@toothmagicmemory.com',user_metadata:{full_name:'Ignored metadata'}};
+    expect(displayName(user,{first_name:'  Ada ',last_name:' Lovelace  '})).toBe('Ada Lovelace');
+    expect(displayName(user,{first_name:null,last_name:' Lovelace '})).toBe('Lovelace');
+    for (const profile of [undefined,null,{}, {first_name:' ',last_name:null}, {first_name:7,last_name:{role:'super_admin'}}]) {
+      expect(displayName(user,profile)).toBe('info@toothmagicmemory.com');
+    }
     expect(displayName({})).toBe('PlayERP');
   });
 });

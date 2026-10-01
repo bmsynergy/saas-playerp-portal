@@ -4,6 +4,7 @@ import { ArrowLeft, BadgeCheck, Building2, CalendarDays, Check, Clock3, History,
 import { slugLabel, venueRoleLabel, venuesLabel, type IdentityAction, type IdentityDetail, type IdentityDirectory } from '../lib/identity';
 import { useLocale } from '../locales';
 import { DetailItem } from './OwnerPage';
+import { PortalDialog } from '../components/PortalDialog';
 
 type Props = {
   detail: IdentityDetail; venues: IdentityDirectory['venues']; roles: string[];
@@ -47,7 +48,6 @@ export function UserDetailPage({ detail, venues, roles, busy, error, notice, onA
     if (pending?.action === 'set_role') return t('identity.confirmRole').replace('{role}', venueRoleLabel(t, pending.value as string));
     return t(pending?.action === 'set_assignments' ? 'identity.confirmVenues' : pending?.action === 'revoke' ? 'identity.confirmRevoke' : 'identity.confirmRecovery');
   }
-  const confirmBox = (...actions: IdentityAction[]) => pending && actions.includes(pending.action) && <div className="staff-confirm" role="group" aria-label={t('staff.confirmAction')}><p>{pendingText()}</p><div><button className="button button-primary" type="button" disabled={busy} onClick={confirm}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></div></div>;
 
   return <div className="page-stack staff-page" data-testid="identity-detail">
     <Link className="back-link" to="/admin/users"><ArrowLeft size={17}/>{t('identity.back')}</Link>
@@ -70,15 +70,12 @@ export function UserDetailPage({ detail, venues, roles, busy, error, notice, onA
         {person.protected ? <div className="staff-self-note">{t('identity.protectedNote')}</div> : person.status === 'revoked' && <div className="staff-self-note">{t('identity.revokedNote')}</div>}
         {editable && <div className="field"><label htmlFor="identity-role">{t('identity.changeRole')}</label>
           <div className="staff-actions"><select id="identity-role" value={roles.includes(role) ? role : ''} onChange={event => { setRole(event.target.value); setPending(null); }} disabled={busy}>{!roles.includes(role) && <option value="" disabled>{venueRoleLabel(t, person.role)}</option>}{roles.map(item => <option key={item} value={item}>{slugLabel(t, 'identity.role', item)}</option>)}</select><button className="staff-action-link" type="button" disabled={busy || !roles.includes(role) || role === person.role} onClick={() => ask('set_role', role)}>{t('identity.applyRole')}</button></div>
-          {confirmBox('set_role')}
         </div>}
         {editable && <div className="field" role="group" aria-labelledby="identity-venues"><span id="identity-venues">{t('identity.assignedVenues')}</span>
           <div className="staff-actions">{venues.map(item => <label className="staff-role" key={item.id}><input type="checkbox" checked={selected.includes(item.id)} disabled={busy} onChange={event => { setSelected(event.target.checked ? [...selected, item.id] : selected.filter(id => id !== item.id)); setPending(null); }}/>{item.name}</label>)}<button className="staff-action-link" type="button" disabled={busy || sameVenues} onClick={() => ask('set_assignments', selected)}>{t('identity.saveVenues')}</button></div>
-          {confirmBox('set_assignments')}
         </div>}
         {person.status !== 'revoked' && <div className="field" role="group" aria-labelledby="identity-account"><span id="identity-account">{t('identity.accountActions')}</span>
           <div className="staff-actions"><button className="staff-action-link" type="button" disabled={busy} onClick={() => ask('send_recovery')}><RotateCcw size={14}/>{t('identity.recovery')}</button>{editable && <button className="staff-action-link danger" type="button" disabled={busy} onClick={() => ask('revoke')}>{t('staff.revoke')}</button>}</div>
-          {confirmBox('send_recovery', 'revoke')}
         </div>}
       </div>}
     </section>
@@ -89,5 +86,6 @@ export function UserDetailPage({ detail, venues, roles, busy, error, notice, onA
         <td data-label={t('identity.actor')}>{entry.actor_email || t('notProvided')}</td>
       </tr>)}</tbody></table></div>}
     </section>
+    {pending && <PortalDialog title={t('staff.confirmAction')} titleId="identity-confirm-title" descriptionId="identity-confirm-body" onClose={() => setPending(null)} dismissible={!busy} alert actions={<><button className="button button-primary" type="button" disabled={busy} onClick={() => void confirm()}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></>}><p id="identity-confirm-body">{pendingText()}</p>{error && <div className="form-error" role="alert">{t(error)}</div>}</PortalDialog>}
   </div>;
 }

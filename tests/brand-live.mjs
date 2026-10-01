@@ -68,7 +68,7 @@ async function login(p,profile){
 }
 async function logout(p){
  await p.getByRole('button',{name:'EN',exact:true}).click();await p.locator('.account-trigger').click();
- await p.getByRole('menuitem',{name:'Sign out',exact:true}).click();await heading(p,'Sign in to your workspace');
+ await p.locator('.account-popover').getByRole('button',{name:'Sign out',exact:true}).click();await heading(p,'Sign in to your workspace');
  assert.equal(await p.evaluate(()=>localStorage.getItem('playerp.portal.dev.auth')),null);
  await p.reload();await heading(p,'Sign in to your workspace');
 }
@@ -78,7 +78,7 @@ try{
   const ctx=await browser.newContext({viewport:{width,height:1000},locale:'en'});contexts.push(ctx);
   const p=await ctx.newPage();p.setDefaultTimeout(20000);p.on('pageerror',()=>report.pageErrors.push('Browser runtime error'));
   const businessWrites=[];
-  p.on('request',r=>{if(r.url().includes('fzwzmwstxlsxdzdmphyq.supabase.co')){const path=new URL(r.url()).pathname;if(path.startsWith('/functions/')&&r.postDataJSON()?.action!=='list')businessWrites.push(path);if(path.startsWith('/rest/v1/')&&!path.startsWith('/rest/v1/rpc/'))businessWrites.push(path);}});
+  p.on('request',r=>{if(r.url().includes('fzwzmwstxlsxdzdmphyq.supabase.co')){const path=new URL(r.url()).pathname;if(path.startsWith('/functions/')&&r.postDataJSON()?.action!=='list')businessWrites.push(path);if(!['GET','OPTIONS'].includes(r.method())&&path.startsWith('/rest/v1/')&&!path.startsWith('/rest/v1/rpc/'))businessWrites.push(path);}});
   for(const lang of ['en','es']){
    await p.goto(origin+'/auth/login');await p.getByRole('button',{name:lang.toUpperCase(),exact:true}).click();
    await heading(p,lang==='en'?'Sign in to your workspace':'Accede a tu espacio');await screen(p,`login-${width}-${lang}`);

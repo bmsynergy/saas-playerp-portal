@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Check, Clock3, MailPlus, RotateCcw, ShieldCheck, UserRoundX, UsersRound, X } from 'lucide-react';
 import { useLocale } from '../locales';
+import { PortalDialog } from '../components/PortalDialog';
 
 export type StaffRole = 'super_admin' | 'support' | 'operations';
 export type StaffMember = {
@@ -107,10 +108,10 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
               {!self && <button className={`staff-action-link ${member.status === 'revoked' ? '' : 'danger'}`} type="button" disabled={busy} onClick={() => ask(member, 'set_status', member.status === 'revoked' ? 'active' : 'revoked')}>{t(member.status === 'revoked' ? 'staff.reactivate' : member.status === 'invited' ? 'staff.cancelInvite' : 'staff.revoke')}</button>}
               {self && <span className="staff-self-note">{t('staff.selfProtected')}</span>}
             </div>
-            {pending?.userId === member.user_id && <div className="staff-confirm" role="group" aria-label={t('staff.confirmAction')}><p>{pendingText(member)}</p><div><button className="button button-primary" type="button" disabled={busy} onClick={() => confirm(member)}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></div></div>}
           </td>
         </tr>;
       })}</tbody></table></div>}
     </section>
+    {pending && (() => { const member = members.find(item => item.user_id === pending.userId); return member ? <PortalDialog title={t('staff.confirmAction')} titleId="staff-confirm-title" descriptionId="staff-confirm-body" onClose={() => setPending(null)} dismissible={!busy} alert actions={<><button className="button button-primary" type="button" disabled={busy} onClick={() => void confirm(member)}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></>}><p id="staff-confirm-body">{pendingText(member)}</p>{error && <div className="form-error" role="alert">{t(error)}</div>}</PortalDialog> : null; })()}
   </div>;
 }

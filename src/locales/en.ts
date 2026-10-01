@@ -1,7 +1,7 @@
 export const en = {
   brand: 'PlayERP', tagline: 'A clearer view of every venue', platform: 'Platform', workspace: 'Workspace',
   'nav.admin': 'Platform administration', 'nav.myVenues': 'My venues', 'auth.forgotPassword': 'Forgot password?',
-  navigation: 'Navigation', overview: 'Overview', venues: 'Venues', directory: 'Directory',
+  navigation: 'Navigation', primaryNavigation: 'Main navigation', secondaryNavigation: 'Section navigation', breadcrumb: 'Breadcrumb', openNavigation: 'Open navigation', closeNavigation: 'Close navigation', collapseNavigation: 'Collapse navigation', expandNavigation: 'Expand navigation', overview: 'Overview', venues: 'Venues', directory: 'Directory',
   account: 'Account', menu: 'Account menu', signOut: 'Sign out', signingOut: 'Signing out…',
   password: 'Password', changePassword: 'Change password', language: 'Language',
   ownerArea: 'Owner workspace', staffArea: 'Platform administration',

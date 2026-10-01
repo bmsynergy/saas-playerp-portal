@@ -60,7 +60,7 @@ No backend migration, email configuration, production or Lovable change in this 
 - Recovery adds the selected language to its portal redirect. Recovery sessions stay on
   the password page until saved; completion resolves authorization again. Local logout
   preserves independent sessions and Lovable's separate origin/storage.
-- Display name uses nonblank `full_name`, `name`, then `display_name` from Auth metadata,
-  followed by email and finally PlayERP. These fields are presentation only.
+- Display name reads only `first_name,last_name` from `staff_profiles` where `id` equals the session user id, using the browser session and existing RLS (`maybeSingle`). The read waits for authorized access and stays disabled during auth/recovery/invitation. Nonblank name parts are joined; loading, missing names or query failure fall back to the full email, never Auth metadata. These fields are presentation only.
+- A single persistent shell wraps authenticated routes, including password/invitation and loading/error/denied/not-found states. Scope gates still resolve access before mounting data components. Restricted states expose no area links. Breadcrumbs and secondary navigation use the same permission flags as the main navigation.
 - Four PNGs are exact copies of `bmsynergy/playerp/public/brand` at
   `73655c61f101dbe75429c1fa586f8280782915d9`; neither the source assets nor that repo changed.

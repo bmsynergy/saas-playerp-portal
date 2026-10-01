@@ -48,7 +48,7 @@ async function snapshot(page,name){await page.screenshot({path:`${out}/${name}.p
 const rows=page=>page.locator('[data-testid="identity-row"]');
 const count=async page=>(await page.getByTestId('identity-count').textContent()).trim();
 async function confirmAndWait(page,notice){
- await page.locator('.staff-confirm').getByRole('button',{name:'Confirmar',exact:true}).click();
+ await page.getByRole('alertdialog').getByRole('button',{name:'Confirmar',exact:true}).click();
  await page.locator('.staff-notice').filter({hasText:notice}).waitFor();
 }
 try {

@@ -52,6 +52,7 @@ async function setup({role='super_admin',width=1440}={}){
   const send=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
   if(url.pathname==='/auth/v1/token')return send(session());
   if(url.pathname==='/auth/v1/user')return send(user);
+  if(url.pathname==='/rest/v1/staff_profiles')return send(null);
   if(url.pathname.endsWith('/rpc/is_platform_staff'))return send(true);
   if(url.pathname.endsWith('/rpc/portal_access'))return send({is_platform_staff:role==='super_admin',platform_role:role,owner_venues:[]});
   if(url.pathname.endsWith('/rpc/portal_tenant_directory'))return send([]);
@@ -70,7 +71,7 @@ try{
   const {ctx,page}=await setup();const id=x=>page.getByTestId(x),rows=()=>page.locator('[data-testid^="fleet-row-"]').count();
   await page.goto(origin+'/admin/print-servers');await id(`fleet-row-${v1}`).waitFor();
   assert.equal(await id('fleet-count').innerText(),'3 of 3');
-  await page.getByRole('link',{name:'Print Servers',exact:true}).waitFor();
+  await page.locator('.sidebar-nav').getByRole('link',{name:'Print Servers',exact:true}).waitFor();
   await id('fleet-filter-search').fill('garden');assert.equal(await rows(),1);assert.equal(await id('fleet-count').innerText(),'1 of 3');await id('fleet-filter-clear').click();
   for(const [filter,value,expected] of [['venue',v3,[v3]],['version','2.3.0',[v2]],['version','__none__',[v3]],['signal','3m',[v1]],['signal','older',[v2]],['signal','never',[v3]],['state','online',[v1]],['state','offline',[v2]],['state','none',[v3]],['printers','with',[v1]],['printers','without',[v2,v3]],['printers','paused',[v1]],['printers','error',[v1]]]){
    await id(`fleet-filter-${filter}`).selectOption(value);assert.equal(await rows(),expected.length,`${filter}=${value}`);for(const v of expected)await id(`fleet-row-${v}`).waitFor();
@@ -124,6 +125,27 @@ try{
   await ctx.close();
  }
  {
+  const {ctx,page,db}=await setup({width:390});
+  db.printers[0].workstations=Array.from({length:45},(_,i)=>({id:'w'+i,name:'Workstation '+(i+1)}));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto(origin+`/admin/print-servers/${v1}`);await page.getByTestId('ps-state').waitFor();
+  const toggle=page.getByTestId(`printer-toggle-${p1}`);
+  await toggle.click();await page.getByTestId('confirm-accept').click();
+  await page.getByTestId('confirm-dialog').waitFor({state:'detached'});
+  await page.waitForFunction(id=>document.activeElement===document.querySelector(`[data-testid="${id}"]`),`printer-toggle-${p1}`,{timeout:3000});
+  const opener=page.getByTestId(`printer-remove-${p1}`);await opener.click();await page.getByTestId('confirm-accept').click();
+  await page.getByTestId('remove-in-use').waitFor();
+  const body=page.locator('.ps-dialog-body');assert(await body.evaluate(e=>e.scrollHeight>e.clientHeight),'long dialog body scrolls');
+  const before=await page.locator('.ps-dialog-actions').boundingBox();await body.evaluate(e=>e.scrollTop=e.scrollHeight);
+  const after=await page.locator('.ps-dialog-actions').boundingBox();assert.equal(before.y,after.y);assert(after.y+after.height<=1000);
+  await page.getByTestId('confirm-cancel').focus();await page.keyboard.press('Tab');assert(await page.getByTestId('confirm-accept').evaluate(e=>e===document.activeElement));
+  const outline=await page.getByTestId('confirm-accept').evaluate(e=>getComputedStyle(e).outlineStyle);assert.notEqual(outline,'none');
+  assert(await page.locator('.sidebar').evaluate(e=>parseFloat(getComputedStyle(e).transitionDuration)<0.01),'reduced motion');
+  await page.screenshot({path:out+'dialog-scroll-390.png'});
+  await page.keyboard.press('Escape');assert(await opener.evaluate(e=>e===document.activeElement));
+  record('390px long dialog: scroll body, fixed actions, trapped/returned focus, visible focus and reduced motion');await ctx.close();
+ }
+ {
   const {ctx,page}=await setup({width:834});await page.goto(origin+`/admin/print-servers/${v1}`);await page.getByTestId('ps-state').waitFor();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');await page.goto(origin+'/admin/print-servers');await page.getByTestId(`fleet-row-${v1}`).waitFor();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');
@@ -132,7 +154,7 @@ try{
  {
   const {ctx,page,db}=await setup({role:'operations'});
   for(const path of ['/admin/print-servers',`/admin/print-servers/${v1}`]){await page.goto(origin+path);await page.getByRole('heading',{name:'Access denied',exact:true}).waitFor();}
-  await page.goto(origin+'/admin');await page.getByRole('link',{name:'Directory',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Print Servers',exact:true}).count(),0);assert.deepEqual(db.seen,[]);
+  await page.goto(origin+'/admin');await page.locator('.sidebar-nav').getByRole('link',{name:'Directory',exact:true}).waitFor();assert.equal(await page.locator('.sidebar-nav').getByRole('link',{name:'Print Servers',exact:true}).count(),0);assert.deepEqual(db.seen,[]);
   record('Operations: no nav entry, denied on both routes, no fleet RPC');await ctx.close();
  }
  assert.deepEqual(errors,[]);

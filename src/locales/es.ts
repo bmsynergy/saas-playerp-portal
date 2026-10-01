@@ -3,7 +3,7 @@ import type { en } from './en';
 export const es: Record<keyof typeof en, string> = {
   brand: 'PlayERP', tagline: 'Una visión más clara de cada local', platform: 'Plataforma', workspace: 'Espacio de trabajo',
   'nav.admin': 'Administración de plataforma', 'nav.myVenues': 'Mis locales', 'auth.forgotPassword': '¿Olvidaste tu contraseña?',
-  navigation: 'Navegación', overview: 'Inicio', venues: 'Locales', directory: 'Directorio',
+  navigation: 'Navegación', primaryNavigation: 'Navegación principal', secondaryNavigation: 'Navegación de sección', breadcrumb: 'Ruta de navegación', openNavigation: 'Abrir navegación', closeNavigation: 'Cerrar navegación', collapseNavigation: 'Contraer navegación', expandNavigation: 'Expandir navegación', overview: 'Inicio', venues: 'Locales', directory: 'Directorio',
   account: 'Cuenta', menu: 'Menú de cuenta', signOut: 'Cerrar sesión', signingOut: 'Cerrando sesión…',
   password: 'Contraseña', changePassword: 'Cambiar contraseña', language: 'Idioma',
   ownerArea: 'Espacio del propietario', staffArea: 'Administración de plataforma',

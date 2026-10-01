@@ -51,7 +51,7 @@ async function snapshot(page,name) {
 async function logoutUi(page,lang='en') {
   if(await page.locator('.portal-layout').count()) {
     await page.locator('.account-trigger').click();
-    await page.getByRole('menuitem',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
+    await page.locator('.account-popover').getByRole('button',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
   } else await page.getByRole('button',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
   await heading(page,lang==='en'?'Sign in to your workspace':'Accede a tu espacio');
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),storageKey),null);
