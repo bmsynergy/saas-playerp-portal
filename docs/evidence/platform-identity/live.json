@@ -1,0 +1,193 @@
+{
+ "origin": "https://playerp.dev.bmore.app",
+ "project": "fzwzmwstxlsxdzdmphyq",
+ "startedAt": "2026-10-01T20:16:18.895Z",
+ "mocks": false,
+ "checks": [
+  {
+   "name": "listado: usuarios de al menos dos venues con nombre, correo, rol, estado y venues",
+   "passed": true,
+   "count": "27 / 27",
+   "venues": [
+    "Dynamic Park",
+    "WI170P1 Venue",
+    "US Test Venue (Florida)",
+    "Jumping Florida"
+   ],
+   "sample": [
+    {
+     "name": "QA Objetivo",
+     "email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "role": "Recepción",
+     "status": "Invitado",
+     "venues": "Dynamic Park"
+    },
+    {
+     "name": "Meira Lopez",
+     "email": "mlopez@avitcapital.com",
+     "role": "Propietario",
+     "status": "Activo",
+     "venues": "Jumping Florida, US Test Venue (Florida)"
+    }
+   ]
+  },
+  {
+   "name": "la busqueda reduce la lista",
+   "passed": true,
+   "before": 27,
+   "after": 1,
+   "count": "1 / 27"
+  },
+  {
+   "name": "el filtro por venue reduce la lista",
+   "passed": true,
+   "before": 27,
+   "after": 5,
+   "count": "5 / 27"
+  },
+  {
+   "name": "accion 1/5 invitar: aparece en la lista como Invitado",
+   "passed": true,
+   "row": "QA Invitado delivered+piaui-1790885778886-invitado@resend.dev Recepción Invitado Jumping Florida Ver detalle delivered+piaui-1790885778886-invitado@resend.dev"
+  },
+  {
+   "name": "se abre el detalle de un usuario",
+   "passed": true,
+   "url": "/admin/users/<id>",
+   "heading": "QA Objetivo"
+  },
+  {
+   "name": "accion 2/5 cambiar rol (front_desk -> manager)",
+   "passed": true
+  },
+  {
+   "name": "accion 3/5 cambiar asignacion (+ Jumping Florida)",
+   "passed": true
+  },
+  {
+   "name": "accion 4/5 enviar recuperacion (el correo va al buzon del usuario; la pantalla no recibe enlace)",
+   "passed": true
+  },
+  {
+   "name": "accion 5/5 revocar: el detalle pasa a Revocado",
+   "passed": true
+  },
+  {
+   "name": "admin_audit_log: cinco filas, una por accion, con el Admin de plataforma como actor",
+   "passed": true,
+   "rows": [
+    {
+     "action": "venue_user_invited",
+     "actor_scope": "platform",
+     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "target_type": "venue_user",
+     "user_email": "delivered+piaui-1790885778886-invitado@resend.dev",
+     "created_utc": "2026-10-01 20:16:29"
+    },
+    {
+     "action": "venue_user_role_changed",
+     "actor_scope": "platform",
+     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "target_type": "venue_user",
+     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:16:32"
+    },
+    {
+     "action": "venue_user_assignments_changed",
+     "actor_scope": "platform",
+     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "target_type": "venue_user",
+     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:16:35"
+    },
+    {
+     "action": "venue_user_recovery_requested",
+     "actor_scope": "platform",
+     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "target_type": "venue_user",
+     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:16:37"
+    },
+    {
+     "action": "venue_user_access_revoked",
+     "actor_scope": "platform",
+     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "target_type": "venue_user",
+     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:16:41"
+    }
+   ]
+  },
+  {
+   "name": "etiquetas del staff de plataforma en el portal publicado",
+   "passed": true,
+   "labels": {
+    "admin": "Admin",
+    "soporte": "Soporte",
+    "operaciones": "Operaciones"
+   },
+   "invite_role_options": [
+    "Soporte",
+    "Operaciones",
+    "Admin"
+   ],
+   "db_roles": [
+    "operations",
+    "super_admin",
+    "support"
+   ]
+  },
+  {
+   "name": "Operaciones entra a /admin y ve venues; el menu no ofrece Usuarios ni Staff",
+   "passed": true,
+   "nav": [
+    "Inicio",
+    "Directorio"
+   ],
+   "total_venues": "9"
+  },
+  {
+   "name": "Operaciones ve los Print Servers de un venue",
+   "passed": true,
+   "venue": "Dynamic Park",
+   "print_servers": 2
+  },
+  {
+   "name": "Operaciones: /admin/users y /admin/staff muestran acceso denegado",
+   "passed": true
+  },
+  {
+   "name": "Operaciones recibe 403 de las dos APIs",
+   "passed": true,
+   "platform-identity-admin": "403 forbidden",
+   "platform-staff-admin": "403 forbidden"
+  },
+  {
+   "name": "el portal publicado no contiene \"Facturación\" ni \"Billing\"",
+   "passed": true,
+   "files": [
+    "/admin",
+    "/assets/index-8kTvsWpQ.js",
+    "/assets/index-Y8ygdvVZ.css"
+   ],
+   "bytes": 541794,
+   "matches": 0
+  }
+ ],
+ "screenshots": [
+  "users-list-1440-es.png",
+  "users-filter-venue-1440-es.png",
+  "user-detail-1440-es.png",
+  "user-detail-revoked-1440-es.png",
+  "staff-labels-1440-es.png",
+  "operations-home-1440-es.png",
+  "operations-print-servers-1440-es.png"
+ ],
+ "pageErrors": [],
+ "result": "passed",
+ "cleanup": {
+  "test_accounts_removed": 5,
+  "left": 0
+ },
+ "finishedAt": "2026-10-01T20:16:51.483Z"
+}
