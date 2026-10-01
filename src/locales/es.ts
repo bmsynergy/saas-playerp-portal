@@ -26,7 +26,7 @@ export const es: Record<keyof typeof en, string> = {
   name: 'Nombre', printServers: 'Print Servers', printServer: 'Print Server',
   serverCount: 'Print Servers', connectedServers: 'Print Servers vinculados',
   serverId: 'ID del servidor', version: 'Versión', lastSignal: 'Última señal', state: 'Estado',
-  revoked: 'Revocado', online: 'En línea', offline: 'Sin señal reciente', noSignal: 'Sin señal registrada',
+  pending: 'Pendiente', revoked: 'Revocado', online: 'En línea', offline: 'Sin señal reciente', noSignal: 'Sin señal registrada',
   noServers: 'No hay Print Servers vinculados a este local.',
   backToDirectory: 'Volver al directorio', tenantOverview: 'Resumen del tenant',
   detailLead: 'Datos del local y Print Servers vinculados.',

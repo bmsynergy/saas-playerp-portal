@@ -24,7 +24,7 @@ export const en = {
   name: 'Name', printServers: 'Print Servers', printServer: 'Print Server',
   serverCount: 'Print Servers', connectedServers: 'Connected Print Servers',
   serverId: 'Server ID', version: 'Version', lastSignal: 'Last signal', state: 'Status',
-  revoked: 'Revoked', online: 'Online', offline: 'No recent signal', noSignal: 'No signal recorded',
+  pending: 'Pending', revoked: 'Revoked', online: 'Online', offline: 'No recent signal', noSignal: 'No signal recorded',
   noServers: 'No Print Servers are linked to this venue.',
   backToDirectory: 'Back to directory', tenantOverview: 'Tenant overview',
   detailLead: 'Venue information and linked Print Servers.',

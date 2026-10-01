@@ -5,9 +5,9 @@ export interface OwnerVenue {
 }
 export interface PrintServerSummary {
   id: string; venue_id: string; software_version: string | null;
-  last_seen_at: string | null; status: 'active' | 'revoked';
+  last_seen_at: string | null; status: 'pending' | 'active' | 'revoked';
 }
 export interface TenantDetail { venue: OwnerVenue; print_servers: PrintServerSummary[] }
 export interface PortalAccess { is_platform_staff: boolean; owner_venues: OwnerVenue[] }
 export type UiError = 'invalidCredentials' | 'networkError' | 'accessDenied' | 'sessionExpired' | 'invalidLink' | 'weakPassword' | 'rateLimited' | 'passwordMismatch' | 'requiredFields' | 'invalidEmail' | 'genericError';
-export type SignalState = 'revoked' | 'online' | 'offline' | 'noSignal';
+export type SignalState = 'pending' | 'revoked' | 'online' | 'offline' | 'noSignal';

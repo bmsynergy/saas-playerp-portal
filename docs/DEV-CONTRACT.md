@@ -1,6 +1,6 @@
 # Portal / PlayERP-dev contract
 
-Status: frontend implemented against this contract; migration prepared for Tom, NOT yet applied or verified against live DEV in this run. Supabase execute_sql was refused by tool approval policy. Do not mistake fixtures for live API evidence.
+Status: applied and verified in PlayERP-dev by Tom (work fc53fb6b-c124-4a58-bc6d-4b77b40db607, artifact 490ffcc6-7695-4820-9aa5-fcf17201b84c). Migration 20261001120000 from backend commit 34e1ab5655711242e572064ddd52c2d006e0c670. Production untouched.
 
 Sources: Tom PE-320.2 (work 921c53bc-4927-4bdc-8a05-e20435ca0e89), approved plan PE-320.1, PE-307 inventory 2320182c-7ea2-41a9-b358-c7c381b7e691, CD-90 target 59da58a0-3500-41ce-b836-ddbe10919ca3. Reuse target playerp.dev. Never provision infrastructure or alter Lovable.
 
@@ -15,18 +15,18 @@ All RPCs use auth.uid(), SECURITY DEFINER, an empty search_path, qualified table
 - portal_tenant_directory() -> OwnerVenue[]. Active platform staff only. No billing/support joins.
 - portal_tenant_detail(p_venue_id uuid) -> {venue:OwnerVenue,print_servers:PrintServerSummary[]} or null when absent. Active platform staff only.
 
-OwnerVenue: id, name, slug, city, state, address, phone, email, timezone, is_active (nullable boolean). PrintServerSummary: id, venue_id, software_version (nullable), last_seen_at (nullable timestamp), status (active/revoked). No other database columns are serialized.
+OwnerVenue: id, name, slug, city, state, address, phone, email, timezone, is_active (nullable boolean). PrintServerSummary: id, venue_id, software_version (nullable), last_seen_at (nullable timestamp), status (pending/active/revoked). No other database columns are serialized.
 
-Read source: public.print_servers, venue_id references the tenant/venue; NOT cloud_printers. Signal proposal awaiting final Tom confirmation: revoked always Revoked; active last_seen_at within the previous 5 min Online; older/future timestamp No recent signal; null or invalid No signal recorded. Timestamp is displayed independently. No synthetic timestamp/version.
+Read source: public.print_servers, venue_id references the tenant/venue; NOT cloud_printers. Signal contract confirmed by Tom: revoked always Revoked; pending always Pending; active last_seen_at less than 3 min old Online (aligned with ps_panel_state); older/future timestamp No recent signal; null or invalid No signal recorded. Timestamp is displayed independently. No synthetic timestamp/version.
 
-Migration prepared in bmsynergy/saas-playerp-backend branch uma/portal-read-contract-21b82e75 (commit 34e1ab5), _migrations/20261001120000_portal_dev_safe_reads.sql. Tom should review the live schema/grants and apply only in DEV.
+Migration prepared in bmsynergy/saas-playerp-backend branch uma/portal-read-contract-21b82e75 (commit 34e1ab5), _migrations/20261001120000_portal_dev_safe_reads.sql. Tom reviewed schema/grants and applied this exact migration only in DEV.
 
-## Auth coordination required
+## Auth coordination completed
 
-Append https://playerp.dev.bmore.app/** to uri_allow_list while preserving site_url and both Lovable entries. Do not change global session settings. resetPasswordForEmail uses origin + /auth/password?recovery=1. The source auth-email-hook/_shared/render-auth-email.ts builds the GoTrue verify URL with token_hash + type + redirect_to; a real email still must verify this end to end.
+Tom appended https://playerp.dev.bmore.app/** to uri_allow_list, preserving site_url, both Lovable entries and global session settings. resetPasswordForEmail uses origin + /auth/password?recovery=1. The source auth-email-hook/_shared/render-auth-email.ts builds the GoTrue verify URL with token_hash + type + redirect_to; Tom verified a real recovery send, redirect, password change and subsequent login; email HTML could not be read because the mail provider key is send-only.
 
 SDK: implicit recovery callback (works across browsers), persistent per-origin session, autoRefreshToken, local logout. Capture PASSWORD_RECOVERY before routing; force password screen while recovery pending. Strip URL callback errors, never display raw provider errors. Password success routes through /auth/complete to allowed owner/admin scope. Recovery state survives refresh in sessionStorage. Password requires 12 characters and UI confirmation.
 
 References used for SDK behavior: https://supabase.com/docs/reference/javascript/auth-onauthstatechange and https://supabase.com/docs/reference/javascript/auth-signout .
 
-Required DEV fixtures coordinated by Tom: active platform staff, inactive platform staff, owner one venue, owner multiple venues, ordinary venue role, venue-level super_admin without platform membership, no-role account, and an unassigned venue/private data negative case. Use new test accounts if needed; do not modify real memberships. Provide a controlled test mailbox/access path without putting tokens/passwords in any delivery. Revoke only the chosen test session to demonstrate failed refresh. Record a real recovery email and sanitized API payload plus deny matrix.
+DEV fixtures supplied and verified by Tom: active platform staff, inactive platform staff, owner one venue, owner multiple venues, ordinary venue role, venue-level super_admin without platform membership, and an unassigned venue/private data negative case. Seven marked test accounts and a restricted DEV mailbox were supplied through a private directory. Do not modify real memberships or expose tokens/passwords. The opt-in live tests revoke only the chosen test session and produce sanitized API/UI evidence. Temporary fixtures and mailbox retirement remain documented in backend commit 7fb0218372c2364aedef5e2b98e959922c68a2ae.

@@ -27,6 +27,7 @@ async function setup({staff=false,owner=false,auth=false,width=1440,expiry=3600,
    {id:'44444444-4444-4444-8444-444444444441',venue_id:v1,software_version:'2.4.1',last_seen_at:new Date().toISOString(),status:'active'},
    {id:'44444444-4444-4444-8444-444444444442',venue_id:v1,software_version:'2.3.0',last_seen_at:new Date().toISOString(),status:'revoked'},
    {id:'44444444-4444-4444-8444-444444444443',venue_id:v1,software_version:null,last_seen_at:null,status:'active'},
+   {id:'44444444-4444-4444-8444-444444444445',venue_id:v1,software_version:null,last_seen_at:null,status:'pending'},
    {id:'44444444-4444-4444-8444-444444444444',venue_id:v1,software_version:'2.0.0',last_seen_at:'2020-01-01T00:00:00Z',status:'active'}
   ]}):send({code:'42501'},403);
   throw new Error('Unexpected fixture API request '+url.pathname);
@@ -48,10 +49,10 @@ try{
  for(const width of [1440,834]){
   const {ctx,page}=await setup({auth:true,staff:true,width});await page.goto(origin+'/admin');await heading(page,'A clear view across PlayERP.');
   await page.goto(origin+'/admin/tenants');await page.getByPlaceholder('Search by name, slug, or city').fill('Harbor');await page.getByText('Sample Garden',{exact:true}).waitFor({state:'hidden'});
-  await page.getByText('Sample Harbor',{exact:true}).click();await heading(page,'Sample Harbor');await page.getByText('Revoked',{exact:true}).waitFor();await page.getByText('Online',{exact:true}).waitFor();
+  await page.getByText('Sample Harbor',{exact:true}).click();await heading(page,'Sample Harbor');await page.getByText('Revoked',{exact:true}).waitFor();await page.getByText('Online',{exact:true}).waitFor();await page.getByText('Pending',{exact:true}).waitFor();
   await noOverflow(page);await page.screenshot({path:out+`detail-${width}-en.png`,fullPage:true});
-  await page.getByRole('button',{name:'ES',exact:true}).click();await page.getByText('Revocado',{exact:true}).waitFor();await noOverflow(page);await page.screenshot({path:out+`detail-${width}-es.png`,fullPage:true});
-  await page.reload();await heading(page,'Sample Harbor');record(`Admin search/detail/reload and four signal states ${width}px`);await ctx.close();
+  await page.getByRole('button',{name:'ES',exact:true}).click();await page.getByText('Revocado',{exact:true}).waitFor();await page.getByText('Pendiente',{exact:true}).waitFor();await noOverflow(page);await page.screenshot({path:out+`detail-${width}-es.png`,fullPage:true});
+  await page.reload();await heading(page,'Sample Harbor');record(`Admin search/detail/reload and five signal states ${width}px`);await ctx.close();
  }
  {
   const {ctx,page,requests}=await setup({auth:true,owner:true});await page.goto(origin+'/');await heading(page,'Your spaces, in one place.');

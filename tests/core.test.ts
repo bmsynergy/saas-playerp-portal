@@ -7,9 +7,13 @@ const now = Date.parse('2026-10-01T12:00:00Z');
 const server={id:'1',venue_id:'2',software_version:null,last_seen_at:null,status:'active' as const};
 describe('Print Server signal contract',()=>{
   it('revoked wins over a recent heartbeat',()=>expect(signalState({...server,status:'revoked',last_seen_at:new Date(now).toISOString()},now)).toBe('revoked'));
-  it('accepts the five-minute boundary and rejects older signals',()=>{
-    expect(signalState({...server,last_seen_at:new Date(now-300000).toISOString()},now)).toBe('online');
-    expect(signalState({...server,last_seen_at:new Date(now-300001).toISOString()},now)).toBe('offline');
+  it('uses the same strict three-minute boundary as the venue panel',()=>{
+    expect(signalState({...server,last_seen_at:new Date(now-179999).toISOString()},now)).toBe('online');
+    expect(signalState({...server,last_seen_at:new Date(now-180000).toISOString()},now)).toBe('offline');
+  });
+  it('pending never implies online, even with a recent heartbeat',()=>{
+    expect(signalState({...server,status:'pending',last_seen_at:new Date(now).toISOString()},now)).toBe('pending');
+    expect(signalState({...server,status:'pending'},now)).toBe('pending');
   });
   it('does not invent a missing heartbeat',()=>{
     expect(signalState(server,now)).toBe('noSignal');

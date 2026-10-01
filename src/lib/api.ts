@@ -12,8 +12,8 @@ function venue(v: Record<string, unknown>): OwnerVenue {
     email: nullable(v.email), timezone: nullable(v.timezone), is_active: typeof v.is_active === 'boolean' ? v.is_active : null};
 }
 function server(v: Record<string, unknown>): PrintServerSummary {
-  if (typeof v.id !== 'string' || typeof v.venue_id !== 'string' || !['active','revoked'].includes(String(v.status))) throw new PortalError('genericError');
-  return {id:v.id,venue_id:v.venue_id,software_version:nullable(v.software_version),last_seen_at:nullable(v.last_seen_at),status:v.status as 'active'|'revoked'};
+  if (typeof v.id !== 'string' || typeof v.venue_id !== 'string' || !['pending','active','revoked'].includes(String(v.status))) throw new PortalError('genericError');
+  return {id:v.id,venue_id:v.venue_id,software_version:nullable(v.software_version),last_seen_at:nullable(v.last_seen_at),status:v.status as PrintServerSummary['status']};
 }
 async function rpc(name: string, params: Record<string, unknown> = {}, signal?: AbortSignal) {
   const req = supabase.rpc(name, params);
