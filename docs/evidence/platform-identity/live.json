@@ -1,7 +1,7 @@
 {
  "origin": "https://playerp.dev.bmore.app",
  "project": "fzwzmwstxlsxdzdmphyq",
- "startedAt": "2026-10-01T20:16:18.895Z",
+ "startedAt": "2026-10-01T20:23:09.577Z",
  "mocks": false,
  "checks": [
   {
@@ -17,7 +17,7 @@
    "sample": [
     {
      "name": "QA Objetivo",
-     "email": "delivered+piaui-1790885778886-objetivo@resend.dev",
+     "email": "delivered+piaui-1790886189563-objetivo@resend.dev",
      "role": "Recepción",
      "status": "Invitado",
      "venues": "Dynamic Park"
@@ -48,7 +48,7 @@
   {
    "name": "accion 1/5 invitar: aparece en la lista como Invitado",
    "passed": true,
-   "row": "QA Invitado delivered+piaui-1790885778886-invitado@resend.dev Recepción Invitado Jumping Florida Ver detalle delivered+piaui-1790885778886-invitado@resend.dev"
+   "row": "QA Invitado delivered+piaui-1790886189563-invitado@resend.dev Recepción Invitado Jumping Florida Ver detalle delivered+piaui-1790886189563-invitado@resend.dev"
   },
   {
    "name": "se abre el detalle de un usuario",
@@ -79,42 +79,42 @@
     {
      "action": "venue_user_invited",
      "actor_scope": "platform",
-     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "actor": "delivered+piaui-1790886189563-admin@resend.dev",
      "target_type": "venue_user",
-     "user_email": "delivered+piaui-1790885778886-invitado@resend.dev",
-     "created_utc": "2026-10-01 20:16:29"
+     "user_email": "delivered+piaui-1790886189563-invitado@resend.dev",
+     "created_utc": "2026-10-01 20:23:20"
     },
     {
      "action": "venue_user_role_changed",
      "actor_scope": "platform",
-     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "actor": "delivered+piaui-1790886189563-admin@resend.dev",
      "target_type": "venue_user",
-     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
-     "created_utc": "2026-10-01 20:16:32"
+     "user_email": "delivered+piaui-1790886189563-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:23:23"
     },
     {
      "action": "venue_user_assignments_changed",
      "actor_scope": "platform",
-     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "actor": "delivered+piaui-1790886189563-admin@resend.dev",
      "target_type": "venue_user",
-     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
-     "created_utc": "2026-10-01 20:16:35"
+     "user_email": "delivered+piaui-1790886189563-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:23:25"
     },
     {
      "action": "venue_user_recovery_requested",
      "actor_scope": "platform",
-     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "actor": "delivered+piaui-1790886189563-admin@resend.dev",
      "target_type": "venue_user",
-     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
-     "created_utc": "2026-10-01 20:16:37"
+     "user_email": "delivered+piaui-1790886189563-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:23:27"
     },
     {
      "action": "venue_user_access_revoked",
      "actor_scope": "platform",
-     "actor": "delivered+piaui-1790885778886-admin@resend.dev",
+     "actor": "delivered+piaui-1790886189563-admin@resend.dev",
      "target_type": "venue_user",
-     "user_email": "delivered+piaui-1790885778886-objetivo@resend.dev",
-     "created_utc": "2026-10-01 20:16:41"
+     "user_email": "delivered+piaui-1790886189563-objetivo@resend.dev",
+     "created_utc": "2026-10-01 20:23:30"
     }
    ]
   },
@@ -167,10 +167,10 @@
    "passed": true,
    "files": [
     "/admin",
-    "/assets/index-8kTvsWpQ.js",
+    "/assets/index-BfGOwims.js",
     "/assets/index-Y8ygdvVZ.css"
    ],
-   "bytes": 541794,
+   "bytes": 542194,
    "matches": 0
   }
  ],
@@ -189,5 +189,5 @@
   "test_accounts_removed": 5,
   "left": 0
  },
- "finishedAt": "2026-10-01T20:16:51.483Z"
+ "finishedAt": "2026-10-01T20:23:43.765Z"
 }
