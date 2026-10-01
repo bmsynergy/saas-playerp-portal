@@ -3,6 +3,10 @@ import { queryClient } from './lib/queryClient';
 import { destination, displayName, preferredScope, chooseScope, safeNext } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
 import { StaffPage, type StaffMember } from './pages/StaffPage';
+import { getIdentities, getIdentity, identityRequest } from './lib/identityApi';
+import type { IdentityAction } from './lib/identity';
+import { UsersPage, type IdentityInvite } from './pages/UsersPage';
+import { UserDetailPage } from './pages/UserDetailPage';
 import { InvitationPage } from './pages/InvitationPage';
 import { Brand } from './components/Brand';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -48,7 +52,7 @@ function Scope({scope,children}:{scope:'owner'|'admin';children:ReactNode}) {
     return target ? <Navigate to={target} replace/> : <OutsideState kind="denied"/>;
   }
   if (scope==='owner' && canAdmin && preferredScope(auth.session.user.id)!=='owner') return <Navigate to="/admin" replace/>;
-  return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={displayName(auth.session.user)} canAdmin={canAdmin} canOwner={canOwner} canManageStaff={access.data.can_manage_staff} onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
+  return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={displayName(auth.session.user)} canAdmin={canAdmin} canOwner={canOwner} canManageStaff={access.data.can_manage_staff} canViewTenants={access.data.can_view_tenants} onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
     {children}
   </PortalShell>;
 }
@@ -104,7 +108,7 @@ function OwnerRoute() {
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();
-  if (!access.data?.can_manage_staff) return home ? <div className="page-heading"><h1>{t('adminHome')}</h1><p>{t('staff.limitedAccess')}</p></div> : <StateView kind="denied"/>;
+  if (!access.data?.can_view_tenants) return home ? <div className="page-heading"><h1>{t('adminHome')}</h1><p>{t('staff.limitedAccess')}</p></div> : <StateView kind="denied"/>;
   return <DirectoryData home={home}/>;
 }
 function DirectoryData({home=false}:{home?:boolean}) {
@@ -116,8 +120,8 @@ function DirectoryData({home=false}:{home?:boolean}) {
 }
 function DetailRoute() {
   const access=useAccess(); const {id=''}=useParams();
-  if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
-  if(!/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(id))return <StateView kind="notFound"/>;
+  if (!access.data?.can_view_tenants) return <StateView kind="denied"/>;
+  if(!UUID.test(id))return <StateView kind="notFound"/>;
   return <DetailData id={id}/>;
 }
 function DetailData({id}:{id:string}) {
@@ -169,6 +173,61 @@ function StaffData() {
     onInvite={(email,role,lang)=>run({email,role,locale:lang},true)}
     onAction={(action,member:StaffMember,value)=>run({action,user_id:member.user_id,...(action==='set_role'?{role:value}:action==='set_status'?{status:value}:{locale})})}/>;
 }
+const UUID=/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
+function useIdentityDirectory() {
+  const {session}=useAuth();
+  return useQuery({queryKey:['identity',session?.user.id],queryFn:getIdentities,refetchInterval:60_000});
+}
+// Shared by the list and the detail: one request at a time, localized errors,
+// and a fresh access check whenever the backend refuses.
+function useIdentityAction(refresh:()=>Promise<unknown>) {
+  const {expire}=useAuth();
+  const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
+  const run=async(body:Record<string,unknown>,done:(data:Record<string,unknown>)=>string)=>{
+    if(busy)return;
+    setBusy(true);setError(null);setNotice(null);
+    try {
+      setNotice(done(await identityRequest(body)));
+      await refresh();
+    } catch(e) {
+      const code=staffErrorKey(e);setError(code);
+      if(code==='sessionExpired')await expire();
+      if(code==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+      throw e;
+    } finally {setBusy(false);}
+  };
+  return {busy,error,notice,run};
+}
+function UsersRoute({detail=false}:{detail?:boolean}) {
+  const access=useAccess(); const {id=''}=useParams();
+  if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
+  if (!detail) return <UsersData/>;
+  return UUID.test(id) ? <UserDetailData key={id} id={id}/> : <StateView kind="notFound"/>;
+}
+function UsersData() {
+  const {expire}=useAuth();
+  const data=useIdentityDirectory();
+  const {busy,error,notice,run}=useIdentityAction(()=>data.refetch());
+  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  if(data.isPending)return <StateView kind="loading"/>;
+  if(data.isError)return <StateView kind={staffErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
+  return <UsersPage directory={data.data} busy={busy} error={error} notice={notice}
+    onInvite={(invite:IdentityInvite)=>run({action:'invite',...invite},result=>result.email_sent===false?'identity.invitedNoEmail':'identity.invited')}/>;
+}
+function UserDetailData({id}:{id:string}) {
+  const {session,expire}=useAuth(); const {locale}=useLocale();
+  const directory=useIdentityDirectory();
+  const data=useQuery({queryKey:['identity-user',session?.user.id,id],queryFn:()=>getIdentity(id),refetchInterval:60_000});
+  const {busy,error,notice,run}=useIdentityAction(async()=>{await data.refetch();await queryClient.invalidateQueries({queryKey:['identity']});});
+  const failure=data.error??directory.error;
+  useEffect(()=>{if(failure&&staffErrorKey(failure)==='sessionExpired') void expire();},[failure,expire]);
+  if(data.isError&&staffErrorKey(data.error)==='identity.error.userNotFound')return <StateView kind="notFound"/>;
+  if(failure)return <StateView kind={staffErrorKey(failure)==='accessDenied'?'denied':'error'} onRetry={()=>{void data.refetch();void directory.refetch();}}/>;
+  if(!data.data||!directory.data)return <StateView kind="loading"/>;
+  return <UserDetailPage detail={data.data} venues={directory.data.venues} roles={directory.data.roles} busy={busy} error={error} notice={notice}
+    onAction={(action:IdentityAction,value)=>run({action,user_id:id,...(action==='set_role'?{role:value}:action==='set_assignments'?{venue_ids:value}:action==='send_recovery'?{locale}:{})},
+      result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='revoke'?'identity.revoked':'identity.updated')}/>;
+}
 export default function App() {
   return <Routes>
     <Route path="/auth/login" element={<AuthRoute key="login" mode="login"/>}/>
@@ -179,6 +238,8 @@ export default function App() {
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
+    <Route path="/admin/users" element={<Scope scope="admin"><UsersRoute/></Scope>}/>
+    <Route path="/admin/users/:id" element={<Scope scope="admin"><UsersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>

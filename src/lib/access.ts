@@ -1,17 +1,27 @@
-import type { PortalAccess } from './types';
+import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
-  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/tenants(?:\/[a-f0-9-]+)?)?$/.test(value)) ? value : null;
+  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/(?:tenants|users)(?:\/[a-f0-9-]+)?)?$/.test(value)) ? value : null;
 }
 // A requested URL never grants a scope. Staff starts in administration even if
 // login was reached through /. Only the account menu selects the owner scope.
 export function destination(access: PortalAccess, next: string | null = null): string | null {
   const safe = safeNext(next);
   if (access.is_platform_staff) {
-    return safe?.startsWith('/admin') && (access.can_manage_staff || safe === '/admin') ? safe : '/admin';
+    if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
+    // Tenants: Admin and Operations. Users and staff management: Admin only.
+    return (safe.startsWith('/admin/tenants') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
   }
   if (access.owner_venues.length) return safe && !safe.startsWith('/admin') ? safe : '/';
   return null;
+}
+// Pure projection of the two backend answers. `staff` is any active platform
+// membership; `admin` is the portal_access flag that is true only for Admin.
+export function platformAccess(staff: boolean, admin: boolean, role: unknown): Pick<PortalAccess, 'is_platform_staff' | 'can_manage_staff' | 'can_view_tenants' | 'platform_role'> {
+  const platform_role = staff && (role === 'super_admin' || role === 'support' || role === 'operations') ? role as PlatformRole : null;
+  const can_manage_staff = staff && admin;
+  return { is_platform_staff: staff, can_manage_staff, platform_role,
+    can_view_tenants: platform_role ? platform_role !== 'support' : can_manage_staff };
 }
 export function displayName(user: { email?: string; user_metadata?: Record<string, unknown> }): string {
   // Display only. These user-editable values are never authorization inputs.

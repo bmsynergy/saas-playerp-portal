@@ -2,11 +2,12 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Check, Clock3, MailPlus, RotateCcw, ShieldCheck, UserRoundX, UsersRound, X } from 'lucide-react';
 import { useLocale } from '../locales';
 
+export type StaffRole = 'super_admin' | 'support' | 'operations';
 export type StaffMember = {
   user_id: string;
   email: string;
   full_name: string | null;
-  role: 'super_admin' | 'support';
+  role: StaffRole;
   status: 'active' | 'invited' | 'revoked';
   active: boolean;
   invited_at: string | null;
@@ -23,7 +24,7 @@ type Props = {
   busy: boolean;
   error: string | null;
   notice: string | null;
-  onInvite: (email: string, role: 'super_admin' | 'support', locale: 'en' | 'es') => Promise<void>;
+  onInvite: (email: string, role: StaffRole, locale: 'en' | 'es') => Promise<void>;
   onAction: (action: StaffAction, member: StaffMember, value?: string) => Promise<void>;
 };
 type Pending = { userId: string; action: StaffAction; value?: string };
@@ -31,7 +32,7 @@ type Pending = { userId: string; action: StaffAction; value?: string };
 export function StaffPage({ members, currentUserId, busy, error, notice, onInvite, onAction }: Props) {
   const { locale, t } = useLocale();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'super_admin' | 'support'>('support');
+  const [role, setRole] = useState<StaffRole>('support');
   const [inviteLocale, setInviteLocale] = useState<'en' | 'es'>(locale);
   const [pending, setPending] = useState<Pending | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
       <p className="staff-panel-lead">{t('staff.inviteLead')}</p>
       <form className="staff-invite-form" onSubmit={invite} noValidate>
         <label className="field"><span>{t('emailLabel')}</span><div className="field-control"><input type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder={t('emailPlaceholder')} disabled={busy} required /></div></label>
-        <label className="field"><span>{t('staff.roleLabel')}</span><select aria-label={t('staff.roleLabel')} value={role} onChange={event => setRole(event.target.value as 'super_admin' | 'support')} disabled={busy}><option value="support">{t('staff.role.support')}</option><option value="super_admin">{t('staff.role.super_admin')}</option></select></label>
+        <label className="field"><span>{t('staff.roleLabel')}</span><select aria-label={t('staff.roleLabel')} value={role} onChange={event => setRole(event.target.value as StaffRole)} disabled={busy}><option value="support">{t('staff.role.support')}</option><option value="operations">{t('staff.role.operations')}</option><option value="super_admin">{t('staff.role.super_admin')}</option></select></label>
         <label className="field"><span>{t('staff.emailLanguage')}</span><select aria-label={t('staff.emailLanguage')} value={inviteLocale} onChange={event => setInviteLocale(event.target.value as 'en' | 'es')} disabled={busy}><option value="en">English</option><option value="es">Español</option></select></label>
         <button type="submit" className="button button-primary" disabled={busy}><MailPlus size={17}/>{t(busy ? 'staff.sending' : 'staff.sendInvite')}</button>
       </form>
@@ -101,7 +102,7 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
           <td data-label={t('staff.actions')} className="staff-actions-cell">
             <div className="staff-actions">
               {!self && member.status !== 'revoked' && <label className="sr-only" htmlFor={`staff-role-${member.user_id}`}>{t('staff.changeRole')} {member.email}</label>}
-              {!self && member.status !== 'revoked' && <select id={`staff-role-${member.user_id}`} aria-label={`${t('staff.changeRole')}: ${member.email}`} value={member.role} onChange={event => ask(member, 'set_role', event.target.value)} disabled={busy}><option value="support">{t('staff.role.support')}</option><option value="super_admin">{t('staff.role.super_admin')}</option></select>}
+              {!self && member.status !== 'revoked' && <select id={`staff-role-${member.user_id}`} aria-label={`${t('staff.changeRole')}: ${member.email}`} value={member.role} onChange={event => ask(member, 'set_role', event.target.value)} disabled={busy}><option value="support">{t('staff.role.support')}</option><option value="operations">{t('staff.role.operations')}</option><option value="super_admin">{t('staff.role.super_admin')}</option></select>}
               {!self && member.status === 'active' && <button className="staff-action-link" type="button" disabled={busy} onClick={() => ask(member, 'send_recovery')}><RotateCcw size={14}/>{t('staff.recovery')}</button>}
               {!self && <button className={`staff-action-link ${member.status === 'revoked' ? '' : 'danger'}`} type="button" disabled={busy} onClick={() => ask(member, 'set_status', member.status === 'revoked' ? 'active' : 'revoked')}>{t(member.status === 'revoked' ? 'staff.reactivate' : member.status === 'invited' ? 'staff.cancelInvite' : 'staff.revoke')}</button>}
               {self && <span className="staff-self-note">{t('staff.selfProtected')}</span>}

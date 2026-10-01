@@ -11,7 +11,10 @@ const codes: Record<string,string> = {
   member_not_found:'staff.memberNotFound', already_active:'staff.alreadyActive',
 };
 export function staffErrorKey(error: unknown) { return error instanceof StaffError ? error.key : errorCode(error); }
-export async function staffRequest(name: 'platform-staff-admin'|'invite-platform-staff', body: Record<string,unknown>) {
+export function staffRequest(name: 'platform-staff-admin'|'invite-platform-staff', body: Record<string,unknown>) { return invokeFunction(name,body,codes); }
+// Shared by every admin edge function: known error slugs become localized keys,
+// anything else collapses to a safe status-based message.
+export async function invokeFunction(name: 'platform-staff-admin'|'invite-platform-staff'|'platform-identity-admin', body: Record<string,unknown>, codes: Record<string,string>) {
   const {data,error}=await supabase.functions.invoke(name,{body});
   if (error) {
     const response=error.context instanceof Response ? error.context : null;
@@ -30,7 +33,7 @@ export async function getStaff(): Promise<StaffMember[]> {
   const data=await staffRequest('platform-staff-admin',{action:'list'});
   if (!Array.isArray(data.members)) throw new PortalError('genericError');
   return data.members.map((m: Record<string,unknown>)=>{
-    if (typeof m.user_id!=='string'||typeof m.email!=='string'||!['super_admin','support'].includes(String(m.role))||!['active','invited','revoked'].includes(String(m.status))) throw new PortalError('genericError');
+    if (typeof m.user_id!=='string'||typeof m.email!=='string'||!['super_admin','support','operations'].includes(String(m.role))||!['active','invited','revoked'].includes(String(m.status))) throw new PortalError('genericError');
     const str=(v:unknown)=>typeof v==='string'?v:null;
     return {user_id:m.user_id,email:m.email,full_name:str(m.full_name),role:m.role,status:m.status,active:m.active===true,invited_at:str(m.invited_at),accepted_at:str(m.accepted_at),created_at:str(m.created_at),last_sign_in_at:str(m.last_sign_in_at),is_self:m.is_self===true} as StaffMember;
   });

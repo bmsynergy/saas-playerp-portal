@@ -169,7 +169,7 @@ try {
  await inviteCtx.context.close();
  const replay=await fetch(inviteLink.link,{redirect:'manual'});assert(new URL(replay.headers.get('location')).hash.includes('error'));ok('Invitation link replay rejected');
  await staffPage.reload();await heading(staffPage,'Staff management');
- await staffAction(staffPage,inviteEmail,'set_role','super_admin');await staffPage.getByRole('row').filter({hasText:inviteEmail}).locator('.staff-role').filter({hasText:'Super admin'}).waitFor();ok('UI role change persisted');
+ await staffAction(staffPage,inviteEmail,'set_role','super_admin');await staffPage.getByRole('row').filter({hasText:inviteEmail}).locator('.staff-role').filter({hasText:'Admin'}).waitFor();ok('UI role change persisted');
  await staffAction(staffPage,inviteEmail,'set_status','revoked');await staffPage.getByRole('row').filter({hasText:inviteEmail}).getByText('Revoked',{exact:true}).waitFor();
  const revokedJwt=(await loginApi({email:inviteEmail,password})).access_token;assert.equal((await rpc('is_platform_staff',revokedJwt)).data,false);assert.equal((await edge(revokedJwt,{action:'list'})).status,403);
  await staffAction(staffPage,inviteEmail,'set_status','active');await staffPage.getByRole('row').filter({hasText:inviteEmail}).getByText('Active',{exact:true}).waitFor();ok('UI revoke/reactivate changes live authorization');

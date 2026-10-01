@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { ArrowRight, Building2, ChevronDown, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, ShieldCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, Building2, ChevronDown, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, ShieldCheck, UserRoundCog, UsersRound } from 'lucide-react';
 import { useLocale } from '../locales';
 import { Brand } from './Brand';
 
-type Props = { scope: 'owner' | 'admin'; email: string; displayName: string; canAdmin: boolean; canOwner: boolean; canManageStaff: boolean; onSwitchScope: (scope: 'owner' | 'admin') => void; onLogout: () => Promise<void>; children: ReactNode };
+type Props = { scope: 'owner' | 'admin'; email: string; displayName: string; canAdmin: boolean; canOwner: boolean; canManageStaff: boolean; canViewTenants: boolean; onSwitchScope: (scope: 'owner' | 'admin') => void; onLogout: () => Promise<void>; children: ReactNode };
 
-export function PortalShell({ scope, email, displayName, canAdmin, canOwner, canManageStaff, onSwitchScope, onLogout, children }: Props) {
+export function PortalShell({ scope, email, displayName, canAdmin, canOwner, canManageStaff, canViewTenants, onSwitchScope, onLogout, children }: Props) {
   const { locale, setLocale, t } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -35,7 +35,7 @@ export function PortalShell({ scope, email, displayName, canAdmin, canOwner, can
   const title = scope === 'admin' ? t('staffArea') : t('ownerArea');
   const initial = (displayName || email).charAt(0).toUpperCase() || 'P';
   const nav = scope === 'admin'
-    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canManageStaff ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
+    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/users', label: t('identity.nav'), icon: UserRoundCog, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
     : [{ to: '/', label: t('yourVenues'), icon: Building2, end: true }];
 
   return <div className="portal-layout">

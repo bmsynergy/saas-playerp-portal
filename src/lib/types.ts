@@ -8,6 +8,7 @@ export interface PrintServerSummary {
   last_seen_at: string | null; status: 'pending' | 'active' | 'revoked';
 }
 export interface TenantDetail { venue: OwnerVenue; print_servers: PrintServerSummary[] }
-export interface PortalAccess { is_platform_staff: boolean; can_manage_staff: boolean; owner_venues: OwnerVenue[] }
+export type PlatformRole = 'super_admin' | 'support' | 'operations';
+export interface PortalAccess { is_platform_staff: boolean; can_manage_staff: boolean; can_view_tenants: boolean; platform_role: PlatformRole | null; owner_venues: OwnerVenue[] }
 export type UiError = 'invalidCredentials' | 'networkError' | 'accessDenied' | 'sessionExpired' | 'invalidLink' | 'weakPassword' | 'rateLimited' | 'passwordMismatch' | 'requiredFields' | 'invalidEmail' | 'genericError';
 export type SignalState = 'pending' | 'revoked' | 'online' | 'offline' | 'noSignal';

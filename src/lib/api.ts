@@ -1,9 +1,10 @@
 import { supabase } from './supabase';
 import { PortalError } from './errors';
+import { platformAccess } from './access';
 import type { OwnerVenue, PortalAccess, PrintServerSummary, TenantDetail } from './types';
 
 // Both the RPC and this projection use an explicit allow-list. No table SELECTs,
-// billing payloads, raw auth responses, or server error text reach presentation.
+// payment payloads, raw auth responses, or server error text reach presentation.
 const nullable = (v: unknown) => typeof v === 'string' ? v : null;
 function venue(v: Record<string, unknown>): OwnerVenue {
   if (typeof v.id !== 'string' || typeof v.name !== 'string') throw new PortalError('genericError');
@@ -25,7 +26,7 @@ export async function getAccess(signal?: AbortSignal): Promise<PortalAccess> {
   const [data, staff] = await Promise.all([rpc('portal_access', {}, signal), rpc('is_platform_staff', {}, signal)]);
   if (!data || typeof data.is_platform_staff !== 'boolean' || !Array.isArray(data.owner_venues)) throw new PortalError('genericError');
   if (typeof staff !== 'boolean') throw new PortalError('genericError');
-  return { is_platform_staff: staff, can_manage_staff: staff && data.is_platform_staff, owner_venues: data.owner_venues.map(venue) };
+  return { ...platformAccess(staff, data.is_platform_staff, data.platform_role), owner_venues: data.owner_venues.map(venue) };
 }
 export async function getDirectory(signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_tenant_directory', {}, signal);
