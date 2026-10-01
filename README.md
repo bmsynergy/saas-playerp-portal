@@ -7,7 +7,7 @@ React + TypeScript + Vite; English/Spanish product UI for desktop/tablet. Owner 
 
 ## DEV dependency status
 
-Tom applied and verified the safe-read RPC migration, Auth redirect allow-list and controlled DEV test profiles/mailbox (work fc53fb6b-c124-4a58-bc6d-4b77b40db607). The resumed portal passes real DEV API and browser profile checks. See [DEV contract](docs/DEV-CONTRACT.md). Do not treat the synthetic browser tests as proof of live RLS or recovery email delivery. No production deployment or infrastructure provisioning is included.
+Tom applied and verified the safe-read RPC migration, Auth redirect allow-list and controlled DEV test profiles/mailbox (work fc53fb6b-c124-4a58-bc6d-4b77b40db607). The resumed portal passes real DEV API/browser profile checks and real renewal, single-session revocation and recovery/password-return checks. Sanitized results and captures: [live evidence](docs/evidence/live/README.md). See [DEV contract](docs/DEV-CONTRACT.md). Do not treat the synthetic browser tests as proof of live RLS or recovery email delivery. No production deployment or infrastructure provisioning is included.
 
 ## Build
 

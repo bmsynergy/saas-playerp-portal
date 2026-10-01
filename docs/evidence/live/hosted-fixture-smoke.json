@@ -1,0 +1,20 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "fixtureOnly": true,
+  "records": [
+    "Anonymous direct routes + EN/ES persistence 1440px",
+    "Anonymous direct routes + EN/ES persistence 834px",
+    "Admin search/detail/reload and five signal states 1440px",
+    "Admin search/detail/reload and five signal states 834px",
+    "Owner selection + foreign venue/admin denial + logout cleanup",
+    "No authorized membership fails closed",
+    "Invalid recovery callback clears fragment + translated error",
+    "Recovery request uses own origin; SDK callback/password success returns to owner (no real email)",
+    "Detail loading/error/retry/empty with safe translated presentation",
+    "Reload during slow logout cannot restore discarded credentials",
+    "Invalid callback does not poison password change after a new login",
+    "Valid refresh retains route",
+    "Rejected refresh returns to login"
+  ],
+  "pageErrors": []
+}

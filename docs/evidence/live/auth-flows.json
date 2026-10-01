@@ -1,0 +1,41 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "startedAt": "2026-10-01T12:44:23.216Z",
+  "mocks": false,
+  "checks": [
+    {
+      "case": "valid renewal",
+      "http": 200,
+      "result": "SDK rotated a real DEV refresh token and kept the owner route",
+      "method": "local expiry metadata advanced; no token or API mock"
+    },
+    {
+      "case": "nonrenewable session",
+      "revokedScope": "local test session only",
+      "refresh": 400,
+      "code": "refresh_token_not_found",
+      "result": "login; auth storage and private venue selection removed",
+      "otherSessionSameUser": 200
+    },
+    {
+      "case": "real recovery",
+      "requested": 200,
+      "verify": 303,
+      "redirect": "https://playerp.dev.bmore.app/auth/password?recovery=1",
+      "recoverySentAt": "2026-10-01T12:44:26.244243+00:00",
+      "passwordUpdate": 200,
+      "loginNewPassword": 200,
+      "returnPath": "/",
+      "reloadRecovery": "preserved",
+      "reuseLink": "translated expired-link error EN/ES; URL fragment cleared",
+      "mailEvidence": "real pending token via Tom DEV mailbox; email HTML not readable"
+    },
+    {
+      "case": "fixture cleanup",
+      "passwordRestored": true
+    }
+  ],
+  "passed": true,
+  "completedAt": "2026-10-01T12:44:31.570Z"
+}

@@ -1,0 +1,16 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "width": 834,
+  "height": 1112,
+  "mocks": false,
+  "passed": true,
+  "checks": [
+    "ES login",
+    "drawer navigation and auto-close",
+    "account menu",
+    "password form translated validation",
+    "Escape closes menu",
+    "ES logout clears session"
+  ],
+  "completedAt": "2026-10-01T12:34:17.552Z"
+}

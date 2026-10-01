@@ -1,0 +1,215 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "tested_commit": "9e658f3afeb2eb9136088430a4394ca07ae27f23",
+  "mocks": false,
+  "started_at": "2026-10-01T12:31:26.672Z",
+  "completed_at": "2026-10-01T12:31:57.346Z",
+  "api": [
+    {
+      "profile": "anon",
+      "access": 401,
+      "platformStaff": false,
+      "owner": 401,
+      "ownerVenues": [],
+      "foreignVenue": 401,
+      "directory": 401,
+      "detail": 401,
+      "printServersTable": 401
+    },
+    {
+      "profile": "staff_activo",
+      "access": 200,
+      "platformStaff": true,
+      "owner": 403,
+      "ownerVenues": [],
+      "foreignVenue": 403,
+      "directory": 200,
+      "detail": 200,
+      "printServersTable": 403
+    },
+    {
+      "profile": "staff_inactivo",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 403,
+      "ownerVenues": [],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    },
+    {
+      "profile": "owner_uno",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 200,
+      "ownerVenues": [
+        "wi170p1-venue"
+      ],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    },
+    {
+      "profile": "owner_varios",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 200,
+      "ownerVenues": [
+        "us-test-venue-fl",
+        "wi170p1-venue"
+      ],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    },
+    {
+      "profile": "venue_manager",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 403,
+      "ownerVenues": [],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    },
+    {
+      "profile": "venue_frontdesk",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 403,
+      "ownerVenues": [],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    },
+    {
+      "profile": "venue_superadmin",
+      "access": 200,
+      "platformStaff": false,
+      "owner": 403,
+      "ownerVenues": [],
+      "foreignVenue": 403,
+      "directory": 403,
+      "detail": 403,
+      "printServersTable": 403
+    }
+  ],
+  "ui": [
+    {
+      "profile": "anon",
+      "path": "/",
+      "http": 200,
+      "reload": "login"
+    },
+    {
+      "profile": "anon",
+      "path": "/admin",
+      "http": 200,
+      "reload": "login"
+    },
+    {
+      "profile": "anon",
+      "path": "/admin/tenants/a0000000-0000-0000-0000-000000000001",
+      "http": 200,
+      "reload": "login"
+    },
+    {
+      "profile": "staff_activo",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "denied",
+      "admin": "authorized",
+      "foreignVenue": "not applicable",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "staff_inactivo",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "denied",
+      "admin": "denied",
+      "foreignVenue": "not applicable",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "owner_uno",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "authorized venues only",
+      "admin": "denied",
+      "foreignVenue": "denied",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "owner_varios",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "authorized venues only",
+      "admin": "denied",
+      "foreignVenue": "denied",
+      "selection": "changed and persisted",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "venue_manager",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "denied",
+      "admin": "denied",
+      "foreignVenue": "not applicable",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "venue_frontdesk",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "denied",
+      "admin": "denied",
+      "foreignVenue": "not applicable",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    },
+    {
+      "profile": "venue_superadmin",
+      "login": "pass",
+      "reload": "persisted",
+      "root": "denied",
+      "admin": "denied",
+      "foreignVenue": "not applicable",
+      "selection": "not applicable",
+      "logout": "Auth and selection cleared; reload login"
+    }
+  ],
+  "directory_count": 9,
+  "allowed_venue_keys": [
+    "address",
+    "city",
+    "email",
+    "id",
+    "is_active",
+    "name",
+    "phone",
+    "slug",
+    "state",
+    "timezone"
+  ],
+  "allowed_server_keys": [
+    "id",
+    "last_seen_at",
+    "software_version",
+    "status",
+    "venue_id"
+  ],
+  "page_errors": [],
+  "passed": true
+}
