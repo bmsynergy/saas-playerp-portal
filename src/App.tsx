@@ -8,8 +8,11 @@ import type { IdentityAction } from './lib/identity';
 import { UsersPage, type IdentityInvite } from './pages/UsersPage';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { InvitationPage } from './pages/InvitationPage';
+import { getFleet, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
+import { PrintFleetPage } from './pages/PrintFleetPage';
+import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { Brand } from './components/Brand';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { useAccess, useDirectory, useOwnerVenue, useTenantDetail } from './hooks/usePortalData';
@@ -228,6 +231,46 @@ function UserDetailData({id}:{id:string}) {
     onAction={(action:IdentityAction,value)=>run({action,user_id:id,...(action==='set_role'?{role:value}:action==='set_assignments'?{venue_ids:value}:action==='send_recovery'?{locale}:{})},
       result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='revoke'?'identity.revoked':'identity.updated')}/>;
 }
+// Print Server fleet: platform Admin only (the same gate as Users and Staff).
+// The backend validates every RPC again and answers 42501 when it refuses.
+function useFleet() {
+  const {session}=useAuth();
+  return useQuery({queryKey:['ps-fleet',session?.user.id],queryFn:({signal})=>getFleet(signal),refetchInterval:30_000});
+}
+function PrintServersRoute({detail=false}:{detail?:boolean}) {
+  const access=useAccess(); const {venueId=''}=useParams();
+  if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
+  if (!detail) return <PrintFleetData/>;
+  return UUID.test(venueId) ? <PrintServerDetailData key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
+}
+function PrintFleetData() {
+  const {expire}=useAuth();
+  const data=useFleet();
+  useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <PrintFleetPage rows={data.data}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
+}
+function PrintServerDetailData({venueId}:{venueId:string}) {
+  const {session,expire}=useAuth();
+  const fleet=useFleet();
+  const state=useQuery({queryKey:['ps-state',session?.user.id,venueId],queryFn:({signal})=>getPanelState(venueId,signal),refetchInterval:10_000});
+  // The one-time enrollment code never passes through here: the page keeps it in its own state.
+  const api=useMemo(()=>withFailureHook(printServerApi,async key=>{
+    if(key==='sessionExpired')await expire();
+    if(key==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+  }),[expire]);
+  const failure=state.error??fleet.error;
+  useEffect(()=>{if(failure&&psErrorKey(failure)==='sessionExpired') void expire();},[failure,expire]);
+  if(failure&&psErrorKey(failure)==='accessDenied')return <StateView kind="denied"/>;
+  const venue=fleet.data?.find(row=>row.venue_id===venueId);
+  // A failed background refetch keeps the page (and an open code dialog) mounted.
+  if(state.data&&venue)return <PrintServerDetailPage venue={venue} state={state.data} api={api} stale={state.isError} refresh={async()=>{await state.refetch();void fleet.refetch();}}/>;
+  if(failure)return <StateView kind="error" onRetry={()=>{void state.refetch();void fleet.refetch();}}/>;
+  if(state.data===null||(fleet.data&&!venue))return <StateView kind="notFound"/>;
+  return <StateView kind="loading"/>;
+}
 export default function App() {
   return <Routes>
     <Route path="/auth/login" element={<AuthRoute key="login" mode="login"/>}/>
@@ -240,6 +283,8 @@ export default function App() {
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
     <Route path="/admin/users" element={<Scope scope="admin"><UsersRoute/></Scope>}/>
     <Route path="/admin/users/:id" element={<Scope scope="admin"><UsersRoute detail/></Scope>}/>
+    <Route path="/admin/print-servers" element={<Scope scope="admin"><PrintServersRoute/></Scope>}/>
+    <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>

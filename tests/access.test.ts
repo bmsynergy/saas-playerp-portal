@@ -35,6 +35,18 @@ describe('scope routing uses backend permissions',()=>{
     expect(destination(operations,'/admin/tenants/'+owner.id)).toBe('/admin/tenants/'+owner.id);
     for(const path of ['/admin/users','/admin/users/'+user,'/admin/staff']) expect(destination(operations,path)).toBe('/admin');
   });
+  it('the Print Server fleet and its venue detail are deep links for Admin only',()=>{
+    const fleet=['/admin/print-servers','/admin/print-servers/'+owner.id];
+    for(const path of fleet) {
+      expect(safeNext(path)).toBe(path);
+      expect(destination(access(true),path)).toBe(path);
+      expect(destination(access(true,[],false,true),path)).toBe('/admin');
+      expect(destination(access(true,[],false),path)).toBe('/admin');
+      expect(destination(access(false,[owner]),path)).toBe('/');
+      expect(destination(access(false),path)).toBeNull();
+    }
+    for(const path of ['/admin/print-servers/','/admin/print-servers/../staff','/admin/print-servers/'+owner.id+'/revoke','/admin/print-servers?venue='+owner.id,'/admin/print-serversx']) expect(safeNext(path)).toBeNull();
+  });
 });
 describe('platform role projection',()=>{
   it('Operations views tenants without managing staff',()=>expect(platformAccess(true,false,'operations')).toEqual({is_platform_staff:true,can_manage_staff:false,can_view_tenants:true,platform_role:'operations'}));
