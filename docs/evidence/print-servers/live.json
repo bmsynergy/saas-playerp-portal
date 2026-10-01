@@ -1,7 +1,7 @@
 {
  "origin": "https://playerp.dev.bmore.app",
  "project": "fzwzmwstxlsxdzdmphyq",
- "startedAt": "2026-10-01T20:56:14.416Z",
+ "startedAt": "2026-10-01T20:58:19.020Z",
  "mocks": false,
  "simulatedPrintServer": "harness venue A only",
  "physicalPrintServer": "Dynamic Park: read + one scan",
@@ -25,7 +25,7 @@
   {
    "name": "flota: el PS fisico de Dynamic Park (0.3.3) aparece en linea",
    "passed": true,
-   "row": "Dynamic Park adventure-park-demo En línea 0.3.3 hace 12 segundos 1 oct 2026, 20:56 1 0 en pausa · 0 con error 0 pendientes Cola del Print Server: 0 Abrir Dynamic Park"
+   "row": "Dynamic Park adventure-park-demo En línea 0.3.3 hace 11 segundos 1 oct 2026, 20:58 1 0 en pausa · 0 con error 0 pendientes Cola del Print Server: 0 Abrir Dynamic Park"
   },
   {
    "name": "filtro tenant/venue (texto) reduce la lista",
@@ -85,10 +85,10 @@
    "confirmation": "Solicitar escaneo de red Local: Dynamic Park ¿Pedir al Print Server de Dynamic Park que escanee su red local en busca de impresoras térmicas? No se añade ni se cambia nada; el escaneo solo lista lo que encuentra. Confirmar Cancelar",
    "result": "Escaneo de red solicitado.",
    "command": {
-    "id": "d8cab262-992e-4ec8-b36b-755e65520479",
+    "id": "135d41cf-b186-4903-9e58-7356dba0ae70",
     "status": "done",
     "received": true,
-    "completed_at": "2026-10-01 20:56:33.66588+00",
+    "completed_at": "2026-10-01 20:58:38.662321+00",
     "candidates": "2",
     "error_code": null
    },
@@ -102,7 +102,7 @@
    "passed": true,
    "confirmation": "Asignar Print Server Local: PS ARNES sede A (no usar) ¿Crear un código temporal de alta para un nuevo Print Server en PS ARNES sede A (no usar)? El código vale 60 minutos y se muestra una sola vez. Confirmar Cancelar",
    "code": "pse_…(68 caracteres, mostrado una vez; no queda en localStorage, sessionStorage ni URL)",
-   "printServer": "abd3c913-ea87-423a-9cae-975481b207e7",
+   "printServer": "80d2a9ab-622e-4702-ab8c-775edd07c6de",
    "state": "En línea",
    "version": "0.3.3-simulado"
   },
@@ -116,46 +116,46 @@
   {
    "name": "3/10 alta de impresora con nombre",
    "passed": true,
-   "confirmation": "Añadir impresora Local: PS ARNES sede A (no usar) ¿Añadir la impresora «Portal SIM 1790888174406» (00005E0053E7) al Print Server de PS ARNES sede A (no usar)? Confirmar Cancelar",
-   "result": "Impresora «Portal SIM 1790888174406» añadida.",
-   "printer": "bf78af4c-046a-40ff-887c-265b94839f25",
-   "row": "Portal SIM 1790888174406 Star TSP100IV 00005E0053E7 Activa Nunca Ninguno 0 Ninguno Renombrar Pausar Impresión de prueba Quitar"
+   "confirmation": "Añadir impresora Local: PS ARNES sede A (no usar) ¿Añadir la impresora «Portal SIM 1790888299010» (00005E0053E7) al Print Server de PS ARNES sede A (no usar)? Confirmar Cancelar",
+   "result": "Impresora «Portal SIM 1790888299010» añadida.",
+   "printer": "21b96981-97ae-437b-b636-08f9e3f49fcf",
+   "row": "Portal SIM 1790888299010 Star TSP100IV 00005E0053E7 Activa Nunca Ninguno 0 Ninguno Renombrar Pausar Impresión de prueba Quitar"
   },
   {
    "name": "4/10 renombrado: mismo nombre en PlayERP y en lo que recibe el PS",
    "passed": true,
-   "confirmation": "Renombrar Local: PS ARNES sede A (no usar) ¿Cambiar el nombre de la impresora «Portal SIM 1790888174406» de PS ARNES sede A (no usar) a «Portal SIM 1790888174406 caja»? El mismo nombre se envía al Print Server. Confirmar Cancelar",
-   "result": "Impresora renombrada a «Portal SIM 1790888174406 caja».",
-   "playerp": "Portal SIM 1790888174406 caja",
-   "psEvent": "Portal SIM 1790888174406 caja",
-   "psConfig": "Portal SIM 1790888174406 caja"
+   "confirmation": "Renombrar Local: PS ARNES sede A (no usar) ¿Cambiar el nombre de la impresora «Portal SIM 1790888299010» de PS ARNES sede A (no usar) a «Portal SIM 1790888299010 caja»? El mismo nombre se envía al Print Server. Confirmar Cancelar",
+   "result": "Impresora renombrada a «Portal SIM 1790888299010 caja».",
+   "playerp": "Portal SIM 1790888299010 caja",
+   "psEvent": "Portal SIM 1790888299010 caja",
+   "psConfig": "Portal SIM 1790888299010 caja"
   },
   {
    "name": "5/10 pausa",
    "passed": true,
-   "confirmation": "Pausar Local: PS ARNES sede A (no usar) ¿Pausar la impresora «Portal SIM 1790888174406 caja» de PS ARNES sede A (no usar)? Deja de recibir trabajos de impresión hasta que se reactive. Confirmar Cancelar",
-   "result": "Impresora «Portal SIM 1790888174406 caja» en pausa.",
+   "confirmation": "Pausar Local: PS ARNES sede A (no usar) ¿Pausar la impresora «Portal SIM 1790888299010 caja» de PS ARNES sede A (no usar)? Deja de recibir trabajos de impresión hasta que se reactive. Confirmar Cancelar",
+   "result": "Impresora «Portal SIM 1790888299010 caja» en pausa.",
    "is_active": false
   },
   {
    "name": "6/10 reactivacion",
    "passed": true,
-   "confirmation": "Reactivar Local: PS ARNES sede A (no usar) ¿Reactivar la impresora «Portal SIM 1790888174406 caja» de PS ARNES sede A (no usar)? Volverá a recibir trabajos de impresión. Confirmar Cancelar",
-   "result": "Impresora «Portal SIM 1790888174406 caja» reactivada.",
+   "confirmation": "Reactivar Local: PS ARNES sede A (no usar) ¿Reactivar la impresora «Portal SIM 1790888299010 caja» de PS ARNES sede A (no usar)? Volverá a recibir trabajos de impresión. Confirmar Cancelar",
+   "result": "Impresora «Portal SIM 1790888299010 caja» reactivada.",
    "is_active": true
   },
   {
    "name": "7/10 prueba: un trabajo de prueba para esa impresora, recibido por el PS simulado (no imprime)",
    "passed": true,
-   "confirmation": "Impresión de prueba Local: PS ARNES sede A (no usar) ¿Enviar una impresión de prueba a la impresora «Portal SIM 1790888174406 caja» de PS ARNES sede A (no usar)? Saldrá un ticket de prueba por la impresora real. Confirmar Cancelar",
-   "result": "Impresión de prueba enviada a «Portal SIM 1790888174406 caja».",
-   "job": "eaad4d14-a9ac-48bf-ae9f-077f675dbee7",
+   "confirmation": "Impresión de prueba Local: PS ARNES sede A (no usar) ¿Enviar una impresión de prueba a la impresora «Portal SIM 1790888299010 caja» de PS ARNES sede A (no usar)? Saldrá un ticket de prueba por la impresora real. Confirmar Cancelar",
+   "result": "Impresión de prueba enviada a «Portal SIM 1790888299010 caja».",
+   "job": "d3cc77ad-eecc-4128-81fd-4e3f4fb15c92",
    "status": "sent"
   },
   {
    "name": "8/10 descarga de certificado con huella",
    "passed": true,
-   "filename": "playerp-print-server-abd3c913-ca.pem",
+   "filename": "playerp-print-server-80d2a9ab-ca.pem",
    "bytes": 639,
    "sha256OfFile": "94dad34d94c12731d03b805ded421706f5d9eef7ce5ce2ac5b61b81e66fd762a",
    "fingerprintShownMatches": true
@@ -163,8 +163,8 @@
   {
    "name": "9/10 baja de la impresora",
    "passed": true,
-   "confirmation": "Quitar Local: PS ARNES sede A (no usar) ¿Quitar la impresora «Portal SIM 1790888174406 caja» de PS ARNES sede A (no usar)? Ya no estará disponible para imprimir. Confirmar Cancelar",
-   "result": "Impresora «Portal SIM 1790888174406 caja» quitada."
+   "confirmation": "Quitar Local: PS ARNES sede A (no usar) ¿Quitar la impresora «Portal SIM 1790888299010 caja» de PS ARNES sede A (no usar)? Ya no estará disponible para imprimir. Confirmar Cancelar",
+   "result": "Impresora «Portal SIM 1790888299010 caja» quitada."
   },
   {
    "name": "10/10 revocacion: el PS recibe 401",
@@ -187,7 +187,7 @@
  "pageErrors": [],
  "audit": [
   {
-   "at": "20:56:21",
+   "at": "20:58:26",
    "actor_scope": "platform",
    "action": "ps_scan_requested",
    "target_type": "print_server",
@@ -196,87 +196,87 @@
    "ok": "true"
   },
   {
-   "at": "20:56:37",
+   "at": "20:58:41",
    "actor_scope": "platform",
    "action": "ps_enrollment_created",
    "target_type": "print_server",
-   "target": "abd3c913",
+   "target": "80d2a9ab",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:48",
+   "at": "20:58:52",
    "actor_scope": "platform",
    "action": "ps_scan_requested",
    "target_type": "print_server",
-   "target": "abd3c913",
+   "target": "80d2a9ab",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:50",
+   "at": "20:58:54",
    "actor_scope": "platform",
    "action": "ps_printer_added",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:51",
+   "at": "20:58:54",
    "actor_scope": "platform",
    "action": "ps_printer_updated",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:52",
+   "at": "20:58:56",
    "actor_scope": "platform",
    "action": "ps_printer_paused",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:55",
+   "at": "20:58:58",
    "actor_scope": "platform",
    "action": "ps_printer_activated",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:56:57",
+   "at": "20:59:01",
    "actor_scope": "platform",
    "action": "ps_printer_test_requested",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:57:00",
+   "at": "20:59:04",
    "actor_scope": "platform",
    "action": "ps_printer_removed",
    "target_type": "cloud_printer",
-   "target": "bf78af4c",
+   "target": "21b96981",
    "venue": "arnes A",
    "ok": "true"
   },
   {
-   "at": "20:57:01",
+   "at": "20:59:05",
    "actor_scope": "platform",
    "action": "ps_revoked",
    "target_type": "print_server",
-   "target": "abd3c913",
+   "target": "80d2a9ab",
    "venue": "arnes A",
    "ok": "true"
   }
  ],
- "finishedAt": "2026-10-01T20:57:03.792Z",
+ "finishedAt": "2026-10-01T20:59:07.648Z",
  "passed": true
 }
