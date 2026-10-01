@@ -20,6 +20,7 @@ async function setup({staff=false,owner=false,auth=false,width=1440,expiry=3600,
   if(url.pathname==='/auth/v1/token')return send(refreshFail?{code:'refresh_token_not_found',message:'Fixture revoked'}:session(),refreshFail?400:200);
   if(url.pathname==='/auth/v1/user')return send(user);
   if(['/auth/v1/logout','/auth/v1/recover'].includes(url.pathname))return send({});
+  if(url.pathname.endsWith('/is_platform_staff'))return send(staff);
   if(url.pathname.endsWith('/portal_access'))return send({is_platform_staff:staff,owner_venues:owner?venues:[]});
   if(url.pathname.endsWith('/portal_owner_venues')){const id=req.postDataJSON().p_venue_id;return owner&&venues.some(v=>v.id===id)?send(venues.filter(v=>v.id===id)):send({code:'42501'},403);}
   if(url.pathname.endsWith('/portal_tenant_directory'))return staff?send(venues):send({code:'42501'},403);
@@ -57,9 +58,9 @@ try{
  {
   const {ctx,page,requests}=await setup({auth:true,owner:true});await page.goto(origin+'/');await heading(page,'Your spaces, in one place.');
   await page.getByLabel('Select a venue',{exact:true}).selectOption(v2);await heading(page,'Sample Garden');await page.reload();await heading(page,'Sample Garden');
-  await page.goto(origin+'/?venue=99999999-9999-4999-8999-999999999999');await heading(page,'Access denied');await page.goto(origin+'/admin');await heading(page,'Access denied');
+  await page.goto(origin+'/?venue=99999999-9999-4999-8999-999999999999');await heading(page,'Access denied');await page.goto(origin+'/admin');await heading(page,'Your spaces, in one place.');
   assert(!requests.some(x=>x.endsWith('portal_tenant_directory')));
-  await page.getByRole('button',{name:'Account menu',exact:true}).last().click();await page.getByRole('menuitem',{name:'Sign out',exact:true}).click();await heading(page,'Sign in to your workspace');
+  await page.locator('.account-trigger').click();await page.getByRole('menuitem',{name:'Sign out',exact:true}).click();await heading(page,'Sign in to your workspace');
   assert.equal(await page.evaluate(()=>localStorage.getItem('playerp.portal.dev.auth')),null);assert.equal(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('playerp.portal.venue.')).length),0);
   record('Owner selection + foreign venue/admin denial + logout cleanup');await ctx.close();
  }
@@ -75,7 +76,7 @@ try{
   await page.goto(origin+'/auth/forgot');await page.getByLabel('Email address',{exact:true}).fill('portal-test@example.invalid');
   const recoveryRequest=page.waitForRequest(r=>new URL(r.url()).pathname==='/auth/v1/recover');
   await page.getByRole('button',{name:'Send recovery email',exact:true}).click();
-  const request=await recoveryRequest;assert.equal(new URL(request.url()).searchParams.get('redirect_to'),origin+'/auth/password?recovery=1');
+  const request=await recoveryRequest;assert.equal(new URL(request.url()).searchParams.get('redirect_to'),origin+'/auth/password?recovery=1&lang=en');
   await heading(page,'Check your inbox');
   const s=session();const fragment=new URLSearchParams({access_token:s.access_token,refresh_token:s.refresh_token,expires_in:'3600',token_type:'bearer',type:'recovery'});
   await page.goto(origin+'/auth/password?recovery=1#'+fragment);await heading(page,'Set a new password');
@@ -96,7 +97,7 @@ try{
   const {ctx,page}=await setup({auth:true,owner:true});
   await ctx.route('**/auth/v1/logout?*',async route=>{await new Promise(r=>setTimeout(r,1500));await route.fulfill({status:200,contentType:'application/json',body:'{}'}).catch(()=>{});});
   await page.goto(origin+'/');await heading(page,'Your spaces, in one place.');
-  await page.getByRole('button',{name:'Account menu',exact:true}).last().click();await page.getByRole('menuitem',{name:'Sign out',exact:true}).click();
+  await page.locator('.account-trigger').click();await page.getByRole('menuitem',{name:'Sign out',exact:true}).click();
   await page.reload();await heading(page,'Sign in to your workspace');assert.equal(await page.evaluate(()=>localStorage.getItem('playerp.portal.dev.auth')),null);
   record('Reload during slow logout cannot restore discarded credentials');await ctx.close();
  }
@@ -105,7 +106,7 @@ try{
   await page.goto(origin+'/auth/password#error=access_denied&error_code=otp_expired');
   await page.getByRole('link',{name:'Forgot password?',exact:true}).click();await page.getByRole('link',{name:'Back to sign in',exact:true}).click();
   await page.getByLabel('Email address',{exact:true}).fill('portal-test@example.invalid');await page.getByLabel('Password',{exact:true}).fill('Fixture-only-password-42');await page.getByRole('button',{name:'Sign in',exact:true}).click();await heading(page,'Your spaces, in one place.');
-  await page.getByRole('button',{name:'Account menu',exact:true}).last().click();await page.getByRole('menuitem',{name:'Change password',exact:true}).click();await heading(page,'Set a new password');
+  await page.locator('.account-trigger').click();await page.getByRole('menuitem',{name:'Change password',exact:true}).click();await heading(page,'Set a new password');
   await page.getByLabel('New password',{exact:true}).fill('Fixture-only-password-43');await page.getByLabel('Confirm new password',{exact:true}).fill('Fixture-only-password-43');await page.getByRole('button',{name:'Save new password',exact:true}).click();await heading(page,'Password updated');
   record('Invalid callback does not poison password change after a new login');await ctx.close();
  }

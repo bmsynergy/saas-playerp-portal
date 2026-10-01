@@ -1,23 +1,30 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { callbackError, recoveryCallback, SIGNING_OUT_KEY, supabase } from '../lib/supabase';
+import { callbackError, invitationCallback, recoveryCallback, SIGNING_OUT_KEY, supabase } from '../lib/supabase';
 import { queryClient } from '../lib/queryClient';
 import { AUTH_STORAGE_KEY } from '../lib/config';
-import { clearVenueSelection, persist, recoveryPending } from '../lib/storage';
+import { clearVenueSelection, persist, recoveryPending, invitationPending } from '../lib/storage';
+import { clearScopes } from '../lib/access';
+import { acceptInvitation } from '../lib/staff';
+import { useLocale } from '../locales';
 import { errorCode, PortalError } from '../lib/errors';
 
 interface AuthState {
-  session: Session | null; loading: boolean; expired: boolean; recovery: boolean; callbackInvalid: boolean;
+  session: Session | null; loading: boolean; expired: boolean; recovery: boolean; invitation: boolean; callbackInvalid: boolean;
   login(email: string, password: string): Promise<void>;
   logout(): Promise<void>; expire(): Promise<void>; recover(email: string): Promise<void>;
   updatePassword(password: string): Promise<void>;
 }
 const Context = createContext<AuthState | null>(null);
 
-function clearPrivateState() {
-  void queryClient.cancelQueries(); queryClient.clear(); clearVenueSelection();
+function clearPrivateState(clearPreferences=true) {
+  void queryClient.cancelQueries(); queryClient.clear();
+  if (clearPreferences) { clearVenueSelection(); clearScopes(); }
 }
 export function AuthProvider({children}: {children: ReactNode}) {
+  const {locale}=useLocale();
+  const [invitation,setInvitation]=useState(() => { if(invitationCallback) invitationPending(true); return invitationCallback||invitationPending(); });
+  const signingIn=useRef(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
@@ -31,9 +38,10 @@ export function AuthProvider({children}: {children: ReactNode}) {
     if (invalidating.current) return;
     invalidating.current = true;
     clearPrivateState(); current.current = null; setSession(null); setExpired(true);
-    recoveryPending(false); setRecovery(false);
+    recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
     // Local scope preserves other devices and the existing Lovable sessions.
     try { await supabase.auth.signOut({scope:'local'}); }
+    catch { /* The revoked local credentials still must be discarded offline. */ }
     finally { persist(AUTH_STORAGE_KEY, null); invalidating.current = false; }
   }, []);
 
@@ -43,17 +51,17 @@ export function AuthProvider({children}: {children: ReactNode}) {
       if (!mounted) return;
       if (signingOut.current && next) return;
       const previous = current.current;
-      if (previous?.user.id !== next?.user.id || event === 'SIGNED_OUT') clearPrivateState();
+      if (previous?.user.id !== next?.user.id || event === 'SIGNED_OUT') clearPrivateState(!!previous || !next);
       if (event === 'SIGNED_OUT') {
         if (previous && !signingOut.current) setExpired(true);
-        recoveryPending(false); setRecovery(false);
+        recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
       }
       if (event === 'PASSWORD_RECOVERY') { recoveryPending(true); setRecovery(true); }
       if (event === 'TOKEN_REFRESHED') {
         // Do not run an Auth/RPC request inside the SDK's locked callback.
         setTimeout(() => { if (mounted) void queryClient.invalidateQueries(); }, 0);
       }
-      current.current = next; setSession(next); if (!signingOut.current) setLoading(false);
+      current.current = next; setSession(next); if (!signingOut.current && !signingIn.current) setLoading(false);
     });
     void supabase.auth.initialize().then(({error}) => {
       if (mounted && error) setCallbackInvalid(true);
@@ -97,14 +105,17 @@ export function AuthProvider({children}: {children: ReactNode}) {
   }, [invalidate]);
 
   const login = async (email: string, password: string) => {
-    signingOut.current = false;
-    const {error} = await supabase.auth.signInWithPassword({email:email.trim(), password});
-    if (error) throw error;
-    setExpired(false); setCallbackInvalid(false); recoveryPending(false); setRecovery(false);
+    signingOut.current=false; signingIn.current=true; setLoading(true); clearScopes();
+    try {
+      const {error}=await supabase.auth.signInWithPassword({email:email.trim(),password});
+      if(error) throw error;
+      setExpired(false); setCallbackInvalid(false); recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
+      await queryClient.invalidateQueries({queryKey:['access']});
+    } finally { signingIn.current=false; setLoading(false); }
   };
   const logout = async () => {
     signingOut.current = true; setLoading(true); persist(SIGNING_OUT_KEY, '1');
-    clearPrivateState(); current.current = null; setSession(null); recoveryPending(false); setRecovery(false);
+    clearPrivateState(); current.current = null; setSession(null); recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
     // On a network failure discard SDK memory by reloading after removing only
     // this portal's credentials. The user never remains looking at cached data.
     try {
@@ -115,7 +126,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     } finally {persist(AUTH_STORAGE_KEY,null); persist(SIGNING_OUT_KEY,null); setExpired(false); signingOut.current=false; setLoading(false);}
   };
   const recover = async (email: string) => {
-    const {error} = await supabase.auth.resetPasswordForEmail(email.trim(), {redirectTo: `${window.location.origin}/auth/password?recovery=1`});
+    const {error} = await supabase.auth.resetPasswordForEmail(email.trim(), {redirectTo: `${window.location.origin}/auth/password?recovery=1&lang=${locale}`});
     if (error) throw error;
   };
   const updatePassword = async (password: string) => {
@@ -123,10 +134,11 @@ export function AuthProvider({children}: {children: ReactNode}) {
     if (password.length < 12) throw new PortalError('weakPassword');
     const {error} = await supabase.auth.updateUser({password});
     if (error) throw error;
-    recoveryPending(false); setRecovery(false);
+    if (invitation) await acceptInvitation();
+    recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
     clearPrivateState();
   };
-  return <Context.Provider value={{session, loading, expired, recovery, callbackInvalid, login, logout, expire:invalidate, recover, updatePassword}}>{children}</Context.Provider>;
+  return <Context.Provider value={{session, loading, expired, recovery, invitation, callbackInvalid, login, logout, expire:invalidate, recover, updatePassword}}>{children}</Context.Provider>;
 }
 export function useAuth() {
   const value = useContext(Context); if (!value) throw new Error('AuthProvider missing'); return value;

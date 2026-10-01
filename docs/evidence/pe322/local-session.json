@@ -1,0 +1,24 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "startedAt": "2026-10-01T16:47:37.076Z",
+  "mocks": false,
+  "checks": [
+    {
+      "case": "valid renewal",
+      "http": 200,
+      "result": "SDK rotated a real DEV refresh token and kept the owner route",
+      "method": "local expiry metadata advanced; no token or API mock"
+    },
+    {
+      "case": "nonrenewable session",
+      "revokedScope": "local test session only",
+      "refresh": 400,
+      "code": "refresh_token_not_found",
+      "result": "login; auth storage and private venue selection removed",
+      "otherSessionSameUser": 200
+    }
+  ],
+  "passed": true,
+  "completedAt": "2026-10-01T16:47:47.381Z"
+}

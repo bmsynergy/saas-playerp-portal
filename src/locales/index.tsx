@@ -8,6 +8,8 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 const storageKey = 'playerp.locale';
 
 function initialLocale(): Locale {
+  const lang = new URLSearchParams(window.location.search).get('lang');
+  if (lang === 'en' || lang === 'es') return lang;
   try {
     const saved = window.localStorage.getItem(storageKey);
     if (saved === 'en' || saved === 'es') return saved;

@@ -64,11 +64,11 @@ try{
    const requested=page.waitForResponse(r=>new URL(r.url()).pathname==='/auth/v1/recover');
    await page.getByRole('button',{name:'Send recovery email',exact:true}).click();const sent=await requested;
    if(sent.status()!==200){const body=await sent.json();report.checks.push({case:'real recovery request',http:sent.status(),code:body.code});throw new Error(`Recovery request HTTP ${sent.status()} (${body.code})`);}
-   assert.equal(new URL(sent.url()).searchParams.get('redirect_to'),origin+'/auth/password?recovery=1');await heading(page,'Check your inbox');
+   assert.equal(new URL(sent.url()).searchParams.get('redirect_to'),origin+'/auth/password?recovery=1&lang=en');await heading(page,'Check your inbox');
    await page.screenshot({path:`${out}/recovery-email-requested.png`,fullPage:true});
    const mailboxKey=(await readFile(`${privateDir}/buzon.key`,'utf8')).trim();
-   const mr=await fetch(api+'/functions/v1/pe321-dev-test-mailbox',{method:'POST',headers:{Authorization:`Bearer ${key}`,'x-pe321-mailbox-key':mailboxKey,'Content-Type':'application/json'},body:JSON.stringify({to:accounts.owner_uno.email})});
-   assert.equal(mr.status,200);const mail=await mr.json();assert(mail.pending&&mail.link);assert.equal(mail.redirect_to,origin+'/auth/password?recovery=1');
+   const mr=await fetch(api+'/functions/v1/pe321-dev-test-mailbox',{method:'POST',headers:{Authorization:`Bearer ${key}`,'x-pe321-mailbox-key':mailboxKey,'Content-Type':'application/json'},body:JSON.stringify({to:accounts.owner_uno.email,redirect_to:origin+'/auth/password?recovery=1&lang=en'})});
+   assert.equal(mr.status,200);const mail=await mr.json();assert(mail.pending&&mail.link);assert.equal(mail.redirect_to,origin+'/auth/password?recovery=1&lang=en');
    const link=new URL(mail.link);assert.equal(link.origin,api);assert.equal(link.pathname,'/auth/v1/verify');
    // Navigate the actual pending email token. Do not record the URL or response hash.
    const verifyResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/auth/v1/verify');
@@ -90,7 +90,7 @@ try{
    assert.equal(new URL(invalidPage.url()).hash,'');await invalidPage.getByRole('button',{name:'ES',exact:true}).click();
    await invalidPage.getByText('Este enlace de recuperación no es válido o ha caducado. Solicita uno nuevo.',{exact:true}).waitFor();
    await invalidPage.screenshot({path:`${out}/expired-real-link-es.png`,fullPage:true});await invalidCtx.close();
-   report.checks.push({case:'real recovery',requested:200,verify:303,redirect:origin+'/auth/password?recovery=1',recoverySentAt:mail.recovery_sent_at,passwordUpdate:200,loginNewPassword:200,returnPath:'/',reloadRecovery:'preserved',reuseLink:'translated expired-link error EN/ES; URL fragment cleared',mailEvidence:'real pending token via Tom DEV mailbox; email HTML not readable'});
+   report.checks.push({case:'real recovery',requested:200,verify:303,redirect:origin+'/auth/password?recovery=1&lang=en',recoverySentAt:mail.recovery_sent_at,passwordUpdate:200,loginNewPassword:200,returnPath:'/',reloadRecovery:'preserved',reuseLink:'translated expired-link error EN/ES; URL fragment cleared',mailEvidence:'real pending token via Tom DEV mailbox; email HTML not readable'});
    console.log('PASS real recovery email token, password change, return and used-link denial');
   }finally{
    if(changed){

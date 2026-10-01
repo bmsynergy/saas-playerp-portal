@@ -10,6 +10,7 @@ if (stored(SIGNING_OUT_KEY)) { persist(AUTH_STORAGE_KEY, null); persist(SIGNING_
 const initialHash = new URLSearchParams(window.location.hash.slice(1));
 const initialQuery = new URLSearchParams(window.location.search);
 export const callbackError = initialHash.has('error') || initialQuery.has('error');
+export const invitationCallback = initialHash.get('type') === 'invite';
 export const recoveryCallback = initialHash.get('type') === 'recovery';
 // Invalid callbacks must not leave bearer tokens or server errors in the address bar.
 if (callbackError) window.history.replaceState(null, '', '/auth/password?invalid=1');

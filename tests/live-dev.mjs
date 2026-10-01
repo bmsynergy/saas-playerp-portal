@@ -49,8 +49,10 @@ async function snapshot(page,name) {
   await page.screenshot({path:`${out}/${name}.png`,fullPage:true});report.screenshots.push(name+'.png');
 }
 async function logoutUi(page,lang='en') {
-  await page.getByRole('button',{name:lang==='en'?'Account menu':'Menú de cuenta',exact:true}).last().click();
-  await page.getByRole('menuitem',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
+  if(await page.locator('.portal-layout').count()) {
+    await page.locator('.account-trigger').click();
+    await page.getByRole('menuitem',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
+  } else await page.getByRole('button',{name:lang==='en'?'Sign out':'Cerrar sesión',exact:true}).click();
   await heading(page,lang==='en'?'Sign in to your workspace':'Accede a tu espacio');
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),storageKey),null);
   assert.equal(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('playerp.portal.venue.')).length),0);
@@ -120,8 +122,8 @@ try {
       await page.goto(origin+`/?venue=${foreign.id}`);await heading(page,'Access denied');assert.equal(await page.locator('.owner-venue-card').count(),0);
     }
     if(!isStaff){
-      await page.goto(origin+'/admin');await heading(page,'Access denied');
-      await page.goto(origin+`/admin/tenants/${foreign.id}`);await heading(page,'Access denied');
+      await page.goto(origin+'/admin');await heading(page,owner?'Your spaces, in one place.':'Access denied');
+      await page.goto(origin+`/admin/tenants/${foreign.id}`);await heading(page,owner?'Your spaces, in one place.':'Access denied');
       await snapshot(page,`denied-${profile}`);
     }else{
       await snapshot(page,'admin-1440-en');
@@ -136,7 +138,7 @@ try {
       await page.getByRole('button',{name:'EN',exact:true}).click();
       const empty=directory.data.find(v=>v.slug==='wi170p1-venue');await page.goto(origin+`/admin/tenants/${empty.id}`);await heading(page,empty.name);await page.getByText('No Print Servers are linked to this venue.',{exact:true}).waitFor();
       await snapshot(page,'servers-empty');
-      await page.goto(origin+'/');await heading(page,'Access denied');await page.getByRole('link',{name:'Platform administration',exact:true}).last().click();await heading(page,'A clear view across PlayERP.');
+      await page.goto(origin+'/');await heading(page,'A clear view across PlayERP.');
     }
     await logoutUi(page);await page.reload();await heading(page,'Sign in to your workspace');
     report.ui.push({profile,login:'pass',reload:'persisted',root:isStaff?'denied':owner?'authorized venues only':'denied',admin:isStaff?'authorized':'denied',foreignVenue:owner?'denied':'not applicable',selection:owner?.length>1?'changed and persisted':'not applicable',logout:'Auth and selection cleared; reload login'});

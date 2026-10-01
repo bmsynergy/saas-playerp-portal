@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import { useLocale } from '../locales';
 import type { UiError } from '../lib/types';
+import { Brand } from '../components/Brand';
 
-type Props = { mode: 'login' | 'forgot' | 'password'; onSubmit: (email: string, password: string) => Promise<void>; error: UiError | null; busy: boolean; success: boolean; recovery?: boolean };
+type Props = { mode: 'login' | 'forgot' | 'password'; onSubmit: (email: string, password: string) => Promise<void>; error: UiError | null; busy: boolean; success: boolean; recovery?: boolean; invitation?: boolean };
 
-export function AuthPage({ mode, onSubmit, error, busy, success, recovery = false }: Props) {
+export function AuthPage({ mode, onSubmit, error, busy, success, recovery = false, invitation = false }: Props) {
   const { locale, setLocale, t } = useLocale();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +16,7 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
   const [localError, setLocalError] = useState<UiError | null>(null);
   const isLogin = mode === 'login';
   const isForgot = mode === 'forgot';
-  const key = isLogin ? 'login' : isForgot ? 'forgot' : 'password';
+  const key = isLogin ? 'login' : isForgot ? 'forgot' : invitation ? 'invitation' : 'password';
 
   useEffect(() => {
     if (success) { setPassword(''); setConfirmation(''); }
@@ -40,7 +41,7 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
   return <div className="auth-layout">
     <div className="auth-side">
       <div className="auth-side-content">
-        <Link to="/auth/login" className="brand auth-brand"><span className="brand-mark" aria-hidden="true"><span/></span><span className="brand-name">Play<span>ERP</span></span></Link>
+        <Link to="/auth/login" className="brand auth-brand"><Brand inverse /></Link>
         <div className="auth-side-message"><span className="auth-side-eyebrow"><span/> {t('workspace')}</span><h2>{t('tagline')}.</h2><p>{t('securityNote')}</p></div>
         <div className="auth-side-decoration" aria-hidden="true"><span/><span/><span/></div>
       </div>
@@ -48,10 +49,10 @@ export function AuthPage({ mode, onSubmit, error, busy, success, recovery = fals
     </div>
     <main className="auth-main">
       <div className="auth-top"><div className="language-switch" role="group" aria-label={t('language')}><button type="button" className={locale === 'en' ? 'selected' : ''} aria-pressed={locale === 'en'} onClick={() => setLocale('en')}>EN</button><button type="button" className={locale === 'es' ? 'selected' : ''} aria-pressed={locale === 'es'} onClick={() => setLocale('es')}>ES</button></div></div>
-      <div className="auth-content"><div className="auth-mobile-brand"><span className="brand-mark" aria-hidden="true"><span/></span><span className="brand-name">Play<span>ERP</span></span></div>
+      <div className="auth-content"><div className="auth-mobile-brand"><Brand /></div>
         <div className="auth-icon"><ShieldCheck size={24} strokeWidth={1.7}/></div>
         <p className="eyebrow">{t(`${key}Eyebrow`)}</p><h1>{t(`${key}Title`)}</h1><p className="auth-lead">{t(`${key}Lead`)}</p>
-        {success ? <div className="auth-success" role="status"><div className="success-icon"><CheckCircle2 size={25}/></div><h2>{t(isForgot ? 'resetSentTitle' : 'passwordSavedTitle')}</h2><p>{t(isForgot ? 'resetSentBody' : 'passwordSavedBody')}</p><Link className="button button-primary button-wide" to={isForgot ? '/auth/login' : '/auth/complete'}>{t(isForgot ? 'backToSignIn' : 'continuePortal')}<ArrowRight size={18}/></Link></div> : <>
+        {success ? <div className="auth-success" role="status"><div className="success-icon"><CheckCircle2 size={25}/></div><h2>{t(isForgot ? 'resetSentTitle' : invitation ? 'invitationSavedTitle' : 'passwordSavedTitle')}</h2><p>{t(isForgot ? 'resetSentBody' : invitation ? 'invitationSavedBody' : 'passwordSavedBody')}</p><Link className="button button-primary button-wide" to={isForgot ? '/auth/login' : '/auth/complete'}>{t(isForgot ? 'backToSignIn' : 'continuePortal')}<ArrowRight size={18}/></Link></div> : <>
           {(error || localError) && <div className="form-error" role="alert"><LockKeyhole size={18}/><span>{t(localError || error || 'genericError')}</span></div>}
           <form className="auth-form" onSubmit={submit} noValidate>
             {mode !== 'password' && <label className="field"><span>{t('emailLabel')}</span><div className="field-control"><Mail size={19}/><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t('emailPlaceholder')} disabled={busy}/></div></label>}

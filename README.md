@@ -3,7 +3,7 @@
 Independent owner (`/`) and platform staff (`/admin`) portal. Official target:
 https://playerp.dev.bmore.app · Supabase **PlayERP-dev** (`fzwzmwstxlsxdzdmphyq`).
 
-React + TypeScript + Vite; English/Spanish product UI for desktop/tablet. Owner venue selection, read-only tenant directory and Print Server detail, Supabase login/logout/session renewal/recovery/password change. Platform membership is separate from venue roles. There are no billing, support, onboarding, editing, or printer-operation controls.
+React + TypeScript + Vite; English/Spanish product UI for desktop/tablet. Owner venue selection, read-only tenant directory and Print Server detail, Supabase login/logout/session renewal/recovery/password change. Platform membership is separate from venue roles. Platform super admins can also invite and manage platform staff. There are no billing, venue editing, or printer-operation controls.
 
 ## DEV dependency status
 
@@ -34,3 +34,19 @@ Both default to the official DEV origin. `RUN_DEV_RECOVERY=1 node tests/live-aut
 ## Reused resources
 
 Approved plan PE-320.1; Tom's review PE-320.2. PE-307 inventory is in work `2320182c-7ea2-41a9-b358-c7c381b7e691`; CD-90 target registration in `59da58a0-3500-41ce-b836-ddbe10919ca3`. The portal does not alter Lovable code, routes, Auth site_url, memberships or session settings.
+
+## PE-322 unified access and staff acceptance
+
+The login chooses the authorized scope before rendering its shell. Mixed users start in
+administration and switch scope explicitly from the account menu. `/admin/staff` connects
+to the existing DEV platform-staff backend. See the PE-322 section of
+[DEV contract](docs/DEV-CONTRACT.md) for role separation, invitations and session behavior.
+
+`tests/pe322-live.mjs` creates tagged temporary DEV identities, exercises login/routing,
+mixed scope switching, support and revoked/venue-role denial, staff actions and real Auth
+invitation/recovery tokens, and removes its users and audit rows in `finally`. It requires
+`SUPABASE_ACCESS_TOKEN` in the process environment and `PORTAL_DEV_FIXTURES` for the existing
+DEV venue-superadmin test identity. It accepts only the local test origin or official DEV.
+Use `PE322_OUTPUT` for sanitized evidence, and `PLAYWRIGHT_CHROMIUM_EXECUTABLE` for a browser.
+It sends email only to Resend test sinks. Never print the environment or record token URLs.
+No personal account is modified by the test.

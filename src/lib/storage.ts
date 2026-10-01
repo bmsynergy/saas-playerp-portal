@@ -18,3 +18,13 @@ export function recoveryPending(value?: boolean): boolean {
     return sessionStorage.getItem('playerp.portal.recovery') === '1';
   } catch { return value ?? false; }
 }
+
+export function invitationPending(value?: boolean): boolean {
+  try {
+    if (value !== undefined) {
+      if (value) sessionStorage.setItem('playerp.portal.invitation', '1');
+      else sessionStorage.removeItem('playerp.portal.invitation');
+    }
+    return sessionStorage.getItem('playerp.portal.invitation') === '1';
+  } catch { return value ?? false; }
+}

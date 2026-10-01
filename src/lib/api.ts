@@ -22,9 +22,10 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
   return data;
 }
 export async function getAccess(signal?: AbortSignal): Promise<PortalAccess> {
-  const data = await rpc('portal_access', {}, signal);
+  const [data, staff] = await Promise.all([rpc('portal_access', {}, signal), rpc('is_platform_staff', {}, signal)]);
   if (!data || typeof data.is_platform_staff !== 'boolean' || !Array.isArray(data.owner_venues)) throw new PortalError('genericError');
-  return { is_platform_staff: data.is_platform_staff, owner_venues: data.owner_venues.map(venue) };
+  if (typeof staff !== 'boolean') throw new PortalError('genericError');
+  return { is_platform_staff: staff, can_manage_staff: staff && data.is_platform_staff, owner_venues: data.owner_venues.map(venue) };
 }
 export async function getDirectory(signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_tenant_directory', {}, signal);

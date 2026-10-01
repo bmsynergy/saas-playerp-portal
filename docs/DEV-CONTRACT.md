@@ -30,3 +30,37 @@ SDK: implicit recovery callback (works across browsers), persistent per-origin s
 References used for SDK behavior: https://supabase.com/docs/reference/javascript/auth-onauthstatechange and https://supabase.com/docs/reference/javascript/auth-signout .
 
 DEV fixtures supplied and verified by Tom: active platform staff, inactive platform staff, owner one venue, owner multiple venues, ordinary venue role, venue-level super_admin without platform membership, and an unassigned venue/private data negative case. Seven marked test accounts and a restricted DEV mailbox were supplied through a private directory. Do not modify real memberships or expose tokens/passwords. The opt-in live tests revoke only the chosen test session and produce sanitized API/UI evidence. Temporary fixtures and mailbox retirement remain documented in backend commit 7fb0218372c2364aedef5e2b98e959922c68a2ae.
+
+## PE-322.2 — unified access and staff management
+
+Consumes the already deployed backend from `bmsynergy/saas-playerp-backend`,
+`tomjr/pe322-platform-staff-admin-dev` at `a2f213b2ea6ab48f929073a0dc68afa1c31e8cea`.
+No backend migration, email configuration, production or Lovable change in this step.
+
+- `portal_access` still returns authorized owner venues and the platform **super_admin**
+  flag. `is_platform_staff()` additionally identifies any active platform staff, including
+  `support`. Both are checked; user metadata and venue roles never grant platform access.
+- Active staff starts at `/admin`; authorized owners at `/`; mixed profiles start at
+  `/admin` and use the account menu to explicitly select owner scope. The selection survives
+  a tab reload, is bound to the user, and is cleared on login/logout. Safe authorized deep
+  links are preserved. Unauthorized scope requests redirect before mounting that shell.
+- Access queries are keyed by identity and pathname, refreshed on navigation, focus and
+  every 60 seconds. The backend independently validates each data/action request.
+- `support` has an authorized `/admin` landing with its limited-access explanation; it has
+  no directory or staff-management controls and never calls those privileged endpoints.
+- `/admin/staff` invokes `platform-staff-admin` for list, set_role, set_status and
+  send_recovery. `invite-platform-staff` sends invitations with role and EN/ES locale.
+  Mutations require confirmation; own role/status cannot be edited. Errors are allow-listed
+  and localized, with no raw provider messages. Failed actions preserve form state.
+- New invitations return to `/auth/password?invite=1&lang=en|es`, with Auth's actual invite
+  session. Saving the password calls `accept_platform_invitation`; pending state survives
+  refresh. Existing-account notices return to the common login; the user explicitly chooses
+  **Accept staff invitation**, available from the owner account menu or the access-denied
+  page. Login never silently activates an inactive membership.
+- Recovery adds the selected language to its portal redirect. Recovery sessions stay on
+  the password page until saved; completion resolves authorization again. Local logout
+  preserves independent sessions and Lovable's separate origin/storage.
+- Display name uses nonblank `full_name`, `name`, then `display_name` from Auth metadata,
+  followed by email and finally PlayERP. These fields are presentation only.
+- Four PNGs are exact copies of `bmsynergy/playerp/public/brand` at
+  `73655c61f101dbe75429c1fa586f8280782915d9`; neither the source assets nor that repo changed.

@@ -1,0 +1,166 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "startedAt": "2026-10-01T16:52:27.649Z",
+  "mocks": false,
+  "checks": [
+    {
+      "name": "owner: staff management, invitation and tenant directory denied by backend",
+      "passed": true
+    },
+    {
+      "name": "support: staff management, invitation and tenant directory denied by backend",
+      "passed": true
+    },
+    {
+      "name": "revoked: staff management, invitation and tenant directory denied by backend",
+      "passed": true
+    },
+    {
+      "name": "venue-superadmin: staff management, invitation and tenant directory denied by backend",
+      "passed": true
+    },
+    {
+      "name": "outsider: staff management, invitation and tenant directory denied by backend",
+      "passed": true
+    },
+    {
+      "name": "Anonymous staff request denied",
+      "passed": true
+    },
+    {
+      "name": "Self role/status changes denied by backend",
+      "passed": true
+    },
+    {
+      "name": "admin: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "owner: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "Mixed explicit scope switch persists reload and login resets to admin",
+      "passed": true
+    },
+    {
+      "name": "mixed: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "support: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "revoked: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "venue-superadmin: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "outsider: real login/direct URL, authorized shell and identity",
+      "passed": true
+    },
+    {
+      "name": "Real venues/PS, staff, name, brand, logout EN/ES 1440px",
+      "passed": true
+    },
+    {
+      "name": "Real venues/PS, staff, name, brand, logout EN/ES 834px",
+      "passed": true
+    },
+    {
+      "name": "UI invitation sends PlayERP ES email and lists pending membership",
+      "passed": true
+    },
+    {
+      "name": "Real Auth invitation token, refresh, password and acceptance activate only invitee",
+      "passed": true
+    },
+    {
+      "name": "Invitation link replay rejected",
+      "passed": true
+    },
+    {
+      "name": "UI role change persisted",
+      "passed": true
+    },
+    {
+      "name": "UI revoke/reactivate changes live authorization",
+      "passed": true
+    },
+    {
+      "name": "UI sends staff recovery",
+      "passed": true
+    },
+    {
+      "name": "Real staff recovery token changes password and returns to permitted admin",
+      "passed": true
+    },
+    {
+      "name": "Existing-account invitation requires explicit acceptance",
+      "passed": true
+    },
+    {
+      "name": "UI cancellation removes pending membership",
+      "passed": true
+    },
+    {
+      "name": "Served logos and favicons exactly match committed canonical assets",
+      "passed": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "venues-ps-1440-en.png",
+    "venues-ps-1440-es.png",
+    "staff-1440-es.png",
+    "staff-1440-en.png",
+    "login-1440-en.png",
+    "login-1440-es.png",
+    "venues-ps-834-en.png",
+    "venues-ps-834-es.png",
+    "staff-834-es.png",
+    "staff-834-en.png",
+    "login-834-en.png",
+    "login-834-es.png"
+  ],
+  "pageErrors": [],
+  "initialRosterCount": 4,
+  "reads": {
+    "directoryCount": 9,
+    "sampleVenue": "Dynamic Park",
+    "printServers": [
+      {
+        "id": "78d05113-78f1-47e4-b558-c1b19451fa33",
+        "status": "active",
+        "software_version": "0.3.3",
+        "last_seen_at": "2026-10-01T16:53:00.929448+00:00"
+      },
+      {
+        "id": "089875ea-b7a6-407c-84dc-cf952c033add",
+        "status": "revoked",
+        "software_version": null,
+        "last_seen_at": null
+      }
+    ]
+  },
+  "assets": {
+    "playerp-logo-horizontal.png": "bb17b26974bdde9cde1ee599cf0c1a950d741d692a50bc8a45b6b81843055e86",
+    "playerp-logo-horizontal-white.png": "075893cea9499b64ee8ef887946fe3e201b73489c26a8186eb18cea9767aa997",
+    "playerp-favicon-32.png": "2caf8c484085e75b55dbb421bb83b7382bfc4ec110cc1d8eb689da3757ad90ae",
+    "playerp-favicon-192.png": "57f026816d3f755a1aa2b792c5949d301f8822b8e806629c89d8046290ea309a"
+  },
+  "success": true,
+  "cleanup": {
+    "remainingTestUsers": 0,
+    "rosterCount": 4
+  },
+  "finishedAt": "2026-10-01T16:53:52.076Z"
+}

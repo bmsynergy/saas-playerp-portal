@@ -1,9 +1,11 @@
+import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAccess, getDirectory, getOwnerVenues, getTenant } from '../lib/api';
 import { useAuth } from './useAuth';
 export function useAccess() {
-  const {session,recovery} = useAuth();
-  return useQuery({queryKey:['access',session?.user.id], queryFn:({signal})=>getAccess(signal),enabled:!!session&&!recovery,refetchInterval:60_000});
+  const {session,recovery,invitation} = useAuth();
+  const {pathname}=useLocation();
+  return useQuery({queryKey:['access',session?.user.id,pathname], queryFn:({signal})=>getAccess(signal),enabled:!!session&&!recovery&&!invitation,refetchInterval:60_000});
 }
 export function useDirectory() {
   const {session} = useAuth();
