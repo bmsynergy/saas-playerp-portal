@@ -4,7 +4,7 @@ import type { IdentityDetail, IdentityDirectory, IdentityStatus, IdentityUser, I
 
 const codes: Record<string,string> = {
   cannot_change_self:'identity.error.cannotChangeSelf', protected_super_admin:'identity.error.protected',
-  user_not_found:'identity.error.userNotFound', not_staff:'identity.error.notStaff', already_staff:'identity.error.alreadyStaff',
+  user_not_found:'identity.error.userNotFound', not_staff:'identity.error.notStaff', already_staff:'identity.error.alreadyStaff', account_unconfirmed:'identity.error.accountUnconfirmed',
   invalid_role:'identity.error.invalidRole', invalid_venues:'identity.error.invalidVenues', invalid_email:'invalidEmail',
   invalid_name:'identity.error.invalidName', invite_send_failed:'identity.error.inviteSendFailed', recovery_send_failed:'identity.error.recoverySendFailed',
 };

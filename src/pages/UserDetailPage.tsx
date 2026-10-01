@@ -76,10 +76,10 @@ export function UserDetailPage({ detail, venues, roles, busy, error, notice, onA
           <div className="staff-actions">{venues.map(item => <label className="staff-role" key={item.id}><input type="checkbox" checked={selected.includes(item.id)} disabled={busy} onChange={event => { setSelected(event.target.checked ? [...selected, item.id] : selected.filter(id => id !== item.id)); setPending(null); }}/>{item.name}</label>)}<button className="staff-action-link" type="button" disabled={busy || sameVenues} onClick={() => ask('set_assignments', selected)}>{t('identity.saveVenues')}</button></div>
           {confirmBox('set_assignments')}
         </div>}
-        <div className="field" role="group" aria-labelledby="identity-account"><span id="identity-account">{t('identity.accountActions')}</span>
+        {person.status !== 'revoked' && <div className="field" role="group" aria-labelledby="identity-account"><span id="identity-account">{t('identity.accountActions')}</span>
           <div className="staff-actions"><button className="staff-action-link" type="button" disabled={busy} onClick={() => ask('send_recovery')}><RotateCcw size={14}/>{t('identity.recovery')}</button>{editable && <button className="staff-action-link danger" type="button" disabled={busy} onClick={() => ask('revoke')}>{t('staff.revoke')}</button>}</div>
           {confirmBox('send_recovery', 'revoke')}
-        </div>
+        </div>}
       </div>}
     </section>
     <section className="staff-panel" aria-labelledby="identity-activity-title"><div className="section-heading"><div><p className="eyebrow">{t('identity.activityEyebrow')}</p><h2 id="identity-activity-title">{t('identity.activityTitle')}</h2></div><span className="section-icon"><History size={20}/></span></div>

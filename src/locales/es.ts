@@ -177,7 +177,7 @@ export const es: Record<keyof typeof en, string> = {
   'identity.error.protected': 'Este superadmin de venue está protegido y no se puede cambiar aquí.',
   'identity.error.userNotFound': 'No encontramos a esta persona.',
   'identity.error.notStaff': 'Esta persona no tiene acceso a ningún local. Invítala de nuevo desde la página Usuarios.',
-  'identity.error.alreadyStaff': 'Esta persona ya tiene acceso a locales.',
+  'identity.error.alreadyStaff': 'Esta persona ya tiene acceso a locales.', 'identity.error.accountUnconfirmed': 'Este correo pertenece a una cuenta que nunca confirmó su dirección. Pide a la persona que la confirme o que use otro correo.',
   'identity.error.invalidRole': 'Elige un rol de local válido.',
   'identity.error.invalidVenues': 'Selecciona al menos un local válido.',
   'identity.error.invalidName': 'Introduce nombre y apellidos.',

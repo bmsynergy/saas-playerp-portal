@@ -175,7 +175,7 @@ export const en = {
   'identity.error.protected': 'This venue super admin is protected and cannot be changed here.',
   'identity.error.userNotFound': 'This person could not be found.',
   'identity.error.notStaff': 'This person has no venue access. Invite them again from the Users page.',
-  'identity.error.alreadyStaff': 'This person already has venue access.',
+  'identity.error.alreadyStaff': 'This person already has venue access.', 'identity.error.accountUnconfirmed': 'This email belongs to an account that never confirmed its address. Ask the person to confirm it or to use another email.',
   'identity.error.invalidRole': 'Choose a valid venue role.',
   'identity.error.invalidVenues': 'Select at least one valid venue.',
   'identity.error.invalidName': 'Enter a first and last name.',
