@@ -5,6 +5,8 @@ import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/s
 import { StaffPage, type StaffMember } from './pages/StaffPage';
 import { getVenueUsers, venueUsersRequest, type VenueUser, type VenueUserAction, type VenueUserInvite } from './lib/venueUsers';
 import { VenueUsersTab } from './pages/VenueUsersTab';
+import { getOwnerUsers, ownerUsersRequest, type OwnerUser, type OwnerUserAction, type OwnerUserInvite } from './lib/ownerUsers';
+import { OwnerUsersSection } from './pages/OwnerUsersSection';
 import { InvitationPage } from './pages/InvitationPage';
 import { getFleet, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
 import { PrintFleetPage } from './pages/PrintFleetPage';
@@ -104,7 +106,39 @@ function OwnerRoute() {
   if(detail.isPending)return <StateView kind="loading"/>;
   if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
   if(!detail.data?.some(v=>v.id===selected))return <StateView kind="denied"/>;
-  return <OwnerPage venues={venues.map(v=>v.id===selected?detail.data!.find(item=>item.id===selected)!:v)} selectedId={selected} onSelect={select}/>;
+  // Users section: only for a venue this person owns. An approved member sees the venue card alone.
+  const owns=detail.data.find(v=>v.id===selected)?.is_owner===true;
+  return <OwnerPage venues={venues.map(v=>v.id===selected?detail.data!.find(item=>item.id===selected)!:v)} selectedId={selected} onSelect={select}
+    users={owns?<OwnerUsersData key={selected} venueId={selected}/>:undefined}/>;
+}
+// Members of the owner's venue: one request at a time, localized errors, and a fresh
+// access check whenever the backend refuses (it decides ownership on every call).
+function OwnerUsersData({venueId}:{venueId:string}) {
+  const {session,expire}=useAuth();
+  const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
+  const data=useQuery({queryKey:['owner-users',session?.user.id,venueId],queryFn:()=>getOwnerUsers(venueId),refetchInterval:60_000});
+  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  const run=async(body:Record<string,unknown>,done:(result:Record<string,unknown>)=>string)=>{
+    if(busy)return;
+    setBusy(true);setError(null);setNotice(null);
+    try {
+      setNotice(done(await ownerUsersRequest(venueId,body)));
+      await data.refetch();
+    } catch(e) {
+      const code=staffErrorKey(e);setError(code);
+      if(code==='sessionExpired')await expire();
+      if(code==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+      if(code==='identity.error.notMember'||code==='identity.error.alreadyMember'||code==='ownerUsers.error.protectedOwner')void data.refetch();
+      throw e;
+    } finally {setBusy(false);}
+  };
+  if(data.isPending)return <StateView kind="loading"/>;
+  if(data.isError&&!data.data)return <StateView kind={staffErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
+  if(!data.data)return <StateView kind="loading"/>;
+  return <OwnerUsersSection data={data.data} busy={busy} error={error} notice={notice}
+    onInvite={(invite:OwnerUserInvite)=>run({action:'invite',...invite},result=>result.email_sent===false?'ownerUsers.invitedNoEmail':'ownerUsers.invited')}
+    onAction={(action:OwnerUserAction,person:OwnerUser,value)=>run({action,user_id:person.user_id,...(action==='set_role'?{role:value}:{portal_access:value})},
+      result=>result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':value===true?'ownerUsers.portalGranted':'ownerUsers.portalRemoved')}/>;
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();

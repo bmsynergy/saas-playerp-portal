@@ -2,6 +2,8 @@ export interface OwnerVenue {
   id: string; name: string; slug: string | null; city: string | null;
   state: string | null; address: string | null; phone: string | null;
   email: string | null; timezone: string | null; is_active: boolean | null;
+  // Portal "/" only: the signed-in person owns this venue (otherwise an approved member).
+  is_owner?: boolean;
 }
 export interface PrintServerSummary {
   id: string; venue_id: string; software_version: string | null;

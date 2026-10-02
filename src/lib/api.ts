@@ -22,11 +22,13 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
   if (error) throw error;
   return data;
 }
+// Presentation hint only: the backend re-checks ownership on every users request.
+const ownerVenue = (v: Record<string, unknown>): OwnerVenue => ({...venue(v), is_owner: v.is_owner === true});
 export async function getAccess(signal?: AbortSignal): Promise<PortalAccess> {
   const [data, staff] = await Promise.all([rpc('portal_access', {}, signal), rpc('is_platform_staff', {}, signal)]);
   if (!data || typeof data.is_platform_staff !== 'boolean' || !Array.isArray(data.owner_venues)) throw new PortalError('genericError');
   if (typeof staff !== 'boolean') throw new PortalError('genericError');
-  return { ...platformAccess(staff, data.is_platform_staff, data.platform_role), owner_venues: data.owner_venues.map(venue) };
+  return { ...platformAccess(staff, data.is_platform_staff, data.platform_role), owner_venues: data.owner_venues.map(ownerVenue) };
 }
 export async function getDirectory(signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_tenant_directory', {}, signal);
@@ -42,5 +44,5 @@ export async function getTenant(id: string, signal?: AbortSignal): Promise<Tenan
 export async function getOwnerVenues(id: string, signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_owner_venues', {p_venue_id:id}, signal);
   if (!Array.isArray(data)) throw new PortalError('genericError');
-  return data.map(venue);
+  return data.map(ownerVenue);
 }

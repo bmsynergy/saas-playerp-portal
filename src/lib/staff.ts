@@ -14,7 +14,7 @@ export function staffErrorKey(error: unknown) { return error instanceof StaffErr
 export function staffRequest(name: 'platform-staff-admin'|'invite-platform-staff', body: Record<string,unknown>) { return invokeFunction(name,body,codes); }
 // Shared by every admin edge function: known error slugs become localized keys,
 // anything else collapses to a safe status-based message.
-export async function invokeFunction(name: 'platform-staff-admin'|'invite-platform-staff'|'platform-identity-admin', body: Record<string,unknown>, codes: Record<string,string>) {
+export async function invokeFunction(name: 'platform-staff-admin'|'invite-platform-staff'|'platform-identity-admin'|'owner-venue-users', body: Record<string,unknown>, codes: Record<string,string>) {
   const {data,error}=await supabase.functions.invoke(name,{body});
   if (error) {
     const response=error.context instanceof Response ? error.context : null;
