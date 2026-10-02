@@ -11,3 +11,9 @@ Validación el 2 de octubre de 2026:
 - Gaby: revisión independiente en solo lectura del diff contra uma/pe334-fleet-dashboard; ningún hallazgo verificable. No repitió pruebas ni inspección visual.
 
 Los navegadores usan respuestas API y sesiones sintéticas interceptadas: prueban la interfaz y su consumo de datos, no permisos reales ni una sesión de Beny. No se realizaron operaciones sobre PS ni cambios de backend.
+
+## DEV publicado
+
+Commit de aplicación `e247917894dc6ee615ce2fe1da7b6498c1e53bf4`, disponible en GitHub en `uma/pe335-venue-ps-context` y publicado en https://playerp.dev.bmore.app. HTML sirve `index-OL3W_w7-.js` y `index-CDd2WihP.css`, coincidentes con el build.
+
+`PORTAL_TEST_ORIGIN=https://playerp.dev.bmore.app node tests/venue-print-servers.mjs`: las 21 comprobaciones volvieron a pasar, sin errores de página. Informe `hosted-browser.json`. Se usa el HTML/JS/CSS publicado real y respuestas API/sesión sintéticas interceptadas. La limitación de permisos reales descrita arriba sigue aplicando.
