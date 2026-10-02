@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Activity, AlertTriangle, ArrowLeft, Check, Clock3, Copy, Download, FileKey2, Gauge, Globe2, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
 import { fleetState, formatUptime, normalizeMac, relativeTime, sameMac, type FleetRow } from '../lib/printFleet';
 import { psErrorKey, type PanelPrinter, type PanelScan, type PanelState, type PrintServerApi } from '../lib/printServerApi';
-import { slugLabel } from '../lib/identity';
+import { slugLabel } from '../lib/venueUsers';
 import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
 import { PortalDialog } from '../components/PortalDialog';

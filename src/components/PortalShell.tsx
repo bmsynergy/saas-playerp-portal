@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UserRoundCog, UsersRound } from 'lucide-react';
+import { ArrowRight, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UsersRound } from 'lucide-react';
 import { useLocale } from '../locales';
 import { Brand } from './Brand';
 
@@ -91,16 +91,16 @@ export function PortalShell({ scope, email, displayName, canAdmin, canOwner, can
   const areaTitle = scope === 'admin' ? t('staffArea') : t('ownerArea');
   const initial = (displayName || email).charAt(0).toUpperCase() || 'P';
   const nav = !navigationAllowed ? [] : scope === 'admin'
-    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/users', label: t('identity.nav'), icon: UserRoundCog, end: false }, { to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
+    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
     : [{ to: '/', label: t('yourVenues'), icon: Building2, end: true }];
   const path = location.pathname;
   const crumbs: Crumb[] = !navigationAllowed ? [{ label: path === '/auth/password' ? t('passwordTitle') : path === '/auth/invitation' ? t('staff.invitationTitle') : path === '/auth/forgot' ? t('forgotTitle') : path === '/auth/complete' ? t('loadingTitle') : t('account') }] : (() => {
     const root = scope === 'admin' ? { label: t('adminHome'), to: '/admin' } : { label: t('ownerHome'), to: '/' };
     if (path === '/' || path === '/admin') return [{ label: root.label }];
-    if (path.startsWith('/admin/users/')) return [root, { label: t('identity.nav'), to: canManageStaff ? '/admin/users' : undefined }, { label: t('identity.detailEyebrow') }];
     if (path.startsWith('/admin/print-servers/')) return [root, { label: t('ps.nav'), to: canManageStaff ? '/admin/print-servers' : undefined }, { label: t('ps.detailEyebrow') }];
+    if (/^\/admin\/tenants\/[^/]+\/users$/.test(path)) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails'), to: canViewTenants ? path.slice(0, -'/users'.length) : undefined }, { label: t('identity.tab') }];
     if (path.startsWith('/admin/tenants/')) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails') }];
-    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/users': t('identity.nav'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav') };
+    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav') };
     return [root, { label: sectionLabels[path] ?? t('notFoundTitle') }];
   })();
   const context = crumbs[crumbs.length - 1].label;

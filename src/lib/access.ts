@@ -1,7 +1,7 @@
 import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
-  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/(?:tenants|users|print-servers)(?:\/[a-f0-9-]+)?)?$/.test(value)) ? value : null;
+  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/tenants\/[a-f0-9-]+\/users)?$/.test(value)) ? value : null;
 }
 // A requested URL never grants a scope. Staff starts in administration even if
 // login was reached through /. Only the account menu selects the owner scope.
@@ -9,8 +9,8 @@ export function destination(access: PortalAccess, next: string | null = null): s
   const safe = safeNext(next);
   if (access.is_platform_staff) {
     if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
-    // Tenants: Admin and Operations. Users, staff and the Print Server fleet: Admin only.
-    return (safe.startsWith('/admin/tenants') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
+    // Tenants: Admin and Operations. A venue's Users tab, staff and the Print Server fleet: Admin only.
+    return (safe.startsWith('/admin/tenants') && !safe.endsWith('/users') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
   }
   if (access.owner_venues.length) return safe && !safe.startsWith('/admin') ? safe : '/';
   return null;

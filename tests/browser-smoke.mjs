@@ -149,7 +149,7 @@ try{
  for(const state of ['recovery','invitation']){
   const {ctx,page,requests}=await setup({auth:true,staff:true});
   await ctx.addInitScript(key=>sessionStorage.setItem('playerp.portal.'+key,'1'),state);
-  await page.goto(origin+'/admin/users');await heading(page,state==='invitation'?'Create your staff password':'Set a new password');
+  await page.goto(origin+'/admin/tenants/'+v1+'/users');await heading(page,state==='invitation'?'Create your staff password':'Set a new password');
   assert.equal(await page.locator('.portal-layout main').count(),1);
   assert.equal(await page.locator('.sidebar-nav a,.topbar-subnav a,.breadcrumbs a').count(),0);
   assert(!requests.some(x=>x.includes('/rpc/')||x.includes('/functions/')||x.includes('/staff_profiles')));
@@ -159,10 +159,10 @@ try{
  {
   const {ctx,page,requests}=await setup({auth:true,staff:true});
   await ctx.route('**/rest/v1/rpc/portal_access',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({is_platform_staff:false,platform_role:'support',owner_venues:[]})}));
-  for(const path of ['/admin/users/'+uid,'/admin/print-servers/'+v1,'/admin/tenants/'+v1]){
+  for(const path of ['/admin/tenants/'+v1+'/users','/admin/print-servers/'+v1,'/admin/tenants/'+v1]){
    await page.goto(origin+path);await heading(page,'Access denied');
    assert.equal(await page.locator('.portal-layout main .state-denied').count(),1);
-   assert.equal(await page.locator('a[href="/admin/users"],a[href="/admin/print-servers"],a[href="/admin/tenants"]').count(),0);
+   assert.equal(await page.locator('a[href$="/users"],a[href="/admin/print-servers"],a[href="/admin/tenants"]').count(),0);
   }
   assert(!requests.some(x=>x.includes('/functions/')||/portal_tenant_|portal_ps_|ps_panel/.test(x)));
   record('Support deep links denied centrally without unauthorized breadcrumbs or scoped data requests');await ctx.close();

@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { destination, displayName, platformAccess, safeNext } from '../src/lib/access';
-import { matchesIdentity, slugLabel, venueRoleLabel, venuesLabel, type IdentityUser } from '../src/lib/identity';
-import { en } from '../src/locales/en';
-import { es } from '../src/locales/es';
 import type { PortalAccess, OwnerVenue } from '../src/lib/types';
 const owner={id:'22222222-2222-4222-8222-222222222222'} as OwnerVenue;
 const access=(staff:boolean,venues:OwnerVenue[]=[],manage=staff,tenants=manage):PortalAccess=>({is_platform_staff:staff,can_manage_staff:manage,can_view_tenants:tenants,platform_role:!staff?null:manage?'super_admin':tenants?'operations':'support',owner_venues:venues});
 const user='33333333-3333-4333-8333-333333333333';
-const person=(over:Partial<IdentityUser>={}):IdentityUser=>({user_id:user,email:'ana@example.invalid',full_name:'Ana Ruiz',role:'front_desk',status:'active',venues:[{id:owner.id,name:'Centro'}],all_venues:false,protected:false,platform_role:null,last_sign_in_at:null,created_at:null,is_self:false,...over});
+const venueUsers='/admin/tenants/'+owner.id+'/users';
 describe('scope routing uses backend permissions',()=>{
   it('defaults staff and mixed identities to admin even after entering through root',()=>{
     expect(destination(access(true),'/')).toBe('/admin');
@@ -21,19 +18,25 @@ describe('scope routing uses backend permissions',()=>{
   });
   it('support only starts at its admin landing, and no membership grants no destination',()=>{
     expect(destination(access(true,[],false),'/admin/staff')).toBe('/admin');
-    for(const path of ['/admin/tenants','/admin/tenants/'+owner.id,'/admin/users','/admin/users/'+user]) expect(destination(access(true,[],false),path)).toBe('/admin');
+    for(const path of ['/admin/tenants','/admin/tenants/'+owner.id,venueUsers,'/admin/users','/admin/users/'+user]) expect(destination(access(true,[],false),path)).toBe('/admin');
     expect(destination(access(false))).toBeNull();
   });
-  it('Admin keeps users deep links; they are never a destination for tenant identities',()=>{
-    for(const path of ['/admin/users','/admin/users/'+user,'/admin/tenants/'+owner.id]) expect(destination(access(true),path)).toBe(path);
-    expect(destination(access(false,[owner]),'/admin/users')).toBe('/');
-    for(const path of ['/admin/users/','/admin/users/../staff','/admin/users/'+user+'/edit','/admin/users?x=1']) expect(safeNext(path)).toBeNull();
+  it('Admin keeps the venue Users tab deep link; it is never a destination for tenant identities',()=>{
+    for(const path of [venueUsers,'/admin/tenants/'+owner.id]) expect(destination(access(true),path)).toBe(path);
+    expect(destination(access(false,[owner]),venueUsers)).toBe('/');
+    for(const path of [venueUsers+'/','/admin/tenants/users','/admin/tenants/'+owner.id+'/users/'+user,'/admin/tenants/'+owner.id+'/../staff',venueUsers+'?x=1']) expect(safeNext(path)).toBeNull();
   });
-  it('Operations reaches tenants but never users or staff',()=>{
+  it('the retired global /admin/users is no longer a login destination',()=>{
+    for(const path of ['/admin/users','/admin/users/'+user]) {
+      expect(safeNext(path)).toBeNull();
+      expect(destination(access(true),path)).toBe('/admin');
+    }
+  });
+  it('Operations reaches tenants but never a venue Users tab or staff',()=>{
     const operations=access(true,[],false,true);
     expect(destination(operations,'/admin/tenants')).toBe('/admin/tenants');
     expect(destination(operations,'/admin/tenants/'+owner.id)).toBe('/admin/tenants/'+owner.id);
-    for(const path of ['/admin/users','/admin/users/'+user,'/admin/staff']) expect(destination(operations,path)).toBe('/admin');
+    for(const path of [venueUsers,'/admin/users','/admin/staff']) expect(destination(operations,path)).toBe('/admin');
   });
   it('the Print Server fleet and its venue detail are deep links for Admin only',()=>{
     const fleet=['/admin/print-servers','/admin/print-servers/'+owner.id];
@@ -61,36 +64,6 @@ describe('platform role projection',()=>{
     }
   });
   it('a role claim without an active membership grants nothing',()=>expect(platformAccess(false,true,'super_admin')).toEqual({is_platform_staff:false,can_manage_staff:false,can_view_tenants:false,platform_role:null}));
-});
-describe('identity directory helpers',()=>{
-  const t=(locale:Record<string,string>)=>(key:string)=>locale[key]??key;
-  const all={query:'',venue:'',role:'',status:''};
-  it('filters by name or email, venue, venue role and status',()=>{
-    expect(matchesIdentity(person(),all)).toBe(true);
-    expect(matchesIdentity(person(),{...all,query:' RUIZ '})).toBe(true);
-    expect(matchesIdentity(person(),{...all,query:'ana@'})).toBe(true);
-    expect(matchesIdentity(person({full_name:null}),{...all,query:'ruiz'})).toBe(false);
-    expect(matchesIdentity(person(),{...all,venue:owner.id,role:'front_desk',status:'active'})).toBe(true);
-    expect(matchesIdentity(person(),{...all,venue:user})).toBe(false);
-    expect(matchesIdentity(person(),{...all,role:'manager'})).toBe(false);
-    expect(matchesIdentity(person(),{...all,status:'revoked'})).toBe(false);
-  });
-  it('a venue filter includes people with every venue',()=>expect(matchesIdentity(person({venues:[],all_venues:true,role:'super_admin',protected:true}),{...all,venue:user})).toBe(true));
-  it('labels venue roles apart from platform roles and keeps unknown slugs visible',()=>{
-    expect(venueRoleLabel(t(es),'front_desk')).toBe('Recepción');
-    expect(venueRoleLabel(t(es),'super_admin')).toBe('Superadmin de venue (heredado)');
-    expect(venueRoleLabel(t(en),'super_admin')).toBe('Venue super admin (legacy)');
-    expect(venueRoleLabel(t(es),null)).toBe('Sin rol');
-    expect(venueRoleLabel(t(en),'night_auditor')).toBe('night_auditor');
-    expect([slugLabel(t(es),'staff.role','super_admin'),slugLabel(t(es),'staff.role','support'),slugLabel(t(es),'staff.role','operations')]).toEqual(['Admin','Soporte','Operaciones']);
-    expect([slugLabel(t(en),'staff.role','super_admin'),slugLabel(t(en),'staff.role','support'),slugLabel(t(en),'staff.role','operations')]).toEqual(['Admin','Support','Operations']);
-    expect(slugLabel(t(en),'identity.audit','something_new')).toBe('something_new');
-  });
-  it('summarizes assigned venues',()=>{
-    expect(venuesLabel(t(es),person())).toBe('Centro');
-    expect(venuesLabel(t(es),person({all_venues:true}))).toBe('Todos los locales');
-    expect(venuesLabel(t(es),person({venues:[]}))).toBe('Sin locales asignados');
-  });
 });
 describe('display name never implies access',()=>{
   it('uses staff profile first and last name, then the full email',()=>{

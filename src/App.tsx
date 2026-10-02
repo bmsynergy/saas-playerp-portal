@@ -3,10 +3,8 @@ import { queryClient } from './lib/queryClient';
 import { destination, preferredScope, chooseScope, safeNext } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
 import { StaffPage, type StaffMember } from './pages/StaffPage';
-import { getIdentities, getIdentity, identityRequest } from './lib/identityApi';
-import type { IdentityAction } from './lib/identity';
-import { UsersPage, type IdentityInvite } from './pages/UsersPage';
-import { UserDetailPage } from './pages/UserDetailPage';
+import { getVenueUsers, venueUsersRequest, type VenueUser, type VenueUserAction, type VenueUserInvite } from './lib/venueUsers';
+import { VenueUsersTab } from './pages/VenueUsersTab';
 import { InvitationPage } from './pages/InvitationPage';
 import { getFleet, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
 import { PrintFleetPage } from './pages/PrintFleetPage';
@@ -28,7 +26,7 @@ import { AuthPage } from './pages/AuthPage';
 import { OwnerPage } from './pages/OwnerPage';
 import { AdminHome } from './pages/AdminHome';
 import { TenantDirectory } from './pages/TenantDirectory';
-import { TenantDetailPage } from './pages/TenantDetailPage';
+import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
 
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
@@ -120,18 +118,21 @@ function DirectoryData({home=false}:{home?:boolean}) {
   const venues:OwnerVenue[]=data.data??[];
   return home?<AdminHome venues={venues}/>:<TenantDirectory venues={venues}/>;
 }
-function DetailRoute() {
+function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   const access=useAccess(); const {id=''}=useParams();
   if (!access.data?.can_view_tenants) return <StateView kind="denied"/>;
+  // Venue users: platform Admin only, the gate the retired /admin/users had.
+  const canManageUsers=access.data.can_manage_staff;
+  if (tab==='users'&&!canManageUsers) return <StateView kind="denied"/>;
   if(!UUID.test(id))return <StateView kind="notFound"/>;
-  return <DetailData id={id}/>;
+  return <DetailData id={id} tab={tab} canManageUsers={canManageUsers}/>;
 }
-function DetailData({id}:{id:string}) {
+function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUsers:boolean}) {
   const data=useTenantDetail(id);
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
-  return <TenantDetailPage detail={data.data}/>;
+  return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -176,61 +177,40 @@ function StaffData() {
     onAction={(action,member:StaffMember,value)=>run({action,user_id:member.user_id,...(action==='set_role'?{role:value}:action==='set_status'?{status:value}:{locale})})}/>;
 }
 const UUID=/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
-function useIdentityDirectory() {
-  const {session}=useAuth();
-  return useQuery({queryKey:['identity',session?.user.id],queryFn:getIdentities,refetchInterval:60_000});
-}
-// Shared by the list and the detail: one request at a time, localized errors,
-// and a fresh access check whenever the backend refuses.
-function useIdentityAction(refresh:()=>Promise<unknown>) {
-  const {expire}=useAuth();
+// Users of one venue (Users tab of /admin/tenants/:id): one request at a time,
+// localized errors, and a fresh access check whenever the backend refuses.
+function VenueUsersData({venueId}:{venueId:string}) {
+  const {session,expire}=useAuth(); const {locale}=useLocale();
   const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
-  const run=async(body:Record<string,unknown>,done:(data:Record<string,unknown>)=>string)=>{
+  const data=useQuery({queryKey:['venue-users',session?.user.id,venueId],queryFn:()=>getVenueUsers(venueId),refetchInterval:60_000});
+  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  const run=async(body:Record<string,unknown>,done:(result:Record<string,unknown>)=>string)=>{
     if(busy)return;
     setBusy(true);setError(null);setNotice(null);
     try {
-      setNotice(done(await identityRequest(body)));
-      await refresh();
+      setNotice(done(await venueUsersRequest(venueId,body)));
+      await data.refetch();
     } catch(e) {
       const code=staffErrorKey(e);setError(code);
       if(code==='sessionExpired')await expire();
       if(code==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+      // The list changed under this request (already removed, already a member): show the current one.
+      if(code==='identity.error.notMember'||code==='identity.error.alreadyMember'||code==='identity.error.userNotFound')void data.refetch();
       throw e;
     } finally {setBusy(false);}
   };
-  return {busy,error,notice,run};
-}
-function UsersRoute({detail=false}:{detail?:boolean}) {
-  const access=useAccess(); const {id=''}=useParams();
-  if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
-  if (!detail) return <UsersData/>;
-  return UUID.test(id) ? <UserDetailData key={id} id={id}/> : <StateView kind="notFound"/>;
-}
-function UsersData() {
-  const {expire}=useAuth();
-  const data=useIdentityDirectory();
-  const {busy,error,notice,run}=useIdentityAction(()=>data.refetch());
-  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isPending)return <StateView kind="loading"/>;
-  if(data.isError)return <StateView kind={staffErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
-  return <UsersPage directory={data.data} busy={busy} error={error} notice={notice}
-    onInvite={(invite:IdentityInvite)=>run({action:'invite',...invite},result=>result.email_sent===false?'identity.invitedNoEmail':'identity.invited')}/>;
+  if(data.isError&&!data.data) {
+    const code=staffErrorKey(data.error);
+    return <StateView kind={code==='accessDenied'?'denied':code==='identity.error.venueNotFound'?'notFound':'error'} onRetry={()=>void data.refetch()}/>;
+  }
+  if(!data.data)return <StateView kind="loading"/>;
+  return <VenueUsersTab data={data.data} busy={busy} error={error} notice={notice}
+    onInvite={(invite:VenueUserInvite)=>run({action:'invite',...invite},result=>result.created===false?'identity.addedExisting':result.email_sent===false?'identity.invitedNoEmail':'identity.invited')}
+    onAction={(action:VenueUserAction,person:VenueUser,value)=>run({action,user_id:person.user_id,...(action==='set_role'?{role:value}:action==='send_recovery'?{locale}:{})},
+      result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':Number(result.remaining_venue_count)>0?'identity.revokedKeepsOthers':'identity.revoked')}/>;
 }
-function UserDetailData({id}:{id:string}) {
-  const {session,expire}=useAuth(); const {locale}=useLocale();
-  const directory=useIdentityDirectory();
-  const data=useQuery({queryKey:['identity-user',session?.user.id,id],queryFn:()=>getIdentity(id),refetchInterval:60_000});
-  const {busy,error,notice,run}=useIdentityAction(async()=>{await data.refetch();await queryClient.invalidateQueries({queryKey:['identity']});});
-  const failure=data.error??directory.error;
-  useEffect(()=>{if(failure&&staffErrorKey(failure)==='sessionExpired') void expire();},[failure,expire]);
-  if(data.isError&&staffErrorKey(data.error)==='identity.error.userNotFound')return <StateView kind="notFound"/>;
-  if(failure)return <StateView kind={staffErrorKey(failure)==='accessDenied'?'denied':'error'} onRetry={()=>{void data.refetch();void directory.refetch();}}/>;
-  if(!data.data||!directory.data)return <StateView kind="loading"/>;
-  return <UserDetailPage detail={data.data} venues={directory.data.venues} roles={directory.data.roles} busy={busy} error={error} notice={notice}
-    onAction={(action:IdentityAction,value)=>run({action,user_id:id,...(action==='set_role'?{role:value}:action==='set_assignments'?{venue_ids:value}:action==='send_recovery'?{locale}:{})},
-      result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='revoke'?'identity.revoked':'identity.updated')}/>;
-}
-// Print Server fleet: platform Admin only (the same gate as Users and Staff).
+// Print Server fleet: platform Admin only (the same gate as venue users and Staff).
 // The backend validates every RPC again and answers 42501 when it refuses.
 function useFleet() {
   const {session}=useAuth();
@@ -302,12 +282,14 @@ export default function App() {
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
-    <Route path="/admin/users" element={<Scope scope="admin"><UsersRoute/></Scope>}/>
-    <Route path="/admin/users/:id" element={<Scope scope="admin"><UsersRoute detail/></Scope>}/>
+    {/* PE-328: the global user list is retired; venue users live in each venue's Users tab. */}
+    <Route path="/admin/users" element={<Navigate to="/admin/tenants" replace/>}/>
+    <Route path="/admin/users/:id" element={<Navigate to="/admin/tenants" replace/>}/>
     <Route path="/admin/print-servers" element={<Scope scope="admin"><PrintServersRoute/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
+    <Route path="/admin/tenants/:id/users" element={<Scope scope="admin"><DetailRoute tab="users"/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>
   </Routes></AuthenticatedLayout>;
 }
