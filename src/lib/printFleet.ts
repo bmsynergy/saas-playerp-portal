@@ -66,6 +66,19 @@ export function matchesFleet(row: FleetRow, filter: FleetFilter, now: number): b
 export function filterFleet(rows: FleetRow[], filter: FleetFilter, now: number): FleetRow[] {
   return rows.filter(row => matchesFleet(row, filter, now));
 }
+// A venue row without a linked server is not a device, even during enrollment.
+export function venueServerRows(rows: FleetRow[], venueId: string): FleetRow[] {
+  return rows.filter(row => row.venue_id === venueId && row.print_server !== null);
+}
+export function filterVenueServers(rows: FleetRow[], venueId: string, filter: FleetFilter, now: number): FleetRow[] {
+  const query = filter.query.trim().toLocaleLowerCase();
+  const deviceFilter = { ...filter, query: '', venue: '' };
+  return venueServerRows(rows, venueId).filter(row => {
+    const server = row.print_server!;
+    return (!query || [server.label, server.id, server.device_id, server.hostname]
+      .some(value => value?.toLocaleLowerCase().includes(query))) && matchesFleet(row, deviceFilter, now);
+  });
+}
 export function fleetVersions(rows: FleetRow[]): string[] {
   return [...new Set(rows.map(row => row.print_server?.software_version).filter((value): value is string => !!value))]
     .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMPTY_FLEET_FILTER, NO_VERSION, filterFleet, fleetState, fleetVersions, formatUptime, isFiltered, normalizeMac, relativeTime, sameMac, type FleetFilter, type FleetRow, type FleetServer } from '../src/lib/printFleet';
+import { EMPTY_FLEET_FILTER, NO_VERSION, filterVenueServers, venueServerRows, filterFleet, fleetState, fleetVersions, formatUptime, isFiltered, normalizeMac, relativeTime, sameMac, type FleetFilter, type FleetRow, type FleetServer } from '../src/lib/printFleet';
 
 const now = Date.parse('2026-10-01T12:00:00Z');
 const ago = (ms: number) => new Date(now - ms).toISOString();
@@ -75,5 +75,34 @@ describe('fleet helpers', () => {
     expect(normalizeMac('aa:bb:cc')).toBeNull();
     expect(sameMac('AA:BB:CC:DD:EE:FF', 'aabbccddeeff')).toBe(true);
     expect(sameMac(null, null)).toBe(false);
+  });
+});
+
+
+describe('venue device context', () => {
+  const local = row('local', 'Venue-only name', { print_server: server({ id: 'ps-local-id', label: 'Receipt station', hostname: 'counter-host', device_id: 'device-serial' }) });
+  const foreign = row('foreign', 'Other venue', { print_server: server({ label: 'Receipt station', hostname: 'foreign-host' }) });
+  const empty = row('empty', 'No linked device');
+  const pending = row('pending', 'Enrollment only', { pending_enrollment: { id: 'pending-id', label: 'Receipt station', expires_at: null, created_at: null } });
+  const devices = [local, foreign, empty, pending];
+  const search = (query: string, extra: Partial<FleetFilter> = {}) => filterVenueServers(devices, 'local', { ...EMPTY_FLEET_FILTER, query, ...extra }, now);
+  it('searches each available PS identifier case-insensitively, without widening venue scope', () => {
+    for (const query of [' RECEIPT ', 'ps-local', 'counter-host', 'device-serial']) expect(search(query)).toEqual([local]);
+    for (const query of ['Venue-only', 'Other venue', 'foreign-host']) expect(search(query)).toEqual([]);
+    expect(search('', { venue: 'foreign' })).toEqual([local]);
+  });
+  it('does not count empty venues or pending enrollments as linked devices', () => {
+    expect(venueServerRows(devices, 'local')).toEqual([local]);
+    for (const id of ['empty', 'pending', 'missing']) expect(venueServerRows(devices, id)).toEqual([]);
+    expect(filterVenueServers(devices, 'pending', EMPTY_FLEET_FILTER, now)).toEqual([]);
+  });
+  it('combines device search with existing state, version, signal and printer filters', () => {
+    expect(search('Receipt', { state: 'online', version: '1.4.0', signal: '3m', printers: 'without' })).toEqual([local]);
+    for (const extra of [{state:'offline'}, {version:'9.9'}, {signal:'older'}, {printers:'with'}] as Partial<FleetFilter>[]) expect(search('Receipt', extra)).toEqual([]);
+  });
+  it('retains global venue-name/slug search including venues without devices', () => {
+    expect(filterFleet(devices, { ...EMPTY_FLEET_FILTER, query: 'Venue-only' }, now)).toEqual([local]);
+    expect(filterFleet(devices, { ...EMPTY_FLEET_FILTER, query: 'Receipt' }, now)).toEqual([]);
+    expect(filterFleet(devices, EMPTY_FLEET_FILTER, now)).toEqual(devices);
   });
 });

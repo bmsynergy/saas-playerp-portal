@@ -1,10 +1,10 @@
-// PE-333: browser acceptance with isolated synthetic responses, including when
+// PE-335: browser acceptance with isolated synthetic responses, including when
 // run against DEV. No live backend reads/writes or real printer commands.
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 const origin = process.env.PORTAL_TEST_ORIGIN ?? 'http://127.0.0.1:18799';
-const out = process.env.SMOKE_OUTPUT_DIR ?? 'test-results/venue-print-servers';
+const out = process.env.SMOKE_OUTPUT_DIR ?? 'test-results/venue-ps-context';
 await mkdir(out, {recursive:true});
 const browser = await chromium.launch({headless:true, executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE, args:['--no-sandbox']});
 const a='22222222-2222-4222-8222-222222222222', b='33333333-3333-4333-8333-333333333333', uid='11111111-1111-4111-8111-111111111111';
@@ -19,7 +19,7 @@ async function setup({width=1440,role='super_admin',mode='ready'}={}) {
  const ctx=await browser.newContext({viewport:{width,height:950},locale:'en'});
  await ctx.addInitScript(s=>{localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(s));localStorage.setItem('playerp.portal.locale','en');},session);
  const db={mode,calls:[],role};
- const rows=venues.map((v,i)=>({venue_id:v.id,venue_name:v.name,venue_slug:v.slug,venue_is_active:true,print_server:{id:`44444444-4444-4444-8444-44444444444${i}`,status:'active',label:v.name+' PS',software_version:i?'2.3.0':'2.4.1',online:!i,last_seen_at:new Date().toISOString()},pending_enrollment:null,printers_total:1,printers_active:1,printers_paused:0,printers_with_error:0,pending_jobs:1}));
+ const rows=venues.map((v,i)=>({venue_id:v.id,venue_name:v.name,venue_slug:v.slug,venue_is_active:true,print_server:{id:`44444444-4444-4444-8444-44444444444${i}`,status:'active',label:i?'Garden device':'Receipt station',hostname:i?'garden-host':'counter-host',device_id:i?'serial-garden':'serial-alpha',software_version:i?'2.3.0':'2.4.1',online:!i,last_seen_at:new Date().toISOString()},pending_enrollment:null,printers_total:1,printers_active:1,printers_paused:0,printers_with_error:0,pending_jobs:1}));
  await ctx.route(url=>!url.href.startsWith(origin),async route=>{
   const url=new URL(route.request().url()), name=url.pathname.split('/').pop();
   if(url.hostname!=='fzwzmwstxlsxdzdmphyq.supabase.co')return route.abort();
@@ -40,6 +40,7 @@ async function setup({width=1440,role='super_admin',mode='ready'}={}) {
    if(db.mode==='error')return send({code:'XX000'},500);
    if(db.mode==='denied')return send({code:'42501'},403);
    if(db.mode==='empty')return send(rows.filter(row=>row.venue_id!==a));
+   if(db.mode==='pending')return send(rows.map(row=>({...row,print_server:null,pending_enrollment:{id:'pending-id',label:'Receipt station'},printers_total:0,pending_jobs:0})));
    if(db.mode==='none')return send(rows.map(row=>({...row,print_server:null,printers_total:0,pending_jobs:0})));
    return send(rows);
   }
@@ -55,6 +56,49 @@ async function setup({width=1440,role='super_admin',mode='ready'}={}) {
  return {ctx,page,db};
 }
 try {
+ for (const locale of ['en','es']) {
+  const {ctx,page}=await setup({width:390});
+  await page.goto(origin+path(a));
+  if(locale==='es')await page.getByRole('button',{name:'ES',exact:true}).click();
+  const search=page.getByTestId('fleet-filter-search');
+  await expect(search).toHaveAttribute('placeholder',locale==='es'?'Buscar Print Servers':'Search Print Servers');
+  const count=(n,m)=>`${n} ${locale==='es'?'de':'of'} ${m} Print Servers`;
+  await expect(page.getByTestId('fleet-count')).toHaveText(count(1,1));
+  await expect(page.getByTestId(`fleet-row-${a}`)).toContainText('Receipt station');
+  await expect(page.getByTestId(`fleet-row-${a}`)).not.toContainText('Harbor venue');
+  for(const query of [' RECEIPT ', 'counter-host', 'serial-alpha', '44444444-4444-4444-8444-444444444440']) {
+   await search.fill(query);await expect(page.getByTestId('fleet-count')).toHaveText(count(1,1));
+   await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();
+  }
+  for(const query of ['Harbor venue','harbor','Garden','missing-device']) {
+   await search.fill(query);await expect(page.getByTestId('fleet-count')).toHaveText(count(0,1));
+   await expect(page.getByTestId('fleet-empty')).toHaveText(locale==='es'?'Ningún Print Server coincide con estos filtros.':'No Print Servers match these filters.');
+   await expect(page.getByTestId(`fleet-row-${b}`)).toHaveCount(0);
+  }
+  await page.screenshot({path:`${out}/no-matches-390-${locale}.png`,fullPage:true});
+  await page.getByTestId('fleet-filter-clear').click();
+  await expect(page.getByTestId('fleet-count')).toHaveText(count(1,1));
+  await page.getByTestId('fleet-filter-state').selectOption('offline');
+  await expect(page.getByTestId('fleet-count')).toHaveText(count(0,1));
+  await page.getByTestId('fleet-filter-clear').click();
+  await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.screenshot({path:`${out}/devices-390-${locale}.png`,fullPage:true});
+  record(`${locale}: device label/id/hostname/device_id search, no venue-name/slug search, 1/1 and 0/1 PS counts, local state filter and clear, mobile identity without venue labels`);
+  await ctx.close();
+  for(const mode of ['empty','none','pending']) {
+   const {ctx,page}=await setup({width:390,mode});await page.goto(origin+path(a));
+   if(locale==='es')await page.getByRole('button',{name:'ES',exact:true}).click();
+   await expect(page.getByTestId('fleet-count')).toHaveText(count(0,0));
+   await expect(page.getByTestId('fleet-empty')).toHaveText(locale==='es'?'No hay Print Servers vinculados a este local.':'No Print Servers are linked to this venue.');
+   await page.getByTestId('fleet-filter-search').fill('missing');
+   await expect(page.getByTestId('fleet-empty')).toHaveText(locale==='es'?'No hay Print Servers vinculados a este local.':'No Print Servers are linked to this venue.');
+   await expect(page.locator('[data-testid^="fleet-row-"]')).toHaveCount(0);
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   if(mode==='none')await page.screenshot({path:`${out}/no-linked-390-${locale}.png`,fullPage:true});
+   record(`${locale}: ${mode} means no linked devices, 0/0 PS, including after search`);await ctx.close();
+  }
+ }
  for(const width of [1440,390]) {
   const {ctx,page,db}=await setup({width});
   await page.goto(origin+`/admin/tenants/${a}`);
@@ -85,6 +129,11 @@ try {
  {
   const {ctx,page}=await setup();await page.goto(origin+'/admin/print-servers/list');
   await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();await expect(page.getByTestId(`fleet-row-${b}`)).toBeVisible();
+  await page.getByTestId('fleet-filter-search').fill('garden');await expect(page.getByTestId(`fleet-row-${b}`)).toBeVisible();await expect(page.getByTestId(`fleet-row-${a}`)).toHaveCount(0);
+  await expect(page.getByTestId('fleet-filter-search')).toHaveAttribute('placeholder','Search by venue name or slug');
+  await page.getByTestId('fleet-filter-search').fill('missing');await expect(page.getByTestId('fleet-empty')).toHaveText('No venues match these filters.');
+  await page.getByRole('button',{name:'ES',exact:true}).click();await expect(page.getByTestId('fleet-empty')).toHaveText('Ningún local coincide con estos filtros.');
+  await page.getByTestId('fleet-filter-clear').click();
   for(const name of ['search','venue','version','signal','state','printers'])await expect(page.getByTestId('fleet-filter-'+name)).toBeVisible();
   await page.getByTestId('fleet-filter-venue').selectOption(b);await expect(page.getByTestId(`fleet-row-${a}`)).toHaveCount(0);
   await page.getByTestId('fleet-filter-clear').click();await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();
@@ -97,7 +146,7 @@ try {
   const {ctx,page,db}=await setup({width:390,mode});await page.goto(origin+path(a)+(mode==='panel-denied'?'/detail':''));
   if(mode==='loading') {await expect(page.locator('.state-loading')).toBeVisible();while(!db.release)await new Promise(r=>setTimeout(r,20));db.mode='ready';db.release();await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();}
   else if(mode==='empty') {await expect(page.getByTestId('fleet-empty')).toBeVisible();await expect(page.getByTestId(`fleet-row-${b}`)).toHaveCount(0);}
-  else if(mode==='none')await expect(page.getByTestId(`fleet-row-${a}`)).toHaveAttribute('data-state','none');
+  else if(mode==='none') {await expect(page.getByTestId('fleet-empty')).toHaveText('No Print Servers are linked to this venue.');await expect(page.getByTestId('fleet-count')).toHaveText('0 of 0 Print Servers');}
   else if(mode==='error') {await expect(page.locator('.state-error')).toBeVisible();db.mode='ready';await page.locator('.state-error button').click();await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();}
   else {await expect(page.locator('.state-denied')).toBeVisible();await expect(page.getByTestId('ps-detail')).toHaveCount(0);}
   assert.equal(await page.locator('.portal-layout').count(),1);

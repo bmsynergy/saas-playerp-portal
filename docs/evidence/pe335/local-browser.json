@@ -1,0 +1,29 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "backend": "Synthetic intercepted responses; not live RLS evidence",
+  "checks": [
+    "en: device label/id/hostname/device_id search, no venue-name/slug search, 1/1 and 0/1 PS counts, local state filter and clear, mobile identity without venue labels",
+    "en: empty means no linked devices, 0/0 PS, including after search",
+    "en: none means no linked devices, 0/0 PS, including after search",
+    "en: pending means no linked devices, 0/0 PS, including after search",
+    "es: device label/id/hostname/device_id search, no venue-name/slug search, 1/1 and 0/1 PS counts, local state filter and clear, mobile identity without venue labels",
+    "es: empty means no linked devices, 0/0 PS, including after search",
+    "es: none means no linked devices, 0/0 PS, including after search",
+    "es: pending means no linked devices, 0/0 PS, including after search",
+    "1440px: only selected venue; existing detail and queue use that venue; return, reload and switching venue retain scope; no overflow",
+    "390px: only selected venue; existing detail and queue use that venue; return, reload and switching venue retain scope; no overflow",
+    "Global fleet remains available with all six filters, working venue/version/reset and original detail return",
+    "390px: loading handled inside shell",
+    "390px: empty handled inside shell",
+    "390px: none handled inside shell",
+    "390px: error handled inside shell with successful retry",
+    "390px: denied handled inside shell",
+    "390px: tenant-denied handled inside shell",
+    "390px: panel-denied handled inside shell",
+    "operations: direct tab/detail do not mount Print Server queries; no widened access",
+    "support: direct tab/detail do not mount Print Server queries; no widened access",
+    "owner: direct tab/detail do not mount Print Server queries; no widened access"
+  ],
+  "pageErrors": [],
+  "passed": true
+}

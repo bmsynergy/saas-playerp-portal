@@ -274,7 +274,7 @@ function PrintFleetData({venueId}:{venueId?:string}) {
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.isError&&venueId)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintFleetPage rows={data.data} venueId={venueId}/>;
+  if(data.data)return <PrintFleetPage rows={data.data} venueId={venueId} detailHref={venueId === undefined ? undefined : () => `/admin/tenants/${encodeURIComponent(venueId)}/print-servers/detail`}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
