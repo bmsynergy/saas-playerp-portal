@@ -38,6 +38,18 @@ describe('scope routing uses backend permissions',()=>{
     expect(destination(operations,'/admin/tenants/'+owner.id)).toBe('/admin/tenants/'+owner.id);
     for(const path of [venueUsers,'/admin/users','/admin/staff']) expect(destination(operations,path)).toBe('/admin');
   });
+  it('keeps venue Print Server context through login without widening role access',()=>{
+    const base='/admin/tenants/'+owner.id+'/print-servers';
+    for (const path of [base,base+'/detail']) {
+      expect(safeNext(path)).toBe(path);
+      expect(destination(access(true),path)).toBe(path);
+      expect(destination(access(true,[],false,true),path)).toBe('/admin');
+      expect(destination(access(true,[],false),path)).toBe('/admin');
+      expect(destination(access(false,[owner]),path)).toBe('/');
+      expect(destination(access(false),path)).toBeNull();
+    }
+    for (const path of [base+'/',base+'/detail/extra',base+'/../users',base+'?venue='+user]) expect(safeNext(path)).toBeNull();
+  });
   it('the Print Server fleet and its venue detail are deep links for Admin only',()=>{
     const fleet=['/admin/print-servers','/admin/print-servers/'+owner.id];
     for(const path of fleet) {

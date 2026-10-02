@@ -131,13 +131,27 @@ try {
       await page.getByRole('searchbox').fill('no-such-tenant-pe321');await heading(page,'No venues match your search.');
       await page.getByRole('searchbox').fill(foreign.slug);assert.equal(await page.locator('.directory-row').count(),1);await snapshot(page,'directory-search-1440-en');
       await page.locator('.directory-row').click();await heading(page,foreign.name);await page.reload();await heading(page,foreign.name);
-      const activeRow=page.getByRole('row').filter({hasText:sample.id});await activeRow.getByText(sample.software_version,{exact:true}).waitFor();
-      assert.equal(await page.locator('tbody tr').count(),detail.data.print_servers.length);
-      await page.getByRole('row').filter({hasText:noData.id}).getByText('Not provided',{exact:true}).waitFor();
+      if(await page.getByTestId('venue-print-servers-tab').count()) {
+        await page.getByTestId('venue-print-servers-tab').click();
+        await page.getByTestId(`fleet-row-${foreign.id}`).waitFor();
+        assert.equal(await page.locator('.ps-fleet-table tbody tr').count(),1);
+        await page.getByTestId(`fleet-open-${foreign.id}`).click();
+        await page.getByTestId('ps-detail').waitFor();
+        assert.equal(new URL(page.url()).pathname,`/admin/tenants/${foreign.id}/print-servers/detail`);
+      } else {
+        // Operations retains the original read-only venue summary.
+        const activeRow=page.getByRole('row').filter({hasText:sample.id});await activeRow.getByText(sample.software_version,{exact:true}).waitFor();
+        assert.equal(await page.locator('tbody tr').count(),detail.data.print_servers.length);
+        await page.getByRole('row').filter({hasText:noData.id}).getByText('Not provided',{exact:true}).waitFor();
+      }
       await snapshot(page,'detail-1440-en');await page.setViewportSize({width:834,height:1000});await page.getByRole('button',{name:'ES',exact:true}).click();await page.reload();await heading(page,foreign.name);await snapshot(page,'detail-834-es');
       await page.getByRole('button',{name:'EN',exact:true}).click();
-      const empty=directory.data.find(v=>v.slug==='wi170p1-venue');await page.goto(origin+`/admin/tenants/${empty.id}`);await heading(page,empty.name);await page.getByText('No Print Servers are linked to this venue.',{exact:true}).waitFor();
-      await snapshot(page,'servers-empty');
+      const empty=directory.data.find(v=>v.slug==='wi170p1-venue');await page.goto(origin+`/admin/tenants/${empty.id}`);await heading(page,empty.name);
+      if(await page.getByTestId('venue-print-servers-tab').count()) {
+        await page.getByTestId('venue-print-servers-tab').click();await page.getByTestId(`fleet-row-${empty.id}`).waitFor();
+        assert.equal(await page.locator('.ps-fleet-table tbody tr').count(),1);
+      } else await page.getByText('No Print Servers are linked to this venue.',{exact:true}).waitFor();
+      await snapshot(page,'venue-print-servers');
       await page.goto(origin+'/');await heading(page,'A clear view across PlayERP.');
     }
     await logoutUi(page);await page.reload();await heading(page,'Sign in to your workspace');

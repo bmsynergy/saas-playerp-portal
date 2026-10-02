@@ -155,9 +155,9 @@ function DirectoryData({home=false}:{home?:boolean}) {
 function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   const access=useAccess(); const {id=''}=useParams();
   if (!access.data?.can_view_tenants) return <StateView kind="denied"/>;
-  // Venue users: platform Admin only, the gate the retired /admin/users had.
+  // Venue Users and Print Servers retain the existing platform Admin gate.
   const canManageUsers=access.data.can_manage_staff;
-  if (tab==='users'&&!canManageUsers) return <StateView kind="denied"/>;
+  if (tab!=='overview'&&!canManageUsers) return <StateView kind="denied"/>;
   if(!UUID.test(id))return <StateView kind="notFound"/>;
   return <DetailData id={id} tab={tab} canManageUsers={canManageUsers}/>;
 }
@@ -166,7 +166,8 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
-  return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}/>;
+  return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
+    printServers={canManageUsers?(tab==='print-server-detail'?<PrintServerDetailData key={id} venueId={id} embedded/>:<PrintFleetData key={id} venueId={id}/>):undefined}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -256,16 +257,17 @@ function PrintServersRoute({detail=false}:{detail?:boolean}) {
   if (!detail) return <PrintFleetData/>;
   return UUID.test(venueId) ? <PrintServerDetailData key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
 }
-function PrintFleetData() {
+function PrintFleetData({venueId}:{venueId?:string}) {
   const {expire}=useAuth();
   const data=useFleet();
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data)return <PrintFleetPage rows={data.data}/>;
+  if(data.isError&&venueId)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  if(data.data)return <PrintFleetPage rows={data.data} venueId={venueId}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-function PrintServerDetailData({venueId}:{venueId:string}) {
+function PrintServerDetailData({venueId,embedded=false}:{venueId:string;embedded?:boolean}) {
   const {session,expire}=useAuth();
   const fleet=useFleet();
   const state=useQuery({queryKey:['ps-state',session?.user.id,venueId],queryFn:({signal})=>getPanelState(venueId,signal),refetchInterval:10_000});
@@ -279,7 +281,7 @@ function PrintServerDetailData({venueId}:{venueId:string}) {
   if(failure&&psErrorKey(failure)==='accessDenied')return <StateView kind="denied"/>;
   const venue=fleet.data?.find(row=>row.venue_id===venueId);
   // A failed background refetch keeps the page (and an open code dialog) mounted.
-  if(state.data&&venue)return <PrintServerDetailPage venue={venue} state={state.data} api={api} stale={state.isError} refresh={async()=>{await state.refetch();void fleet.refetch();}}/>;
+  if(state.data&&venue)return <PrintServerDetailPage embedded={embedded} venue={venue} state={state.data} api={api} stale={state.isError} refresh={async()=>{await state.refetch();void fleet.refetch();}}/>;
   if(failure)return <StateView kind="error" onRetry={()=>{void state.refetch();void fleet.refetch();}}/>;
   if(state.data===null||(fleet.data&&!venue))return <StateView kind="notFound"/>;
   return <StateView kind="loading"/>;
@@ -323,6 +325,8 @@ export default function App() {
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
+    <Route path="/admin/tenants/:id/print-servers" element={<Scope scope="admin"><DetailRoute tab="print-servers"/></Scope>}/>
+    <Route path="/admin/tenants/:id/print-servers/detail" element={<Scope scope="admin"><DetailRoute tab="print-server-detail"/></Scope>}/>
     <Route path="/admin/tenants/:id/users" element={<Scope scope="admin"><DetailRoute tab="users"/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>
   </Routes></AuthenticatedLayout>;

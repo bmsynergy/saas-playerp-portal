@@ -51,10 +51,10 @@ try{
  for(const width of [1440,834]){
   const {ctx,page}=await setup({auth:true,staff:true,width});await page.goto(origin+'/admin');await heading(page,'A clear view across PlayERP.');
   await page.goto(origin+'/admin/tenants');await page.getByPlaceholder('Search by name, slug, or city').fill('Harbor');await page.getByText('Sample Garden',{exact:true}).waitFor({state:'hidden'});
-  await page.getByText('Sample Harbor',{exact:true}).click();await heading(page,'Sample Harbor');await page.getByText('Revoked',{exact:true}).waitFor();await page.getByText('Online',{exact:true}).waitFor();await page.getByText('Pending',{exact:true}).waitFor();
+  await page.getByText('Sample Harbor',{exact:true}).click();await heading(page,'Sample Harbor');await page.getByTestId('venue-print-servers-tab').waitFor();assert.equal(await page.locator('.servers-table').count(),0);
   await noOverflow(page);await page.screenshot({path:out+`detail-${width}-en.png`,fullPage:true});
-  await page.getByRole('button',{name:'ES',exact:true}).click();await page.getByText('Revocado',{exact:true}).waitFor();await page.getByText('Pendiente',{exact:true}).waitFor();await noOverflow(page);await page.screenshot({path:out+`detail-${width}-es.png`,fullPage:true});
-  await page.reload();await heading(page,'Sample Harbor');record(`Admin search/detail/reload and five signal states ${width}px`);await ctx.close();
+  await page.getByRole('button',{name:'ES',exact:true}).click();await page.getByTestId('venue-print-servers-tab').waitFor();await noOverflow(page);await page.screenshot({path:out+`detail-${width}-es.png`,fullPage:true});
+  await page.reload();await heading(page,'Sample Harbor');record(`Admin search/detail/reload and dedicated Print Servers tab ${width}px`);await ctx.close();
  }
  {
   const {ctx,page,requests}=await setup({auth:true,owner:true});await page.goto(origin+'/');await heading(page,'Your spaces, in one place.');
@@ -91,8 +91,8 @@ try{
   const {ctx,page}=await setup({auth:true,staff:true});let attempt=0;
   await ctx.route('**/rest/v1/rpc/portal_tenant_detail',async route=>{attempt++;await new Promise(r=>setTimeout(r,500));await route.fulfill({status:attempt===1?500:200,contentType:'application/json',body:JSON.stringify(attempt===1?{message:'Fixture raw backend text must not be shown'}:{venue,print_servers:[]})});});
   await page.goto(origin+'/admin/tenants/'+v1);await heading(page,'Loading your workspace');await heading(page,'Something went wrong');assert.equal(await page.getByText('Fixture raw backend text must not be shown').count(),0);
-  await page.getByRole('button',{name:'Try again',exact:true}).click();await page.getByText('No Print Servers are linked to this venue.').waitFor();
-  await page.screenshot({path:out+'detail-empty.png',fullPage:true});record('Detail loading/error/retry/empty with safe translated presentation');await ctx.close();
+  await page.getByRole('button',{name:'Try again',exact:true}).click();await heading(page,'Sample Harbor');await page.getByTestId('venue-print-servers-tab').waitFor();
+  await page.screenshot({path:out+'detail-empty.png',fullPage:true});record('Venue detail loading/error/retry with safe translated presentation');await ctx.close();
  }
  {
   const {ctx,page}=await setup({auth:true,owner:true});

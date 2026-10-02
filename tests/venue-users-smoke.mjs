@@ -116,7 +116,7 @@ try{
   record('Retired /admin/users and /admin/users/:id redirect to the venue directory');
 
   await page.goto(origin+'/admin/tenants/'+v1+'/users?lang=en');await heading(page,'Users of this venue');
-  assert.deepEqual((await page.locator('.detail-tabs a').allTextContents()).map(s=>s.trim()),['Venue details','Users']);
+  assert.deepEqual((await page.locator('.detail-tabs a').allTextContents()).map(s=>s.trim()),['Venue details','Users','Print Servers']);
   assert.equal(await page.locator('.detail-tabs a[aria-current="page"]').textContent(),'Users');
   record('Users tab is directly addressable and bilingual');await ctx.close();
  }

@@ -10,7 +10,7 @@ import { PortalDialog } from '../components/PortalDialog';
 import { PrinterQueue } from './PrinterQueue';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
-type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean };
+type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
 type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
 type Result = { ok: boolean; text: string };
@@ -24,7 +24,7 @@ function Item({ icon, label, children, testId }: { icon: ReactNode; label: strin
   return <div className="detail-item"><span className="detail-item-icon" aria-hidden="true">{icon}</span><div><span className="detail-item-label">{label}</span><strong data-testid={testId}>{children}</strong></div></div>;
 }
 
-export function PrintServerDetailPage({ venue, state, api, refresh, stale = false }: Props) {
+export function PrintServerDetailPage({ venue, state, api, refresh, stale = false, embedded = false }: Props) {
   const { locale, t } = useLocale();
   const server = state.print_server; const pendingEnrollment = state.pending_enrollment; const canManage = state.can_manage;
   const venueName = venue.venue_name; const venueId = state.venue_id;
@@ -207,8 +207,8 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const yesNo = (value: boolean | null) => value === null ? t('notProvided') : t(value ? 'ps.yes' : 'ps.no');
 
   return <div className="page-stack staff-page" data-testid="ps-detail">
-    <Link className="back-link" to="/admin/print-servers"><ArrowLeft size={17}/>{t('ps.back')}</Link>
-    <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>
+    <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>
+    {embedded ? <div className="ps-embedded-heading"><h2 data-testid="ps-venue-name">{t('ps.detailEyebrow')}</h2><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div> : <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
     {stale && <div className="form-error" role="alert"><AlertTriangle size={19}/><span>{t('ps.stale')}</span></div>}
     {!canManage && <div className="staff-self-note" data-testid="ps-read-only">{t('ps.readOnly')}</div>}

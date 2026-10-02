@@ -27,6 +27,21 @@ npm test
 
 `dist/` is the publication artifact. Public browser configuration is pinned to DEV in `src/lib/config.ts`; no environment override or service-role key is accepted. COREdevA builds a clean committed copy and publishes via `coredeva-publish playerp.dev <SHA>`; no manual service commands are needed.
 
+## Venue Print Servers (PE-333)
+
+Platform Admins can open the Print Servers tab at `/admin/tenants/:id/print-servers`.
+It reuses the fleet query and list, with an immutable venue scope; Open renders the
+existing panel at `/admin/tenants/:id/print-servers/detail`. Breadcrumbs and the back
+link retain the venue context, including after reload and login. The global fleet
+at `/admin/print-servers` retains all its filters. Operations retains its existing
+read-only venue summary; it cannot mount fleet or management queries.
+
+`node tests/venue-print-servers.mjs` checks these routes at 1440/390 px, EN/ES,
+loading/empty/error/retry/denial and role gates with intercepted synthetic responses.
+Use the same browser/origin/output environment variables as the smoke tests below.
+These are browser integration checks, not a new live backend authorization audit.
+No database, RPC, membership or printer-operation contract changed.
+
 ## Focused browser checks
 
 Start `npm run dev -- --port 18799`, then in another terminal run `node tests/browser-smoke.mjs` (install the matching Chromium via Playwright if absent). `PLAYWRIGHT_CHROMIUM_EXECUTABLE` can select an existing Chromium binary, `PORTAL_TEST_ORIGIN` selects the local origin, and `SMOKE_OUTPUT_DIR` changes the default `test-results/smoke` output. Stop the test server when finished.

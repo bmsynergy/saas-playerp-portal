@@ -99,6 +99,11 @@ export function PortalShell({ scope, email, displayName, canAdmin, canOwner, can
     if (path === '/' || path === '/admin') return [{ label: root.label }];
     if (path.startsWith('/admin/print-servers/')) return [root, { label: t('ps.nav'), to: canManageStaff ? '/admin/print-servers' : undefined }, { label: t('ps.detailEyebrow') }];
     if (/^\/admin\/tenants\/[^/]+\/users$/.test(path)) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails'), to: canViewTenants ? path.slice(0, -'/users'.length) : undefined }, { label: t('identity.tab') }];
+    const venuePrint = path.match(/^(\/admin\/tenants\/[^/]+)\/print-servers(\/detail)?$/);
+    if (venuePrint) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined },
+      { label: t('venueDetails'), to: canViewTenants ? venuePrint[1] : undefined },
+      { label: t('ps.nav'), to: venuePrint[2] && canManageStaff ? `${venuePrint[1]}/print-servers` : undefined },
+      ...(venuePrint[2] ? [{ label: t('ps.detailEyebrow') }] : [])];
     if (path.startsWith('/admin/tenants/')) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails') }];
     const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav') };
     return [root, { label: sectionLabels[path] ?? t('notFoundTitle') }];
