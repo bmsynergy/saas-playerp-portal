@@ -1,0 +1,11 @@
+  venue A «WI170P1 Venue»: delivered+pe321-owner-uno@resend.dev=owner, delivered+pe321-owner-varios@resend.dev=owner, delivered+pe321-venue-frontdesk@resend.dev=front_desk, delivered+pe321-venue-manager@resend.dev=manager, delivered+pe321-venue-superadmin@resend.dev=super_admin, delivered+pe328-dual@resend.dev=manager, delivered+pe328-solo-a@resend.dev=front_desk
+PASS Users tab of venue A lists exactly its 7 members
+  venue B «US Test Venue (Florida)»: delivered+pe321-owner-varios@resend.dev=owner, delivered+pe328-dual@resend.dev=front_desk, mlopez@avitcapital.com=owner
+PASS Users tab of venue B lists exactly its 3 members
+PASS Same account, different role per venue: delivered+pe328-dual@resend.dev → manager in A, front_desk in B
+PASS Members only of A (5) do not appear in the Users tab of B
+PASS Menu: /admin /admin/tenants /admin/print-servers /admin/staff (no /admin/users)
+PASS /admin/users redirects to /admin/tenants (no global list)
+PASS /admin/users/:id redirects to /admin/tenants (no global list)
+PASS /admin/staff still lists platform staff (and no venue users)
+ALL PASS
