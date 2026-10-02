@@ -15,3 +15,7 @@ Dependencia ya versionada en backend: `bmsynergy/saas-playerp-backend`, rama `to
 - Gaby revisó en solo lectura en esta misma sesión: sin hallazgos ni bloqueos de implementación.
 
 Las capturas y respuestas de navegador son sintéticas: no prueban permisos reales ni el inventario vivo. La herramienta SQL rechazó la consulta de lectura DEV al exigir aprobación no disponible en esta sesión; no se eludió esa restricción. La evidencia real del backend corresponde al paso PE-334.1, que documenta la aplicación del contrato y las pruebas de permisos. El navegador de Beny usará su sesión real para consultar el inventario publicado.
+
+## Verificación del portal publicado
+
+El 2026-10-02 se publicó `c02adeee77512377bb5efcdd0fb68e05171bf184` en `https://playerp.dev.bmore.app/admin/print-servers`. El HTML público sirve `index-BrKOlDXZ.js` y `index-DU7mzqVl.css`, los mismos artefactos compilados. Ejecutado `PORTAL_TEST_ORIGIN=https://playerp.dev.bmore.app node tests/print-dashboard.mjs`: 13 comprobaciones correctas, cero errores de página (`hosted-browser.json`). Solo las respuestas de API se sustituyen por datos sintéticos; HTML/JS/CSS salen del DEV publicado.
