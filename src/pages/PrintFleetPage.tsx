@@ -25,7 +25,7 @@ export function PrintFleetPage({ rows, venueId }: { rows: FleetRow[]; venueId?: 
   const set = <K extends keyof FleetFilter>(key: K, value: FleetFilter[K]) => setFilter(current => ({ ...current, [key]: value }));
 
   return <div className="page-stack staff-page" data-testid="fleet-page">
-    {venueId === undefined && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
+    {venueId === undefined && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{locale === 'es' ? 'Ver dashboard' : 'View dashboard'}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
     <section className="staff-panel" aria-labelledby="fleet-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t(venueId === undefined ? 'ps.fleetEyebrow' : 'printServers')}</p><h2 id="fleet-list-title">{t(venueId === undefined ? 'ps.fleetTitle' : 'connectedServers')}</h2></div><span className="count-pill">{venueId === undefined ? scopedRows.length : scopedRows.filter(row => row.print_server).length}</span></div>
       <div className="directory-toolbar ps-toolbar">

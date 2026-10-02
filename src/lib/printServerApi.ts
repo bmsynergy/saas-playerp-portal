@@ -1,3 +1,4 @@
+import { projectInventory, type Inventory } from './printInventory';
 import { supabase } from './supabase';
 import { errorCode, PortalError } from './errors';
 import type { FleetRow, FleetServer, PsLastStatus, PsPendingEnrollment } from './printFleet';
@@ -150,6 +151,9 @@ async function action(name: string, params: Record<string, unknown>): Promise<Ra
   const data = obj(await rpc(name, params)) ?? bad();
   if (data.ok !== true) throw psErrorFromCode(data.error);
   return data;
+}
+export async function getInventory(signal?: AbortSignal): Promise<Inventory> {
+  return projectInventory(await rpc('portal_ps_inventory', {}, signal));
 }
 export async function getFleet(signal?: AbortSignal): Promise<FleetRow[]> {
   const data = await rpc('portal_ps_fleet', {}, signal);

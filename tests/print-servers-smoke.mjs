@@ -72,7 +72,7 @@ const record=name=>{records.push(name);console.log('PASS '+name);};
 try{
  {
   const {ctx,page}=await setup();const id=x=>page.getByTestId(x),rows=()=>page.locator('[data-testid^="fleet-row-"]').count();
-  await page.goto(origin+'/admin/print-servers');await id(`fleet-row-${v1}`).waitFor();
+  await page.goto(origin+'/admin/print-servers/list');await id(`fleet-row-${v1}`).waitFor();
   assert.equal(await id('fleet-count').innerText(),'3 of 3');
   await page.locator('.sidebar-nav').getByRole('link',{name:'Print Servers',exact:true}).waitFor();
   await id('fleet-filter-search').fill('garden');assert.equal(await rows(),1);assert.equal(await id('fleet-count').innerText(),'1 of 3');await id('fleet-filter-clear').click();
@@ -173,7 +173,7 @@ try{
  }
  {
   const {ctx,page}=await setup({width:834});await page.goto(origin+`/admin/print-servers/${v1}`);await page.getByTestId('ps-state').waitFor();
-  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');await page.goto(origin+'/admin/print-servers');await page.getByTestId(`fleet-row-${v1}`).waitFor();
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');await page.goto(origin+'/admin/print-servers/list');await page.getByTestId(`fleet-row-${v1}`).waitFor();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');
   await page.getByRole('button',{name:'ES',exact:true}).click();await page.getByText('3 de 3',{exact:true}).waitFor();record('Tablet width without overflow, ES catalog');await ctx.close();
  }

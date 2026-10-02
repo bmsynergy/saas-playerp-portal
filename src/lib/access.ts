@@ -1,7 +1,7 @@
 import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
-  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/tenants\/[a-f0-9-]+\/(?:users|print-servers(?:\/detail)?))?$/.test(value)) ? value : null;
+  return value && (/^\/(?:\?venue=[a-f0-9-]+)?$/.test(value) || /^\/admin(?:\/staff|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/list|\/tenants\/[a-f0-9-]+\/(?:users|print-servers(?:\/detail)?))?$/.test(value)) ? value : null;
 }
 // A requested URL never grants a scope. Staff starts in administration even if
 // login was reached through /. Only the account menu selects the owner scope.

@@ -6,6 +6,13 @@ const access=(staff:boolean,venues:OwnerVenue[]=[],manage=staff,tenants=manage):
 const user='33333333-3333-4333-8333-333333333333';
 const venueUsers='/admin/tenants/'+owner.id+'/users';
 describe('scope routing uses backend permissions',()=>{
+  it('keeps the global list login destination limited to platform Admin',()=>{
+    const path='/admin/print-servers/list';
+    expect(destination(access(true),path)).toBe(path);
+    expect(destination(access(true,[],false,true),path)).toBe('/admin');
+    expect(destination(access(false,[owner]),path)).toBe('/');
+    expect(safeNext(path+'/extra')).toBeNull();
+  });
   it('defaults staff and mixed identities to admin even after entering through root',()=>{
     expect(destination(access(true),'/')).toBe('/admin');
     expect(destination(access(true,[owner]),'/')).toBe('/admin');

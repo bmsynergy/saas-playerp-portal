@@ -83,7 +83,7 @@ try {
   await ctx.close();
  }
  {
-  const {ctx,page}=await setup();await page.goto(origin+'/admin/print-servers');
+  const {ctx,page}=await setup();await page.goto(origin+'/admin/print-servers/list');
   await expect(page.getByTestId(`fleet-row-${a}`)).toBeVisible();await expect(page.getByTestId(`fleet-row-${b}`)).toBeVisible();
   for(const name of ['search','venue','version','signal','state','printers'])await expect(page.getByTestId('fleet-filter-'+name)).toBeVisible();
   await page.getByTestId('fleet-filter-venue').selectOption(b);await expect(page.getByTestId(`fleet-row-${a}`)).toHaveCount(0);

@@ -1,3 +1,4 @@
+import { PrintDashboardPage } from './pages/PrintDashboardPage';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { destination, preferredScope, chooseScope, safeNext } from './lib/access';
@@ -8,7 +9,7 @@ import { VenueUsersTab } from './pages/VenueUsersTab';
 import { getOwnerUsers, ownerUsersRequest, type OwnerUser, type OwnerUserAction, type OwnerUserInvite } from './lib/ownerUsers';
 import { OwnerUsersSection } from './pages/OwnerUsersSection';
 import { InvitationPage } from './pages/InvitationPage';
-import { getFleet, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
+import { getFleet, getInventory, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
 import { PrintFleetPage } from './pages/PrintFleetPage';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { Brand } from './components/Brand';
@@ -251,11 +252,21 @@ function useFleet() {
   const {session}=useAuth();
   return useQuery({queryKey:['ps-fleet',session?.user.id],queryFn:({signal})=>getFleet(signal),refetchInterval:30_000});
 }
-function PrintServersRoute({detail=false}:{detail?:boolean}) {
+function PrintServersRoute({detail=false,list=false}:{detail?:boolean;list?:boolean}) {
   const access=useAccess(); const {venueId=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
-  if (!detail) return <PrintFleetData/>;
+  if (!detail) return list ? <PrintFleetData/> : <PrintDashboardData/>;
   return UUID.test(venueId) ? <PrintServerDetailData key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
+}
+function PrintDashboardData() {
+  const {session,expire}=useAuth();
+  const data=useQuery({queryKey:['ps-inventory',session?.user.id],queryFn:({signal})=>getInventory(signal),refetchInterval:30_000});
+  useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.isError&&psErrorKey(data.error)==='sessionExpired')return <StateView kind="loading"/>;
+  if(data.data)return <PrintDashboardPage inventory={data.data} refreshing={data.isFetching} stale={data.isError} onRefresh={()=>void data.refetch()}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
 }
 function PrintFleetData({venueId}:{venueId?:string}) {
   const {expire}=useAuth();
@@ -322,6 +333,7 @@ export default function App() {
     <Route path="/admin/users" element={<Navigate to="/admin/tenants" replace/>}/>
     <Route path="/admin/users/:id" element={<Navigate to="/admin/tenants" replace/>}/>
     <Route path="/admin/print-servers" element={<Scope scope="admin"><PrintServersRoute/></Scope>}/>
+    <Route path="/admin/print-servers/list" element={<Scope scope="admin"><PrintServersRoute list/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
