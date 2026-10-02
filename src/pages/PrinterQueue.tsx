@@ -26,7 +26,8 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
       const next = await api.getPrinterJobs(venueId, printer.id, QUEUE_PAGE_SIZE, at);
       if (id !== request.current) return;
       // The queue shrank under this page: step back to the last page that exists.
-      if (next.jobs.length === 0 && at > 0) { setOffset(Math.max(0, (Math.ceil(next.total / QUEUE_PAGE_SIZE) - 1) * QUEUE_PAGE_SIZE)); return; }
+      const last = Math.max(0, (Math.ceil(next.total / QUEUE_PAGE_SIZE) - 1) * QUEUE_PAGE_SIZE);
+      if (next.jobs.length === 0 && at > 0 && last !== at) { setOffset(last); return; }
       setPage(next);
     } catch (error) { if (id === request.current) setErrorKey(psErrorKey(error)); }
     finally { if (id === request.current) setLoading(false); }
