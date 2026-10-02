@@ -40,4 +40,4 @@ Verification:
 
 Screenshots show only DEV fixture data. No auth token, password or service key is
 saved here. Live runner requires `PORTAL_DEV_FIXTURES` outside the repository.
-Hosted verification is recorded in the work delivery after connector publication.
+Hosted verification on https://playerp.dev.bmore.app also passed after connector publication of 367efd0: `hosted-live.json` (9 real checks, no runtime errors) and `hosted-states.json` (27 intercepted UI-state checks). Served JS and CSS are byte-identical to the verified build. Both test-member changes were restored.
