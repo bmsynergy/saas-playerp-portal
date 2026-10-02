@@ -1,7 +1,7 @@
 {
  "origin": "https://playerp.dev.bmore.app",
  "project": "fzwzmwstxlsxdzdmphyq",
- "startedAt": "2026-10-02T14:44:46.400Z",
+ "startedAt": "2026-10-02T14:47:15.150Z",
  "mocks": false,
  "writes": "harness venue A only: one test print, cancelled at the end",
  "physicalPrintServer": "Dynamic Park: read only",
@@ -18,15 +18,15 @@
    ],
    "printers": 2,
    "queues": 2,
-   "A-P1": "112 trabajos",
+   "A-P1": "113 trabajos",
    "A-P2": "48 trabajos"
   },
   {
    "name": "un trabajo real de «Impresión de prueba» sale en la cola de su impresora con los cinco datos",
    "passed": true,
-   "job": "7ce2e58b",
+   "job": "5108649b",
    "Estado": "En cola",
-   "Fecha": "2 oct 2026, 14:44:52",
+   "Fecha": "2 oct 2026, 14:47:21",
    "Origen": "Impresión de prueba",
    "Intentos": "0",
    "Error": "Sin error"
@@ -34,9 +34,9 @@
   {
    "name": "un trabajo con error muestra un mensaje útil (texto del portal a partir del código)",
    "passed": true,
-   "job": "ca093a19",
+   "job": "7ce2e58b",
    "Estado": "Cancelado",
-   "Fecha": "2 oct 2026, 14:38:40 Terminado: 2 oct 2026, 14:38:49",
+   "Fecha": "2 oct 2026, 14:44:52 Terminado: 2 oct 2026, 14:45:00",
    "Origen": "Impresión de prueba",
    "Intentos": "0",
    "Error": "Cancelado."
@@ -44,10 +44,10 @@
   {
    "name": "paginación: siguiente y anterior cambian de página sin solape",
    "passed": true,
-   "total": 113,
+   "total": 114,
    "pages": 12,
-   "page2First": "807ada65",
-   "page1First": "7ce2e58b"
+   "page2First": "82adbb2b",
+   "page1First": "5108649b"
   },
   {
    "name": "refrescar vuelve a pedir los datos",
@@ -85,7 +85,7 @@
    "name": "las respuestas que recibió el navegador no traen payload_text ni job_token, y cada petición llevó su venue y su impresora",
    "passed": true,
    "requests": 9,
-   "bytes": 27447
+   "bytes": 27289
   },
   {
    "name": "Dynamic Park no recibió ninguna escritura de esta pasada",
@@ -108,6 +108,6 @@
   "queue-dynamic-park-1440-es.png"
  ],
  "pageErrors": [],
- "finishedAt": "2026-10-02T14:44:59.663Z",
+ "finishedAt": "2026-10-02T14:47:28.048Z",
  "passed": true
 }
