@@ -1,0 +1,113 @@
+{
+ "origin": "https://playerp.dev.bmore.app",
+ "project": "fzwzmwstxlsxdzdmphyq",
+ "startedAt": "2026-10-02T14:44:46.400Z",
+ "mocks": false,
+ "writes": "harness venue A only: one test print, cancelled at the end",
+ "physicalPrintServer": "Dynamic Park: read only",
+ "checks": [
+  {
+   "name": "cada impresora del venue tiene su cola con las columnas estado, fecha, origen, intentos y error",
+   "passed": true,
+   "headers": [
+    "Estado",
+    "Fecha",
+    "Origen",
+    "Intentos",
+    "Error"
+   ],
+   "printers": 2,
+   "queues": 2,
+   "A-P1": "112 trabajos",
+   "A-P2": "48 trabajos"
+  },
+  {
+   "name": "un trabajo real de «Impresión de prueba» sale en la cola de su impresora con los cinco datos",
+   "passed": true,
+   "job": "7ce2e58b",
+   "Estado": "En cola",
+   "Fecha": "2 oct 2026, 14:44:52",
+   "Origen": "Impresión de prueba",
+   "Intentos": "0",
+   "Error": "Sin error"
+  },
+  {
+   "name": "un trabajo con error muestra un mensaje útil (texto del portal a partir del código)",
+   "passed": true,
+   "job": "ca093a19",
+   "Estado": "Cancelado",
+   "Fecha": "2 oct 2026, 14:38:40 Terminado: 2 oct 2026, 14:38:49",
+   "Origen": "Impresión de prueba",
+   "Intentos": "0",
+   "Error": "Cancelado."
+  },
+  {
+   "name": "paginación: siguiente y anterior cambian de página sin solape",
+   "passed": true,
+   "total": 113,
+   "pages": 12,
+   "page2First": "807ada65",
+   "page1First": "7ce2e58b"
+  },
+  {
+   "name": "refrescar vuelve a pedir los datos",
+   "passed": true,
+   "requestsBefore": 4,
+   "requestsAfter": 5,
+   "lastRequest": {
+    "venue": "b5a00000-0000",
+    "printer": "a1",
+    "limit": 10,
+    "offset": 0,
+    "status": 200
+   }
+  },
+  {
+   "name": "Dynamic Park: la cola de una impresora del PS físico muestra sus trabajos reales",
+   "passed": true,
+   "printer": "Star Beny",
+   "total": "21 trabajos",
+   "first": {
+    "Estado": "Enviado a la impresora",
+    "Fecha": "1 oct 2026, 22:25:12 Terminado: 1 oct 2026, 22:25:14",
+    "Origen": "Impresión de prueba",
+    "Intentos": "1",
+    "Error": "Sin error"
+   }
+  },
+  {
+   "name": "una impresora sin trabajos muestra el mensaje de cola vacía",
+   "passed": true,
+   "printer": "HP",
+   "message": "Cola vacía Esta impresora todavía no tiene trabajos de impresión."
+  },
+  {
+   "name": "las respuestas que recibió el navegador no traen payload_text ni job_token, y cada petición llevó su venue y su impresora",
+   "passed": true,
+   "requests": 9,
+   "bytes": 27447
+  },
+  {
+   "name": "Dynamic Park no recibió ninguna escritura de esta pasada",
+   "passed": true,
+   "printerJobsBefore": {
+    "n": 406,
+    "last": "2026-10-01 22:25:12.215449+00"
+   },
+   "printerJobsAfter": {
+    "n": 406,
+    "last": "2026-10-01 22:25:12.215449+00"
+   },
+   "auditRowsOfThisRun": [
+    "ps_printer_test_requested @ sede de arnés A"
+   ]
+  }
+ ],
+ "screenshots": [
+  "queue-harness-1440-es.png",
+  "queue-dynamic-park-1440-es.png"
+ ],
+ "pageErrors": [],
+ "finishedAt": "2026-10-02T14:44:59.663Z",
+ "passed": true
+}
