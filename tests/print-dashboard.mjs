@@ -49,14 +49,24 @@ try {
  for(const width of [1440,390]) {
   const {ctx,page,db}=await setup({width});await page.goto(origin+'/admin/print-servers');
   await expect(ids(page)).toHaveCount(4);
+  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All venues','Assigned to venue','Unassigned']);
+  await page.getByTestId('inventory-filter-venue').selectOption('__assigned__');
+  await expect(ids(page)).toHaveCount(3);await metric(page,'total',3);await metric(page,'unassigned',0);
+  await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('1 / 3 · 33.3%');
+  await expect(page.getByTestId('inventory-row-four')).toHaveCount(0);
+  await page.getByTestId('inventory-filter-venue').selectOption('__unassigned__');
+  await expect(page.getByTestId('inventory-row-four')).toBeVisible();await expect(ids(page)).toHaveCount(1);await metric(page,'total',1);
+  await expect(page.getByTestId('inventory-row-four').getByRole('link')).toHaveCount(0);
+  await expect(page.getByTestId('dashboard-firmware-__unknown__')).toContainText('1 / 1 · 100%');
+  await page.getByTestId('dashboard-filter-clear').click();
   for(const [k,n] of [['total',4],['online',1],['offline',1],['unknown',1],['errors',1],['unassigned',1]])await metric(page,k,n);
   await expect(page.getByTestId('dashboard-firmware-__unknown__')).toContainText('2 / 4 · 50%');
   await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('1 / 4 · 25%');
   await expect(page.locator('time[datetime="'+at+'"]')).not.toHaveCount(0);
-  for(const [filter,value,want] of [['venue',a,2],['state','online',1],['state','offline',1],['state','unknown',1],['state','unassigned',1],['state','errors',1],['state','warnings',1],['version','0.3.2',1],['version','__unknown__',2],['venue','__unassigned__',1]]) {
+  for(const [filter,value,want] of [['venue','__assigned__',3],['state','online',1],['state','offline',1],['state','unknown',1],['state','unassigned',1],['state','errors',1],['state','warnings',1],['version','0.3.2',1],['version','__unknown__',2],['venue','__unassigned__',1]]) {
    await page.getByTestId('inventory-filter-'+filter).selectOption(value);await expect(ids(page)).toHaveCount(want);await metric(page,'total',want);await page.getByTestId('dashboard-filter-clear').click();
   }
-  await page.getByTestId('inventory-filter-venue').selectOption(a);await page.getByTestId('inventory-filter-version').selectOption('__unknown__');await page.getByTestId('inventory-filter-state').selectOption('unknown');
+  await page.getByTestId('inventory-filter-venue').selectOption('__assigned__');await page.getByTestId('inventory-filter-version').selectOption('__unknown__');await page.getByTestId('inventory-filter-state').selectOption('unknown');
   await expect(ids(page)).toHaveCount(1);await metric(page,'unknown',1);await expect(page.getByTestId('dashboard-firmware-__unknown__')).toContainText('1 / 1 · 100%');
   await page.getByTestId('dashboard-metric-total').click();await expect(page.getByTestId('inventory-filter-state')).toHaveValue('unknown');await expect(ids(page)).toHaveCount(1);
   await page.getByTestId('inventory-filter-state').selectOption('online');await expect(page.getByTestId('dashboard-empty')).toBeVisible();await metric(page,'total',0);await expect(page.getByTestId('dashboard-firmware')).not.toContainText('NaN');
@@ -67,9 +77,14 @@ try {
   await page.getByTestId('dashboard-filter-clear').click();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
   await page.getByRole('button',{name:'ES',exact:true}).click();await expect(page.getByTestId('dashboard-metric-unknown')).toContainText('Sin reporte');
+  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['Todos los venues','Asignados a un venue','Sin asignar']);
+  await page.getByTestId('inventory-filter-venue').selectOption('__assigned__');await metric(page,'total',3);
+  await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('1 / 3 · 33,3%');
+  await page.getByTestId('inventory-filter-venue').selectOption('__unassigned__');await expect(ids(page)).toHaveCount(1);await metric(page,'total',1);
+  await page.getByTestId('dashboard-filter-clear').click();
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   await page.screenshot({path:`${out}/dashboard-${width}-es.png`,fullPage:true});
-  record(`${width}px: shared filters/counters/timestamp, unknown firmware 50%, combined denominator 1/1, notices, empty filter and Spanish; no horizontal overflow`);
+  record(`${width}px: exact three assignment options EN/ES without venue names; assigned 3 devices (33.3% each), unassigned 1 (100%); shared filters/counters/timestamp, unknown firmware 50%, combined denominator 1/1, notices, empty filter and Spanish; no horizontal overflow`);
   await page.getByRole('button',{name:'EN',exact:true}).click();
   await page.getByTestId('inventory-row-one').getByRole('link').click();await expect(page.getByTestId('ps-state')).toHaveText('Online');
   await page.goto(origin+'/admin/print-servers');await page.getByTestId('dashboard-open-list').click();await expect(page.getByTestId('fleet-row-'+a)).toBeVisible();await page.getByRole('link',{name:'View dashboard',exact:true}).click();await expect(page.getByTestId('dashboard-page')).toBeVisible();
@@ -96,7 +111,7 @@ try {
   assert.equal(seen.length,63);assert.equal(new Set(seen).size,63);
   await expect(page.getByTestId('dashboard-pagination-range')).toHaveText('51–63 of 63 results');
   await prev.click();await expect(ids(page)).toHaveCount(25);assert.deepEqual(await ids(page).evaluateAll(rows=>rows.map(row=>row.dataset.testid)),seen.slice(25,50));
-  await page.getByTestId('inventory-filter-venue').selectOption(a);await expect(ids(page)).toHaveCount(25);await expect(prev).toBeDisabled();await metric(page,'total',40);
+  await page.getByTestId('inventory-filter-version').selectOption('0.3.3');await expect(ids(page)).toHaveCount(25);await expect(prev).toBeDisabled();await metric(page,'total',40);
   await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('40 / 40 · 100%');
   await next.click();await expect(ids(page)).toHaveCount(15);await size.selectOption('10');await expect(ids(page)).toHaveCount(10);await expect(prev).toBeDisabled();
   await next.click();await page.getByTestId('dashboard-filter-clear').click();await expect(prev).toBeDisabled();await metric(page,'total',63);
@@ -125,7 +140,7 @@ try {
  for(const mode of ['loading','empty','error','denied']) {
   const {ctx,page,db}=await setup({mode});await page.goto(origin+'/admin/print-servers');
   if(mode==='loading'){await expect.poll(()=>typeof db.release).toBe('function');await expect(page.getByText('Loading',{exact:false}).first()).toBeVisible();db.mode='ready';db.release();await expect(ids(page)).toHaveCount(4);}
-  if(mode==='empty'){await expect(page.getByTestId('dashboard-empty')).toBeVisible();await metric(page,'total',0);}
+  if(mode==='empty'){await expect(page.getByTestId('dashboard-empty')).toBeVisible();await metric(page,'total',0);await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All venues','Assigned to venue','Unassigned']);}
   if(mode==='error'){await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();db.mode='ready';await page.getByRole('button',{name:'Try again',exact:true}).click();await expect(ids(page)).toHaveCount(4);}
   if(mode==='denied'){await expect(page.getByRole('heading',{name:'Access denied',exact:true})).toBeVisible();await expect(page.getByTestId('dashboard-page')).toHaveCount(0);}
   record('Initial state '+mode);await ctx.close();

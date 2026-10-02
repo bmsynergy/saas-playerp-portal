@@ -13,6 +13,7 @@ export type Inventory = { contract_version: 1; generated_at: string; online_wind
 export type InventoryFilter = { venue: string; state: string; version: string; query: string };
 export const EMPTY_INVENTORY_FILTER: InventoryFilter = { venue: '', state: '', version: '', query: '' };
 export const UNKNOWN_VERSION = '__unknown__';
+export const ASSIGNED_VENUE = '__assigned__';
 export const UNASSIGNED_VENUE = '__unassigned__';
 const bad = (): never => { throw new PortalError('genericError'); };
 const obj = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : bad();
@@ -59,7 +60,7 @@ export function projectInventory(value: unknown): Inventory {
 export function filterInventory(items: InventoryItem[], filter: InventoryFilter): InventoryItem[] {
   const query = filter.query.trim().toLocaleLowerCase();
   return items.filter(item => {
-    if (filter.venue && (filter.venue === UNASSIGNED_VENUE ? item.assignment !== 'unassigned' : item.venue_id !== filter.venue)) return false;
+    if (filter.venue && (filter.venue === ASSIGNED_VENUE ? item.assignment !== 'assigned' : filter.venue === UNASSIGNED_VENUE ? item.assignment !== 'unassigned' : true)) return false;
     if (filter.version && (filter.version === UNKNOWN_VERSION ? item.firmware_known : !item.firmware_known || item.firmware_version !== filter.version)) return false;
     if (filter.state && (filter.state === 'errors' ? item.error_count === 0 : filter.state === 'warnings' ? item.warning_count === 0 : item.connection !== filter.state)) return false;
     return !query || [item.label, item.hostname, item.device_id, item.venue_name].some(value => value?.toLocaleLowerCase().includes(query));

@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Clock3, FilterX, RefreshCw, Search, Server, X } from 'lucide-react';
-import { EMPTY_INVENTORY_FILTER, UNKNOWN_VERSION, UNASSIGNED_VENUE, filterInventory, inventoryVersions, summarizeInventory, type Inventory, type InventoryFilter, type InventoryItem } from '../lib/printInventory';
+import { ASSIGNED_VENUE, EMPTY_INVENTORY_FILTER, UNKNOWN_VERSION, UNASSIGNED_VENUE, filterInventory, inventoryVersions, summarizeInventory, type Inventory, type InventoryFilter, type InventoryItem } from '../lib/printInventory';
 import { useLocale } from '../locales';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import '../print-dashboard.css';
@@ -20,12 +20,6 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
   const pagination = usePrintListPagination(filtered.length);
   const visible = filtered.slice(pagination.start, pagination.end);
   const summary = useMemo(() => summarizeInventory(filtered), [filtered]);
-  const venues = useMemo(() => {
-    const unique = new Map<string, string>();
-    inventory.items.forEach(item => { if (item.venue_id) unique.set(item.venue_id, item.venue_name || item.venue_id); });
-    return [...unique].sort((a, b) => a[1].localeCompare(b[1], locale));
-  }, [inventory.items, locale]);
-  const hasUnassigned = inventory.items.some(item => item.assignment === 'unassigned');
   const versions = useMemo(() => inventoryVersions(inventory.items), [inventory.items]);
   const changed = Object.values(filter).some(Boolean);
   const metrics: Metric[] = [
@@ -67,7 +61,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
       <div className="print-dashboard-filter-heading"><strong>{t('dash.filters')}</strong><span data-testid="dashboard-filter-count">{t('ps.count').replace('{n}', numberFormatter.format(filtered.length)).replace('{m}', numberFormatter.format(inventory.items.length))}</span></div>
       <div className="print-dashboard-filters">
         <label className="print-dashboard-search"><span className="sr-only">{t('dash.search')}</span><Search size={17}/><input type="search" value={filter.query} onChange={event => set('query', event.target.value)} placeholder={t('dash.searchPlaceholder')} data-testid="inventory-filter-search"/>{filter.query && <button type="button" aria-label={t('clearSearch')} onClick={() => set('query', '')}><X size={15}/></button>}</label>
-        <label><span>{t('dash.venue')}</span><select value={filter.venue} onChange={event => set('venue', event.target.value)} data-testid="inventory-filter-venue"><option value="">{t('ps.filter.allVenues')}</option>{venues.map(([id, name]) => <option key={id} value={id}>{name}</option>)}{hasUnassigned && <option value={UNASSIGNED_VENUE}>{t('dash.unassigned')}</option>}</select></label>
+        <label><span>{t('dash.venue')}</span><select value={filter.venue} onChange={event => set('venue', event.target.value)} data-testid="inventory-filter-venue"><option value="">{t('dash.filter.allVenues')}</option><option value={ASSIGNED_VENUE}>{t('dash.filter.assigned')}</option><option value={UNASSIGNED_VENUE}>{t('dash.filter.unassigned')}</option></select></label>
         <label><span>{t('dash.state')}</span><select value={filter.state} onChange={event => set('state', event.target.value)} data-testid="inventory-filter-state"><option value="">{t('ps.filter.anyState')}</option>{['online', 'offline', 'unknown', 'unassigned', 'errors', 'warnings'].map(state => <option key={state} value={state}>{t(`dash.${state}`)}</option>)}</select></label>
         <label><span>{t('dash.version')}</span><select value={filter.version} onChange={event => set('version', event.target.value)} data-testid="inventory-filter-version"><option value="">{t('ps.filter.allVersions')}</option>{versions.map(version => <option key={version ?? UNKNOWN_VERSION} value={version ?? UNKNOWN_VERSION}>{version ?? t('dash.unknownVersion')}</option>)}</select></label>
         <button className="print-dashboard-clear" type="button" disabled={!changed} onClick={() => { setFilter(EMPTY_INVENTORY_FILTER); pagination.reset(); }} data-testid="dashboard-filter-clear"><FilterX size={15}/>{t('ps.filter.clear')}</button>
