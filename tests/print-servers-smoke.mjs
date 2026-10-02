@@ -114,6 +114,8 @@ try{
    record('Queue: a printer without jobs shows the empty queue message');
    assert(!(await page.content()).includes('SHOULD-NEVER-SHOW'));await queue.screenshot({path:out+'print-servers-queue.png'});
   }
+  // Printer details are collapsed initially in both scopes.
+  await id('printers-toggle').click();
   // Cancel never writes.
   await id(`printer-toggle-${p1}`).click();await id('confirm-cancel').click();await id('confirm-dialog').waitFor({state:'hidden'});assert.equal(db.calls.length,0);
   await id(`printer-toggle-${p1}`).click();await confirm('Pause');await result('paused');await page.locator(`[data-testid="printer-row-${p1}"][data-active="false"]`).waitFor();
@@ -155,6 +157,7 @@ try{
   db.printers[0].workstations=Array.from({length:45},(_,i)=>({id:'w'+i,name:'Workstation '+(i+1)}));
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto(origin+`/admin/print-servers/${v1}`);await page.getByTestId('ps-state').waitFor();
+  await page.getByTestId('printers-toggle').click();
   const toggle=page.getByTestId(`printer-toggle-${p1}`);
   await toggle.click();await page.getByTestId('confirm-accept').click();
   await page.getByTestId('confirm-dialog').waitFor({state:'detached'});

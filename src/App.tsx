@@ -109,8 +109,9 @@ function OwnerRoute() {
   if(!detail.data?.some(v=>v.id===selected))return <StateView kind="denied"/>;
   // Users section: only for a venue this person owns. An approved member sees the venue card alone.
   const owns=detail.data.find(v=>v.id===selected)?.is_owner===true;
-  return <OwnerPage venues={venues.map(v=>v.id===selected?detail.data!.find(item=>item.id===selected)!:v)} selectedId={selected} onSelect={select}
-    users={owns?<OwnerUsersData key={selected} venueId={selected}/>:undefined}/>;
+  return <OwnerPage key={selected} venues={venues.map(v=>v.id===selected?detail.data!.find(item=>item.id===selected)!:v)} selectedId={selected} onSelect={select}
+    users={owns?<OwnerUsersData key={selected} venueId={selected}/>:undefined}
+    printServers={<VenuePrintServerData key={selected} venue={detail.data.find(v=>v.id===selected)!} scope="owner"/>}/>;
 }
 // Members of the owner's venue: one request at a time, localized errors, and a fresh
 // access check whenever the backend refuses (it decides ownership on every call).
@@ -118,7 +119,10 @@ function OwnerUsersData({venueId}:{venueId:string}) {
   const {session,expire}=useAuth();
   const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
   const data=useQuery({queryKey:['owner-users',session?.user.id,venueId],queryFn:()=>getOwnerUsers(venueId),refetchInterval:60_000});
-  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  useEffect(()=>{
+    if(data.error&&staffErrorKey(data.error)==='sessionExpired')void expire();
+    if(data.error&&staffErrorKey(data.error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
+  },[data.error,expire]);
   const run=async(body:Record<string,unknown>,done:(result:Record<string,unknown>)=>string)=>{
     if(busy)return;
     setBusy(true);setError(null);setNotice(null);
@@ -133,6 +137,8 @@ function OwnerUsersData({venueId}:{venueId:string}) {
       throw e;
     } finally {setBusy(false);}
   };
+  if(data.error&&staffErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.error&&staffErrorKey(data.error)==='sessionExpired')return <StateView kind="loading"/>;
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError&&!data.data)return <StateView kind={staffErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="loading"/>;
@@ -168,7 +174,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
-    printServers={canManageUsers?(tab==='print-server-detail'?<PrintServerDetailData key={id} venueId={id} embedded/>:<PrintFleetData key={id} venueId={id}/>):undefined}/>;
+    printServers={canManageUsers?(tab==='print-server-detail'?<VenuePrintServerData key={id} venue={data.data.venue} scope="admin"/>:<PrintFleetData key={id} venueId={id}/>):undefined}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -219,7 +225,10 @@ function VenueUsersData({venueId}:{venueId:string}) {
   const {session,expire}=useAuth(); const {locale}=useLocale();
   const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
   const data=useQuery({queryKey:['venue-users',session?.user.id,venueId],queryFn:()=>getVenueUsers(venueId),refetchInterval:60_000});
-  useEffect(()=>{if(data.error&&staffErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  useEffect(()=>{
+    if(data.error&&staffErrorKey(data.error)==='sessionExpired')void expire();
+    if(data.error&&staffErrorKey(data.error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
+  },[data.error,expire]);
   const run=async(body:Record<string,unknown>,done:(result:Record<string,unknown>)=>string)=>{
     if(busy)return;
     setBusy(true);setError(null);setNotice(null);
@@ -235,6 +244,8 @@ function VenueUsersData({venueId}:{venueId:string}) {
       throw e;
     } finally {setBusy(false);}
   };
+  if(data.error&&staffErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.error&&staffErrorKey(data.error)==='sessionExpired')return <StateView kind="loading"/>;
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError&&!data.data) {
     const code=staffErrorKey(data.error);
@@ -278,23 +289,41 @@ function PrintFleetData({venueId}:{venueId?:string}) {
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-function PrintServerDetailData({venueId,embedded=false}:{venueId:string;embedded?:boolean}) {
-  const {session,expire}=useAuth();
+// Global routes may read the fleet; an embedded venue section never needs it.
+function PrintServerDetailData({venueId}:{venueId:string}) {
+  const {expire}=useAuth();
   const fleet=useFleet();
-  const state=useQuery({queryKey:['ps-state',session?.user.id,venueId],queryFn:({signal})=>getPanelState(venueId,signal),refetchInterval:10_000});
-  // The one-time enrollment code never passes through here: the page keeps it in its own state.
+  useEffect(()=>{if(fleet.error&&psErrorKey(fleet.error)==='sessionExpired')void expire();},[fleet.error,expire]);
+  if(fleet.isError)return <StateView kind={psErrorKey(fleet.error)==='accessDenied'?'denied':'error'} onRetry={()=>void fleet.refetch()}/>;
+  if(!fleet.data)return <StateView kind="loading"/>;
+  const row=fleet.data.find(item=>item.venue_id===venueId);
+  if(!row)return <StateView kind="notFound"/>;
+  const venue:OwnerVenue={id:row.venue_id,name:row.venue_name,slug:row.venue_slug,is_active:row.venue_is_active,
+    city:null,state:null,address:null,phone:null,email:null,timezone:null};
+  return <VenuePrintServerData key={venueId} venue={venue} scope="admin" embedded={false}/>;
+}
+// The same panel contract serves both scopes, always with the user's JWT and
+// selected venue. Scope is presentation, never an authorization grant.
+function VenuePrintServerData({venue,scope,embedded=true}:{venue:OwnerVenue;scope:'owner'|'admin';embedded?:boolean}) {
+  const {session,expire}=useAuth();
+  const venueId=venue.id;
+  const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId],
+    queryFn:({signal})=>getPanelState(venueId,signal,scope),refetchInterval:10_000});
   const api=useMemo(()=>withFailureHook(printServerApi,async key=>{
     if(key==='sessionExpired')await expire();
     if(key==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
   }),[expire]);
-  const failure=state.error??fleet.error;
-  useEffect(()=>{if(failure&&psErrorKey(failure)==='sessionExpired') void expire();},[failure,expire]);
-  if(failure&&psErrorKey(failure)==='accessDenied')return <StateView kind="denied"/>;
-  const venue=fleet.data?.find(row=>row.venue_id===venueId);
-  // A failed background refetch keeps the page (and an open code dialog) mounted.
-  if(state.data&&venue)return <PrintServerDetailPage embedded={embedded} venue={venue} state={state.data} api={api} stale={state.isError} refresh={async()=>{await state.refetch();void fleet.refetch();}}/>;
-  if(failure)return <StateView kind="error" onRetry={()=>{void state.refetch();void fleet.refetch();}}/>;
-  if(state.data===null||(fleet.data&&!venue))return <StateView kind="notFound"/>;
+  useEffect(()=>{
+    if(state.error&&psErrorKey(state.error)==='sessionExpired')void expire();
+    if(state.error&&psErrorKey(state.error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
+  },[state.error,expire]);
+  if(state.error&&psErrorKey(state.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(state.error&&psErrorKey(state.error)==='sessionExpired')return <StateView kind="loading"/>;
+  if(state.data)return <PrintServerDetailPage scope={scope} embedded={embedded}
+    venue={{venue_id:venue.id,venue_name:venue.name,venue_slug:venue.slug,venue_is_active:venue.is_active}}
+    state={state.data} api={api} stale={state.isError} refresh={()=>state.refetch()}/>;
+  if(state.isError)return <StateView kind="error" onRetry={()=>void state.refetch()}/>;
+  if(state.data===null)return <StateView kind="notFound"/>;
   return <StateView kind="loading"/>;
 }
 // One shell instance survives route changes, including access checks and auth flows.

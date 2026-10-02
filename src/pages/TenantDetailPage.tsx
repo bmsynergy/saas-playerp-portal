@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ArrowLeft, Building2, Clock3, Globe2, Mail, MapPin, Phone, Server, UsersRound } from 'lucide-react';
+import { ArrowLeft, Clock3, Server } from 'lucide-react';
 import type { TenantDetail } from '../lib/types';
 import { signalState } from '../lib/status';
 import { useLocale } from '../locales';
-import { DetailItem } from './OwnerPage';
+import { VenueDetailsPanel, VenueSectionTabs } from './VenueSections';
 
 export type TenantTab = 'overview' | 'users' | 'print-servers' | 'print-server-detail';
 
@@ -15,8 +15,8 @@ export function TenantDetailPage({ detail, tab = 'overview', users, printServers
   return <div className="page-stack">
     <Link className="back-link" to="/admin/tenants"><ArrowLeft size={17}/>{t('backToDirectory')}</Link>
     <div className="page-heading detail-heading"><div><p className="eyebrow">{t('tenantOverview')}</p><h1>{venue.name}</h1><p>{t('detailLead')}</p></div><span className={`status-badge ${venue.is_active === true ? 'status-active' : venue.is_active === false ? 'status-inactive' : 'status-unknown'}`}><span className="badge-dot"/>{venue.is_active === true ? t('active') : venue.is_active === false ? t('inactive') : t('unknown')}</span></div>
-    {(users !== undefined || printServers !== undefined) && <nav className="detail-tabs" aria-label={t('identity.tabsLabel')}><NavLink end to={base} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}><Building2 size={16}/>{t('venueDetails')}</NavLink>{users !== undefined && <NavLink to={`${base}/users`} data-testid="venue-users-tab" className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}><UsersRound size={16}/>{t('identity.tab')}</NavLink>}{printServers !== undefined && <NavLink to={`${base}/print-servers`} data-testid="venue-print-servers-tab" className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}><Server size={16}/>{t('printServers')}</NavLink>}</nav>}
-    {tab === 'users' && users !== undefined ? users : (tab === 'print-servers' || tab === 'print-server-detail') && printServers !== undefined ? printServers : <><section className="detail-panel"><div className="section-heading"><div><p className="eyebrow">{t('venues')}</p><h2>{t('venueDetails')}</h2></div><span className="section-icon"><Building2 size={20}/></span></div><div className="detail-grid"><DetailItem icon={<MapPin size={19}/>} label={t('city')} value={venue.city}/><DetailItem icon={<Globe2 size={19}/>} label={t('slug')} value={venue.slug}/><DetailItem icon={<MapPin size={19}/>} label={t('address')} value={venue.address}/><DetailItem icon={<Globe2 size={19}/>} label={t('timezone')} value={venue.timezone}/><DetailItem icon={<Phone size={19}/>} label={t('phone')} value={venue.phone}/><DetailItem icon={<Mail size={19}/>} label={t('email')} value={venue.email} isEmail/></div></section>{printServers === undefined && <VenueServerSummary servers={detail.print_servers}/>}</>}
+    <VenueSectionTabs active={tab === 'print-server-detail' ? 'print-servers' : tab} users={users !== undefined} printServers={printServers !== undefined} render={(item) => <NavLink key={item.section} end={item.section === 'overview'} to={item.section === 'overview' ? base : `${base}/${item.section}`} data-testid={item.testId} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}>{item.icon}{item.label}</NavLink>}/>
+    {tab === 'users' && users !== undefined ? users : (tab === 'print-servers' || tab === 'print-server-detail') && printServers !== undefined ? printServers : <><VenueDetailsPanel venue={venue} scope="admin"/>{printServers === undefined && <VenueServerSummary servers={detail.print_servers}/>}</>}
   </div>;
 }
 

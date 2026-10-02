@@ -1,0 +1,50 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "mocks": false,
+  "checks": [
+    {
+      "name": "en: real owner details/users/PS/version/printers/queues; local search; collapsed initial state; mobile fits; no reserved controls or global reads",
+      "users": 9,
+      "printers": 2,
+      "jobs": 3
+    },
+    {
+      "name": "Real owner session denied foreign venue and global reads (403)"
+    },
+    {
+      "name": "Existing owner user management: role changed through confirmation UI and verified on server"
+    },
+    {
+      "name": "Owner cannot assign owner role (422) or manage foreign venue users (403); original role restored"
+    },
+    {
+      "name": "Owner portal-access UI grants controlled member access; real member sees PS read-only, no Users tab, and server denies printer operation (403)"
+    },
+    {
+      "name": "es: real owner details/users/PS/version/printers/queues; local search; collapsed initial state; mobile fits; no reserved controls or global reads",
+      "users": 9,
+      "printers": 2,
+      "jobs": 3
+    },
+    {
+      "name": "Real multi-venue owner switches A to B: resets tab, filter, expansion and displayed data; no global reads"
+    },
+    {
+      "name": "en: Admin uses same real PS/printer/queue component with platform actions and existing Users tab, mobile fits"
+    },
+    {
+      "name": "es: Admin uses same real PS/printer/queue component with platform actions and existing Users tab, mobile fits"
+    }
+  ],
+  "pageErrors": [],
+  "screenshots": [
+    "owner-users-390-en.png",
+    "owner-ps-390-en.png",
+    "owner-users-390-es.png",
+    "owner-ps-390-es.png",
+    "owner-switch-1440-en.png",
+    "admin-ps-390-en.png",
+    "admin-ps-390-es.png"
+  ],
+  "passed": true
+}

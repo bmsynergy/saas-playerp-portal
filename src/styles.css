@@ -25,6 +25,26 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 @media(max-width:1250px){.ps-printer-form{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-fleet-table tr,.ps-printers-table tr,.ps-scan-table tr,.ps-jobs-table tr{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.ps-printer-form{grid-template-columns:1fr}.ps-fleet-table tr,.ps-printers-table tr,.ps-scan-table tr,.ps-jobs-table tr{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ps-printers-table th{white-space:normal;line-height:1.3}.ps-printers-table .staff-actions-cell{min-width:170px}
+.owner-venue-context{border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);background:linear-gradient(115deg,#fff 20%,var(--canvas) 100%)}
+.venue-details-heading{padding:25px 32px 0;margin-bottom:0}
+.venue-details-heading h2{margin-bottom:0}
+.owner-venue-card .detail-grid{padding-top:24px}
+.detail-tab{border-top:0;border-left:0;border-right:0;background:transparent;white-space:nowrap}
+.ps-printers-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 16px;border:1px solid var(--control-line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:.82rem;font-weight:800;text-align:left}
+.ps-printers-toggle:hover{border-color:var(--blue);background:var(--blue-soft)}
+.ps-printers-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.ps-printers-search{display:block;width:min(100%,420px);margin:20px 0 16px}
+.ps-printers-search .field-control{display:flex;align-items:center;gap:8px;background:#fff;padding:0 12px;color:var(--muted)}
+.ps-printers-search input{width:100%;height:42px;border:0;outline:0;background:transparent;color:var(--ink)}
+.ps-printers-search .field-control:focus-within{outline:3px solid var(--focus);outline-offset:3px}
+.venue-users-controls{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+.venue-users-search{display:block;width:min(100%,420px)}
+.venue-users-search .field-control{display:flex;align-items:center;gap:8px;padding:0 12px;background:#fff;color:var(--muted)}
+.venue-users-search input{width:100%;height:42px;border:0;outline:0;background:transparent;color:var(--ink)}
+.venue-users-search .field-control:focus-within{outline:3px solid var(--focus);outline-offset:3px}
+.venue-users-controls .venue-users-toolbar{margin:0}
+@media(max-width:450px){.venue-users-search,.venue-users-controls .venue-users-toolbar,.venue-users-controls .button{width:100%}}
+@media(max-width:450px){.venue-details-heading{padding-left:19px;padding-right:19px}.detail-tabs{overflow-x:auto;flex-wrap:nowrap}.detail-tab{flex:none}}
 
 /* Authenticated workspace chrome; colors continue to come from the current theme tokens. */
 .portal-layout.sidebar-collapsed{grid-template-columns:76px minmax(0,1fr)}

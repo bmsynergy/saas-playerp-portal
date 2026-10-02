@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Check, KeyRound, MailPlus, ShieldCheck, UserRoundX, UsersRound, X } from 'lucide-react';
+import { Check, KeyRound, MailPlus, ShieldCheck, UserRoundX, X } from 'lucide-react';
 import type { OwnerUser, OwnerUserAction, OwnerUserInvite, OwnerUsers } from '../lib/ownerUsers';
 import { slugLabel, venueRoleLabel } from '../lib/venueUsers';
 import { useLocale } from '../locales';
 import { PortalDialog } from '../components/PortalDialog';
+import { VenueUsersList } from './VenueUsersList';
 
 type Props = {
   data: OwnerUsers; busy: boolean; error: string | null; notice: string | null;
@@ -61,13 +62,11 @@ export function OwnerUsersSection({ data, busy, error, notice, onInvite, onActio
   }
   const lockedNote = (person: OwnerUser) => t(person.locked === 'self' ? 'ownerUsers.lockedSelf' : person.locked === 'owner' ? 'ownerUsers.lockedOwner' : 'identity.protectedNote');
 
-  return <section className="staff-panel owner-users" aria-labelledby="owner-users-title" data-testid="owner-users">
-    <div className="section-heading"><div><p className="eyebrow">{t('ownerUsers.eyebrow')}</p><h2 id="owner-users-title">{t('ownerUsers.title')}</h2></div><span className="count-pill" data-testid="owner-users-count">{users.length}</span></div>
-    <p className="staff-panel-lead">{fill('ownerUsers.lead', { venue: venue.name })}</p>
-    {(error || (localError && !inviting)) && <div className="form-error" role="alert"><UserRoundX size={19}/><span>{t((!inviting && localError) || error || 'genericError')}</span></div>}
-    {notice && <div className="staff-notice" role="status"><Check size={18}/><span>{t(notice)}</span></div>}
-    <div className="staff-actions venue-users-toolbar"><button type="button" className="button button-primary" data-testid="owner-users-invite" disabled={busy || !roles.length} onClick={openInvite}><MailPlus size={17}/>{t('identity.invite')}</button></div>
-    {users.length === 0 ? <div className="staff-empty"><UsersRound size={27}/><strong>{t('identity.emptyTitle')}</strong><span>{t('identity.emptyBody')}</span></div> : <div className="staff-table-wrap"><table className="staff-table owner-users-table"><thead><tr><th>{t('name')}</th><th>{t('email')}</th><th>{t('identity.roleHere')}</th><th>{t('ownerUsers.portalAccess')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{users.map(person => <tr key={person.user_id} data-testid="owner-user-row">
+  return <div className="owner-users-wrapper">
+    <VenueUsersList venueId={venue.id} scope="owner" users={users} name={displayName} email={person => person.email} lead={fill('ownerUsers.lead', { venue: venue.name })} headers={[t('name'), t('email'), t('identity.roleHere'), t('ownerUsers.portalAccess'), t('staff.actions')]} className="owner-users"
+      beforeToolbar={<>{(error || (localError && !inviting)) && <div className="form-error" role="alert"><UserRoundX size={19}/><span>{t((!inviting && localError) || error || 'genericError')}</span></div>}{notice && <div className="staff-notice" role="status"><Check size={18}/><span>{t(notice)}</span></div>}</>}
+      toolbar={<button type="button" className="button button-primary" data-testid="owner-users-invite" disabled={busy || !roles.length} onClick={openInvite}><MailPlus size={17}/>{t('identity.invite')}</button>}
+      row={person => <tr key={person.user_id} data-testid="owner-user-row">
       <td data-label={t('name')} className="staff-identity"><strong>{person.full_name?.trim() || t('notProvided')}{person.is_self && <span className="staff-self">{t('staff.you')}</span>}</strong><small>{slugLabel(t, 'identity.status', person.status)}</small></td>
       <td data-label={t('email')}><span className="venue-user-email">{person.email}</span></td>
       <td data-label={t('identity.roleHere')}><span className="staff-role"><ShieldCheck size={15}/>{venueRoleLabel(t, person.role)}</span></td>
@@ -78,7 +77,7 @@ export function OwnerUsersSection({ data, busy, error, notice, onInvite, onActio
           <button className={`staff-action-link ${person.portal_access ? 'danger' : ''}`} type="button" data-testid="owner-user-portal-toggle" disabled={busy} onClick={() => ask(person, 'set_portal_access', !person.portal_access)}><KeyRound size={14}/>{t(person.portal_access ? 'ownerUsers.removePortal' : 'ownerUsers.grantPortal')}</button>
         </div>}
       </td>
-    </tr>)}</tbody></table></div>}
+    </tr>}/>
     {inviting && <PortalDialog title={t('identity.inviteTitle')} titleId="owner-invite-title" descriptionId="owner-invite-lead" testId="owner-invite-dialog" onClose={() => setInviting(false)} dismissible={!busy} actions={<><button className="button button-primary" type="submit" form="owner-invite-form" disabled={busy}><MailPlus size={15}/>{t(busy ? 'staff.sending' : 'staff.sendInvite')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setInviting(false)}><X size={15}/>{t('staff.cancel')}</button></>}>
       <p id="owner-invite-lead" className="ps-dialog-sub">{fill('ownerUsers.inviteLead', { venue: venue.name })}</p>
       {(localError || (failed && error)) && <div className="form-error" role="alert">{t(localError || error || 'genericError')}</div>}
@@ -91,5 +90,5 @@ export function OwnerUsersSection({ data, busy, error, notice, onInvite, onActio
       </form>
     </PortalDialog>}
     {pending && target && <PortalDialog title={t('identity.confirmTitle')} titleId="owner-user-confirm-title" descriptionId="owner-user-confirm-body" testId="owner-user-confirm" onClose={() => setPending(null)} dismissible={!busy} alert actions={<><button className={`button button-primary ${pending.action === 'set_portal_access' && pending.value === false ? 'ps-danger-solid' : ''}`} type="button" disabled={busy} onClick={() => void confirm()}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></>}><p id="owner-user-confirm-body">{pendingText(target)}</p>{failed && error && <div className="form-error" role="alert">{t(error)}</div>}</PortalDialog>}
-  </section>;
+  </div>;
 }

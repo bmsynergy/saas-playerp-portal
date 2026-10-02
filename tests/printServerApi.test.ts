@@ -132,3 +132,21 @@ describe('RPC calls', () => {
     expect(seen).toEqual(['accessDenied']);
   });
 });
+
+describe('venue and scope boundary', () => {
+  it('rejects a panel answer belonging to another venue before rendering or caching', async () => {
+    answer({...rawState, venue_id:'33333333-3333-4333-8333-333333333333'});
+    await expect(getPanelState(venue)).rejects.toMatchObject({code:'accessDenied'});
+  });
+  it('owner drops device notes while keeping real can_manage, admin retains its diagnostics', async () => {
+    answer(rawState);
+    const owner=await getPanelState(venue,undefined,'owner');
+    expect(owner?.print_server?.last_status?.note).toBeNull();
+    expect(owner?.can_manage).toBe(true);
+    answer({...rawState,can_manage:false});
+    const reader=await getPanelState(venue,undefined,'owner');
+    expect(reader?.can_manage).toBe(false);
+    answer(rawState);
+    expect((await getPanelState(venue))?.print_server?.last_status?.note).toBe('ok');
+  });
+});

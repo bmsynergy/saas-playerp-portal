@@ -159,9 +159,14 @@ export async function getFleet(signal?: AbortSignal): Promise<FleetRow[]> {
   const data = await rpc('portal_ps_fleet', {}, signal);
   return Array.isArray(data) ? data.map(projectFleetRow) : bad();
 }
-export async function getPanelState(venueId: string, signal?: AbortSignal): Promise<PanelState | null> {
+export async function getPanelState(venueId: string, signal?: AbortSignal, scope: 'owner' | 'admin' = 'admin'): Promise<PanelState | null> {
   const data = await rpc('ps_panel_state', { p_venue_id: venueId }, signal);
-  return data === null ? null : projectPanelState(data);
+  if (data === null) return null;
+  const state = projectPanelState(data);
+  if (state.venue_id !== venueId) throw new PortalError('accessDenied');
+  // Device notes are not part of the owner view; omit them before caching.
+  if (scope === 'owner' && state.print_server?.last_status) state.print_server.last_status.note = null;
+  return state;
 }
 export async function createEnrollment(venueId: string, label: string): Promise<Enrollment> {
   const data = await action('ps_panel_create_enrollment', { p_venue_id: venueId, p_label: label.trim() || null, p_ttl_minutes: 60 });

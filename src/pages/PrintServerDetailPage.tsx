@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, AlertTriangle, ArrowLeft, Check, Clock3, Copy, Download, FileKey2, Gauge, Globe2, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, Check, ChevronDown, Clock3, Copy, Download, FileKey2, Gauge, Globe2, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Search, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
 import { fleetState, formatUptime, normalizeMac, relativeTime, sameMac, type FleetRow } from '../lib/printFleet';
 import { psErrorKey, type PanelPrinter, type PanelScan, type PanelState, type PrintServerApi } from '../lib/printServerApi';
 import { slugLabel } from '../lib/venueUsers';
@@ -10,7 +10,7 @@ import { PortalDialog } from '../components/PortalDialog';
 import { PrinterQueue } from './PrinterQueue';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
-type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean };
+type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin' };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
 type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
 type Result = { ok: boolean; text: string };
@@ -24,7 +24,7 @@ function Item({ icon, label, children, testId }: { icon: ReactNode; label: strin
   return <div className="detail-item"><span className="detail-item-icon" aria-hidden="true">{icon}</span><div><span className="detail-item-label">{label}</span><strong data-testid={testId}>{children}</strong></div></div>;
 }
 
-export function PrintServerDetailPage({ venue, state, api, refresh, stale = false, embedded = false }: Props) {
+export function PrintServerDetailPage({ venue, state, api, refresh, stale = false, embedded = false, scope = 'admin' }: Props) {
   const { locale, t } = useLocale();
   const server = state.print_server; const pendingEnrollment = state.pending_enrollment; const canManage = state.can_manage;
   const venueName = venue.venue_name; const venueId = state.venue_id;
@@ -47,6 +47,9 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const [now, setNow] = useState(() => Date.now());
   // Bumped after every confirmed action, so each printer's queue shows what it just caused.
   const [queueKey, setQueueKey] = useState(0);
+  const [printersOpen, setPrintersOpen] = useState(false);
+  const [printerSearch, setPrinterSearch] = useState('');
+  const printersRegionId = useId();
   const dateFormatter = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -161,7 +164,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       } });
   }
   function prefill(mac: string | null, model: string | null) {
-    setForm({ ...EMPTY_FORM, mac_address: mac ?? '', model: model ?? '' }); setFormOpen(true); setResult(null);
+    setPrintersOpen(true); setForm({ ...EMPTY_FORM, mac_address: mac ?? '', model: model ?? '' }); setFormOpen(true); setResult(null);
     labelInput.current?.focus();
   }
   function askRename(printer: PanelPrinter) {
@@ -205,9 +208,10 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const scanStatus = scanTimedOut && shownScan && !FINAL.includes(shownScan.status) ? 'timeout' : shownScan?.status ?? null;
   const certAvailable = !!server?.ca_cert_available && !certMissing;
   const yesNo = (value: boolean | null) => value === null ? t('notProvided') : t(value ? 'ps.yes' : 'ps.no');
+  const matchingPrinters = state.printers.filter(printer => [printer.label, printer.mac_address, printer.model, printer.location].some(value => value?.toLocaleLowerCase().includes(printerSearch.trim().toLocaleLowerCase())));
 
   return <div className="page-stack staff-page" data-testid="ps-detail">
-    <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>
+    {scope === 'admin' && <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>}
     {embedded ? <div className="ps-embedded-heading"><h2 data-testid="ps-venue-name">{t('ps.detailEyebrow')}</h2><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div> : <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
     {stale && <div className="form-error" role="alert"><AlertTriangle size={19}/><span>{t('ps.stale')}</span></div>}
@@ -226,7 +230,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       </div> : <div className="inline-empty servers-empty"><Server size={25}/>{t(pendingEnrollment ? 'ps.noServerPending' : 'ps.noServer')}<span className="sr-only" data-testid="ps-version">{t('notProvided')}</span></div>}
       <div className="ps-section-body">
         {pendingEnrollment && <p className="staff-notice ps-pending" data-testid="ps-enrollment-pending"><Clock3 size={18}/><span>{fill(t('ps.enrollmentPendingUntil'), { time: date(pendingEnrollment.expires_at) })}{pendingEnrollment.label ? ` · ${pendingEnrollment.label}` : ''}</span></p>}
-        {canManage && <div className="staff-actions ps-actions">
+        {scope === 'admin' && canManage && <div className="staff-actions ps-actions">
           <label className="field ps-inline-field"><span>{t('ps.enrollLabel')}</span><div className="field-control"><input type="text" data-testid="ps-assign-label" autoComplete="off" maxLength={80} value={enrollLabel} onChange={event => setEnrollLabel(event.target.value)} placeholder={t('ps.enrollLabelPlaceholder')} disabled={busy}/></div></label>
           <button type="button" className="button button-primary" data-testid="ps-assign" disabled={busy} onClick={askEnrollment}><Plus size={17}/>{t(server ? 'ps.replace' : 'ps.assign')}</button>
           {server && <button type="button" className="button button-secondary ps-danger" data-testid="ps-revoke" disabled={busy} onClick={askRevoke}><X size={17}/>{t('ps.revoke')}</button>}
@@ -253,7 +257,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
         <Item icon={<ListOrdered size={19}/>} label={t('ps.pendingJobs')} testId="ps-pending-jobs">{totalPending}</Item>
         <Item icon={<Globe2 size={19}/>} label={t('ps.diag.portalUrl')}><span className="ps-mono">{lastStatus?.portal_url || t('notProvided')}</span></Item>
         <Item icon={<Clock3 size={19}/>} label={t('ps.diag.channelOpenedAt')}>{date(server?.channel_opened_at ?? null)}</Item>
-        <Item icon={<StickyNote size={19}/>} label={t('ps.diag.note')}>{lastStatus?.note || t('notProvided')}</Item>
+        {scope === 'admin' && <Item icon={<StickyNote size={19}/>} label={t('ps.diag.note')}>{lastStatus?.note || t('notProvided')}</Item>}
       </div>
       {state.printers.length > 0 && <div className="ps-section-body"><p className="detail-item-label">{t('ps.diag.pendingByPrinter')}</p><ul className="ps-queue-list">{state.printers.map(printer => <li key={printer.id} data-testid={`printer-queue-${printer.id}`}><span>{printer.label}</span><strong>{printer.pending_jobs}</strong></li>)}</ul></div>}
     </section>
@@ -281,6 +285,9 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
 
     <section className="staff-panel" aria-labelledby="ps-printers-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="ps-printers-title">{t('ps.printers.title')}</h2></div><span className="count-pill">{state.printers.length}</span></div>
       <p className="staff-panel-lead">{t('ps.printers.lead')}</p>
+      <button type="button" className="ps-printers-toggle" data-testid="printers-toggle" aria-expanded={printersOpen} aria-controls={printersRegionId} onClick={() => setPrintersOpen(value => !value)}><span>{t(printersOpen ? 'ps.printers.closeList' : 'ps.printers.openList')}</span><ChevronDown size={18} aria-hidden="true"/></button>
+      <div id={printersRegionId} hidden={!printersOpen}>
+      {state.printers.length > 0 && <label className="field ps-printers-search"><span>{t('ps.printers.search')}</span><span className="field-control"><Search size={17} aria-hidden="true"/><input type="search" data-testid="printers-search" value={printerSearch} onChange={event => setPrinterSearch(event.target.value)} placeholder={t('ps.printers.searchPlaceholder')}/></span></label>}
       {canManage && <div className="staff-actions ps-actions"><button type="button" className="button button-secondary" data-testid="printer-add" aria-expanded={formOpen} disabled={busy} onClick={() => { setFormOpen(!formOpen); if (formOpen) setForm(EMPTY_FORM); }}>{formOpen ? <X size={17}/> : <Plus size={17}/>}{t(formOpen ? 'ps.printers.cancelAdd' : 'ps.printers.add')}</button></div>}
       {canManage && formOpen && <form className="staff-invite-form ps-printer-form" data-testid="printer-form" onSubmit={submitPrinter} noValidate>
         <label className="field"><span>{t('ps.printers.name')} *</span><div className="field-control"><input ref={labelInput} type="text" data-testid="printer-form-label" autoComplete="off" maxLength={80} value={form.label} onChange={event => setForm({ ...form, label: event.target.value })} disabled={busy} required/></div></label>
@@ -289,7 +296,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
         <label className="field"><span>{t('ps.printers.location')}</span><div className="field-control"><input type="text" data-testid="printer-form-location" autoComplete="off" maxLength={80} value={form.location} onChange={event => setForm({ ...form, location: event.target.value })} disabled={busy}/></div></label>
         <button type="submit" className="button button-primary" data-testid="printer-form-submit" disabled={busy}><Plus size={17}/>{t('ps.printers.addSubmit')}</button>
       </form>}
-      {state.printers.length === 0 ? <div className="staff-empty" data-testid="printers-empty"><Printer size={27}/><strong>{t('ps.printers.empty')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-printers-table"><thead><tr><th>{t('ps.printers.name')}</th><th>{t('ps.printers.mac')}</th><th>{t('state')}</th><th>{t('ps.printers.lastReport')}</th><th>{t('ps.printers.lastError')}</th><th>{t('ps.pendingJobs')}</th><th>{t('ps.printers.workstations')}</th>{canManage && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{state.printers.map(printer => {
+      {state.printers.length === 0 ? <div className="staff-empty" data-testid="printers-empty"><Printer size={27}/><strong>{t('ps.printers.empty')}</strong></div> : matchingPrinters.length === 0 ? <div className="staff-empty" data-testid="printers-no-results"><Search size={27}/><strong>{t('ps.printers.noResults')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-printers-table"><thead><tr><th>{t('ps.printers.name')}</th><th>{t('ps.printers.mac')}</th><th>{t('state')}</th><th>{t('ps.printers.lastReport')}</th><th>{t('ps.printers.lastError')}</th><th>{t('ps.pendingJobs')}</th><th>{t('ps.printers.workstations')}</th>{canManage && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{matchingPrinters.map(printer => {
         const report = printer.last_report; const reportAt = report?.reported_at ?? printer.last_report_at;
         const error = printer.last_error || report?.error || null;
         return <tr key={printer.id} data-testid={`printer-row-${printer.id}`} data-active={String(printer.is_active)}>
@@ -310,6 +317,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
           </div></td>}
         </tr>;
       })}</tbody></table></div>}
+      </div>
     </section>
 
     {state.printers.length > 0 && <section className="staff-panel" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>

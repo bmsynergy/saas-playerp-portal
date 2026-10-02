@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Check, MailPlus, RotateCcw, ShieldCheck, UserRoundX, UsersRound, X } from 'lucide-react';
+import { Check, MailPlus, RotateCcw, ShieldCheck, UserRoundX, X } from 'lucide-react';
 import { otherVenuesLabel, slugLabel, venueRoleLabel, type VenueUser, type VenueUserAction, type VenueUserInvite, type VenueUsers } from '../lib/venueUsers';
 import { useLocale } from '../locales';
 import { PortalDialog } from '../components/PortalDialog';
+import { VenueUsersList } from './VenueUsersList';
 
 type Props = {
   data: VenueUsers; busy: boolean; error: string | null; notice: string | null;
@@ -63,11 +64,9 @@ export function VenueUsersTab({ data, busy, error, notice, onInvite, onAction }:
   return <div className="page-stack staff-page" data-testid="venue-users">
     {(error || (localError && !inviting)) && <div className="form-error" role="alert"><UserRoundX size={19}/><span>{t((!inviting && localError) || error || 'genericError')}</span></div>}
     {notice && <div className="staff-notice" role="status"><Check size={18}/><span>{t(notice)}</span></div>}
-    <section className="staff-panel" aria-labelledby="venue-users-title">
-      <div className="section-heading"><div><p className="eyebrow">{t('identity.eyebrow')}</p><h2 id="venue-users-title">{t('identity.listTitle')}</h2></div><span className="count-pill" data-testid="venue-users-count">{users.length}</span></div>
-      <p className="staff-panel-lead">{fill('identity.lead', { venue: venue.name })}</p>
-      <div className="staff-actions venue-users-toolbar"><button type="button" className="button button-primary" data-testid="venue-users-invite" disabled={busy || !roles.length} onClick={openInvite}><MailPlus size={17}/>{t('identity.invite')}</button></div>
-      {users.length === 0 ? <div className="staff-empty"><UsersRound size={27}/><strong>{t('identity.emptyTitle')}</strong><span>{t('identity.emptyBody')}</span></div> : <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th>{t('name')}</th><th>{t('email')}</th><th>{t('identity.roleHere')}</th><th>{t('state')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{users.map(person => {
+    <VenueUsersList venueId={venue.id} scope="admin" users={users} name={displayName} email={person => person.email} lead={fill('identity.lead', { venue: venue.name })} headers={[t('name'), t('email'), t('identity.roleHere'), t('state'), t('staff.actions')]}
+      toolbar={<button type="button" className="button button-primary" data-testid="venue-users-invite" disabled={busy || !roles.length} onClick={openInvite}><MailPlus size={17}/>{t('identity.invite')}</button>}
+      row={person => {
         const others = otherVenuesLabel(t, person.other_venue_count);
         return <tr key={person.user_id} data-testid="venue-user-row">
           <td data-label={t('name')} className="staff-identity"><strong>{person.full_name?.trim() || t('notProvided')}{person.is_self && <span className="staff-self">{t('staff.you')}</span>}</strong>{others && <small title={t('identity.otherVenuesHint')}>{others}</small>}</td>
@@ -82,8 +81,7 @@ export function VenueUsersTab({ data, busy, error, notice, onInvite, onAction }:
             </div>}
           </td>
         </tr>;
-      })}</tbody></table></div>}
-    </section>
+      }}/>
     {inviting && <PortalDialog title={t('identity.inviteTitle')} titleId="venue-invite-title" descriptionId="venue-invite-lead" testId="venue-invite-dialog" onClose={() => setInviting(false)} dismissible={!busy} actions={<><button className="button button-primary" type="submit" form="venue-invite-form" disabled={busy}><MailPlus size={15}/>{t(busy ? 'staff.sending' : 'staff.sendInvite')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setInviting(false)}><X size={15}/>{t('staff.cancel')}</button></>}>
       <p id="venue-invite-lead" className="ps-dialog-sub">{fill('identity.inviteLead', { venue: venue.name })}</p>
       {(localError || (failed && error)) && <div className="form-error" role="alert">{t(localError || error || 'genericError')}</div>}
