@@ -49,7 +49,8 @@ try {
  for(const width of [1440,390]) {
   const {ctx,page,db}=await setup({width});await page.goto(origin+'/admin/print-servers');
   await expect(ids(page)).toHaveCount(4);
-  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All venues','Assigned to venue','Unassigned']);
+  await expect(page.getByTestId('inventory-filter-venue')).toHaveAccessibleName('Assigned');
+  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All','Assigned','Not assigned']);
   await page.getByTestId('inventory-filter-venue').selectOption('__assigned__');
   await expect(ids(page)).toHaveCount(3);await metric(page,'total',3);await metric(page,'unassigned',0);
   await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('1 / 3 · 33.3%');
@@ -77,7 +78,8 @@ try {
   await page.getByTestId('dashboard-filter-clear').click();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
   await page.getByRole('button',{name:'ES',exact:true}).click();await expect(page.getByTestId('dashboard-metric-unknown')).toContainText('Sin reporte');
-  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['Todos los venues','Asignados a un venue','Sin asignar']);
+  await expect(page.getByTestId('inventory-filter-venue')).toHaveAccessibleName('Asignación');
+  await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['Todos','Asignados','Sin asignar']);
   await page.getByTestId('inventory-filter-venue').selectOption('__assigned__');await metric(page,'total',3);
   await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('1 / 3 · 33,3%');
   await page.getByTestId('inventory-filter-venue').selectOption('__unassigned__');await expect(ids(page)).toHaveCount(1);await metric(page,'total',1);
@@ -140,7 +142,7 @@ try {
  for(const mode of ['loading','empty','error','denied']) {
   const {ctx,page,db}=await setup({mode});await page.goto(origin+'/admin/print-servers');
   if(mode==='loading'){await expect.poll(()=>typeof db.release).toBe('function');await expect(page.getByText('Loading',{exact:false}).first()).toBeVisible();db.mode='ready';db.release();await expect(ids(page)).toHaveCount(4);}
-  if(mode==='empty'){await expect(page.getByTestId('dashboard-empty')).toBeVisible();await metric(page,'total',0);await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All venues','Assigned to venue','Unassigned']);}
+  if(mode==='empty'){await expect(page.getByTestId('dashboard-empty')).toBeVisible();await metric(page,'total',0);await expect(page.getByTestId('inventory-filter-venue').locator('option')).toHaveText(['All','Assigned','Not assigned']);}
   if(mode==='error'){await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();db.mode='ready';await page.getByRole('button',{name:'Try again',exact:true}).click();await expect(ids(page)).toHaveCount(4);}
   if(mode==='denied'){await expect(page.getByRole('heading',{name:'Access denied',exact:true})).toBeVisible();await expect(page.getByTestId('dashboard-page')).toHaveCount(0);}
   record('Initial state '+mode);await ctx.close();
