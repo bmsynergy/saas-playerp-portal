@@ -11,3 +11,9 @@ Verificación de esta sesión (2 octubre 2026):
 - Gaby revisó diff, componente compartido y estilos en solo lectura: sin hallazgos verificables.
 
 Las sesiones y respuestas son sintéticas. Estas pruebas no acreditan autenticación ni permisos reales en la base, ni una sesión de Beny. Se conserva la conexión segura del primer paso. El informe publicado se añadirá tras publicar el commit.
+
+## Portal publicado
+
+Publicado `d31b59b7fdce6760f4a20097116a97dcc76f526b` en https://playerp.dev.bmore.app/admin/print-servers. HTML público sirve `index-CCwOVXUV.js` / `index-CDd2WihP.css`, coincidentes con la compilación local.
+
+`PORTAL_TEST_ORIGIN=https://playerp.dev.bmore.app node tests/print-dashboard.mjs`: 15 comprobaciones correctas, sin errores de página, incluido anterior/siguiente y rangos exactos. Informe `hosted-browser.json`. HTML/JS/CSS reales del portal DEV con respuestas API y sesión sintéticas. Gaby completó además la revisión de los tres criterios, proyección/filtros y rutas: sin incumplimientos verificables, sin comprobar permisos reales.
