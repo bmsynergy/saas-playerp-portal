@@ -1,0 +1,8 @@
+# pasada en vivo contra https://playerp.dev.bmore.app (portal 7e5efe4, publicación b921c923-5d2c-48ea-8e78-f90b74074c51), 2-oct-2026, 390x844
+  venue «WI170P1 Venue»: delivered+ovu-nuevo-1@resend.dev=fnb_staff, delivered+pe321-owner-uno@resend.dev=owner+portal, delivered+pe321-owner-varios@resend.dev=owner+portal, delivered+pe321-venue-frontdesk@resend.dev=front_desk, delivered+pe321-venue-manager@resend.dev=manager, delivered+pe321-venue-superadmin@resend.dev=super_admin, delivered+pe328-alta-pos@resend.dev=fnb_staff, delivered+pe328-solo-a@resend.dev=front_desk
+PASS Users section of the owner's venue lists exactly its 8 members with their role
+PASS No horizontal scroll at 390px (document 390px)
+PASS Invite and confirmation dialogs fit at 390px (opened and cancelled, nothing sent)
+PASS Approved member signs in at / and sees «WI170P1 Venue» without the Users section
+PASS After the owner removes portal access the same member no longer gets in
+ALL PASS
