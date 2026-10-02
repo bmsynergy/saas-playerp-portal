@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Clock3, FilterX, Printer, Search, Server, X } from 'lucide-react';
 import { EMPTY_FLEET_FILTER, FLEET_PRINTERS, FLEET_SIGNALS, FLEET_STATES, NO_VERSION, filterFleet, fleetState, fleetVersions, isFiltered, relativeTime, type FleetFilter, type FleetRow } from '../lib/printFleet';
 import { useLocale } from '../locales';
+import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 
 export const fleetStateClass = { online: 'server-online', offline: 'server-offline', pending: 'server-pending', none: 'server-noSignal' } as const;
 
@@ -15,14 +16,17 @@ export function PrintFleetPage({ rows, venueId }: { rows: FleetRow[]; venueId?: 
   // Relative times and the "last signal" filter move with the clock, and with every refetch.
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 15_000); return () => clearInterval(timer); }, []);
   useEffect(() => setNow(Date.now()), [rows]);
-  useEffect(() => setFilter(EMPTY_FLEET_FILTER), [venueId]);
 
   const scopedRows = useMemo(() => venueId === undefined ? rows : rows.filter(row => row.venue_id === venueId), [rows, venueId]);
   const scopedFilter = useMemo(() => venueId === undefined ? filter : { ...filter, venue: '' }, [filter, venueId]);
   const filtered = useMemo(() => filterFleet(scopedRows, scopedFilter, now), [scopedRows, scopedFilter, now]);
+  const pagination = usePrintListPagination(filtered.length);
+  const visible = filtered.slice(pagination.start, pagination.end);
   const versions = useMemo(() => fleetVersions(scopedRows), [scopedRows]);
   const venues = useMemo(() => [...scopedRows].sort((a, b) => a.venue_name.localeCompare(b.venue_name)), [scopedRows]);
-  const set = <K extends keyof FleetFilter>(key: K, value: FleetFilter[K]) => setFilter(current => ({ ...current, [key]: value }));
+  const set = <K extends keyof FleetFilter>(key: K, value: FleetFilter[K]) => { setFilter(current => ({ ...current, [key]: value })); pagination.reset(); };
+
+  useEffect(() => { setFilter(EMPTY_FLEET_FILTER); pagination.reset(); }, [venueId]);
 
   return <div className="page-stack staff-page" data-testid="fleet-page">
     {venueId === undefined && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{locale === 'es' ? 'Ver dashboard' : 'View dashboard'}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
@@ -38,9 +42,9 @@ export function PrintFleetPage({ rows, venueId }: { rows: FleetRow[]; venueId?: 
         <select data-testid="fleet-filter-signal" aria-label={t('ps.filter.signal')} value={filter.signal} onChange={event => set('signal', event.target.value as FleetFilter['signal'])}><option value="">{t('ps.filter.anySignal')}</option>{FLEET_SIGNALS.map(item => <option key={item} value={item}>{t(`ps.filter.signal.${item}`)}</option>)}</select>
         <select data-testid="fleet-filter-state" aria-label={t('ps.filter.state')} value={filter.state} onChange={event => set('state', event.target.value as FleetFilter['state'])}><option value="">{t('ps.filter.anyState')}</option>{FLEET_STATES.map(item => <option key={item} value={item}>{t(`ps.state.${item}`)}</option>)}</select>
         <select data-testid="fleet-filter-printers" aria-label={t('ps.filter.printers')} value={filter.printers} onChange={event => set('printers', event.target.value as FleetFilter['printers'])}><option value="">{t('ps.filter.anyPrinters')}</option>{FLEET_PRINTERS.map(item => <option key={item} value={item}>{t(`ps.filter.printers.${item}`)}</option>)}</select>
-        <button type="button" className="staff-action-link" data-testid="fleet-filter-clear" disabled={!isFiltered(filter)} onClick={() => setFilter(EMPTY_FLEET_FILTER)}><FilterX size={14}/>{t('ps.filter.clear')}</button>
+        <button type="button" className="staff-action-link" data-testid="fleet-filter-clear" disabled={!isFiltered(filter)} onClick={() => { setFilter(EMPTY_FLEET_FILTER); pagination.reset(); }}><FilterX size={14}/>{t('ps.filter.clear')}</button>
       </div>
-      {filtered.length === 0 ? <div className="staff-empty" data-testid="fleet-empty"><Server size={27}/><strong>{t(scopedRows.length ? 'ps.noMatches' : venueId === undefined ? 'ps.emptyFleet' : 'noServers')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t('ps.col.venue')}</th><th>{t('ps.col.state')}</th><th>{t('version')}</th><th>{t('lastSignal')}</th><th>{t('ps.col.printers')}</th><th>{t('ps.col.queue')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{filtered.map(row => {
+      {filtered.length === 0 ? <div className="staff-empty" data-testid="fleet-empty"><Server size={27}/><strong>{t(scopedRows.length ? 'ps.noMatches' : venueId === undefined ? 'ps.emptyFleet' : 'noServers')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t('ps.col.venue')}</th><th>{t('ps.col.state')}</th><th>{t('version')}</th><th>{t('lastSignal')}</th><th>{t('ps.col.printers')}</th><th>{t('ps.col.queue')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{visible.map(row => {
         const state = fleetState(row); const server = row.print_server;
         const relative = relativeTime(server?.last_seen_at ?? null, now, locale);
         const queueDepth = server?.last_status?.queue_depth ?? null;
@@ -54,6 +58,7 @@ export function PrintFleetPage({ rows, venueId }: { rows: FleetRow[]; venueId?: 
           <td data-label={t('staff.actions')}><Link className="staff-action-link" data-testid={`fleet-open-${row.venue_id}`} to={venueId === undefined ? `/admin/print-servers/${encodeURIComponent(row.venue_id)}` : `/admin/tenants/${encodeURIComponent(venueId)}/print-servers/detail`}>{t('ps.open')}<span className="sr-only"> {row.venue_name}</span><ArrowRight size={14}/></Link></td>
         </tr>;
       })}</tbody></table></div>}
+      <PrintListPagination pagination={pagination} id="fleet"/>
     </section>
   </div>;
 }

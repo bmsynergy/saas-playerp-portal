@@ -1,0 +1,22 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "backend": "Intercepted synthetic responses, not live RLS/authentication evidence",
+  "checks": [
+    "1440px: shared filters/counters/timestamp, unknown firmware 50%, combined denominator 1/1, notices, empty filter and Spanish; no horizontal overflow",
+    "1440px: dashboard links to existing detail/list and back",
+    "1440px: failed refresh visibly retains old snapshot; successful refresh replaces counts/list/time together",
+    "390px: shared filters/counters/timestamp, unknown firmware 50%, combined denominator 1/1, notices, empty filter and Spanish; no horizontal overflow",
+    "390px: dashboard links to existing detail/list and back",
+    "390px: failed refresh visibly retains old snapshot; successful refresh replaces counts/list/time together",
+    "1440px: 63 devices/venues across three pages without duplicates or omissions; full-filter counters and firmware denominator; filter/size reset, refresh shrink, ES pagination and no overflow",
+    "390px: 63 devices/venues across three pages without duplicates or omissions; full-filter counters and firmware denominator; filter/size reset, refresh shrink, ES pagination and no overflow",
+    "Initial state loading",
+    "Initial state empty",
+    "Initial state error",
+    "Initial state denied",
+    "operations: global route blocked before inventory request (synthetic access response)",
+    "support: global route blocked before inventory request (synthetic access response)",
+    "owner: global route blocked before inventory request (synthetic access response)"
+  ],
+  "pageErrors": []
+}

@@ -36,7 +36,7 @@ async function setup({width=1440,role='super_admin',mode='ready'}={}) {
    if(db.mode==='denied')return send({code:'42501'},403);
    return send({contract_version:1,generated_at:db.at,online_window_seconds:180,summary:{total:9999},items:db.mode==='empty'?[]:db.items});
   }
-  if(name==='portal_ps_fleet')return send([{venue_id:a,venue_name:'Harbor',print_server:{id:'one',status:'active',software_version:'0.3.3',online:true,last_seen_at:at},pending_enrollment:null,printers_total:0,printers_active:0,printers_paused:0,printers_with_error:0,pending_jobs:0}]);
+  if(name==='portal_ps_fleet')return send(db.fleet??[{venue_id:a,venue_name:'Harbor',print_server:{id:'one',status:'active',software_version:'0.3.3',online:true,last_seen_at:at},pending_enrollment:null,printers_total:0,printers_active:0,printers_paused:0,printers_with_error:0,pending_jobs:0}]);
   if(name==='ps_panel_state')return send({venue_id:a,can_manage:true,print_server:{id:'one',status:'active',software_version:'0.3.3',online:true,last_seen_at:at},pending_enrollment:null,printers:[],last_scan:null});
   throw new Error('Unexpected request '+name);
  });
@@ -78,6 +78,49 @@ try {
   db.mode='ready';db.at='2026-10-02T17:01:00Z';db.items=db.items.slice(0,1);await page.getByTestId('dashboard-refresh').click();await expect(ids(page)).toHaveCount(1);await metric(page,'total',1);await expect(page.getByTestId('dashboard-stale')).toHaveCount(0);await expect(page.locator('time[datetime="'+db.at+'"]')).toHaveCount(1);
   assert(db.calls.filter(n=>n.startsWith('ps_panel_')).every(n=>n==='ps_panel_state'),'no device commands');
   record(`${width}px: failed refresh visibly retains old snapshot; successful refresh replaces counts/list/time together`);await ctx.close();
+ }
+ // Paginated views retain full-filter aggregates and share the captured timestamp.
+ for(const width of [1440,390]) {
+  const {ctx,page,db}=await setup({width});
+  db.items=Array.from({length:63},(_,i)=>item(`paged-${String(i).padStart(2,'0')}`,{venue_id:i<40?a:b,venue_name:i<40?'Harbor':'Garden',firmware_version:i<40?'0.3.3':null,firmware_known:i<40}));
+  db.fleet=db.items.map((device,i)=>({venue_id:`venue-${i}`,venue_name:`Venue ${String(i).padStart(2,'0')}`,print_server:{id:device.id,status:'active',software_version:device.firmware_version,online:true,last_seen_at:at},pending_enrollment:null,printers_total:0,printers_active:0,printers_paused:0,printers_with_error:0,pending_jobs:0}));
+  await page.goto(origin+'/admin/print-servers');
+  const next=page.getByTestId('dashboard-pagination-next'),prev=page.getByTestId('dashboard-pagination-prev'),size=page.getByTestId('dashboard-pagination-size');
+  await expect(ids(page)).toHaveCount(25);await expect(prev).toBeDisabled();await metric(page,'total',63);
+  await expect(page.getByTestId('dashboard-firmware-__unknown__')).toContainText('23 / 63');
+  const seen=[...await ids(page).evaluateAll(rows=>rows.map(row=>row.dataset.testid))];
+  await next.click();await expect(ids(page)).toHaveCount(25);await metric(page,'total',63);
+  seen.push(...await ids(page).evaluateAll(rows=>rows.map(row=>row.dataset.testid)));
+  await next.click();await expect(ids(page)).toHaveCount(13);await expect(next).toBeDisabled();
+  seen.push(...await ids(page).evaluateAll(rows=>rows.map(row=>row.dataset.testid)));
+  assert.equal(seen.length,63);assert.equal(new Set(seen).size,63);
+  await expect(page.getByTestId('dashboard-pagination-range')).toHaveText('51–63 of 63 results');
+  await prev.click();await expect(ids(page)).toHaveCount(25);assert.deepEqual(await ids(page).evaluateAll(rows=>rows.map(row=>row.dataset.testid)),seen.slice(25,50));
+  await page.getByTestId('inventory-filter-venue').selectOption(a);await expect(ids(page)).toHaveCount(25);await expect(prev).toBeDisabled();await metric(page,'total',40);
+  await expect(page.getByTestId('dashboard-firmware-0.3.3')).toContainText('40 / 40 · 100%');
+  await next.click();await expect(ids(page)).toHaveCount(15);await size.selectOption('10');await expect(ids(page)).toHaveCount(10);await expect(prev).toBeDisabled();
+  await next.click();await page.getByTestId('dashboard-filter-clear').click();await expect(prev).toBeDisabled();await metric(page,'total',63);
+  await size.selectOption('50');await expect(ids(page)).toHaveCount(50);await next.click();await expect(ids(page)).toHaveCount(13);
+  db.items=db.items.slice(0,3);db.at='2026-10-02T18:00:00Z';await page.getByTestId('dashboard-refresh').click();await expect(ids(page)).toHaveCount(3);await metric(page,'total',3);await expect(prev).toBeDisabled();await expect(next).toBeDisabled();
+  await expect(page.locator('time[datetime="'+db.at+'"]')).toHaveCount(1);
+  await page.getByTestId('dashboard-open-list').click();
+  const fleetRows=page.locator('[data-testid^="fleet-row-"]'),fnext=page.getByTestId('fleet-pagination-next'),fprev=page.getByTestId('fleet-pagination-prev');
+  await expect(fleetRows).toHaveCount(25);await expect(fprev).toBeDisabled();await expect(page.getByTestId('fleet-count')).toHaveText('63 of 63');
+  const fleetSeen=[...await fleetRows.evaluateAll(rows=>rows.map(row=>row.dataset.testid))];
+  await fnext.click();await expect(fleetRows).toHaveCount(25);fleetSeen.push(...await fleetRows.evaluateAll(rows=>rows.map(row=>row.dataset.testid)));
+  await fnext.click();await expect(fleetRows).toHaveCount(13);await expect(fnext).toBeDisabled();fleetSeen.push(...await fleetRows.evaluateAll(rows=>rows.map(row=>row.dataset.testid)));
+  assert.equal(new Set(fleetSeen).size,63);
+  await expect(page.getByTestId('fleet-pagination-range')).toHaveText('51–63 of 63 results');
+  await fprev.click();await expect(fleetRows).toHaveCount(25);assert.deepEqual(await fleetRows.evaluateAll(rows=>rows.map(row=>row.dataset.testid)),fleetSeen.slice(25,50));
+  await page.getByTestId('fleet-filter-version').selectOption('0.3.3');await expect(fleetRows).toHaveCount(25);await expect(fprev).toBeDisabled();await expect(page.getByTestId('fleet-count')).toHaveText('40 of 63');
+  await fnext.click();await page.getByTestId('fleet-pagination-size').selectOption('10');await expect(fleetRows).toHaveCount(10);await expect(fprev).toBeDisabled();
+  await fnext.click();await page.getByTestId('fleet-filter-clear').click();await expect(fprev).toBeDisabled();
+  await page.getByRole('button',{name:'ES',exact:true}).click();
+  await expect(page.getByTestId('fleet-pagination-page')).toContainText('Página 1');
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'pagination has no horizontal page overflow');
+  await page.getByTestId('fleet-pagination-page').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/pagination-${width}-es.png`});
+  record(`${width}px: 63 devices/venues across three pages without duplicates or omissions; full-filter counters and firmware denominator; filter/size reset, refresh shrink, ES pagination and no overflow`);
+  await ctx.close();
  }
  for(const mode of ['loading','empty','error','denied']) {
   const {ctx,page,db}=await setup({mode});await page.goto(origin+'/admin/print-servers');
