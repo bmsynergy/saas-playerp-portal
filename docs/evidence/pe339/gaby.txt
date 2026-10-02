@@ -1,0 +1,1 @@
+Gaby, revisión independiente de solo lectura en esta sesión: review_findings: []. Sin defectos verificables. Permisos reales en Supabase no verificados; las pruebas de navegador usan fixtures.

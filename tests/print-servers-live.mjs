@@ -6,7 +6,7 @@
 //   SUPABASE_ACCESS_TOKEN=… PLAYERP_BACKEND_DIR=/path/to/saas-playerp-backend node tests/print-servers-live.mjs
 import { chromium } from '@playwright/test';
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes, createHash, X509Certificate } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 const origin=process.env.PORTAL_ORIGIN??'https://playerp.dev.bmore.app';
@@ -107,9 +107,11 @@ try {
  await tid(page,'ps-state').waitFor();
  const dp={state:(await tid(page,'ps-state').innerText()).trim(),version:(await tid(page,'ps-version').innerText()).trim(),
   queueDepth:(await tid(page,'ps-queue-depth').innerText()).trim(),pendingJobs:(await tid(page,'ps-pending-jobs').innerText()).trim(),
-  certificate:(await tid(page,'ps-cert-fingerprint').innerText()).trim(),certDownloadDisabled:await tid(page,'ps-cert-download').isDisabled()};
- assert(/0\.3\.3/.test(dp.version)&&dp.certDownloadDisabled,'physical PS: version shown, certificate not reported');
- ok('PS fisico: el detalle enseña diagnostico y cola; certificado «no informado»',dp);
+  certificateAvailable:await tid(page,'ps-cert-download').count()===1};
+ assert(/0\.3\.3/.test(dp.version),'physical PS: version shown');
+ if(dp.certificateAvailable)assert(/^(?:[A-F0-9]{2}:){31}[A-F0-9]{2}$/.test((await tid(page,'ps-cert-fingerprint').innerText()).trim()));
+ else assert(await tid(page,'ps-cert-pending').isVisible());
+ ok('PS fisico: diagnostico, cola y estado real del certificado',dp);
  await tid(page,'ps-scan').click();
  const scanConfirm=await confirm(page);
  const cmdOf=async v=>(await sql(`select id, status, received_at is not null received, completed_at, result->>'count' candidates, error_code from public.print_server_commands where venue_id=${q(v)}::uuid and requested_by=${q(actor)}::uuid order by created_at desc limit 1`))[0];
@@ -192,10 +194,10 @@ try {
  const cert=await tid(page,'ps-cert-fingerprint').innerText();
  const [download]=await Promise.all([page.waitForEvent('download'),tid(page,'ps-cert-download').click()]);
  const file=await readFile(await download.path());
- const sha=createHash('sha256').update(file).digest('hex');
+ const sha=createHash('sha256').update(new X509Certificate(file).raw).digest('hex');
  assert(file.toString().includes('BEGIN CERTIFICATE')&&!file.toString().includes('PRIVATE KEY'),'public certificate only');
- assert(cert.includes(sha),'fingerprint shown equals sha256 of the downloaded file');
- ok('8/10 descarga de certificado con huella',{filename:download.suggestedFilename(),bytes:file.length,sha256OfFile:sha,fingerprintShownMatches:true});
+ assert.equal(cert.replace(/:/g,'').toLowerCase(),sha,'fingerprint shown equals SHA256 of certificate DER');
+ ok('8/10 descarga de certificado con huella',{filename:download.suggestedFilename(),bytes:file.length,sha256OfDer:sha,fingerprintShownMatches:true});
  await snapshot(page,'detail-harness-1440-es');
 
  await tid(page,`printer-remove-${pid}`).click();

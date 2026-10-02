@@ -3,7 +3,11 @@
 // verifies the browser behaviour of /admin/print-servers, NOT live DEV permissions.
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,readFile} from 'node:fs/promises';
+import {X509Certificate,createHash} from 'node:crypto';
+const pem=await readFile(new URL('./fixtures/certificate-ca.pem',import.meta.url),'utf8');
+const fingerprint=createHash('sha256').update(new X509Certificate(pem).raw).digest('hex');
+const shownFingerprint=fingerprint.toUpperCase().match(/../g).join(':');
 const origin=process.env.PORTAL_TEST_ORIGIN??'http://127.0.0.1:18799';
 const out=(process.env.SMOKE_OUTPUT_DIR??new URL('../test-results/smoke/',import.meta.url).pathname).replace(/\/?$/, '/');await mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
@@ -15,7 +19,7 @@ function session(seconds=3600){const exp=Math.floor(Date.now()/1000)+seconds,enc
 const iso=ms=>new Date(Date.now()-ms).toISOString();
 function backend(){
  const junk={credential_hash:'HASH-SHOULD-NEVER-SHOW',enrollment_code_hash:'HASH-SHOULD-NEVER-SHOW'};
- const db={server:{id:'44444444-4444-4444-8444-444444444441',label:'Front desk',status:'active',device_id:'dev-1',hostname:'mini-pc',software_version:'2.4.1',local_address:'192.168.1.10',local_port:8443,enrolled_at:iso(9e8),last_seen_at:iso(30000),last_status_at:iso(30000),last_status:{uptime_seconds:93784,queue_depth:7,portal_url:'https://portal.example.invalid',note:'all good'},channel_opened_at:iso(3.6e6),online:true,ca_cert_available:true,ca_cert_fingerprint:'AB:CD:EF:01',ca_cert_updated_at:iso(9e8),...junk},
+ const db={server:{id:'44444444-4444-4444-8444-444444444441',label:'Front desk',status:'active',device_id:'dev-1',hostname:'mini-pc',software_version:'2.4.1',local_address:'192.168.1.10',local_port:8443,enrolled_at:iso(9e8),last_seen_at:iso(30000),last_status_at:iso(30000),last_status:{uptime_seconds:93784,queue_depth:7,portal_url:'https://portal.example.invalid',note:'all good'},channel_opened_at:iso(3.6e6),online:true,ca_cert_available:true,ca_cert_status:'reported',ca_cert_der_sha256:fingerprint,ca_cert_fingerprint:'AB:CD:EF:01',ca_cert_updated_at:iso(9e8),...junk},
   pending:null,polls:0,calls:[],seen:[],jobCalls:[],
   // Queue fixtures: 23 jobs on the first printer (three pages of 10), none on the second.
   jobs:{[p1]:Array.from({length:23},(_,i)=>({id:`77777777-7777-4777-8777-${String(i).padStart(12,'0')}`,status:i===0?'pending':i===1?'cancelled':i===2?'failed':'sent',source_type:i%3===0?'test':i%3===1?'receipt':'kitchen_ticket',print_route:'ps',attempts:i===0?0:i===2?3:1,created_at:iso(60000*(i+1)),started_at:null,completed_at:i===0?null:iso(60000*(i+1)-5000),error_code:i===1?'print_server_replaced':i===2?'weird_device_code':null,attempt_error_code:null,payload_text:'PAYLOAD-SHOULD-NEVER-SHOW',job_token:'TOKEN-SHOULD-NEVER-SHOW'})),[p2]:[]},
@@ -33,7 +37,7 @@ function backend(){
    case 'ps_panel_state':return a.p_venue_id===v1?{venue_id:v1,can_manage:true,server_time:iso(0),print_server:db.server,pending_enrollment:db.pending,printers:db.printers,last_scan:null,...junk}:{venue_id:a.p_venue_id,can_manage:true,server_time:iso(0),print_server:null,pending_enrollment:null,printers:[],last_scan:null};
    case 'ps_panel_create_enrollment':db.pending={id:'e1',label:a.p_label,expires_at:new Date(Date.now()+3.6e6).toISOString(),created_at:iso(0)};return {ok:true,print_server_id:'new',venue_id:a.p_venue_id,enrollment_code:CODE,expires_at:db.pending.expires_at};
    case 'ps_panel_revoke':db.server=null;return {ok:true,print_server_id:a.p_print_server_id,jobs_cancelled:2};
-   case 'ps_panel_ca_cert':return {ok:true,ca_cert_pem:'-----BEGIN CERTIFICATE-----\nMIIBsmoke\n-----END CERTIFICATE-----\n',ca_cert_fingerprint:'AB:CD:EF:01',ca_cert_updated_at:iso(9e8),filename:'sample-harbor-ca.pem'};
+   case 'ps_panel_ca_cert':return {ok:true,ca_cert_pem:pem,ca_cert_status:'reported',ca_cert_der_sha256:fingerprint,ca_cert_fingerprint:'AB:CD:EF:01',ca_cert_updated_at:iso(9e8),filename:'sample-harbor-ca.pem'};
    case 'ps_panel_request_scan':db.polls=0;return {ok:true,already:false,command_id:'c1',status:'pending',expires_at:null,ps_online:true};
    case 'ps_panel_command':return ++db.polls<2?{ok:true,command_id:'c1',status:'pending',result:null,error_code:null,error_detail:null}:{ok:true,command_id:'c1',status:'done',error_code:null,error_detail:null,result:{count:2,scanned_at:iso(0),network:'192.168.1.0/24',candidates:[{mac_address:'AA:BB:CC:DD:EE:01',local_address:'192.168.1.50',model:'TM-T20',hostname:null,port:9100,reachable:true,printer_id:p1},{mac_address:NEW_MAC,local_address:'192.168.1.60',model:null,hostname:null,port:9100,reachable:true,printer_id:null}]}};
    case 'ps_panel_add_printer':if(db.printers.some(p=>p.label===a.p_label))return {ok:false,error:'label_already_used'};db.printers.push({id:'66666666-6666-4666-8666-666666666663',label:a.p_label,location:a.p_location,model:a.p_model,mac_address:a.p_mac_address,paper_width_chars:42,is_active:true,print_route:'print_server',last_seen_at:null,last_error:null,last_report:null,last_report_at:null,pending_jobs:0,workstations:[],created_at:null});return {ok:true,printer:{id:'66666666-6666-4666-8666-666666666663',label:a.p_label}};
@@ -89,7 +93,7 @@ try{
   const {ctx,page,db}=await setup();const id=x=>page.getByTestId(x),result=text=>page.locator('[data-testid="action-result"]',{hasText:text}).waitFor();
   const confirm=async text=>{await id('confirm-dialog').waitFor();const body=await id('confirm-dialog').innerText();assert(body.includes('Sample Harbor'),'confirmation names the venue');if(text)assert(body.includes(text),`confirmation says: ${text}`);await id('confirm-accept').click();};
   await page.goto(origin+`/admin/print-servers/${v1}`);await page.getByRole('heading',{name:'Sample Harbor',exact:true}).waitFor();
-  assert.equal(await id('ps-state').innerText(),'Online');assert.equal(await id('ps-version').innerText(),'2.4.1');assert.equal(await id('ps-queue-depth').innerText(),'7');assert.equal(await id('ps-pending-jobs').innerText(),'2');assert.equal(await id('ps-cert-fingerprint').innerText(),'AB:CD:EF:01');
+  assert.equal(await id('ps-state').innerText(),'Online');assert.equal(await id('ps-version').innerText(),'2.4.1');assert.equal(await id('ps-queue-depth').innerText(),'7');assert.equal(await id('ps-pending-jobs').innerText(),'2');assert.equal(await id('ps-cert-fingerprint').innerText(),shownFingerprint);
   record('Detail: card, diagnostics and certificate fingerprint');
   {
    // Print queue per printer: five columns, pagination, manual refresh and the empty state.
@@ -135,7 +139,7 @@ try{
   assert.deepEqual(db.calls.at(-1),['ps_panel_remove_printer',{p_printer_id:p1,p_force:false}]);await id(`printer-row-${p1}`).waitFor();
   await confirm('still in use');await result('removed');await id(`printer-row-${p1}`).waitFor({state:'detached'});assert.deepEqual(db.calls.at(-1),['ps_panel_remove_printer',{p_printer_id:p1,p_force:true}]);
   record('Remove: in-use warning lists workstations, then forces on a second confirmation');
-  const [download]=await Promise.all([page.waitForEvent('download'),id('ps-cert-download').click()]);assert.equal(download.suggestedFilename(),'sample-harbor-ca.pem');await result('downloaded');
+  const [download]=await Promise.all([page.waitForEvent('download'),id('ps-cert-download').click()]);assert.equal(download.suggestedFilename(),`playerp-${v1}-ca.crt`);await result('downloaded');
   record('Certificate: public PEM download');
   assert.equal(await id('ps-assign').innerText(),'Replace Print Server');await id('ps-assign').click();await confirm('its queue is not inherited');
   assert.equal(await id('enrollment-code').innerText(),CODE);await id('enrollment-dialog').getByText('cannot be shown again').waitFor();
@@ -147,7 +151,7 @@ try{
   record('Replace: code shown once, not stored, gone after closing; pending until shown');
   await page.screenshot({path:out+'print-servers-detail.png',fullPage:true});
   await id('ps-revoke').click();await confirm('Revoke');await result('Jobs cancelled: 2');await page.locator('[data-testid="ps-state"][data-state="pending"]').waitFor();
-  assert.equal(await id('ps-assign').innerText(),'Assign Print Server');assert(await id('ps-cert-download').isDisabled());assert.equal(await id('ps-cert-fingerprint').innerText(),'Not reported by this Print Server');
+  assert.equal(await id('ps-assign').innerText(),'Assign Print Server');assert.equal(await id('ps-cert-download').count(),0);assert(await id('ps-cert-pending').isVisible());
   assert(!(await page.content()).includes('HASH-SHOULD-NEVER-SHOW'));
   record('Revoke: confirmation, result, certificate not reported');
   await ctx.close();

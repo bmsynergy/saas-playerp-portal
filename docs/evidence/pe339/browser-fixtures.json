@@ -1,0 +1,17 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "mocks": true,
+  "checks": [
+    "owner en: identical downloaded PEM, venue-specific .crt filename, DER fingerprint, installation/trust guide, 390px without overflow (fixture)",
+    "owner es: identical downloaded PEM, venue-specific .crt filename, DER fingerprint, installation/trust guide, 390px without overflow (fixture)",
+    "admin en: identical downloaded PEM, venue-specific .crt filename, DER fingerprint, installation/trust guide, 390px without overflow (fixture)",
+    "admin es: identical downloaded PEM, venue-specific .crt filename, DER fingerprint, installation/trust guide, 390px without overflow (fixture)",
+    "pending: safe UI response and expected download count (fixture)",
+    "missing: safe UI response and expected download count (fixture)",
+    "mismatch: safe UI response and expected download count (fixture)",
+    "cert-denied: safe UI response and expected download count (fixture)",
+    "changed: safe UI response and expected download count (fixture)"
+  ],
+  "errors": [],
+  "passed": true
+}

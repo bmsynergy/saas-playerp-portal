@@ -1,3 +1,4 @@
+import { certificateDerFingerprint, certificateFilename, formatFingerprint } from './certificate';
 import { projectInventory, type Inventory } from './printInventory';
 import { supabase } from './supabase';
 import { errorCode, PortalError } from './errors';
@@ -8,7 +9,7 @@ import type { FleetRow, FleetServer, PsLastStatus, PsPendingEnrollment } from '.
 // credentials, certificate bodies, anything added later) are never copied into
 // state, the query cache or a log. The one-time enrollment code and the public
 // certificate are returned to their caller and stored nowhere else.
-export type PanelServer = FleetServer & { ca_cert_updated_at: string | null };
+export type PanelServer = FleetServer & { ca_cert_updated_at: string | null; ca_cert_der_sha256: string | null; ca_cert_status: 'reported' | 'pending' };
 export type PrinterReport = { reachable: boolean | null; local_address: string | null; model: string | null; state: string | null; error: string | null; reported_at: string | null };
 export type Workstation = { id: string; name: string };
 export type PanelPrinter = {
@@ -28,7 +29,7 @@ export type PanelState = {
 };
 export type Enrollment = { print_server_id: string | null; enrollment_code: string; expires_at: string | null };
 export type ScanRequest = { command_id: string; status: string; already: boolean; expires_at: string | null; ps_online: boolean };
-export type CertDownload = { pem: string; filename: string; fingerprint: string | null; updated_at: string | null };
+export type CertDownload = { pem: string; filename: string; fingerprint: string | null; derFingerprint: string; pemSha256: string | null; updated_at: string | null };
 export type RemoveResult = { removed: true } | { removed: false; workstations: Workstation[]; pending_jobs: number };
 export type NewPrinter = { label: string; mac_address: string; model: string; location: string };
 // One printer's queue, newest first. The error is a code, never server text.
@@ -42,6 +43,7 @@ const codes: Record<string, string> = {
   label_required: 'ps.error.labelRequired', invalid_mac: 'ps.error.invalidMac', no_active_print_server: 'ps.error.noActivePrintServer',
   mac_already_registered: 'ps.error.macAlreadyRegistered', label_already_used: 'ps.error.labelAlreadyUsed',
   printer_not_on_ps_route: 'ps.error.printerNotOnPsRoute', printer_in_use: 'ps.error.printerInUse', printer_not_found: 'ps.error.printerNotFound',
+  ca_cert_invalid: 'ps.error.invalidCert',
   no_ca_cert_reported: 'ps.error.noCaCert', print_server_not_found: 'ps.error.printServerNotFound', venue_not_found: 'ps.error.venueNotFound',
   command_not_found: 'ps.error.commandNotFound', printer_paused: 'ps.error.printerPaused',
   forbidden: 'accessDenied', not_authorized: 'accessDenied', access_denied: 'accessDenied',
@@ -136,7 +138,7 @@ export function projectPanelState(v: unknown): PanelState {
   if (!s || typeof s.venue_id !== 'string') return bad();
   const server = fleetServer(s.print_server);
   return { venue_id: s.venue_id, can_manage: s.can_manage === true, server_time: str(s.server_time),
-    print_server: server && { ...server, ca_cert_updated_at: str(obj(s.print_server)?.ca_cert_updated_at) },
+    print_server: server && { ...server, ca_cert_updated_at: str(obj(s.print_server)?.ca_cert_updated_at), ca_cert_der_sha256: str(obj(s.print_server)?.ca_cert_der_sha256), ca_cert_status: obj(s.print_server)?.ca_cert_status === 'reported' ? 'reported' : 'pending' },
     pending_enrollment: pendingEnrollment(s.pending_enrollment), printers: list(s.printers).map(printer), last_scan: projectScan(s.last_scan) };
 }
 
@@ -182,11 +184,14 @@ export async function revokePrintServer(printServerId: string): Promise<{ jobs_c
 export async function getCaCert(venueId: string): Promise<CertDownload> {
   const data = await action('ps_panel_ca_cert', { p_venue_id: venueId });
   const pem = typeof data.ca_cert_pem === 'string' ? data.ca_cert_pem : '';
-  if (/PRIVATE KEY/i.test(pem)) throw new PsError('ps.error.privateKeyRefused');
-  if (!pem.includes('BEGIN CERTIFICATE')) throw new PsError('ps.error.invalidCert');
-  const filename = str(data.filename);
-  return { pem, filename: filename && /^[\w.-]{1,120}$/.test(filename) && !filename.startsWith('.') ? filename : 'print-server-ca.pem',
-    fingerprint: str(data.ca_cert_fingerprint), updated_at: str(data.ca_cert_updated_at) };
+  if (/PRIVATE\s+KEY/i.test(pem)) throw new PsError('ps.error.privateKeyRefused');
+  let computed: string;
+  try { computed = await certificateDerFingerprint(pem); }
+  catch { throw new PsError('ps.error.invalidCert'); }
+  if (data.ca_cert_status !== 'reported' || !formatFingerprint(str(data.ca_cert_der_sha256)) ||
+      formatFingerprint(computed) !== formatFingerprint(str(data.ca_cert_der_sha256))) throw new PsError('ps.error.invalidCert');
+  return { pem, filename: certificateFilename(venueId), derFingerprint: computed,
+    pemSha256: str(data.ca_cert_pem_sha256), fingerprint: str(data.ca_cert_fingerprint), updated_at: str(data.ca_cert_updated_at) };
 }
 export async function requestScan(venueId: string): Promise<ScanRequest> {
   const data = await action('ps_panel_request_scan', { p_venue_id: venueId });

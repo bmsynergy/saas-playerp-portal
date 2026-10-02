@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { X509Certificate, createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const rpc = vi.hoisted(() => vi.fn());
@@ -5,6 +7,9 @@ vi.mock('../src/lib/supabase', () => ({ supabase: { rpc } }));
 import { addPrinter, createEnrollment, getCaCert, getFleet, getPanelState, getPrinterJobs, projectFleetRow, projectPanelState, projectPrinterJobs, psErrorKey, removePrinter, requestScan, withFailureHook, printServerApi } from '../src/lib/printServerApi';
 import { en } from '../src/locales/en';
 
+const pem = readFileSync(new URL('./fixtures/certificate-ca.pem', import.meta.url), 'utf8');
+const derHash = createHash('sha256').update(new X509Certificate(pem).raw).digest('hex');
+const certAnswer = { ok: true, ca_cert_status: 'reported', ca_cert_pem: pem, ca_cert_der_sha256: derHash, ca_cert_pem_sha256: createHash('sha256').update(pem).digest('hex') };
 const venue = '22222222-2222-4222-8222-222222222222';
 // Keys the backend must never send and the portal must never keep.
 const SECRETS = ['credential_hash', 'enrollment_code_hash', 'ca_cert_pem'];
@@ -41,6 +46,9 @@ describe('allow-list projections', () => {
     const projected = projectPanelState(rawState);
     for (const key of [...SECRETS, 'credential_hint', 'HASH-1', 'HASH-2', 'BEGIN CERTIFICATE']) expect(serialized(projected)).not.toContain(key);
     expect(projected.can_manage).toBe(true);
+    const reported = projectPanelState({...rawState,print_server:{...rawState.print_server,ca_cert_status:'reported',ca_cert_der_sha256:derHash}}).print_server;
+    expect(reported).toMatchObject({ca_cert_status:'reported',ca_cert_der_sha256:derHash});
+    expect(projected.print_server?.ca_cert_status).toBe('pending');
     expect(projected.print_server?.ca_cert_updated_at).toBe('2026-09-01T10:00:00Z');
     expect(projected.printers[0]).toMatchObject({ id: 'pr-1', label: 'Bar', pending_jobs: 3, workstations: [{ id: 'ws-1', name: 'Caja 1' }], last_report: { reachable: true, state: 'ready' } });
     expect(projected.last_scan?.result?.candidates[0]).toEqual({ mac_address: '11:22:33:44:55:66', local_address: '192.168.1.60', model: null, hostname: null, port: 9100, reachable: true, printer_id: null });
@@ -107,12 +115,17 @@ describe('RPC calls', () => {
     await expect(requestScan(venue)).rejects.toSatisfy(error => psErrorKey(error) === 'ps.error.noActivePrintServer');
   });
   it('downloads only a public certificate and refuses private key material', async () => {
-    answer({ ok: true, ca_cert_pem: secrets.ca_cert_pem, ca_cert_fingerprint: 'AA:BB', ca_cert_updated_at: null, filename: 'centro-ca.pem' });
-    expect(await getCaCert(venue)).toMatchObject({ filename: 'centro-ca.pem', fingerprint: 'AA:BB' });
-    answer({ ok: true, ca_cert_pem: secrets.ca_cert_pem + '\n-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----', filename: 'x.pem' });
+    answer(certAnswer);
+    expect(await getCaCert(venue)).toMatchObject({ filename: `playerp-${venue}-ca.crt`, derFingerprint: derHash, pem });
+    expect(rpc).toHaveBeenLastCalledWith('ps_panel_ca_cert', { p_venue_id: venue });
+    answer({ ...certAnswer, ca_cert_pem: pem + '\n-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----' });
     await expect(getCaCert(venue)).rejects.toSatisfy(error => psErrorKey(error) === 'ps.error.privateKeyRefused');
-    answer({ ok: true, ca_cert_pem: secrets.ca_cert_pem, filename: '../../etc/passwd' });
-    expect((await getCaCert(venue)).filename).toBe('print-server-ca.pem');
+    answer({ ...certAnswer, filename: '../../etc/passwd' });
+    expect((await getCaCert(venue)).filename).toBe(`playerp-${venue}-ca.crt`);
+    for (const patch of [{ca_cert_der_sha256:'0'.repeat(64)}, {ca_cert_der_sha256:null}, {ca_cert_status:'pending'}, {ca_cert_pem:pem+pem}, {ca_cert_pem:'BEGIN CERTIFICATE'}, {ca_cert_pem:pem.replace('BEGIN CERTIFICATE','BEGIN PRIVATE\nKEY')}]) {
+      answer({...certAnswer,...patch});
+      await expect(getCaCert(venue)).rejects.toBeTruthy();
+    }
     answer({ ok: false, error: 'no_ca_cert_reported' });
     await expect(getCaCert(venue)).rejects.toSatisfy(error => psErrorKey(error) === 'ps.error.noCaCert');
   });

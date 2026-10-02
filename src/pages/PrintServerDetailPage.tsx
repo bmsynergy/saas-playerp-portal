@@ -8,6 +8,7 @@ import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
 import { PortalDialog } from '../components/PortalDialog';
 import { PrinterQueue } from './PrinterQueue';
+import { certificateFilename, formatFingerprint } from '../lib/certificate';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
 type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin' };
@@ -36,6 +37,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const [copied, setCopied] = useState(false);
   const [enrollLabel, setEnrollLabel] = useState('');
   const [certMissing, setCertMissing] = useState(false);
+  const [downloadedFingerprint, setDownloadedFingerprint] = useState<string | null>(null);
   const [scan, setScan] = useState<PanelScan | null>(null);
   const [polling, setPolling] = useState(false);
   const [scanTimedOut, setScanTimedOut] = useState(false);
@@ -54,7 +56,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => setNow(Date.now()), [state]);
-  useEffect(() => setCertMissing(false), [server?.id, server?.ca_cert_available]);
+  useEffect(() => { setCertMissing(false); setDownloadedFingerprint(null); }, [server?.id, server?.ca_cert_status, server?.ca_cert_der_sha256]);
   useEffect(() => { if (formOpen) labelInput.current?.focus(); }, [formOpen]);
 
   function date(value: string | null, empty = t('notProvided')) {
@@ -110,12 +112,15 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
     setBusy(true); setResult(null);
     try {
       const cert = await api.getCaCert(venueId);
-      const url = URL.createObjectURL(new Blob([cert.pem], { type: 'application/x-pem-file' }));
+      if (!alive.current) return;
+      const fingerprint = formatFingerprint(cert.derFingerprint);
+      setDownloadedFingerprint(fingerprint);
+      const url = URL.createObjectURL(new Blob([cert.pem], { type: 'application/x-x509-ca-cert' }));
       const link = document.createElement('a');
       link.href = url; link.download = cert.filename; link.rel = 'noopener';
       document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setResult({ ok: true, text: fill(t('ps.result.certDownloaded'), { file: cert.filename }) });
+      setResult({ ok: fingerprint === reportedFingerprint, text: fill(t(fingerprint === reportedFingerprint ? 'ps.result.certDownloaded' : 'ps.result.certChanged'), { file: cert.filename }) });
     } catch (error) {
       const key = psErrorKey(error);
       if (key === 'ps.error.noCaCert') setCertMissing(true);
@@ -206,7 +211,10 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const totalPending = state.printers.reduce((sum, printer) => sum + printer.pending_jobs, 0);
   const shownScan = scan ?? state.last_scan;
   const scanStatus = scanTimedOut && shownScan && !FINAL.includes(shownScan.status) ? 'timeout' : shownScan?.status ?? null;
-  const certAvailable = !!server?.ca_cert_available && !certMissing;
+  const reportedFingerprint = formatFingerprint(server?.ca_cert_der_sha256 ?? null);
+  const certAvailable = server?.ca_cert_status === 'reported' && server.ca_cert_available && !!reportedFingerprint && !certMissing;
+  const fingerprintChanged = !!(downloadedFingerprint && reportedFingerprint && downloadedFingerprint !== reportedFingerprint);
+  const certFile = certificateFilename(venueId);
   const yesNo = (value: boolean | null) => value === null ? t('notProvided') : t(value ? 'ps.yes' : 'ps.no');
   const matchingPrinters = state.printers.filter(printer => [printer.label, printer.mac_address, printer.model, printer.location].some(value => value?.toLocaleLowerCase().includes(printerSearch.trim().toLocaleLowerCase())));
 
@@ -238,15 +246,32 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       </div>
     </section>
 
-    <section className="detail-panel" aria-labelledby="ps-cert-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.cert.eyebrow')}</p><h2 id="ps-cert-title">{t('ps.cert.title')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
-      <div className="detail-grid">
-        <Item icon={<FileKey2 size={19}/>} label={t('ps.cert.fingerprint')} testId="ps-cert-fingerprint"><span className="ps-mono">{server?.ca_cert_fingerprint && certAvailable ? server.ca_cert_fingerprint : t('ps.cert.notReported')}</span></Item>
-        <Item icon={<Clock3 size={19}/>} label={t('ps.cert.updated')}>{date(certAvailable ? server?.ca_cert_updated_at ?? null : null)}</Item>
-      </div>
-      <div className="ps-section-body"><div className="staff-actions ps-actions">
-        <button type="button" className="button button-secondary" data-testid="ps-cert-download" disabled={busy || !certAvailable} onClick={() => void downloadCert()}><Download size={17}/>{t('ps.cert.download')}</button>
-        <span className="staff-self-note">{t(certAvailable ? 'ps.cert.publicOnly' : 'ps.cert.notReported')}</span>
-      </div></div>
+    <section className="detail-panel ps-cert-panel" aria-labelledby="ps-cert-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.cert.eyebrow')}</p><h2 id="ps-cert-title">{t('ps.cert.title')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
+      <p className="ps-cert-lead">{t('ps.cert.lead')}</p>
+      {certAvailable ? <>
+        <div className="detail-grid ps-cert-facts">
+          <Item icon={<Hash size={19}/>} label={t('ps.cert.fingerprintDer')} testId="ps-cert-fingerprint"><span className="ps-mono ps-cert-hash">{reportedFingerprint}</span></Item>
+          <Item icon={<Clock3 size={19}/>} label={t('ps.cert.updated')}>{date(server?.ca_cert_updated_at ?? null)}</Item>
+        </div>
+        <div className="ps-cert-download-block">
+          <div className="ps-cert-file"><FileKey2 size={19} aria-hidden="true"/><div><strong>{certFile}</strong><span>{t('ps.cert.fileHint')}</span></div></div>
+          <button type="button" className="button button-primary" data-testid="ps-cert-download" disabled={busy} onClick={() => void downloadCert()}><Download size={17}/>{t('ps.cert.download')}</button>
+        </div>
+        <p className="ps-cert-small">{t('ps.cert.publicOnly')}</p>
+      </> : <div className="ps-cert-pending" data-testid="ps-cert-pending" role="status"><Clock3 size={20} aria-hidden="true"/><div><strong>{t('ps.cert.pendingTitle')}</strong><p>{t('ps.cert.pendingBody')}</p></div></div>}
+      {fingerprintChanged && <div className="ps-cert-changed" role="alert" data-testid="ps-cert-changed"><AlertTriangle size={19} aria-hidden="true"/><div><strong>{t('ps.cert.changedTitle')}</strong><p>{t('ps.cert.changedBody')}</p><span className="ps-mono ps-cert-hash">{downloadedFingerprint}</span></div></div>}
+      <details className="ps-cert-guide" data-testid="ps-cert-guide"><summary><span><FileKey2 size={18} aria-hidden="true"/>{t('ps.cert.guideTitle')}</span><ChevronDown size={18} aria-hidden="true"/></summary>
+        <div className="ps-cert-guide-content">
+          <p>{t('ps.cert.guideIntro')}</p>
+          <ol><li>{t('ps.cert.stepOpen')}</li><li>{t('ps.cert.stepSignIn')}</li><li>{t('ps.cert.stepVenue')}</li><li>{t('ps.cert.stepDownload')}</li><li>{t('ps.cert.stepCompare')}</li></ol>
+          <div className="ps-cert-platforms">
+            <div><h3>{t('ps.cert.iosTitle')}</h3><p>{t('ps.cert.iosBody')}</p></div>
+            <div><h3>{t('ps.cert.windowsTitle')}</h3><p>{t('ps.cert.windowsBody')}</p></div>
+            <div><h3>{t('ps.cert.androidTitle')}</h3><p>{t('ps.cert.androidBody')}</p></div>
+          </div>
+          <p className="ps-cert-guide-caution"><AlertTriangle size={17} aria-hidden="true"/>{t('ps.cert.guideCaution')}</p>
+        </div>
+      </details>
     </section>
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
