@@ -339,6 +339,8 @@ export const es: Record<keyof typeof en, string> = {
   'ps.jobs.eyebrow': 'Cola de impresión',
   'ps.jobs.title': 'Trabajos por impresora',
   'ps.jobs.lead': 'Los trabajos de impresión de cada impresora de este local, del más reciente al más antiguo. Solo lectura.',
+  'ps.jobs.lastNotice': 'Último aviso',
+  'ps.jobs.noNotice': 'Sin aviso disponible',
   'ps.jobs.refresh': 'Refrescar',
   'ps.jobs.loading': 'Cargando la cola…',
   'ps.jobs.empty': 'Cola vacía',

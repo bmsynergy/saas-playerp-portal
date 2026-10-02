@@ -337,6 +337,8 @@ export const en = {
   'ps.jobs.eyebrow': 'Print queue',
   'ps.jobs.title': 'Jobs by printer',
   'ps.jobs.lead': 'The print jobs of each printer in this venue, newest first. Read-only.',
+  'ps.jobs.lastNotice': 'Latest notice',
+  'ps.jobs.noNotice': 'No notice available',
   'ps.jobs.refresh': 'Refresh',
   'ps.jobs.loading': 'Loading the queue…',
   'ps.jobs.empty': 'Empty queue',

@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ChevronLeft, ChevronRight, Inbox, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Inbox, RefreshCw } from 'lucide-react';
 import { psErrorKey, type PanelPrinter, type PrinterJob, type PrinterJobsPage, type PrintServerApi } from '../lib/printServerApi';
 import { useLocale } from '../locales';
 
 export const QUEUE_PAGE_SIZE = 10;
-type Props = { venueId: string; printer: Pick<PanelPrinter, 'id' | 'label'>; api: Pick<PrintServerApi, 'getPrinterJobs'>; reloadKey?: number };
+type Props = { venueId: string; printer: Pick<PanelPrinter, 'id' | 'label' | 'is_active' | 'pending_jobs' | 'last_error' | 'last_report' | 'last_report_at'>; api: Pick<PrintServerApi, 'getPrinterJobs'>; reloadKey?: number };
 const STATUS_CLASS: Record<string, string> = { sent: 'status-active', done: 'status-active', pending: 'ps-job-open', printing: 'ps-job-open', failed: 'ps-job-failed', expired: 'ps-job-failed' };
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.split(`{${key}}`).join(String(value)), text);
 
@@ -12,6 +12,8 @@ const fill = (text: string, values: Record<string, string | number>) => Object.e
 // pagination and a manual refresh. It only ever asks for its own venue and printer.
 export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
   const { locale, t } = useLocale();
+  const [open, setOpen] = useState(false);
+  const detailId = useId();
   const [offset, setOffset] = useState(0);
   const [page, setPage] = useState<PrinterJobsPage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,10 +58,22 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
   const current = Math.min(pages, Math.floor(offset / QUEUE_PAGE_SIZE) + 1);
   const shown = page?.jobs ?? [];
   const name = printer.label || t('notProvided');
+  const notice = printer.last_error || printer.last_report?.error;
+  const reportAt = printer.last_report?.reported_at ?? printer.last_report_at;
 
-  return <div className="ps-queue" data-testid={`queue-${printer.id}`} data-loading={String(loading)} aria-busy={loading}>
+  return <div className="ps-queue" data-testid={`queue-${printer.id}`} data-loading={String(loading)}>
+    <h3 className="ps-queue-heading"><button type="button" className="ps-queue-toggle" data-testid={`queue-toggle-${printer.id}`} aria-expanded={open} aria-controls={detailId} onClick={() => setOpen(value => !value)}>
+      <span className="ps-queue-summary">
+        <span className="ps-queue-name">{name}</span>
+        <span className={`status-badge ${printer.is_active ? 'status-active' : 'status-inactive'}`}><span className="badge-dot"/>{t(printer.is_active ? 'ps.printers.active' : 'ps.printers.paused')}</span>
+        <span className="ps-queue-pending">{t('ps.pendingJobs')}: <strong>{printer.pending_jobs}</strong></span>
+        <span className={`ps-queue-notice ${notice ? 'ps-error-text' : 'staff-self-note'}`}>{t('ps.jobs.lastNotice')}: {notice || t('ps.jobs.noNotice')}</span>
+        <span className="ps-queue-report-date">{t('ps.printers.lastReport')}: {reportAt ? date(reportAt) : t('ps.never')}</span>
+      </span>
+      <ChevronDown className="ps-queue-chevron" size={19} aria-hidden="true"/>
+    </button></h3>
+    <div id={detailId} className="ps-queue-detail" hidden={!open} aria-busy={loading}>
     <div className="ps-queue-head">
-      <h3>{name}</h3>
       <span className="staff-self-note" data-testid={`queue-total-${printer.id}`}>{fill(t(total === 1 ? 'ps.jobs.totalOne' : 'ps.jobs.total'), { n: total })}</span>
       <button type="button" className="button button-secondary ps-queue-refresh" data-testid={`queue-refresh-${printer.id}`} aria-label={`${t('ps.jobs.refresh')}: ${name}`} disabled={loading} onClick={() => void load(offset)}>{loading ? <span className="spinner ps-spinner"/> : <RefreshCw size={15}/>}{t('ps.jobs.refresh')}</button>
     </div>
@@ -83,5 +97,6 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
           <button type="button" className="button button-secondary" data-testid={`queue-next-${printer.id}`} disabled={loading || offset + QUEUE_PAGE_SIZE >= total} onClick={() => setOffset(offset + QUEUE_PAGE_SIZE)}>{t('ps.jobs.next')}<ChevronRight size={15}/></button>
         </div>
       </>}
+    </div>
   </div>;
 }

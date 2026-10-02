@@ -94,7 +94,7 @@ try{
   {
    // Print queue per printer: five columns, pagination, manual refresh and the empty state.
    const queue=id(`queue-${p1}`),settled=()=>page.locator(`[data-testid="queue-${p1}"][data-loading="false"]`).waitFor(),jobRows=()=>queue.locator('[data-testid^="job-row-"]');
-   await settled();await jobRows().first().waitFor();
+   await settled();await queue.locator("button[aria-expanded]").click();await jobRows().first().waitFor();
    assert.deepEqual(await queue.locator('thead th').allInnerTexts().then(h=>h.map(x=>x.trim().toLowerCase())),['status','date','source','attempts','error']);
    assert.equal(await jobRows().count(),10);assert.equal(await id(`queue-total-${p1}`).innerText(),'23 jobs');assert.equal(await id(`queue-page-${p1}`).innerText(),'Page 1 of 3');assert(await id(`queue-prev-${p1}`).isDisabled());
    const first=(await jobRows().nth(0).innerText()).replace(/\s+/g,' ');for(const piece of ['Queued','Test print','0','No error'])assert(first.includes(piece),`first job shows ${piece}: ${first}`);
@@ -109,7 +109,7 @@ try{
    db.jobs[p1].unshift({id:'77777777-7777-4777-8777-888888888888',status:'printing',source_type:'receipt',print_route:'ps',attempts:1,created_at:iso(0),started_at:iso(0),completed_at:null,error_code:null,attempt_error_code:null});
    const before=db.jobCalls.length;await id(`queue-refresh-${p1}`).click();await id('job-row-77777777-7777-4777-8777-888888888888').waitFor();assert.equal(db.jobCalls.length,before+1);assert.deepEqual(db.jobCalls.at(-1),{p_venue_id:v1,p_printer_id:p1,p_limit:10,p_offset:0});assert.equal(await id(`queue-total-${p1}`).innerText(),'24 jobs');
    record('Queue: refresh asks again and shows the new job');
-   await id(`queue-empty-${p2}`).getByText('Empty queue',{exact:true}).waitFor();assert.equal(await id(`queue-${p2}`).locator('[data-testid^="job-row-"]').count(),0);assert.equal(await id(`queue-total-${p2}`).innerText(),'0 jobs');
+   await id(`queue-${p2}`).locator('button[aria-expanded]').click();await id(`queue-empty-${p2}`).getByText('Empty queue',{exact:true}).waitFor();assert.equal(await id(`queue-${p2}`).locator('[data-testid^="job-row-"]').count(),0);assert.equal(await id(`queue-total-${p2}`).innerText(),'0 jobs');
    assert.equal(await id(`queue-prev-${p2}`).count(),0);assert(db.jobCalls.some(c=>c.p_printer_id===p2));
    record('Queue: a printer without jobs shows the empty queue message');
    assert(!(await page.content()).includes('SHOULD-NEVER-SHOW'));await queue.screenshot({path:out+'print-servers-queue.png'});

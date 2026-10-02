@@ -1,0 +1,14 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "backend": "synthetic intercepted API responses; not a live authorization test",
+  "checks": [
+    "1440px: 12 queues initially closed with printer summaries",
+    "1440px: independent click/Enter/Space, visible focus, inner buttons preserve expansion, pagination/refresh/empty preserved",
+    "1440px: no horizontal overflow with 12 printers and long names/notices",
+    "390px: 12 queues initially closed with printer summaries",
+    "390px: independent click/Enter/Space, visible focus, inner buttons preserve expansion, pagination/refresh/empty preserved",
+    "390px: no horizontal overflow with 12 printers and long names/notices"
+  ],
+  "pageErrors": [],
+  "passed": true
+}

@@ -63,6 +63,7 @@ try {
  // ---------- Sede de arnés A: cola de cada impresora ----------
  await page.goto(origin+'/admin/print-servers/'+HARNESS);
  await tid(page,'ps-state').waitFor();await settled(page,A1);await settled(page,A2);
+ await tid(page,`queue-toggle-${A1}`).click();await tid(page,`queue-toggle-${A2}`).click();
  const headers=await tid(page,`queue-${A1}`).locator('thead th').evaluateAll(ths=>ths.map(th=>th.textContent.trim()));
  assert.deepEqual(headers,['Estado','Fecha','Origen','Intentos','Error']);
  const printers=await page.locator('[data-testid^="printer-row-"]').count(), queues=await page.locator('[data-testid^="queue-b5a"]').count();
@@ -114,7 +115,7 @@ try {
  const dpPrinters=await sql(`select p.id, p.label, (select count(*)::int from public.printer_jobs j where j.printer_id=p.id and j.venue_id=p.venue_id) n from public.cloud_printers p where p.venue_id=${q(DYNAMIC)}::uuid and p.print_route='ps' order by n desc`);
  const busy=dpPrinters.find(p=>p.n>0), empty=dpPrinters.find(p=>p.n===0);
  await page.goto(origin+'/admin/print-servers/'+DYNAMIC);
- await tid(page,'ps-state').waitFor();for(const p of dpPrinters) await settled(page,p.id);
+ await tid(page,'ps-state').waitFor();for(const p of dpPrinters) { await settled(page,p.id);await tid(page,`queue-toggle-${p.id}`).click(); }
  if(busy){
   const tB=await truth(DYNAMIC,busy.id);assert.deepEqual(await rowIds(page,busy.id),tB.slice(0,PAGE));
   ok('Dynamic Park: la cola de una impresora del PS físico muestra sus trabajos reales',{printer:busy.label,total:flat(await tid(page,`queue-total-${busy.id}`).innerText()),first:await rowCells(page,tB[0])});
