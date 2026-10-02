@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const rpc = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc } }));
-import { addPrinter, createEnrollment, getCaCert, getFleet, getPanelState, projectFleetRow, projectPanelState, psErrorKey, removePrinter, requestScan, withFailureHook, printServerApi } from '../src/lib/printServerApi';
+import { addPrinter, createEnrollment, getCaCert, getFleet, getPanelState, getPrinterJobs, projectFleetRow, projectPanelState, projectPrinterJobs, psErrorKey, removePrinter, requestScan, withFailureHook, printServerApi } from '../src/lib/printServerApi';
 import { en } from '../src/locales/en';
 
 const venue = '22222222-2222-4222-8222-222222222222';
@@ -49,6 +49,31 @@ describe('allow-list projections', () => {
     expect(projectPanelState({ ...rawState, can_manage: 'yes' }).can_manage).toBe(false);
     expect(() => projectFleetRow({ venue_name: 'No id' })).toThrow();
     expect(() => projectPanelState(null)).toThrow();
+  });
+});
+describe('printer queue', () => {
+  const rawJob = { id: 'job-1', status: 'cancelled', source_type: 'test', print_route: 'ps', attempts: 2, created_at: '2026-10-02T10:00:00Z', started_at: null, completed_at: '2026-10-02T10:05:00Z',
+    error_code: 'print_server_replaced', attempt_error_code: 'job_cancelled', payload_text: '*** TICKET BODY ***', job_token: 'TOKEN-1', confirm_code: 'CONF-1', source_id: 'order-9', last_error: 'free text from a device', ...secrets };
+  it('keeps only the closed list of fields: no payload, token or free text', () => {
+    const projected = projectPrinterJobs({ ok: true, venue_id: venue, printer_id: 'pr-1', limit: 10, offset: 20, total: 31, jobs: [rawJob], ...secrets });
+    expect(projected).toEqual({ total: 31, limit: 10, offset: 20, jobs: [{ id: 'job-1', status: 'cancelled', source_type: 'test', attempts: 2, created_at: '2026-10-02T10:00:00Z', started_at: null,
+      completed_at: '2026-10-02T10:05:00Z', error_code: 'print_server_replaced', attempt_error_code: 'job_cancelled' }] });
+    for (const key of [...SECRETS, 'payload_text', 'job_token', 'confirm_code', 'source_id', 'last_error', 'TICKET BODY', 'TOKEN-1', 'CONF-1', 'order-9', 'free text']) expect(serialized(projected)).not.toContain(key);
+  });
+  it('an error that is not a short code is never shown as text', () => {
+    const [job] = projectPrinterJobs({ jobs: [{ ...rawJob, error_code: 'Connection refused at 10.0.0.5 user=admin', attempt_error_code: null, source_type: 'DROP TABLE' }], total: 1, limit: 10, offset: 0 }).jobs;
+    expect(job).toMatchObject({ error_code: 'other', attempt_error_code: null, source_type: 'other' });
+    expect(() => projectPrinterJobs({ jobs: [{ status: 'sent' }] })).toThrow();
+    expect(() => projectPrinterJobs({ ok: true })).toThrow();
+  });
+  it('asks for one venue and one printer with limit and offset, and maps its errors', async () => {
+    answer({ ok: true, venue_id: venue, printer_id: 'pr-1', limit: 10, offset: 10, total: 0, jobs: [] });
+    expect(await getPrinterJobs(venue, 'pr-1', 10, 10)).toEqual({ jobs: [], total: 0, limit: 10, offset: 10 });
+    expect(rpc).toHaveBeenLastCalledWith('ps_panel_printer_jobs', { p_venue_id: venue, p_printer_id: 'pr-1', p_limit: 10, p_offset: 10 });
+    answer({ ok: false, error: 'printer_not_found' });
+    await expect(getPrinterJobs(venue, 'pr-x', 10, 0)).rejects.toSatisfy(error => psErrorKey(error) === 'ps.error.printerNotFound');
+    answer(null, { code: '42501', message: 'forbidden' });
+    await expect(getPrinterJobs(venue, 'pr-1', 10, 0)).rejects.toSatisfy(error => psErrorKey(error) === 'accessDenied');
   });
 });
 describe('RPC calls', () => {

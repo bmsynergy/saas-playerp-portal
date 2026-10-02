@@ -7,6 +7,7 @@ import { slugLabel } from '../lib/venueUsers';
 import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
 import { PortalDialog } from '../components/PortalDialog';
+import { PrinterQueue } from './PrinterQueue';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
 type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean };
@@ -44,6 +45,8 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const alive = useRef(true);
   const labelInput = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState(() => Date.now());
+  // Bumped after every confirmed action, so each printer's queue shows what it just caused.
+  const [queueKey, setQueueKey] = useState(0);
   const dateFormatter = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -72,6 +75,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
     } catch (error) { setResult({ ok: false, text: t(psErrorKey(error)) }); }
     if (!alive.current) return;
     await reload();
+    if (alive.current) setQueueKey(key => key + 1);
     // Close only when controls are enabled again, so dialog focus can return.
     if (alive.current) { setBusy(false); setConfirm(next); }
   }
@@ -307,6 +311,11 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
         </tr>;
       })}</tbody></table></div>}
     </section>
+
+    {state.printers.length > 0 && <section className="staff-panel" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
+      <p className="staff-panel-lead">{t('ps.jobs.lead')}</p>
+      <div className="ps-queues">{state.printers.map(printer => <PrinterQueue key={printer.id} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div>
+    </section>}
 
     {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>
         <button type="button" className={`button button-primary ${confirm.danger ? 'ps-danger-solid' : ''}`} data-testid="confirm-accept" disabled={busy} onClick={() => void accept()}><Check size={15}/>{t(busy ? 'ps.working' : 'staff.confirm')}</button>

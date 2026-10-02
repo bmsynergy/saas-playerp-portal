@@ -30,6 +30,9 @@ export type ScanRequest = { command_id: string; status: string; already: boolean
 export type CertDownload = { pem: string; filename: string; fingerprint: string | null; updated_at: string | null };
 export type RemoveResult = { removed: true } | { removed: false; workstations: Workstation[]; pending_jobs: number };
 export type NewPrinter = { label: string; mac_address: string; model: string; location: string };
+// One printer's queue, newest first. The error is a code, never server text.
+export type PrinterJob = { id: string; status: string; source_type: string | null; attempts: number; created_at: string | null; started_at: string | null; completed_at: string | null; error_code: string | null; attempt_error_code: string | null };
+export type PrinterJobsPage = { jobs: PrinterJob[]; total: number; limit: number; offset: number };
 
 export class PsError extends Error {
   constructor(public key: string) { super(key); }
@@ -114,6 +117,19 @@ export function projectScan(v: unknown): PanelScan | null {
   return { command_id: s.command_id, status: s.status, created_at: str(s.created_at), expires_at: str(s.expires_at), completed_at: str(s.completed_at),
     result: scanResult(s.result), error_code: str(s.error_code), error_detail: str(s.error_detail) };
 }
+// Codes are short slugs; anything else (free text, a payload, a token) becomes 'other'.
+const code = (v: unknown) => v === null || v === undefined ? null : typeof v === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(v) ? v : 'other';
+export function projectPrinterJobs(v: unknown): PrinterJobsPage {
+  const r = obj(v);
+  if (!r || !Array.isArray(r.jobs)) return bad();
+  const jobs = r.jobs.map(item => {
+    const j = obj(item);
+    if (!j || typeof j.id !== 'string' || typeof j.status !== 'string') return bad();
+    return { id: j.id, status: j.status, source_type: code(j.source_type), attempts: count(j.attempts), created_at: str(j.created_at), started_at: str(j.started_at),
+      completed_at: str(j.completed_at), error_code: code(j.error_code), attempt_error_code: code(j.attempt_error_code) };
+  });
+  return { jobs, total: Math.max(count(r.total), jobs.length), limit: Math.max(1, num(r.limit) ?? jobs.length), offset: count(r.offset) };
+}
 export function projectPanelState(v: unknown): PanelState {
   const s = obj(v);
   if (!s || typeof s.venue_id !== 'string') return bad();
@@ -172,6 +188,10 @@ export async function getCommand(commandId: string): Promise<PanelScan> {
   const data = await action('ps_panel_command', { p_command_id: commandId });
   return projectScan(data) ?? bad();
 }
+// Read-only: both ids travel together, so the backend never answers with another venue's or printer's jobs.
+export async function getPrinterJobs(venueId: string, printerId: string, limit: number, offset: number): Promise<PrinterJobsPage> {
+  return projectPrinterJobs(await action('ps_panel_printer_jobs', { p_venue_id: venueId, p_printer_id: printerId, p_limit: limit, p_offset: offset }));
+}
 export async function addPrinter(venueId: string, input: NewPrinter): Promise<{ id: string | null; label: string | null }> {
   const data = await action('ps_panel_add_printer', { p_venue_id: venueId, p_label: input.label.trim(), p_mac_address: input.mac_address.trim(),
     p_model: input.model.trim() || null, p_location: input.location.trim() || null });
@@ -196,7 +216,7 @@ export async function removePrinter(printerId: string, force: boolean): Promise<
   if (data.error === 'printer_in_use' && !force) return { removed: false, workstations: list(data.workstations).map(workstation), pending_jobs: count(data.pending_jobs) };
   throw psErrorFromCode(data.error);
 }
-export const printServerApi = { createEnrollment, revokePrintServer, getCaCert, requestScan, getCommand, addPrinter, renamePrinter, setPrinterActive, testPrint, removePrinter };
+export const printServerApi = { createEnrollment, revokePrintServer, getCaCert, requestScan, getCommand, getPrinterJobs, addPrinter, renamePrinter, setPrinterActive, testPrint, removePrinter };
 export type PrintServerApi = typeof printServerApi;
 // Wraps every call so the route can react to a failure (expired session, lost
 // permission) without the page knowing about authentication.
@@ -206,6 +226,6 @@ export function withFailureHook(api: PrintServerApi, onFailure: (key: string) =>
     catch (error) { await onFailure(psErrorKey(error)); throw error; }
   };
   return { createEnrollment: wrap(api.createEnrollment), revokePrintServer: wrap(api.revokePrintServer), getCaCert: wrap(api.getCaCert), requestScan: wrap(api.requestScan),
-    getCommand: wrap(api.getCommand), addPrinter: wrap(api.addPrinter), renamePrinter: wrap(api.renamePrinter), setPrinterActive: wrap(api.setPrinterActive),
+    getCommand: wrap(api.getCommand), getPrinterJobs: wrap(api.getPrinterJobs), addPrinter: wrap(api.addPrinter), renamePrinter: wrap(api.renamePrinter), setPrinterActive: wrap(api.setPrinterActive),
     testPrint: wrap(api.testPrint), removePrinter: wrap(api.removePrinter) };
 }
