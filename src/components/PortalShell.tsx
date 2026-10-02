@@ -131,7 +131,6 @@ export function PortalShell({ scope, email, displayName, canAdmin, canOwner, can
           </div>
         </div>
       </header>
-      {navigationAllowed && nav.length > 1 && <nav className="topbar-subnav" aria-label={t('secondaryNavigation')}>{nav.map(({ to, label, end }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? 'active' : ''}>{label}</NavLink>)}</nav>}
       <main className="content" id="main-content" tabIndex={-1}><nav className="breadcrumbs" aria-label={t('breadcrumb')}>{crumbs.map((crumb, index) => <span className="breadcrumb-item" key={`${crumb.label}-${index}`}>{index > 0 && <ChevronRight size={14} aria-hidden="true"/>}{crumb.to && navigationAllowed ? <Link to={crumb.to}>{crumb.label}</Link> : <span aria-current={index === crumbs.length - 1 ? 'page' : undefined}>{crumb.label}</span>}</span>)}</nav>{children}</main>
       <footer className="portal-footer"><span>© {new Date().getFullYear()} PlayERP</span><span>{t('securityNote')}</span></footer>
     </div>
