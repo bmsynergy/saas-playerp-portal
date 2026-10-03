@@ -1,0 +1,15 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "mocks": true,
+  "checks": [
+    "Access loading: safe coherent state and recovery",
+    "Access error: safe coherent state and recovery",
+    "Access empty: safe coherent state without invented venues",
+    "detail-error: scoped venue does not show stale or unauthorized data",
+    "detail-empty: scoped venue does not show stale or unauthorized data",
+    "Missing values, approved member rights, foreign denial, browser history and mobile drawer 1440px",
+    "Missing values, approved member rights, foreign denial, browser history and mobile drawer 390px"
+  ],
+  "errors": [],
+  "passed": true
+}

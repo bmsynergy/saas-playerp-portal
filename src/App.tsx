@@ -19,7 +19,7 @@ import { useAuth } from './hooks/useAuth';
 import { useOwnDisplayName } from './hooks/useOwnProfile';
 import { useAccess, useDirectory, useOwnerVenue, useTenantDetail } from './hooks/usePortalData';
 import { errorCode } from './lib/errors';
-import { persist, stored } from './lib/storage';
+import { useOwnerNavigation } from './hooks/useOwnerNavigation';
 import type { OwnerVenue, UiError } from './lib/types';
 import { useLocale } from './locales';
 import { LanguageSelector } from './components/LanguageSelector';
@@ -93,25 +93,19 @@ function AuthRoute({mode}:{mode:'login'|'forgot'|'password'}) {
   return <AuthPage embedded={!!auth.session} mode={mode} onSubmit={submit} error={error??(mode==='login'&&auth.expired?'sessionExpired':null)} busy={busy} success={success} recovery={auth.recovery||recoveryRequest} invitation={auth.invitation||invitationRequest}/>;
 }
 function OwnerRoute() {
-  const access=useAccess(); const {session}=useAuth(); const [params,setParams]=useSearchParams();
-  const venues=access.data?.owner_venues??[];
-  const key=`playerp.portal.venue.${session?.user.id}`;
-  const requested=params.get('venue');
-  const preferred=stored(key);
-  const selected=requested??(venues.some(v=>v.id===preferred)?preferred:null)??venues[0]?.id??'';
-  const known=venues.some(v=>v.id===selected);
-  const detail=useOwnerVenue(known?selected:'');
-  const select=(id:string)=>{if(venues.some(v=>v.id===id)){persist(key,id);setParams({venue:id});}};
-  useEffect(()=>{if(known)persist(key,selected);},[key,known,selected]);
+  const access=useAccess();
+  const {venues,selectedId,known,section,onSelect}=useOwnerNavigation(access.data?.owner_venues??[]);
+  const detail=useOwnerVenue(known?selectedId:'');
+  if(!selectedId)return <OwnerPage venues={venues} selectedId="" section={section} onSelect={onSelect}/>;
   if(!known)return <StateView kind="denied"/>;
   if(detail.isPending)return <StateView kind="loading"/>;
   if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
-  if(!detail.data?.some(v=>v.id===selected))return <StateView kind="denied"/>;
-  // Users section: only for a venue this person owns. An approved member sees the venue card alone.
-  const owns=detail.data.find(v=>v.id===selected)?.is_owner===true;
-  return <OwnerPage key={selected} venues={venues.map(v=>v.id===selected?detail.data!.find(item=>item.id===selected)!:v)} selectedId={selected} onSelect={select}
-    users={owns?<OwnerUsersData key={selected} venueId={selected}/>:undefined}
-    printServers={<VenuePrintServerData key={selected} venue={detail.data.find(v=>v.id===selected)!} scope="owner"/>}/>;
+  const selected=detail.data?.find(venue=>venue.id===selectedId);
+  if(!selected)return <StateView kind="denied"/>;
+  if(section==='users'&&selected.is_owner!==true)return <StateView kind="denied"/>;
+  return <OwnerPage key={selectedId} venues={venues.map(venue=>venue.id===selectedId?selected:venue)} selectedId={selectedId} section={section} onSelect={onSelect}
+    users={section==='users'&&selected.is_owner===true?<OwnerUsersData key={selectedId} venueId={selectedId}/>:undefined}
+    printServers={section==='print-servers'?<VenuePrintServerData key={selectedId} venue={selected} scope="owner"/>:undefined}/>;
 }
 // Members of the owner's venue: one request at a time, localized errors, and a fresh
 // access check whenever the backend refuses (it decides ownership on every call).
@@ -340,10 +334,14 @@ function AuthenticatedLayout({children}:{children:ReactNode}) {
   const navigationAllowed=!!auth.session&&!auth.loading&&!auth.recovery&&!auth.invitation&&!restricted&&access.isSuccess&&
     (scope==='admin'?canAdmin:canOwner&&(!canAdmin||preferredScope(auth.session?.user.id??'')==='owner'));
   const name=useOwnDisplayName(navigationAllowed);
+  const ownerContext=useOwnerNavigation(access.data?.owner_venues??[]);
+  const ownerDetail=useOwnerVenue(navigationAllowed&&scope==='owner'&&ownerContext.known?ownerContext.selectedId:'');
+  const canManageUsers=!ownerDetail.isError&&ownerDetail.data?.some(venue=>venue.id===ownerContext.selectedId&&venue.is_owner===true)===true;
   if (!auth.session) return <>{children}</>;
   return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={name}
     navigationAllowed={navigationAllowed} canAdmin={navigationAllowed&&canAdmin} canOwner={navigationAllowed&&canOwner}
     canManageStaff={navigationAllowed&&!!access.data?.can_manage_staff} canViewTenants={navigationAllowed&&!!access.data?.can_view_tenants}
+    ownerContext={navigationAllowed&&scope==='owner'?{...ownerContext,canManageUsers}:undefined}
     onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
     {children}
   </PortalShell>;

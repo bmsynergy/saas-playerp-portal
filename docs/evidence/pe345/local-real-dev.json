@@ -1,0 +1,68 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "mocks": false,
+  "checks": [
+    {
+      "profile": "owner_uno",
+      "width": 1440,
+      "venues": [
+        {
+          "id": "c1700000-0000-0000-0000-0000000000a0",
+          "name": "WI170P1 Venue"
+        }
+      ],
+      "entry": "dashboard",
+      "navigation": "details/users/print servers, reload, EN/ES, foreign venue denied",
+      "passed": true
+    },
+    {
+      "profile": "owner_uno",
+      "width": 390,
+      "venues": [
+        {
+          "id": "c1700000-0000-0000-0000-0000000000a0",
+          "name": "WI170P1 Venue"
+        }
+      ],
+      "entry": "dashboard",
+      "navigation": "details/users/print servers, reload, EN/ES, foreign venue denied",
+      "passed": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 1440,
+      "venues": [
+        {
+          "id": "7c0f986f-2f28-4238-9080-279be48a0cc1",
+          "name": "US Test Venue (Florida)"
+        },
+        {
+          "id": "c1700000-0000-0000-0000-0000000000a0",
+          "name": "WI170P1 Venue"
+        }
+      ],
+      "entry": "overview",
+      "navigation": "details/users/print servers, reload, EN/ES, foreign venue denied",
+      "passed": true
+    },
+    {
+      "profile": "owner_varios",
+      "width": 390,
+      "venues": [
+        {
+          "id": "7c0f986f-2f28-4238-9080-279be48a0cc1",
+          "name": "US Test Venue (Florida)"
+        },
+        {
+          "id": "c1700000-0000-0000-0000-0000000000a0",
+          "name": "WI170P1 Venue"
+        }
+      ],
+      "entry": "overview",
+      "navigation": "details/users/print servers, reload, EN/ES, foreign venue denied",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

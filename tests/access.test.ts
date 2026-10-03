@@ -95,3 +95,14 @@ describe('display name never implies access',()=>{
     expect(displayName({})).toBe('PlayERP');
   });
 });
+
+it('preserves owner section deep links through login without granting ownership',()=>{
+  for(const section of ['details','users','print-servers']) {
+    const path=`/?venue=${owner.id}&section=${section}`;
+    expect(safeNext(path)).toBe(path);
+    expect(destination(access(false,[owner]),path)).toBe(path);
+    expect(destination(access(false),path)).toBeNull();
+    expect(destination(access(true,[owner]),path)).toBe('/admin');
+  }
+  for(const path of [`/?venue=${owner.id}&section=billing`,`/?section=users`,`/?venue=${owner.id}&next=//evil.invalid`]) expect(safeNext(path)).toBeNull();
+});
