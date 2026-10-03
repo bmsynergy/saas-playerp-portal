@@ -14,3 +14,9 @@ Validation:
 - `tests/owner-workspace-states.mjs`: seven intercepted-fixture scenarios cover access loading/error/retry/no-membership, scoped detail error/empty response, missing fields, approved-member Users denial, unknown venue denial without requesting it, history and mobile drawer. These deterministic fixtures are not evidence of backend authorization.
 
 Both browser scripts accept `PORTAL_TEST_ORIGIN`, `SMOKE_OUTPUT_DIR`, and `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. The live script additionally requires the existing controlled DEV fixture directory in `PORTAL_DEV_FIXTURES`. Credentials and tokens are never included in evidence.
+
+Published application commit: `5b1ce563517ed3ea4a86fc25b16b97eef9904c3c`, via the registered `playerp.dev` target. Public `/` and `/admin` returned HTTP 200. Public index SHA-256 equals the local production build: `9aef42469bab46281e3f18e6379da9f7d2c83c7717c783a366e50badf6511324`.
+
+`hosted-real-dev.json`: the same four real-session journeys passed on https://playerp.dev.bmore.app after publication, also exercising desktop collapse/expand. No intercepted APIs, no runtime errors, no horizontal overflow. Captures include Overview on mobile, contextual Dashboard on desktop and the mobile sidebar.
+
+Gaby completed an independent read-only review in the same session and reported no verifiable defects against the acceptance criteria. The primary agent inspected the rendered mobile Overview and desktop venue context. No production resources or backend files were changed.
