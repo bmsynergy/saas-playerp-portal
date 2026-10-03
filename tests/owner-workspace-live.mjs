@@ -42,7 +42,7 @@ try {
    await fit(page);await page.screenshot({path:`${out}/${profile}-dashboard-${width}.png`,fullPage:true});
    await nav(page,width);
    await expect(page.getByTestId('owner-venue-select')).toHaveCount(venues.length>1?1:0);
-   await page.screenshot({path:`${out}/${profile}-navigation-${width}.png`,fullPage:true});
+   await page.screenshot({path:`${out}/${profile}-navigation-${width}.png`,fullPage:true,animations:'disabled'});
    if(width>900){await page.getByRole('button',{name:'Collapse navigation',exact:true}).click();await expect(page.locator('.portal-layout')).toHaveClass(/sidebar-collapsed/);await page.getByRole('button',{name:'Expand navigation',exact:true}).click();}
    await page.getByTestId('owner-nav-details').click();await expect(page.locator('#venue-details-title')).toBeVisible();
    if(venues[0].address)await expect(page.locator('.owner-venue-card')).toContainText(venues[0].address);
