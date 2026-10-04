@@ -140,6 +140,7 @@ export const es: Record<keyof typeof en, string> = {
   'identity.confirmRevoke': '¿Quitar el acceso de {name} a {venue}? Solo se retira el acceso a ESTE local; la persona conserva sus otros locales.',
   'identity.confirmRecovery': '¿Enviar a {name} un correo para recuperar la contraseña? Llega al buzón de la propia persona; tú nunca ves el enlace.',
   'identity.protectedNote': 'Superadmin de venue heredado: protegido y de solo lectura aquí.',
+  'identity.role.staff': 'Personal',
   'identity.role.owner': 'Propietario',
   'identity.role.manager': 'Gerente',
   'identity.role.venue_manager': 'Gerente de local',

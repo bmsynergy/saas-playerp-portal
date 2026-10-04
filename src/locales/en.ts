@@ -138,6 +138,7 @@ export const en = {
   'identity.confirmRevoke': 'Remove {name}’s access to {venue}? Only access to THIS venue is removed; the person keeps their other venues.',
   'identity.confirmRecovery': 'Send {name} a password recovery email? It goes to this person’s own mailbox; you never see the link.',
   'identity.protectedNote': 'Legacy venue super admin: protected and read-only here.',
+  'identity.role.staff': 'Staff',
   'identity.role.owner': 'Owner',
   'identity.role.manager': 'Manager',
   'identity.role.venue_manager': 'Venue manager',
