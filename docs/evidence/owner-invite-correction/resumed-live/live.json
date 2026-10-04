@@ -1,0 +1,207 @@
+{
+  "work": "PE-368.6",
+  "origin": "https://playerp.dev.bmore.app",
+  "project": "fzwzmwstxlsxdzdmphyq (DEV)",
+  "venue": "WI170P1 Venue",
+  "venue_id": "c1700000-0000-0000-0000-0000000000a0",
+  "mocks": false,
+  "started_at": "2026-10-04T22:08:39.236Z",
+  "checks": [
+    {
+      "name": "El dueno existente invito desde el portal publicado a dos personas nuevas como dueno, con confirmacion",
+      "ok": true,
+      "http": 200,
+      "email_sent": [
+        true,
+        true
+      ],
+      "notified_other_owners": [
+        3,
+        4
+      ],
+      "status": "invited"
+    },
+    {
+      "name": "Dueno nuevo: abrio el enlace de invitacion, guardo su contrasena, vio la confirmacion y entro al local y a su lista de usuarios",
+      "ok": true,
+      "confirmation_title": "Tu cuenta está lista",
+      "membership_role": "owner",
+      "portal_access_flag": false,
+      "set_portal_access_calls": 0
+    },
+    {
+      "name": "Dueno nuevo: tambien entra desde el inicio de sesion con la contrasena que guardo",
+      "ok": true
+    },
+    {
+      "name": "Reintento: con la contrasena ya guardada, recargar y guardar la misma contrasena termina bien y entra al local",
+      "ok": true,
+      "auth_reply_on_retry": {
+        "http": 422,
+        "code": "same_password"
+      },
+      "membership_role": "owner",
+      "portal_access_flag": false
+    },
+    {
+      "name": "Gestion mutua: el dueno nuevo cambio el rol del dueno existente y lo restauro; el existente hizo lo mismo con el nuevo; cada cambio con confirmacion",
+      "ok": true,
+      "http": 200,
+      "confirmed": true
+    },
+    {
+      "name": "El servidor rechaza quitarse o cambiarse a uno mismo (las dos cuentas) y la pantalla lo avisa en la propia fila",
+      "ok": true,
+      "http": 409,
+      "error": "cannot_change_self",
+      "own_row_note": [
+        "You cannot remove yourself or change your own role. Another owner must do it.",
+        "You cannot remove yourself or change your own role. Another owner must do it."
+      ],
+      "own_row_has_controls": false
+    },
+    {
+      "name": "Datos de prueba restaurados: el local vuelve a sus miembros, roles y accesos de antes; los duenos de prueba quedan sin membresia",
+      "ok": true,
+      "owner_count": 3,
+      "members": 12,
+      "same_as_baseline": true
+    }
+  ],
+  "owner_api_calls": [
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "invite",
+      "operation": null,
+      "role": "owner",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "invite",
+      "operation": null,
+      "role": "owner",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "dueno_nuevo",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "demote",
+      "role": "manager",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "dueno_nuevo",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "appoint",
+      "role": null,
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "demote",
+      "role": "manager",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "appoint",
+      "role": null,
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "dueno_nuevo",
+      "via": "direct call with own session",
+      "action": "owner_change",
+      "operation": "remove",
+      "target": "self",
+      "http": 409,
+      "error": "cannot_change_self"
+    },
+    {
+      "by": "dueno_nuevo",
+      "via": "direct call with own session",
+      "action": "owner_change",
+      "operation": "demote",
+      "target": "self",
+      "http": 409,
+      "error": "cannot_change_self"
+    },
+    {
+      "by": "owner_varios",
+      "via": "direct call with own session",
+      "action": "owner_change",
+      "operation": "remove",
+      "target": "self",
+      "http": 409,
+      "error": "cannot_change_self"
+    },
+    {
+      "by": "owner_varios",
+      "via": "direct call with own session",
+      "action": "owner_change",
+      "operation": "demote",
+      "target": "self",
+      "http": 409,
+      "error": "cannot_change_self"
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "remove",
+      "role": null,
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "owner_change",
+      "operation": "remove",
+      "role": null,
+      "confirm": true,
+      "http": 200,
+      "error": null
+    }
+  ],
+  "browser_errors": [],
+  "baseline": {
+    "owner_count": 3,
+    "members": 12
+  },
+  "invitation_link": {
+    "source": "token de invitacion emitido por Auth para el correo real, leido por el buzon de pruebas DEV",
+    "host": "fzwzmwstxlsxdzdmphyq.supabase.co",
+    "path": "/auth/v1/verify",
+    "type": "invite",
+    "redirect_to": "https://playerp.dev.bmore.app/auth/password?invite=1&lang=es",
+    "sent_at": "2026-10-04T22:08:43.869071+00:00",
+    "token": "(no se guarda)"
+  },
+  "after_removal_new_owner_venues": 0,
+  "passed": true,
+  "restored": true,
+  "completed_at": "2026-10-04T22:09:34.927Z"
+}

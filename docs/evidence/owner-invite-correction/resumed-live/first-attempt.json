@@ -1,0 +1,93 @@
+{
+  "work": "PE-368.6",
+  "origin": "https://playerp.dev.bmore.app",
+  "project": "fzwzmwstxlsxdzdmphyq (DEV)",
+  "venue": "WI170P1 Venue",
+  "venue_id": "c1700000-0000-0000-0000-0000000000a0",
+  "mocks": false,
+  "started_at": "2026-10-04T22:07:17.290Z",
+  "checks": [
+    {
+      "name": "El dueno existente invito desde el portal publicado a dos personas nuevas como dueno, con confirmacion",
+      "ok": true,
+      "http": 200,
+      "email_sent": [
+        true,
+        true
+      ],
+      "notified_other_owners": [
+        3,
+        4
+      ],
+      "status": "invited"
+    },
+    {
+      "name": "Dueno nuevo: abrio el enlace de invitacion, guardo su contrasena, vio la confirmacion y entro al local y a su lista de usuarios",
+      "ok": true,
+      "confirmation_title": "Tu cuenta está lista",
+      "membership_role": "owner",
+      "portal_access_flag": false,
+      "set_portal_access_calls": 0
+    },
+    {
+      "name": "Dueno nuevo: tambien entra desde el inicio de sesion con la contrasena que guardo",
+      "ok": true
+    }
+  ],
+  "owner_api_calls": [
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "invite",
+      "operation": null,
+      "role": "owner",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "portal",
+      "action": "invite",
+      "operation": null,
+      "role": "owner",
+      "confirm": true,
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "cleanup",
+      "action": "owner_change",
+      "operation": "remove",
+      "http": 200,
+      "error": null
+    },
+    {
+      "by": "owner_varios",
+      "via": "cleanup",
+      "action": "owner_change",
+      "operation": "remove",
+      "http": 200,
+      "error": null
+    }
+  ],
+  "browser_errors": [],
+  "baseline": {
+    "owner_count": 3,
+    "members": 12
+  },
+  "invitation_link": {
+    "source": "token de invitacion emitido por Auth para el correo real, leido por el buzon de pruebas DEV",
+    "host": "fzwzmwstxlsxdzdmphyq.supabase.co",
+    "path": "/auth/v1/verify",
+    "type": "invite",
+    "redirect_to": "https://playerp.dev.bmore.app/auth/password?invite=1&lang=es",
+    "sent_at": "2026-10-04T22:07:22.493296+00:00",
+    "token": "(no se guarda)"
+  },
+  "passed": false,
+  "failure": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('form.auth-form') to be visible\u001b[22m\n",
+  "restored": true,
+  "completed_at": "2026-10-04T22:08:18.951Z"
+}
