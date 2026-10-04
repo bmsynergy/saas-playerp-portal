@@ -127,7 +127,7 @@ function OwnerUsersData({venueId}:{venueId:string}) {
       const code=staffErrorKey(e);setError(code);
       if(code==='sessionExpired')await expire();
       if(code==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
-      if(code==='identity.error.notMember'||code==='identity.error.alreadyMember'||code==='ownerUsers.error.protectedOwner')void data.refetch();
+      if(['identity.error.notMember','identity.error.alreadyMember','ownerUsers.error.protectedOwner','ownerUsers.error.notOwner','ownerUsers.error.lastOwner','ownerUsers.error.busyRetry'].includes(code))void data.refetch();
       throw e;
     } finally {setBusy(false);}
   };
@@ -137,7 +137,11 @@ function OwnerUsersData({venueId}:{venueId:string}) {
   if(data.isError&&!data.data)return <StateView kind={staffErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="loading"/>;
   return <OwnerUsersSection data={data.data} busy={busy} error={error} notice={notice}
-    onInvite={(invite:OwnerUserInvite)=>run({action:'invite',...invite},result=>result.email_sent===false?'ownerUsers.invitedNoEmail':'ownerUsers.invited')}
+    onInvite={(invite:OwnerUserInvite)=>run({action:'invite',...invite},result=>Number(result.notify_failed)>0
+      ? result.email_sent===false?'ownerUsers.invitedNoEmailNoticeFailed':'ownerUsers.ownerInviteNoticeFailed'
+      : result.email_sent===false?'ownerUsers.invitedNoEmail':'ownerUsers.invited')}
+    onOwnerChange={(operation,person,role)=>run({action:'owner_change',operation,user_id:person.user_id,confirm:true,...(operation==='demote'?{role}:{})},
+      result=>result.changed===false?'identity.noChange':Number(result.notify_failed)>0?'ownerUsers.ownerNoticeFailed':operation==='remove'?'ownerUsers.ownerRemoved':'ownerUsers.ownerUpdated')}
     onAction={(action:OwnerUserAction,person:OwnerUser,value)=>run({action,user_id:person.user_id,...(action==='set_role'?{role:value}:{portal_access:value})},
       result=>result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':value===true?'ownerUsers.portalGranted':'ownerUsers.portalRemoved')}/>;
 }

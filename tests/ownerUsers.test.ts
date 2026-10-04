@@ -17,13 +17,25 @@ const refuse = (status: number, error: string) => invoke.mockResolvedValueOnce({
 beforeEach(() => invoke.mockReset());
 
 describe('owner users projection', () => {
-  it('keeps only this venue fields and never offers owner or super admin', () => {
+  it('keeps only this venue fields and ordinary roles separate from owner capabilities', () => {
     const list = projectOwnerUsers(rawList);
     expect(list).toEqual({ venue: { id: venue, name: 'Centro' },
       users: [{ user_id: user, email: 'ana@example.invalid', full_name: 'Ana Ruiz', role: 'front_desk', status: 'active', portal_access: true,
-        member_since: '2026-09-01T10:00:00Z', is_self: false, locked: null }],
-      roles: ['manager', 'front_desk'] });
+        member_since: '2026-09-01T10:00:00Z', is_self: false, locked: null, owner_actions: [] }],
+      roles: ['manager', 'front_desk'], invite_roles: ['manager', 'front_desk'], owner_count: null });
     expect(JSON.stringify(list)).not.toMatch(/other_venue_count|platform_role|last_sign_in_at|extra/);
+  });
+  it('uses server invitation roles and owner actions without granting capabilities to self or protected rows', () => {
+    const list = projectOwnerUsers({...rawList, invite_roles:['owner','manager','super_admin','unknown',7], owner_count:2,
+      users:[{...rawUser,role:'owner',locked:'owner',owner_actions:['demote','remove','unknown']},
+        {...rawUser,is_self:true,owner_actions:['appoint']},
+        {...rawUser,locked:'future_lock',owner_actions:['appoint']},
+        {...rawUser,owner_actions:['appoint']}]});
+    expect(list.invite_roles).toEqual(['owner','manager']);
+    expect(list.roles).toEqual(['manager','front_desk']);
+    expect(list.owner_count).toBe(2);
+    expect(list.users.map(u=>u.owner_actions)).toEqual([['demote','remove'],[],[],['appoint']]);
+    expect(list.users[0].portal_access).toBe(true);
   });
   it('treats self and unknown locks as read-only and portal access as off unless true', () => {
     const lock = (extra: Record<string, unknown>) => projectOwnerUsers({ ...rawList, users: [{ ...rawUser, ...extra }] }).users[0];
@@ -50,5 +62,9 @@ describe('owner users requests', () => {
     await expect(ownerUsersRequest(venue, { action: 'set_role' })).rejects.toSatisfy(e => staffErrorKey(e) === 'ownerUsers.error.protectedOwner');
     refuse(403, 'forbidden');
     await expect(ownerUsersRequest(venue, { action: 'list' })).rejects.toSatisfy(e => staffErrorKey(e) === 'accessDenied');
+    for (const code of ['last_owner','confirmation_required','busy_retry','not_owner','account_unconfirmed']) {
+      refuse(409, code);
+      await expect(ownerUsersRequest(venue, { action: 'owner_change' })).rejects.toSatisfy(e => staffErrorKey(e) === ownerUserCodes[code]);
+    }
   });
 });
