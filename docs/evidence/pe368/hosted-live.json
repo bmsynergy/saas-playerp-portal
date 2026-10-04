@@ -1,0 +1,49 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "mocks": false,
+  "commit_served": "1be9f7c5c395ada8841147ad25570fca432dbbd8",
+  "project": "fzwzmwstxlsxdzdmphyq",
+  "venue_id": "c1700000-0000-0000-0000-0000000000a0",
+  "invitation_checks": [
+    {
+      "name": "Hosted UI invited a pending owner with explicit confirmation; cancellation sent nothing",
+      "http": 200,
+      "effective_portal_access": true,
+      "status": "invited",
+      "email_sent": true,
+      "notified": 2,
+      "notify_failed": 0
+    },
+    {
+      "name": "Hosted UI removed the pending owner invitation after confirmation",
+      "http": 200
+    }
+  ],
+  "ownership_checks": [
+    {
+      "name": "Newly appointed owner signed in through the hosted login and opened Users with portal_access false",
+      "http": 200,
+      "portal_access": false,
+      "viewport": 390
+    },
+    {
+      "name": "Both owners managed the other from the hosted UI: new owner demoted and restored original; original demoted new owner",
+      "http": 200,
+      "confirmed": true
+    },
+    {
+      "name": "Demoted fixture no longer has Owner Portal access; no manual portal_access grant was made",
+      "portal_access": false,
+      "venues": 0
+    }
+  ],
+  "invitation_checked_at": "2026-10-04T20:48:42.920Z",
+  "ownership_checked_at": "2026-10-04T20:49:36.889Z",
+  "fixture_memberships_and_roles_restored": true,
+  "passed": true,
+  "test_harness_corrections": [
+    "The list returns effective portal access (raw flag OR Owner role). Raw false was verified separately through the member JWT and RLS.",
+    "The login correctly preserves the Users deep link. The harness originally waited for the Dashboard; corrected to Users. Invitation checks had already passed, so the ownership stage was rerun without sending extra mail."
+  ],
+  "scope_note": "Real invitation creation/removal and role-based entry/mutual management verified here. Accepting a brand-new invited account is covered by Tom backend evidence at f06d5940, not repeated by this frontend harness."
+}
