@@ -39,3 +39,9 @@ stopped at its stale owner heading (line 60: "Your spaces, in one place.").
 That OwnerPage/ownerWelcome mismatch already exists in the base branch. This is
 not reported as a full smoke pass; password recovery is covered in the focused
 seven-scenario browser regression instead.
+
+DEV publication: application commit `e47a5908ec2052f42784aed5b7ad2f3b195e21eb`,
+https://playerp.dev.bmore.app/, completed 2026-10-04 21:51 UTC, health `/` and
+`/admin` HTTP 200. Seven authentication scenarios and six owner-management
+checks also passed against that hosted build with intercepted API responses;
+see hosted-invitation.json and hosted-owner-management.json. No PROD target used.

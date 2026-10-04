@@ -1,0 +1,42 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "mocks": true,
+  "checks": [
+    {
+      "scenario": "owner",
+      "updates": 1,
+      "platform_accepts": 1
+    },
+    {
+      "scenario": "saved-password-retry",
+      "updates": 1,
+      "platform_accepts": 1
+    },
+    {
+      "scenario": "access-retry",
+      "updates": 2,
+      "platform_accepts": 2
+    },
+    {
+      "scenario": "staff",
+      "updates": 1,
+      "platform_accepts": 1
+    },
+    {
+      "scenario": "dual",
+      "updates": 1,
+      "platform_accepts": 1
+    },
+    {
+      "scenario": "no-invitation",
+      "updates": 1,
+      "platform_accepts": 1
+    },
+    {
+      "scenario": "recovery",
+      "updates": 1,
+      "platform_accepts": 0
+    }
+  ],
+  "errors": []
+}
