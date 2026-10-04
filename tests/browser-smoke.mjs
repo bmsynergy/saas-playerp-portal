@@ -149,7 +149,7 @@ try{
  for(const state of ['recovery','invitation']){
   const {ctx,page,requests}=await setup({auth:true,staff:true});
   await ctx.addInitScript(key=>sessionStorage.setItem('playerp.portal.'+key,'1'),state);
-  await page.goto(origin+'/admin/tenants/'+v1+'/users');await heading(page,state==='invitation'?'Create your staff password':'Set a new password');
+  await page.goto(origin+'/admin/tenants/'+v1+'/users');await heading(page,state==='invitation'?'Create your password':'Set a new password');
   assert.equal(await page.locator('.portal-layout main').count(),1);
   assert.equal(await page.locator('.sidebar-nav a,.topbar-subnav a,.breadcrumbs a').count(),0);
   assert(!requests.some(x=>x.includes('/rpc/')||x.includes('/functions/')||x.includes('/staff_profiles')));

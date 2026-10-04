@@ -5,7 +5,7 @@ import { queryClient } from '../lib/queryClient';
 import { AUTH_STORAGE_KEY } from '../lib/config';
 import { clearVenueSelection, persist, recoveryPending, invitationPending } from '../lib/storage';
 import { clearScopes } from '../lib/access';
-import { acceptInvitation } from '../lib/staff';
+import { savePassword } from '../lib/invitation';
 import { useLocale } from '../locales';
 import { errorCode, PortalError } from '../lib/errors';
 
@@ -132,9 +132,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
   const updatePassword = async (password: string) => {
     if (callbackInvalid || !current.current) throw new PortalError('invalidLink');
     if (password.length < 12) throw new PortalError('weakPassword');
-    const {error} = await supabase.auth.updateUser({password});
-    if (error) throw error;
-    if (invitation) await acceptInvitation();
+    await savePassword(password, invitation);
     recoveryPending(false); setRecovery(false); invitationPending(false); setInvitation(false);
     clearPrivateState();
   };
