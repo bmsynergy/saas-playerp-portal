@@ -1,0 +1,16 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "mocks": true,
+  "checks": [
+    "1440px: invitation requires explicit confirmation, cancel sends nothing, owner access shown active and protected rows have no actions",
+    "1440px: appoint, demote and remove require confirmation and send the secure owner_change contract; no portal_access writes",
+    "390px: invitation requires explicit confirmation, cancel sends nothing, owner access shown active and protected rows have no actions",
+    "390px: appoint, demote and remove require confirmation and send the secure owner_change contract; no portal_access writes",
+    "en: last-owner safeguard and other server refusals remain visible inside confirmation; failed email notice does not undo success",
+    "es: last-owner safeguard and other server refusals remain visible inside confirmation; failed email notice does not undo success",
+    "en: Staff role is Staff in invitation and existing user role selector",
+    "es: Staff role is Personal in invitation and existing user role selector"
+  ],
+  "errors": [],
+  "passed": true
+}

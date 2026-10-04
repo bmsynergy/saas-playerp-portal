@@ -107,5 +107,14 @@ try {
   pass(`${locale}: last-owner safeguard and other server refusals remain visible inside confirmation; failed email notice does not undo success`);
   await ctx.close();
  }
+ for(const locale of ['en','es']){
+  const {ctx,page}=await setup(locale,390);
+  const label=locale==='es'?'Personal':'Staff';
+  await expect(row(page,'member@example.invalid').locator('option[value="staff"]')).toHaveText(label);
+  await page.getByTestId('owner-users-invite').click();
+  await expect(page.getByTestId('owner-invite-dialog').locator('option[value="staff"]')).toHaveText(label);
+  pass(`${locale}: Staff role is ${label} in invitation and existing user role selector`);
+  await ctx.close();
+ }
  assert.deepEqual(report.errors,[]);report.passed=true;
 } finally {await writeFile(`${out}/report.json`,JSON.stringify(report,null,2));await browser.close();}
