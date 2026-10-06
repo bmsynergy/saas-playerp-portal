@@ -1,0 +1,49 @@
+PS laboratorio (foto antes)                  {"ps":"1bbf78797c40154ba87628fa151f2b48","printers":"d4912e1416aba135a25b5068a991f038","commands":6}
+alta en inventario                           {"serial":"PS-VMPRR582","hostname":"playerp-ps-vmprr582","model":"rpi4-2gb","status":"stock"}
+WPA2 10 dígitos / código 10 sin ambiguos     [true,true]
+serial/hostname duplicados en inventario     {"dup_serial":0,"dup_hostname":0}
+captura                                      inventario-asignar-es-390.png
+código de activación guardado solo como hash true
+activación 1ª vez                            [200,{"serial":"PS-VMPRR582","hostname":"playerp-ps-vmprr582","wifi_ssid":"PlayERP-R582"}]
+activación 2ª vez (mismo código)             [401,"invalid_enrollment_code"]
+auditoría tras asignar/activar               ["ps_device_assigned","ps_device_assigned","ps_device_assigned","ps_device_assigned","ps_device_assigned","ps_device_revoked","ps_device_assigned","ps_device_assigned","ps_device_replaced"]
+owner lee su ficha                           [200,{"serial":"PS-VMPRR582","ssid":"PlayERP-R582","can_manage":true,"is_platform_admin":false}]
+token técnico en la lectura del owner        ninguno
+token técnico en ps_panel_state (owner)      ninguno (credential_hint=null)
+captura                                      owner-rotacion-pendiente-en-390.png
+rotación con el PS sin contestar             {"status":"pending","sin_caducidad":true}
+owner ve la rotación / clave vigente         ["pending","sigue la anterior"]
+el PS recibe la orden al volver              [200,"wifi_rotate",true]
+tras confirmar el PS                         [200,"applied","clave nueva vigente"]
+rotación de código que el PS da por fallida  [200,"failed","sigue el código anterior"]
+captura                                      owner-ficha-aplicado-fallido-en-390.png
+QR de la etiqueta                            alt="Wi-Fi QR code for PlayERP-R582" (contenido WIFI:T:WPA;S:<ssid>;P:<clave>;; — sin código administrativo)
+owner -> flota (portal_ps_fleet)             [403,"42501"]
+owner -> inventario (portal_ps_devices)      [403,"42501"]
+owner -> firmware (ps_firmware_list)         [403,"42501"]
+owner -> alta de aparato (ps_admin_device_create) [403,"42501"]
+owner -> renovar certificado (ps_admin_cert_renew) [403,"42501"]
+owner -> otro venue (ps_panel_device)        [403,"42501"]
+owner -> otro venue (ps_panel_state)         [403,"42501"]
+owner -> subir certificado (edge)            [403,"42501"]
+renovar: el PS confirma                      [200,"renew","applied"]
+huella DER mostrada = openssl -fingerprint -sha256 ["6ceb2b9d98e0eeddf10dac67283a20fd0b4d7cb74983515aaab943ed61ddbb3f","6C:EB:2B:9D:98:E0:EE:DD:F1:0D:AC:67:28:3A:20:FD:0B:4D:7C:B7:49:83:51:5A:AA:B9:43:ED:61:DD:BB:3F",true]
+vigencia y hostname mostrados                ["playerp-ps-vmprr582","2026-10-06T21:56:49+00:00","2029-01-08T21:56:49+00:00","valid"]
+captura                                      admin-certificado-renovado-es-390.png
+descarga de la CA de PE-339 (owner) sigue respondiendo [200,false]
+descarga de la CA de PE-339 (laboratorio, admin) [200,true,"con huella DER"]
+subir con otro hostname                      [400,"hostname_mismatch"]
+subir con PRIVATE KEY                        [400,"private_key_rejected"]
+subir válido, el PS informa key_mismatch     [200,"install","failed","key_mismatch"]
+certificado vigente tras el fallo            el anterior (A)
+captura                                      admin-certificado-fallido-es-390.png
+captura                                      admin-ficha-en-390.png
+captura                                      inventario-en-390.png
+captura                                      owner-ficha-es-390.png
+PRIVATE KEY en alguna respuesta guardada     ninguna (6 respuestas)
+reemplazo: activa el 2º, credencial del 1º   [200,401]
+revocar el 2º                                [200,true,"stock"]
+se deja el 1º activo de nuevo en US Test Venue [200,"PS-VMPRR582"]
+filas de admin_audit_log                     ["ps_device_assigned:PS-VMPRR582","ps_device_assigned:PS-N6ZUCRC9","ps_device_replaced:PS-VMPRR582","ps_device_revoked:PS-N6ZUCRC9","ps_device_assigned:PS-VMPRR582"]
+PS laboratorio (foto después)                {"ps":"1bbf78797c40154ba87628fa151f2b48","printers":"d4912e1416aba135a25b5068a991f038","commands":6}
+foto del laboratorio igual                   true

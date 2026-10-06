@@ -1,0 +1,24 @@
+{
+ "origin": "https://playerp.dev.bmore.app",
+ "startedAt": "2026-10-06T21:46:50.785Z",
+ "localSha": "440327e04e7f4f7c24b0b2dd31c888763fbe6ae85649a72514c4ec8fb20b02c4",
+ "checks": [
+  {
+   "case": "browser upload",
+   "ok": "true",
+   "serverSha": "440327e04e7f4f7c24b0b2dd31c888763fbe6ae85649a72514c4ec8fb20b02c4",
+   "localSha": "440327e04e7f4f7c24b0b2dd31c888763fbe6ae85649a72514c4ec8fb20b02c4",
+   "equal": true
+  },
+  {
+   "case": "owner opens /admin/print-servers/firmwares",
+   "formVisible": false
+  }
+ ],
+ "screenshots": [
+  "firmwares-en-390-upload.png",
+  "firmwares-es-390.png",
+  "firmwares-en-390.png",
+  "firmwares-owner-denied-390.png"
+ ]
+}

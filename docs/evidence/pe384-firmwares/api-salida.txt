@@ -1,0 +1,19 @@
+admin begin/upload/finalize HTTP     [200,200,200]
+sha256 local (node)                  f0ad2bc0d0b9e568b9ce2b42aeced2ba3a29dd7ae7441d7a309205810f5221d7
+sha256 calculado por el servidor     f0ad2bc0d0b9e568b9ce2b42aeced2ba3a29dd7ae7441d7a309205810f5221d7
+coinciden                            true
+objeto guardado en                   ps-firmware/releases/rpi4-2gb/0.0.1-pe384-prueba/f0ad2bc0d0b9e568b9ce2b42aeced2ba3a29dd7ae7441d7a309205810f5221d7.zip (ready)
+bucket público?                      false
+URL pública sin firma -> HTTP        400
+lectura directa como owner -> HTTP   400
+lectura directa como admin -> HTTP   400
+URL firmada de descarga              200 expira en 300s (firmada=true)
+sha256 de lo descargado              f0ad2bc0d0b9e568b9ce2b42aeced2ba3a29dd7ae7441d7a309205810f5221d7
+lista (admin)                        200 releases=1 esta=ready instalada_en=0
+instalado en la flota                0.3.5:1 PS cargado=false | 0.3.2:2 PS cargado=false
+ZIP no válido                        [400,"invalid_zip",["no_local_header","no_end_of_central_directory"]]
+mismo fichero otra vez               [409,"duplicate"]
+owner -> edge begin                  [401,{"ok":false,"error":"unauthorized"}]
+owner -> edge download               [401,{"ok":false,"error":"unauthorized"}]
+owner -> rpc ps_firmware_list        [401,"PGRST301","Expected 3 parts in JWT; got 1"]
+print_server_commands antes/después  26 / 26 (última 2026-10-01 22:23:33.459193+00)
