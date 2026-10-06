@@ -1,0 +1,71 @@
+
+######## CRITERIO 2 — validación local antes de activar ########
+PS simulado f60c66ab-2bd1-4f67-a278-2268432ba0e2 · ediciones SINTÉTICAS firmadas en Firmwares (0.3.6-sim.1 buena, 0.3.6-sim.3 armhf)
+
+== válido: 0.3.5 -> 0.3.6-sim.1
+  updater rc=0: oferta válida: 0.3.5 -> 0.3.6-sim.1 (objetivo f48bc62b-27f7-4af8-881a-ceb1eb69b7bd) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] instalado y confirmado · local 0.3.6-sim.1 · portal committed instalada=0.3.6-sim.1
+  [OK] huella de datos igual
+
+== firma alterada (un byte del manifiesto cambiado en tránsito)
+  updater rc=2: RECHAZADO antes de activar: signature_invalid — la firma de la oferta no corresponde
+  [OK] rechazado con motivo signature_invalid
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+  [OK] el portal lo recibe · ps_ota_targets rejected / signature_invalid: la firma de la oferta no corresponde
+
+== sha256 distinto (paquete alterado en tránsito, mismo tamaño)
+  updater rc=4: RECHAZADO antes de activar: sha256_mismatch — esperado 685ccf213fa7d91e61ff46731e920ce4189e89131ec3a7e046749a2519da55c4, recibido 94d2bf51d10537888485d4b4d5977903925e86119a96e009eb74812712b6a7a1 | resultado: rejected · instalada 0.3.5 · error sha256_mismatch
+  [OK] rechazado con motivo sha256_mismatch
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+  [OK] el portal lo recibe · ps_ota_targets rejected / sha256_mismatch: esperado 685ccf213fa7d91e61ff46731e920ce4189e89131ec3a7e046749a2519da55c4, recibido 94d2bf51d10537888485d4b4d5977903925e86119a96e009eb74812712b6a7a1
+
+== tamaño distinto (un byte de más en la descarga)
+  updater rc=4: RECHAZADO antes de activar: size_mismatch — esperado 1754 bytes, recibido 1755 | resultado: rejected · instalada 0.3.5 · error size_mismatch
+  [OK] rechazado con motivo size_mismatch
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+  [OK] el portal lo recibe · ps_ota_targets rejected / size_mismatch: esperado 1754 bytes, recibido 1755
+
+== modelo distinto (aparato rpi5-4gb, paquete rpi4-2gb)
+  updater rc=2: RECHAZADO antes de activar: model_mismatch — paquete rpi4-2gb, aparato rpi5-4gb
+  [OK] rechazado con motivo model_mismatch
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+  [OK] el portal lo recibe · ps_ota_targets rejected / model_mismatch: paquete rpi4-2gb, aparato rpi5-4gb
+
+== arquitectura distinta (paquete armhf, aparato arm64)
+  updater rc=2: RECHAZADO antes de activar: arch_mismatch — paquete armhf, aparato arm64
+  [OK] rechazado con motivo arch_mismatch
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+  [OK] el portal lo recibe · ps_ota_targets rejected / arch_mismatch: paquete armhf, aparato arm64
+
+== downgrade (ofrecida 0.3.6-sim.1 con 0.3.6-sim.1 ya confirmada)
+  updater rc=2: RECHAZADO antes de activar: downgrade — ofrecida 0.3.6-sim.1 <= instalada/confirmada 0.3.6-sim.1
+  [OK] rechazado con motivo downgrade
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.6-sim.1
+  [OK] el portal lo recibe · ps_ota_targets rejected / downgrade: ofrecida 0.3.6-sim.1 <= instalada/confirmada 0.3.6-sim.1
+
+== replay (vuelve a llegar el manifiesto ya usado)
+  updater rc=2: RECHAZADO antes de activar: replay — manifiesto ya usado (nonce repetido)
+  [OK] rechazado con motivo replay
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.6-sim.1
+
+== caducado: despliegue con caducidad de 1 minuto; se guarda la oferta y se presenta pasado el plazo
+  oferta capturada sin usar, caduca 2026-10-06T22:49:00Z; esperando a que caduque…
+
+== caducado (manifiesto sin usar pero fuera de plazo)
+  updater rc=2: RECHAZADO antes de activar: expired — manifiesto caducado el 2026-10-06T22:49:00Z
+  [OK] rechazado con motivo expired
+  [OK] no activó nada (misma versión, sin staging, servicio arriba, huella igual) · instalada 0.3.5
+
+== solo HTTPS saliente y ningún camino que ejecute órdenes del servidor (lectura del código)
+  llamadas a procesos: ctl + ["is-active"; ctl + [action
+  [OK] subprocess solo con service_ctl de la configuración LOCAL (start/stop/is-active)
+  [OK] no abre puertos (sin bind/listen/serve)
+  [OK] URL de la API y de la descarga solo https:// (y Bearer pst_)
+
+== clave de firma separada (solo nombres; ningún valor)
+  secretos de edge con PS_*: PS_CHANNEL_JWT_SECRET, PS_OTA_SIGNING_KEY
+  [OK] existe el secreto PS_OTA_SIGNING_KEY y es otro que PS_CHANNEL_JWT_SECRET
+  clave pública registrada: [{'key_id': 'f93c273f49f8631c', 'public_key_b64': '61XQZgS0I+NFwC6uwz2YU+FrV5I+YRnE2aIJbVeoMHo='}]
+  credencial del aparato: pst_ (hash en print_servers.credential_hash); TLS del PS: su propia CA/cert en el aparato
+
+RESUMEN: 28 OK, 0 FALLO

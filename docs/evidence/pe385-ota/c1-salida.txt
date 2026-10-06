@@ -1,0 +1,24 @@
+Admin de plataforma (sesión real)                    delive…@resend.dev
+ediciones firmadas visibles                          3
+crear grupo canary                                   {"ok":"true","text":"Group “PE-385 canary · PS simulado 22:53:08” created."}
+miembros del grupo (PS simulado)                     {"ok":"true","text":"Members of “PE-385 canary · PS simulado 22:53:08” saved."}
+desplegar 0.3.6-sim.2 en GENERAL sin canary confirmado {"ok":"false","text":"General rollout is blocked: no canary device has confirmed this edition yet. Deploy it to the lab or canary ring first."}
+desplegar 0.3.6-sim.1 al grupo canary                {"ok":"true","text":"Version 0.3.6-sim.1 deployed to 1 Print Server(s)."}
+updater del PS simulado (raíz de prueba 0.3.5)       resultado: committed · instalada 0.3.6-sim.1
+edición confirmada en canary                         2026-10-06 22:50:11.072548+00
+desplegar 0.3.6-sim.1 en GENERAL tras confirmarse en canary {"ok":"true","text":"Version 0.3.6-sim.1 deployed to 1 Print Server(s)."}
+desplegar 0.3.6-sim.2 al aparato (laboratorio)       {"ok":"true","text":"Version 0.3.6-sim.2 deployed to 1 Print Server(s)."}
+updater del PS simulado                              resultado: rolled_back · instalada 0.3.6-sim.1 · error local_api_down
+objetivo del aparato (portal)                        {"id":"c7fcceb5-e1d3-4e75-b7fa-81f1432b0fc3","status":"rolled_back","phase":"rolled_back","progress":100,"error_code":"local_api_down","error_detail":"HTTP Error 500: Internal Server Error","desired_version":"0.3.6-sim.2","installed_version":"0.3.6-sim.1"}
+objetivo del grupo canary (portal)                   {"id":"74a849cc-78b3-4beb-9360-e65d7daa4cac","status":"committed","installed_version":"0.3.6-sim.1"}
+ps_ota_events de esos objetivos                      [{"target_id":"74a849cc-78b3-4beb-9360-e65d7daa4cac","n":8,"fases":"accepted:in_progress > downloading:in_progress > downloading:in_progress > verified:in_progress > staged:in_progress > preflight:in_progress > health_check:in_progress > committed:committed"},{"target_id":"c7fcceb5-e1d3-4e75-b7fa-81f1432b0fc3","n":8,"fases":"accepted:in_progress > downloading:in_progress > downloading:in_progress > verified:in_progress > staged:in_progress > preflight:in_progress > health_check:in_progress > rolled_back:rolled_back"}]
+admin_audit_log ps_ota_* de esta pasada              [{"action":"ps_ota_deployed","n":3},{"action":"ps_ota_group_created","n":1},{"action":"ps_ota_group_members_set","n":1}]
+capturas                                             ["/home/coredev/coredeva/sandbox/.runs/ee6d692b-3e3b-4af0-9664-62574e16a87e/evidencia/updates-en.png","/home/coredev/coredeva/sandbox/.runs/ee6d692b-3e3b-4af0-9664-62574e16a87e/evidencia/updates-es.png"]
+owner · ps_panel_ota de SU venue                     {"status":200,"keys":["phase","status","hostname","progress","updated_at","desired_version","print_server_id","installed_version"],"ps":[{"installed":"0.3.6-sim.1","desired":"0.3.6-sim.2","status":"rolled_back"}]}
+owner · ps_panel_ota de OTRO local                   [403,"42501"]
+owner · desplegar                                    [403,"42501"]
+owner · firmar                                       [403,"42501"]
+owner · crear grupo                                  [403,"42501"]
+owner · vista global de despliegues                  [403,"42501"]
+owner abre /admin/print-servers/updates · formulario de despliegue visible 0
+PASADA OK

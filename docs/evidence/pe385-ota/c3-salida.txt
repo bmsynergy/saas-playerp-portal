@@ -1,0 +1,125 @@
+
+######## CRITERIO 3 — preflight, transacción durable, conservación y salud ########
+
+== preflight con un trabajo 'pending' en la cola
+  updater rc=4: FALLO en preflight: queue_busy — 1 trabajos pendientes o en envío (la versión anterior sigue activa) | resultado: failed · instalada 0.3.5 · error queue_busy
+  [OK] el preflight no deja continuar · portal failed/queue_busy: 1 trabajos pendientes o en envío
+  [OK] nada tocado (huella igual, sin staging)
+
+== preflight con un trabajo 'sending' en la cola
+  updater rc=4: FALLO en preflight: queue_busy — 1 trabajos pendientes o en envío (la versión anterior sigue activa) | resultado: failed · instalada 0.3.5 · error queue_busy
+  [OK] el preflight no deja continuar · portal failed/queue_busy: 1 trabajos pendientes o en envío
+  [OK] nada tocado (huella igual, sin staging)
+
+== proceso matado en la fase downloading
+  1ª pasada rc=-9 (proceso matado): diario=downloading instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: recuperación: diario en fase downloading (objetivo e9f8b2ff-1f82-4be2-8f42-f05ce0c593e8) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 1b243fd181293ecb
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase downloaded
+  1ª pasada rc=-9 (proceso matado): diario=downloaded instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: recuperación: diario en fase downloaded (objetivo efa056cd-498f-4cb3-bc39-cb274c9d2f21) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 60624d75ce0ac232
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase staged
+  1ª pasada rc=-9 (proceso matado): diario=staged instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: recuperación: diario en fase staged (objetivo 5e79ddd9-3f34-41a4-bafd-2186c9456190) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · fe100b7522229113
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase frozen
+  1ª pasada rc=-9 (proceso matado): diario=frozen instalada=0.3.5 servicio=parado
+  2ª pasada rc=0: recuperación: diario en fase frozen (objetivo fb64bbf6-23b5-460d-ad36-a8b509fc9267) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 83bb072d11ce05bc
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase activating
+  1ª pasada rc=-9 (proceso matado): diario=activating instalada=0.3.5 servicio=parado
+  2ª pasada rc=0: recuperación: diario en fase activating (objetivo 0d2778f1-826f-4916-95d9-721f87e4a9c3) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · c262e6f763111085
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase switched
+  1ª pasada rc=-9 (proceso matado): diario=activating instalada=0.3.6-sim.1 servicio=parado
+  2ª pasada rc=0: recuperación: diario en fase activating (objetivo b32384b4-758b-4e77-927c-88d2a4ed605c) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · c1fcfe4bc71ca4ec
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase health_check
+  1ª pasada rc=-9 (proceso matado): diario=health_check instalada=0.3.6-sim.1 servicio=arriba
+  2ª pasada rc=0: recuperación: diario en fase health_check (objetivo d2ab706c-cec2-4c5f-a5ff-bea986b4171f) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · be756be568db2a66
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase committed
+  1ª pasada rc=-9 (proceso matado): diario=committed instalada=0.3.6-sim.1 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 855aabfaddd4d07f
+  [OK] el portal tiene el resultado · committed
+
+== proceso matado en la fase rolling_back (versión con salud rota)
+  1ª pasada rc=-9 (proceso matado): diario=rolling_back instalada=0.3.6-sim.2 servicio=arriba
+  2ª pasada rc=4: recuperación: diario en fase rolling_back (objetivo e7bcd6ca-53a1-471c-ab13-758349ffc4c0) | resultado: rolled_back · instalada 0.3.5 · error local_api_down
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 0729e5a971ef06e3
+  [OK] el portal tiene el resultado · rolled_back local_api_down HTTP Error 500: Internal Server Error
+
+== proceso matado en la fase rolled_back (versión con salud rota)
+  1ª pasada rc=-9 (proceso matado): diario=rolled_back instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · a9546ec473d90260
+  [OK] el portal tiene el resultado · rolled_back local_api_down HTTP Error 500: Internal Server Error
+
+== red cortada durante la descarga
+  1ª pasada rc=3 (red cortada): diario=downloading instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: recuperación: diario en fase downloading (objetivo ce8d6c22-6268-42e6-8c1c-43e4c887a4df) | resultado: committed · instalada 0.3.6-sim.1
+  [OK] termina committed, nunca a medias · local 0.3.6-sim.1 · releases ['0.3.5', '0.3.6-sim.1']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 55cea747fbb99223
+  [OK] el portal tiene el resultado · committed
+
+== red cortada desde la fase staged (sin nube no se confirma)
+  1ª pasada rc=4 (red cortada): diario=None instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 3811b0a6869c9259
+  [OK] el portal tiene el resultado · rolled_back cloud_unreachable network down (test)
+
+== red cortada desde la fase frozen (sin nube no se confirma)
+  1ª pasada rc=4 (red cortada): diario=None instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 058d6ca9161b4ce5
+  [OK] el portal tiene el resultado · rolled_back cloud_unreachable network down (test)
+
+== red cortada desde la fase health_check (sin nube no se confirma)
+  1ª pasada rc=4 (red cortada): diario=None instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · 9c07fadd21bec895
+  [OK] el portal tiene el resultado · rolled_back cloud_unreachable network down (test)
+
+== comprobación de salud que falla (0.3.6-sim.2: la API local responde error) -> restaurado
+
+== salud en rojo
+  1ª pasada rc=4 (): diario=None instalada=0.3.5 servicio=arriba
+  2ª pasada rc=0: sin oferta
+  [OK] termina rolled_back, nunca a medias · local 0.3.5 · releases ['0.3.5']
+  [OK] huella de trabajos/ids, identidad, tokens, Wi-Fi y certificados igual · da8137b75b509bc9
+  [OK] el portal tiene el resultado · rolled_back local_api_down HTTP Error 500: Internal Server Error
+
+== solo con todo en verde se confirma: eventos del último objetivo confirmado
+  accepted(5) -> downloading(10) -> downloading(40) -> downloading(10) -> downloading(40) -> verified(45) -> staged(60) -> preflight(70) -> health_check(85) -> committed(100)
+  comprobaciones antes de confirmar: servicios activos, API local (versión nueva), puente local (TCP), nube /v1/health + /v1/config y /v1/commands autenticadas con pst_, cola (quick_check + consulta), huella igual
+
+RESUMEN: 49 OK, 0 FALLO
