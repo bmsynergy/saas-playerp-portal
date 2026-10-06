@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AlertTriangle, Check, Download, FileArchive, LayoutDashboard, List, RefreshCw, Upload } from 'lucide-react';
+import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List, RefreshCw, Upload } from 'lucide-react';
 import { FirmwareError, firmwareDownloadUrl, sha256OfFile, uploadFirmware, type FirmwareList, type FirmwareRelease } from '../lib/firmware';
 import { errorCode } from '../lib/errors';
 import { useLocale } from '../locales';
@@ -11,6 +11,7 @@ export function PrintServersTabs() {
   const items = [
     { to: '/admin/print-servers', label: t('fw.tab.dashboard'), icon: <LayoutDashboard size={16}/>, testId: 'ps-tab-dashboard' },
     { to: '/admin/print-servers/list', label: t('fw.tab.list'), icon: <List size={16}/>, testId: 'ps-tab-list' },
+    { to: '/admin/print-servers/inventory', label: t('inv.tab'), icon: <Cpu size={16}/>, testId: 'ps-tab-inventory' },
     { to: '/admin/print-servers/firmwares', label: t('fw.tab.firmwares'), icon: <FileArchive size={16}/>, testId: 'ps-tab-firmwares' },
   ];
   return <nav className="detail-tabs ps-global-tabs" aria-label={t('secondaryNavigation')}>
@@ -98,14 +99,14 @@ export function PrintFirmwaresPage({ data, refreshing, onRefresh }: { data: Firm
       <div className="section-heading"><div><p className="eyebrow">{t('fw.listEyebrow')}</p><h2 id="fw-list-title">{t('fw.listTitle')}</h2></div><button type="button" className="button button-secondary" onClick={() => void onRefresh()} disabled={refreshing}><RefreshCw size={15}/>{t('refresh')}</button></div>
       {data.releases.length === 0 ? <div className="inline-empty" data-testid="fw-empty">{t('fw.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table"><thead><tr><th scope="col">{t('fw.col.version')}</th><th scope="col">{t('fw.col.model')}</th><th scope="col">{t('fw.col.file')}</th><th scope="col">SHA-256</th><th scope="col">{t('fw.col.state')}</th><th scope="col">{t('fw.col.uploaded')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
         {data.releases.map(r => <tr key={r.id} data-testid={`fw-row-${r.id}`} data-status={r.status}>
-          <td data-label={t('fw.col.version')}><strong>{r.version}</strong>{r.revision && <small className="ps-sub"> · {t('fw.revision')} {r.revision}</small>}{r.notes && <small className="ps-sub fw-row-notes">{r.notes}</small>}</td>
+          <td data-label={t('fw.col.version')}><span className="fw-cell"><strong>{r.version}</strong>{r.revision && <small className="ps-sub">{t('fw.revision')} {r.revision}</small>}{r.notes && <small className="ps-sub fw-row-notes">{r.notes}</small>}</span></td>
           <td data-label={t('fw.col.model')}>{MODELS.find(m => m.value === r.model)?.label ?? r.model} · {r.arch}</td>
-          <td data-label={t('fw.col.file')}><span className="fw-filename">{r.filename}</span><small className="ps-sub">{size(r.size_bytes)}</small></td>
+          <td data-label={t('fw.col.file')}><span className="fw-cell"><span className="fw-filename">{r.filename}</span><small className="ps-sub">{size(r.size_bytes)}</small></span></td>
           <td data-label="SHA-256"><code className="fw-hash" data-testid={`fw-sha-${r.id}`}>{r.sha256 ?? t('notProvided')}</code></td>
           <td data-label={t('fw.col.state')}>{r.status === 'ready'
             ? <span className={`server-status ${r.installed_count > 0 ? 'server-online' : 'server-pending'}`} data-testid={`fw-state-${r.id}`}><span className="badge-dot"/>{t('fw.loaded')} · {installedCount(r)}</span>
             : <span className="server-status server-revoked" data-testid={`fw-state-${r.id}`}><span className="badge-dot"/>{t('fw.rejected')}</span>}</td>
-          <td data-label={t('fw.col.uploaded')}>{r.created_at ? <time dateTime={r.created_at}>{dateFormatter.format(new Date(r.created_at))}</time> : t('notProvided')}{r.uploaded_by_email && <small className="ps-sub">{r.uploaded_by_email}</small>}</td>
+          <td data-label={t('fw.col.uploaded')}><span className="fw-cell">{r.created_at ? <time dateTime={r.created_at}>{dateFormatter.format(new Date(r.created_at))}</time> : t('notProvided')}{r.uploaded_by_email && <small className="ps-sub">{r.uploaded_by_email}</small>}</span></td>
           <td data-label={t('staff.actions')}>{r.status === 'ready' && <button type="button" className="button button-secondary" data-testid={`fw-download-${r.id}`} onClick={() => void download(r.id)}><Download size={15}/>{t('fw.download')}</button>}</td>
         </tr>)}
       </tbody></table></div>}
