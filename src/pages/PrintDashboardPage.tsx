@@ -5,6 +5,7 @@ import { ASSIGNED_VENUE, EMPTY_INVENTORY_FILTER, UNKNOWN_VERSION, UNASSIGNED_VEN
 import { useLocale } from '../locales';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import '../print-dashboard.css';
+import { PrintServersTabs } from './PrintFirmwaresPage';
 
 type Props = { inventory: Inventory; refreshing: boolean; stale: boolean; onRefresh: () => void };
 type Metric = { key: string; state: string; count: number; tone: string };
@@ -53,6 +54,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
         <button className="button button-secondary" type="button" onClick={onRefresh} disabled={refreshing} data-testid="dashboard-refresh"><RefreshCw size={16} className={refreshing ? 'print-dashboard-spinning' : ''}/>{refreshing ? t('dash.refreshing') : t('dash.refresh')}</button>
       </div>
     </header>
+    <PrintServersTabs/>
 
     <div className="print-dashboard-meta" aria-live="polite"><Clock3 size={15}/><span>{t('dash.updated')} <time dateTime={inventory.generated_at}>{formatDate(inventory.generated_at)}</time></span><span className="print-dashboard-meta-separator" aria-hidden="true">·</span><span>{t('dash.window').replace('{n}', String(Math.round(inventory.online_window_seconds / 60)))}</span></div>
     {stale && <div className="print-dashboard-alert" role="status" data-testid="dashboard-stale"><AlertCircle size={17}/><span>{t('dash.stale')}</span><button type="button" onClick={onRefresh} disabled={refreshing}>{t('retry')}</button></div>}

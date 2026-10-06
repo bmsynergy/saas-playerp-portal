@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Clock3, FilterX, Printer, Search, Server, X } from 'lucide-react';
 import { EMPTY_FLEET_FILTER, FLEET_PRINTERS, FLEET_SIGNALS, FLEET_STATES, NO_VERSION, filterFleet, filterVenueServers, fleetState, fleetVersions, isFiltered, relativeTime, venueServerRows, type FleetFilter, type FleetRow } from '../lib/printFleet';
 import { useLocale } from '../locales';
+import { PrintServersTabs } from './PrintFirmwaresPage';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 
 export const fleetStateClass = { online: 'server-online', offline: 'server-offline', pending: 'server-pending', none: 'server-noSignal' } as const;
@@ -32,6 +33,7 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
 
   return <div className="page-stack staff-page" data-testid="fleet-page">
     {!isVenue && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{locale === 'es' ? 'Ver dashboard' : 'View dashboard'}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
+    {!isVenue && <PrintServersTabs/>}
     <section className="staff-panel" aria-labelledby="fleet-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t(isVenue ? 'ps.venueEyebrow' : 'ps.fleetEyebrow')}</p><h2 id="fleet-list-title">{t(isVenue ? 'ps.venueTitle' : 'ps.fleetTitle')}</h2></div><span className="count-pill">{scopedRows.length}</span></div>
       <div className="directory-toolbar ps-toolbar">
