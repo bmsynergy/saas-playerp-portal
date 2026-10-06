@@ -669,6 +669,7 @@ export const en = {
   'ota.phase.committed': "Confirmed",
   'ota.phase.rolled_back': "Restored",
   'ota.error.canaryNotConfirmed': "General rollout is blocked: no canary device has confirmed this edition yet. Deploy it to the lab or canary ring first.",
+  'ota.error.ringRequiresGroup': "For a lab or canary deployment to individual devices, each device must belong to a group of that ring. Add it to the group or deploy to the group.",
   'ota.error.alreadySigned': "This release is already signed.",
   'ota.error.invalidRing': "Choose a valid ring.",
   'ota.error.invalidName': "Enter a valid group name.",

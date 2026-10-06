@@ -99,7 +99,7 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
 }
 const groupErrors: Record<string, string> = { invalid_ring: 'ota.error.invalidRing', invalid_name: 'ota.error.invalidName', duplicate_name: 'ota.error.duplicateName' };
 const fnErrors: Record<string, string> = {
-  canary_not_confirmed: 'ota.error.canaryNotConfirmed', already_signed: 'ota.error.alreadySigned', forbidden: 'accessDenied',
+  canary_not_confirmed: 'ota.error.canaryNotConfirmed', ring_requires_group: 'ota.error.ringRequiresGroup', already_signed: 'ota.error.alreadySigned', forbidden: 'accessDenied',
 };
 async function action(name: string, params: Record<string, unknown>): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();

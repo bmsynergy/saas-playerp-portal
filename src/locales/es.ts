@@ -671,6 +671,7 @@ export const es: Record<keyof typeof en, string> = {
   'ota.phase.committed': "Confirmada",
   'ota.phase.rolled_back': "Restaurada",
   'ota.error.canaryNotConfirmed': "El despliegue general está bloqueado: ningún aparato canary ha confirmado todavía esta edición. Despliégala antes en el anillo de laboratorio o canary.",
+  'ota.error.ringRequiresGroup': "Para desplegar en laboratorio o canary a aparatos sueltos, cada aparato tiene que ser miembro de un grupo de ese anillo. Añádelo al grupo o despliega al grupo.",
   'ota.error.alreadySigned': "Esta versión ya está firmada.",
   'ota.error.invalidRing': "Elige un anillo válido.",
   'ota.error.invalidName': "Escribe un nombre de grupo válido.",
