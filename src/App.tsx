@@ -16,6 +16,8 @@ import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
 import { getFirmwares } from './lib/firmware';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
 import { getInventoryDevices } from './lib/psDevice';
+import { PrintUpdatesPage } from './pages/PrintUpdatesPage';
+import { getOtaOverview } from './lib/ota';
 import { Brand } from './components/Brand';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -265,11 +267,12 @@ function useFleet() {
   const {session}=useAuth();
   return useQuery({queryKey:['ps-fleet',session?.user.id],queryFn:({signal})=>getFleet(signal),refetchInterval:30_000});
 }
-function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean}) {
+function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false,updates=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean;updates?:boolean}) {
   const access=useAccess(); const {venueId=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
   if (firmwares) return <PrintFirmwaresData/>;
   if (inventory) return <PrintDevicesData/>;
+  if (updates) return <PrintUpdatesData/>;
   if (!detail) return list ? <PrintFleetData/> : <PrintDashboardData/>;
   return UUID.test(venueId) ? <PrintServerDetailData key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
 }
@@ -290,6 +293,16 @@ function PrintFirmwaresData() {
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
+}
+// OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.
+function PrintUpdatesData() {
+  const {session,expire}=useAuth();
+  const data=useQuery({queryKey:['ps-ota',session?.user.id],queryFn:({signal})=>getOtaOverview(signal),refetchInterval:10_000});
+  useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
+  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
@@ -394,6 +407,7 @@ export default function App() {
     <Route path="/admin/print-servers/list" element={<Scope scope="admin"><PrintServersRoute list/></Scope>}/>
     <Route path="/admin/print-servers/inventory" element={<Scope scope="admin"><PrintServersRoute inventory/></Scope>}/>
     <Route path="/admin/print-servers/firmwares" element={<Scope scope="admin"><PrintServersRoute firmwares/></Scope>}/>
+    <Route path="/admin/print-servers/updates" element={<Scope scope="admin"><PrintServersRoute updates/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>

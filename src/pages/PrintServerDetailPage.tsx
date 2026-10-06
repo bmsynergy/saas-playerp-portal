@@ -9,6 +9,7 @@ import { fleetStateClass } from './PrintFleetPage';
 import { PortalDialog } from '../components/PortalDialog';
 import { PrinterQueue } from './PrinterQueue';
 import { PrintServerDevicePanel } from '../components/PrintServerDevicePanel';
+import { PrintServerOtaBlock } from '../components/PrintServerOtaBlock';
 import { certificateFilename, formatFingerprint } from '../lib/certificate';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
@@ -274,6 +275,8 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
         </div>
       </details>
     </section>
+
+    {scope === 'owner' && <PrintServerOtaBlock venueId={venueId}/>}
 
     <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null}/>
 

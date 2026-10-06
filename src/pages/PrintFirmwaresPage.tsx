@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List, RefreshCw, Upload } from 'lucide-react';
+import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List, RefreshCw, Rocket, Upload } from 'lucide-react';
 import { FirmwareError, firmwareDownloadUrl, sha256OfFile, uploadFirmware, type FirmwareList, type FirmwareRelease } from '../lib/firmware';
 import { errorCode } from '../lib/errors';
 import { useLocale } from '../locales';
@@ -13,6 +13,7 @@ export function PrintServersTabs() {
     { to: '/admin/print-servers/list', label: t('fw.tab.list'), icon: <List size={16}/>, testId: 'ps-tab-list' },
     { to: '/admin/print-servers/inventory', label: t('inv.tab'), icon: <Cpu size={16}/>, testId: 'ps-tab-inventory' },
     { to: '/admin/print-servers/firmwares', label: t('fw.tab.firmwares'), icon: <FileArchive size={16}/>, testId: 'ps-tab-firmwares' },
+    { to: '/admin/print-servers/updates', label: t('ota.tab'), icon: <Rocket size={16}/>, testId: 'ps-tab-updates' },
   ];
   return <nav className="detail-tabs ps-global-tabs" aria-label={t('secondaryNavigation')}>
     {items.map(item => <NavLink key={item.to} end to={item.to} data-testid={item.testId} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}>{item.icon}{item.label}</NavLink>)}
