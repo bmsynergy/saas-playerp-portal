@@ -764,4 +764,13 @@ export const en = {
   'inv.copy': "Copy",
   'inv.copied': "Copied",
   'inv.codeDone': "Done",
+  'oauth.title': "Connect an AI assistant",
+  'oauth.wants': "wants read-only access to the data of one of your venues.",
+  'oauth.readOnly': "It can only read figures of the venue you choose. It cannot change anything, and it never sees waivers, minors or customer contact details.",
+  'oauth.pickVenue': "Venue this assistant may read",
+  'oauth.noVenues': "Only venue owners can connect an AI assistant.",
+  'oauth.approve': "Allow",
+  'oauth.deny': "Deny",
+  'oauth.invalid': "This authorization request is not valid or has expired. Start the connection again from your assistant.",
+  'oauth.failed': "The decision could not be saved. Try again.",
 } as const;

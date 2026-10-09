@@ -36,6 +36,7 @@ import { OwnerPage } from './pages/OwnerPage';
 import { AdminHome } from './pages/AdminHome';
 import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
+import { OAuthConsentPage } from './pages/OAuthConsentPage';
 
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
@@ -368,7 +369,7 @@ function VenuePrintServerData({venue,scope,embedded=true}:{venue:OwnerVenue;scop
 // Its visual structure grants no permission: Scope remains the data-mount gate.
 function AuthenticatedLayout({children}:{children:ReactNode}) {
   const auth=useAuth(); const {pathname}=useLocation();
-  const restricted=pathname.startsWith('/auth/');
+  const restricted=pathname.startsWith('/auth/')||pathname.startsWith('/oauth/');
   const access=useAccess(!restricted);
   useEffect(() => { if (access.error && errorCode(access.error)==='sessionExpired') void auth.expire(); },[access.error, auth.expire]);
   const canAdmin=!!access.data?.is_platform_staff;
@@ -390,6 +391,19 @@ function AuthenticatedLayout({children}:{children:ReactNode}) {
     {children}
   </PortalShell>;
 }
+// PE-386: consent screen of the OAuth 2.1 server. Login first (keeping the authorization id), then only owned venues.
+function OAuthConsentRoute() {
+  const auth=useAuth(); const location=useLocation(); const [params]=useSearchParams();
+  const authorizationId=params.get('authorization_id')??'';
+  const access=useAccess(!!authorizationId);
+  if (!/^[A-Za-z0-9_-]{8,128}$/.test(authorizationId)) return <OutsideState kind="notFound"/>;
+  if (auth.loading) return <OutsideState kind="loading"/>;
+  if (!auth.session) return <Navigate to={`/auth/login?next=${encodeURIComponent(location.pathname+location.search)}`} replace/>;
+  if (auth.recovery || auth.invitation) return <Navigate to="/auth/password" replace/>;
+  if (access.isPending) return <OutsideState kind="loading"/>;
+  if (access.isError || !access.data) return <OutsideState kind="error" onRetry={()=>void access.refetch()}/>;
+  return <Standalone><OAuthConsentPage authorizationId={authorizationId} venues={access.data.owner_venues.filter(v=>v.is_owner)}/></Standalone>;
+}
 export default function App() {
   return <AuthenticatedLayout><Routes>
     <Route path="/auth/login" element={<AuthRoute key="login" mode="login"/>}/>
@@ -397,6 +411,7 @@ export default function App() {
     <Route path="/auth/password" element={<AuthRoute key="password" mode="password"/>}/>
     <Route path="/auth/invitation" element={<InvitationRoute/>}/>
     <Route path="/auth/complete" element={<Complete/>}/>
+    <Route path="/oauth/consent" element={<OAuthConsentRoute/>}/>
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>

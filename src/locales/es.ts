@@ -766,4 +766,13 @@ export const es: Record<keyof typeof en, string> = {
   'inv.copy': "Copiar",
   'inv.copied': "Copiado",
   'inv.codeDone': "Hecho",
+  'oauth.title': "Conectar un asistente de IA",
+  'oauth.wants': "quiere acceso de solo lectura a los datos de uno de tus locales.",
+  'oauth.readOnly': "Solo podrá leer cifras del local que elijas. No puede cambiar nada y nunca ve waivers, menores ni datos de contacto de clientes.",
+  'oauth.pickVenue': "Local que este asistente podrá leer",
+  'oauth.noVenues': "Solo los dueños de un local pueden conectar un asistente de IA.",
+  'oauth.approve': "Permitir",
+  'oauth.deny': "Denegar",
+  'oauth.invalid': "Esta solicitud de autorización no es válida o ha caducado. Vuelve a iniciar la conexión desde tu asistente.",
+  'oauth.failed': "No se pudo guardar la decisión. Inténtalo de nuevo.",
 };
