@@ -391,18 +391,16 @@ function AuthenticatedLayout({children}:{children:ReactNode}) {
     {children}
   </PortalShell>;
 }
-// PE-386: consent screen of the OAuth 2.1 server. Login first (keeping the authorization id), then only owned venues.
+// PE-386 / PE-390.3: consent screen of the mcp-analytics OAuth server. Login first (keeping the request id); the
+// venues offered come from mcp_consent_context (only the owner's own venues).
 function OAuthConsentRoute() {
   const auth=useAuth(); const location=useLocation(); const [params]=useSearchParams();
-  const authorizationId=params.get('authorization_id')??'';
-  const access=useAccess(!!authorizationId);
-  if (!/^[A-Za-z0-9_-]{8,128}$/.test(authorizationId)) return <OutsideState kind="notFound"/>;
+  const requestId=params.get('request_id')??'';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) return <OutsideState kind="notFound"/>;
   if (auth.loading) return <OutsideState kind="loading"/>;
   if (!auth.session) return <Navigate to={`/auth/login?next=${encodeURIComponent(location.pathname+location.search)}`} replace/>;
   if (auth.recovery || auth.invitation) return <Navigate to="/auth/password" replace/>;
-  if (access.isPending) return <OutsideState kind="loading"/>;
-  if (access.isError || !access.data) return <OutsideState kind="error" onRetry={()=>void access.refetch()}/>;
-  return <Standalone><OAuthConsentPage authorizationId={authorizationId} venues={access.data.owner_venues.filter(v=>v.is_owner)}/></Standalone>;
+  return <Standalone><OAuthConsentPage requestId={requestId}/></Standalone>;
 }
 export default function App() {
   return <AuthenticatedLayout><Routes>

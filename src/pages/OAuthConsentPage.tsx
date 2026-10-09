@@ -1,63 +1,79 @@
 import { useEffect, useState } from 'react';
-import type { OAuthAuthorizationDetails } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useLocale } from '../locales';
-import type { OwnerVenue } from '../lib/types';
 
-// PE-386: consent screen of the PlayERP OAuth 2.1 server (Supabase Auth -> Site URL + /oauth/consent).
-// The owner picks ONE of their own venues for the AI client; the MCP gateway only ever serves that venue.
-export function OAuthConsentPage({ authorizationId, venues }: { authorizationId: string; venues: OwnerVenue[] }) {
+// PE-386 / PE-390.3: consent screen of the mcp-analytics OAuth server (the gateway issues its own tokens).
+// The owner's normal PlayERP session is only used here, to identify them and record which of their venues
+// this AI client may read. The gateway redirects here with ?request_id=…; the decision returns redirect_to.
+type ConsentContext = {
+  request_id: string;
+  client: { id: string; name: string; redirect_host: string | null };
+  scope: string;
+  connection_id: string | null;
+  venues: { venue_id: string; nombre: string; concedida: boolean }[];
+};
+
+const KNOWN_ERRORS = ['mcp_request_unknown', 'mcp_request_expired', 'mcp_request_already_decided', 'mcp_consent_denied',
+  'mcp_consent_no_venues', 'mcp_consent_not_owner'] as const;
+const errorKey = (e: unknown) => {
+  const msg = String((e as { message?: string })?.message ?? '');
+  const hit = KNOWN_ERRORS.find((k) => msg.includes(k));
+  return hit ? `oauth.err.${hit}` : 'oauth.failed';
+};
+
+export function OAuthConsentPage({ requestId }: { requestId: string }) {
   const { t } = useLocale();
-  const [details, setDetails] = useState<OAuthAuthorizationDetails | null>(null);
-  const [venueId, setVenueId] = useState(venues.length === 1 ? venues[0].id : '');
+  const [ctx, setCtx] = useState<ConsentContext | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let live = true;
-    void supabase.auth.oauth.getAuthorizationDetails(authorizationId).then(({ data, error: e }) => {
+    void supabase.rpc('mcp_consent_context', { p_request_id: requestId }).then(({ data, error: e }) => {
       if (!live) return;
-      if (e || !data) { setError(t('oauth.invalid')); return; }
-      // Already consented: Supabase Auth hands back the client redirect straight away.
-      if (data.redirect_url && !data.client) { window.location.assign(data.redirect_url); return; }
-      setDetails(data);
+      if (e || !data) { setError(t(errorKey(e))); return; }
+      const c = data as ConsentContext;
+      setCtx(c);
+      // Keep the current selection (venues already granted to this connection); a single venue is preselected.
+      const granted = c.venues.filter((v) => v.concedida).map((v) => v.venue_id);
+      setPicked(new Set(granted.length ? granted : c.venues.length === 1 ? [c.venues[0].venue_id] : []));
     });
     return () => { live = false; };
-  }, [authorizationId, t]);
+  }, [requestId, t]);
+
+  function toggle(id: string) {
+    setPicked((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  }
 
   async function decide(approve: boolean) {
     setBusy(true); setError('');
-    try {
-      if (approve) {
-        const { error: e } = await supabase.rpc('mcp_authorize_venue', { p_client_id: details!.client.id, p_venue_id: venueId });
-        if (e) throw e;
-      }
-      const { data, error: e } = approve
-        ? await supabase.auth.oauth.approveAuthorization(authorizationId, { skipBrowserRedirect: true })
-        : await supabase.auth.oauth.denyAuthorization(authorizationId, { skipBrowserRedirect: true });
-      if (e || !data?.redirect_url) throw e ?? new Error('no redirect');
-      window.location.assign(data.redirect_url);
-    } catch {
-      setError(t('oauth.failed')); setBusy(false);
-    }
+    const { data, error: e } = await supabase.rpc('mcp_consent_decide', {
+      p_request_id: requestId, p_approve: approve, p_venue_ids: approve ? [...picked] : null,
+    });
+    const to = (data as { redirect_to?: string } | null)?.redirect_to;
+    if (e || !to) { setError(t(errorKey(e))); setBusy(false); return; }
+    window.location.assign(to);
   }
 
-  if (error && !details) return <section className="oauth-consent"><h1>{t('oauth.title')}</h1><p role="alert">{error}</p></section>;
-  if (!details) return <section className="oauth-consent"><p>{t('loadingTitle')}</p></section>;
+  if (error && !ctx) return <section className="oauth-consent"><h1>{t('oauth.title')}</h1><p role="alert">{error}</p></section>;
+  if (!ctx) return <section className="oauth-consent"><p>{t('loadingTitle')}</p></section>;
   return <section className="oauth-consent">
     <h1>{t('oauth.title')}</h1>
-    <p><strong>{details.client.name || details.client.id}</strong> {t('oauth.wants')}</p>
+    <p><strong>{ctx.client.name || ctx.client.id}</strong> {t('oauth.wants')}</p>
+    <p className="oauth-redirect">{t('oauth.redirectHost')} <strong>{ctx.client.redirect_host ?? '—'}</strong></p>
     <p>{t('oauth.readOnly')}</p>
-    {venues.length === 0 ? <p role="alert">{t('oauth.noVenues')}</p> :
-      <fieldset><legend>{t('oauth.pickVenue')}</legend>
-        {venues.map(v => <label key={v.id} className="oauth-venue">
-          <input type="radio" name="venue" value={v.id} checked={venueId === v.id} onChange={() => setVenueId(v.id)} /> {v.name}
+    {ctx.venues.length === 0 ? <p role="alert">{t('oauth.noVenues')}</p> :
+      <fieldset><legend>{t('oauth.pickVenues')}</legend>
+        {ctx.venues.map((v) => <label key={v.venue_id} className="oauth-venue">
+          <input type="checkbox" name="venue" value={v.venue_id} checked={picked.has(v.venue_id)} onChange={() => toggle(v.venue_id)} /> {v.nombre}
         </label>)}
       </fieldset>}
+    <p className="oauth-note">{t('oauth.futureVenues')}</p>
     {error && <p role="alert">{error}</p>}
     <div className="oauth-actions">
       <button type="button" className="button button-secondary" disabled={busy} onClick={() => void decide(false)}>{t('oauth.deny')}</button>
-      <button type="button" className="button" disabled={busy || !venueId} onClick={() => void decide(true)}>{t('oauth.approve')}</button>
+      <button type="button" className="button" disabled={busy || picked.size === 0} onClick={() => void decide(true)}>{t('oauth.approve')}</button>
     </div>
   </section>;
 }
