@@ -769,7 +769,7 @@ export const en = {
   'oauth.readOnly': "It can only read figures for that venue. It cannot change anything, and it never sees waivers, minors or customer contact details.",
   'oauth.pickVenues': "Choose one venue for this assistant",
   'oauth.redirectHost': "If you allow it, you will return to:",
-  'oauth.replaceVenue': "If you previously connected this assistant, this venue will replace the previous one.",
+  'oauth.replaceVenue': "Each venue is authorized separately: if you already connected this assistant to another venue, that authorization stays in place.",
   'oauth.futureVenues': "Venues you open later are not added automatically: you will need to reconnect to choose another.",
   'oauth.confirmVenuePrefix': "I confirm that I want to grant access only to",
   'oauth.confirmVenueSuffix': ".",

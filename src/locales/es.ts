@@ -771,7 +771,7 @@ export const es: Record<keyof typeof en, string> = {
   'oauth.readOnly': "Solo podrá leer cifras de esa sede. No puede cambiar nada y nunca ve waivers, menores ni datos de contacto de clientes.",
   'oauth.pickVenues': "Elige una sede para este asistente",
   'oauth.redirectHost': "Al permitir, volverás a:",
-  'oauth.replaceVenue': "Si ya habías conectado este asistente, esta sede sustituirá a la anterior.",
+  'oauth.replaceVenue': "Cada sede se autoriza por separado: si ya conectaste este asistente con otra sede, esa autorización se mantiene.",
   'oauth.futureVenues': "Las sedes que abras más adelante no se añaden solas: tendrás que volver a conectar para elegir otra.",
   'oauth.confirmVenuePrefix': "Confirmo que quiero dar acceso solo a",
   'oauth.confirmVenueSuffix': ".",
