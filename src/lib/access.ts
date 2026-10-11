@@ -7,6 +7,8 @@ export function safeNext(value: string | null): string | null {
 // login was reached through /. Only the account menu selects the owner scope.
 export function destination(access: PortalAccess, next: string | null = null): string | null {
   const safe = safeNext(next);
+  // The consent RPC checks owner rights itself, including for mixed staff/owner accounts.
+  if (safe?.startsWith('/oauth/consent?')) return safe;
   if (access.is_platform_staff) {
     if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
     // Tenants: Admin and Operations. Venue Users/Print Servers, staff and the fleet: Admin only.

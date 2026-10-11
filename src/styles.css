@@ -197,3 +197,18 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 .oauth-consent fieldset { border: 1px solid currentColor; border-radius: .5rem; padding: .75rem 1rem; display: grid; gap: .5rem; }
 .oauth-venue { display: flex; gap: .5rem; align-items: center; }
 .oauth-actions { display: flex; gap: .75rem; justify-content: flex-end; }
+.oauth-consent { width: min(100%, 34rem); box-sizing: border-box; overflow-wrap: anywhere; }
+.oauth-consent p { line-height: 1.55; margin-bottom: 0; }
+.oauth-consent fieldset { border-color: var(--control-line); min-width: 0; }
+.oauth-venue, .oauth-confirm { min-height: 2.75rem; cursor: pointer; }
+.oauth-venue input, .oauth-confirm input { flex: none; accent-color: var(--blue); }
+.oauth-confirm { display: flex; align-items: flex-start; gap: .6rem; padding: .8rem 1rem; border: 1px solid var(--control-line); border-radius: .5rem; line-height: 1.5; }
+.oauth-confirm input { margin-top: .3rem; }
+.oauth-note { color: var(--muted); }
+.oauth-error { color: var(--danger); }
+.oauth-actions .button:disabled { cursor: not-allowed; }
+@media (max-width: 450px) {
+  .oauth-consent { margin: 1.5rem auto; padding: 0 1rem; }
+  .oauth-actions { flex-direction: column-reverse; }
+  .oauth-actions .button { width: 100%; }
+}

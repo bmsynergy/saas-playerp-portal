@@ -37,6 +37,7 @@ import { AdminHome } from './pages/AdminHome';
 import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
 import { OAuthConsentPage } from './pages/OAuthConsentPage';
+import { consentRequestId, consentPath } from './lib/oauthConsent';
 
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
@@ -394,13 +395,13 @@ function AuthenticatedLayout({children}:{children:ReactNode}) {
 // PE-386 / PE-390.3: consent screen of the mcp-analytics OAuth server. Login first (keeping the request id); the
 // venues offered come from mcp_consent_context (only the owner's own venues).
 function OAuthConsentRoute() {
-  const auth=useAuth(); const location=useLocation(); const [params]=useSearchParams();
-  const requestId=params.get('request_id')??'';
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) return <OutsideState kind="notFound"/>;
+  const auth=useAuth(); const [params]=useSearchParams(); const {t}=useLocale();
+  const requestId=consentRequestId(params);
+  if (!requestId) return <Standalone><section className="oauth-consent"><h1>{t('oauth.title')}</h1><p role="alert">{t('oauth.invalid')}</p></section></Standalone>;
   if (auth.loading) return <OutsideState kind="loading"/>;
-  if (!auth.session) return <Navigate to={`/auth/login?next=${encodeURIComponent(location.pathname+location.search)}`} replace/>;
+  if (!auth.session) return <Navigate to={`/auth/login?next=${encodeURIComponent(consentPath(requestId))}`} replace/>;
   if (auth.recovery || auth.invitation) return <Navigate to="/auth/password" replace/>;
-  return <Standalone><OAuthConsentPage requestId={requestId}/></Standalone>;
+  return <Standalone><OAuthConsentPage key={`${auth.session.user.id}:${requestId}`} requestId={requestId}/></Standalone>;
 }
 export default function App() {
   return <AuthenticatedLayout><Routes>

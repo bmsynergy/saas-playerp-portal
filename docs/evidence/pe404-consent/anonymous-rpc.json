@@ -1,0 +1,14 @@
+[
+  {
+    "rpc": "mcp_consent_context",
+    "status": 401,
+    "code": "42501",
+    "message": "permission denied for function mcp_consent_context"
+  },
+  {
+    "rpc": "mcp_consent_decide",
+    "status": 401,
+    "code": "42501",
+    "message": "permission denied for function mcp_consent_decide"
+  }
+]
