@@ -102,6 +102,8 @@ try {
     const {ctx,page}=await setup({contextError:'expired-session'});await open(page);
     await page.getByLabel('Email address',{exact:true}).waitFor();
     assert.equal(new URL(page.url()).searchParams.get('next'),`/oauth/consent?request_id=${rid}`);
+    // Auth clears the UI immediately, then finishes its asynchronous local sign-out.
+    await page.waitForFunction(()=>localStorage.getItem('playerp.portal.dev.auth')===null);
     assert.equal(await page.evaluate(()=>localStorage.getItem('playerp.portal.dev.auth')),null);
     pass('RPC session rejection clears local session and preserves request through login');await ctx.close();
   }

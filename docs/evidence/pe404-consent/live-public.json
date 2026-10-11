@@ -1,0 +1,7 @@
+{
+  "mode": "real public DEV, no interception, no account",
+  "http": 200,
+  "invalidRequest": "PASS",
+  "anonymousLoginReturn": "PASS",
+  "backendRequests": []
+}

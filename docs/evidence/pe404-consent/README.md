@@ -8,6 +8,8 @@ Validation on 2026-10-11:
 
 - `npm test`: 85/85 passing (9 files). `npm run build`: passing; existing large-bundle warning remains.
 - `node tests/oauth-consent.mjs`: 15 browser checks passing, including 390/1440 px and EN/ES. All Auth/RPC traffic is intercepted with invented credentials and data; this is not certification of a real OAuth approval. See `browser-results.json`.
+- The same 15 browser checks also pass against the published DEV bundle with intercepted Auth/RPC traffic (`hosted-browser-results.json`). The session-cleanup assertion waits for the asynchronous local sign-out to finish.
+- Real public DEV navigation without any account or request interception passes: invalid-request message and canonical login return, with zero backend calls (`live-public.json`).
 - Real anonymous DEV requests to both consent RPCs: HTTP 401, permission denied. See `anonymous-rpc.json`. No account was used and no request was approved.
 - Existing `node tests/browser-smoke.mjs`: first four groups pass, then times out waiting for the obsolete owner heading `Your spaces, in one place.` at line 60. Reproduced the identical failure on untouched baseline `b77d378` on port 18798. This broad smoke is not reported as passing; the OAuth checks and unit regression suite do pass.
 - Gaby reviewed read-only in the same session. Two findings (callback authority normalization and session rejection returning to login) corrected and rechecked with no remaining findings.
