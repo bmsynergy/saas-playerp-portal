@@ -1,11 +1,13 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
-import { matchesText, matchesUtcDay } from '../lib/adminLists';
+import { EMPTY_LIST_FILTERS, matchesText, matchesUtcDay } from '../lib/adminLists';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 import { useOtaPage } from '../lib/useOtaPage';
 import { eventDetail, eventPhase, auditFacts } from '../lib/otaPresentation';
 import { AlertTriangle, Check, ChevronDown, Copy, PenLine, Plus, RefreshCw, Rocket, Save, ShieldCheck, Users, X } from 'lucide-react';
-import { createGroup, deployEdition, RINGS, setGroupMembers, signEdition, statusClass, type OtaDevice, type OtaOverview, type OtaRelease, type OtaTarget, type OtaPageKind, type Ring } from '../lib/ota';
+import { createGroup, deployEdition, getTargetEvents, RINGS, setGroupMembers, signEdition, statusClass, type OtaDevice, type OtaOverview, type OtaRelease, type OtaTarget, type OtaPageKind, type Ring } from '../lib/ota';
 import { psErrorKey } from '../lib/printServerApi';
 import { useLocale } from '../locales';
 import { PortalDialog } from '../components/PortalDialog';
@@ -77,21 +79,34 @@ function auditLabel(t:(key:string)=>string,action:string) {
   const key=`ota.auditAction.${action}`,label=t(key);
   return label===key?`${t('ota.auditTitle')}: ${action}`:label;
 }
-function Events({ targetId }: { targetId: string }) {
+function Events({ target }: { target: OtaTarget }) {
   const l=useLabels(),{t}=l;
-  const state=useOtaPage('events',targetId);
-  const ready=state.valid&&!state.query.isError;
-  return <div><PageFilters state={state} id={`events-${targetId}`} dateLabel={t('list.created')} kind="events"/>
-    {ready&&state.query.data&&<><ol className="ota-events" data-testid={`ota-events-${targetId}`}>{state.query.data.items.map(e=>{
-      const detail=eventDetail(e.detail);
-      return <li key={e.id}>
-        <time dateTime={e.created_at??undefined}>{l.date(e.created_at)}</time>
-        <span><strong>{l.phase(e.phase)}</strong> · {t('list.eventVersion')}: {e.target_desired_version??t('notProvided')} · {t('list.eventResult')}: {e.status?l.status(e.status):t('notProvided')}{e.progress!==null&&<> · {t('list.generalProgress')}: {e.progress}%</>}</span>
-        {(e.error_code||e.error_detail)&&<span className="ps-error-text">{[e.error_code,e.error_detail].filter(Boolean).join(' — ')}</span>}
-        {detail.human&&<span className="ps-sub">{detail.human}</span>}
-        <Diagnostics id={`event-${e.id}`} value={e}/>
-      </li>;
-    })}</ol><PrintListPagination id={`events-${targetId}`} pagination={state.pagination}/></>}
+  const {session}=useAuth();
+  const targetId=target.id;
+  // Existing authorized RPC returns every event of this target in chronological order.
+  const query=useQuery({queryKey:['ps-ota-events',session?.user.id,targetId],
+    queryFn:({signal})=>getTargetEvents(targetId,signal),enabled:!!session,refetchInterval:10_000});
+  const [filters,setFilters]=useState<import('../lib/ota').OtaPageFilter>(EMPTY_LIST_FILTERS);
+  const list={filters,set:(key:keyof typeof filters,value:string)=>setFilters(f=>({...f,[key]:value})),clear:()=>setFilters(EMPTY_LIST_FILTERS)};
+  const phase=filters.phase??'';
+  const events=(query.data??[]).filter(e=>matchesText(list.filters.query,e.phase,e.status,e.error_code)&&
+    (!list.filters.status||e.status===list.filters.status)&&(!phase||e.phase===phase)&&matchesUtcDay(e.created_at,list.filters.from,list.filters.to));
+  const valid=!list.filters.from||!list.filters.to||list.filters.from<=list.filters.to;
+  return <div><AdminListFilters id={`events-${targetId}`} {...list} dateLabel={t('list.created')}
+    statuses={OTA_STATUSES.map(value=>({value,label:l.status(value)}))}/>
+    <label className="ota-extra-filter"><span>{t('ota.phase')}</span><input data-testid={`events-${targetId}-phase`} value={phase} onChange={e=>list.set('phase',e.target.value)}/></label>
+    {query.isError ? <div role="alert" className="form-error">{t(psErrorKey(query.error))}<button type="button" className="button button-secondary" onClick={()=>void query.refetch()}>{t('refresh')}</button></div>
+      : query.isPending ? <p role="status" className="inline-empty">{t('dev.loading')}</p>
+      : valid && (events.length ? <ol className="ota-events" data-testid={`ota-events-${targetId}`}>{events.map(e=>{
+        const detail=eventDetail(e.detail);
+        return <li key={e.id}>
+          <time dateTime={e.created_at??undefined}>{l.date(e.created_at)}</time>
+          <span><strong>{l.phase(e.phase)}</strong> · {t('list.eventVersion')}: {target.desired_version??t('notProvided')} · {t('list.eventResult')}: {e.status?l.status(e.status):t('notProvided')}{e.progress!==null&&<> · {t('list.generalProgress')}: {e.progress}%</>}</span>
+          {(e.error_code||e.error_detail)&&<span className="ps-error-text">{[e.error_code,e.error_detail].filter(Boolean).join(' — ')}</span>}
+          {detail.human&&<span className="ps-sub">{detail.human}</span>}
+          <Diagnostics id={`event-${e.id}`} value={e}/>
+        </li>;
+      })}</ol> : <div className="inline-empty">{t('list.noMatches')}</div>)}
   </div>;
 }
 
@@ -111,7 +126,7 @@ function TargetRow({ target, device }: { target: OtaTarget; device?: OtaDevice }
       <td data-label={t('ota.error')}><TargetError target={target}/></td>
       <td data-label={t('ota.events')}><button type="button" className="staff-action-link" aria-expanded={open} data-testid={`ota-events-toggle-${target.id}`} onClick={() => setOpen(v => !v)}><ChevronDown size={14}/>{t('ota.events')}</button></td>
     </tr>
-    {open && <tr className="ota-events-row"><td colSpan={9}><Events targetId={target.id}/></td></tr>}
+    {open && <tr className="ota-events-row"><td colSpan={9}><Events target={target}/></td></tr>}
   </>;
 }
 function TargetHead() {

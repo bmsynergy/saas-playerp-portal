@@ -1,0 +1,31 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Synthetic isolated UI fixtures; live verification is separate",
+  "checks": [
+    {
+      "width": 390,
+      "controls": 9,
+      "distribution": "50/25/25 with keyboard and pointer filters",
+      "cards": "multiline full-width notes, no overflow",
+      "delete": "cancel, pending, success, 409, 404 and partial cleanup",
+      "events": "137 complete, no paginator; local phase filter"
+    },
+    {
+      "width": 834,
+      "controls": 9,
+      "distribution": "50/25/25 with keyboard and pointer filters",
+      "cards": "multiline full-width notes, no overflow",
+      "delete": "cancel, pending, success, 409, 404 and partial cleanup",
+      "events": "137 complete, no paginator; local phase filter"
+    },
+    {
+      "width": 1440,
+      "controls": 9,
+      "distribution": "50/25/25 with keyboard and pointer filters",
+      "cards": "multiline full-width notes, no overflow",
+      "delete": "cancel, pending, success, 409, 404 and partial cleanup",
+      "events": "137 complete, no paginator; local phase filter"
+    }
+  ],
+  "errors": []
+}

@@ -39,6 +39,8 @@ const errorKeys: Record<string, string> = {
   invalid_version: 'fw.error.version', invalid_filename: 'fw.error.filename', invalid_size: 'fw.error.size', invalid_model: 'fw.error.model',
   invalid_arch: 'fw.error.arch', invalid_zip: 'fw.error.zip', duplicate: 'fw.error.duplicate', not_uploaded: 'fw.error.upload',
   unknown_upload: 'fw.error.upload', forbidden: 'accessDenied',
+  installed: 'fw.error.deleteInstalled', deployment_in_progress: 'fw.error.deleteInProgress',
+  not_found: 'fw.error.deleteNotFound', bad_id: 'fw.error.deleteInvalid',
 };
 async function call(body: Raw): Promise<Raw> {
   const { data: session } = await supabase.auth.getSession();
@@ -52,7 +54,7 @@ async function call(body: Raw): Promise<Raw> {
   const data = await response.json().catch(() => null) as Raw | null;
   if (response.status === 401) throw new PortalError('sessionExpired');
   if (response.status === 403) throw new PortalError('accessDenied');
-  if (!data || data.ok !== true) {
+  if (!response.ok || !data || data.ok !== true) {
     const code = typeof data?.error === 'string' ? data.error : '';
     const r = data?.release && typeof data.release === 'object' ? release(data.release as Raw) : undefined;
     throw new FirmwareError(errorKeys[code] ?? 'genericError', r);
@@ -83,4 +85,12 @@ export async function firmwareDownloadUrl(id: string): Promise<string> {
   const data = await call({ action: 'download', id });
   if (typeof data.url !== 'string') throw new PortalError('genericError');
   return data.url;
+}
+
+// PE-416: authorization and in-use checks belong to Tom's DEV endpoint.
+export async function deleteFirmware(id: string): Promise<{ fileRemoved: boolean }> {
+  const data = await call({ action: 'delete', id });
+  const deleted = data.deleted as Raw | undefined;
+  if (!deleted || deleted.id !== id || typeof data.file_removed !== 'boolean') throw new PortalError('genericError');
+  return { fileRemoved: data.file_removed };
 }

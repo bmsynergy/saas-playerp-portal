@@ -292,10 +292,13 @@ function PrintDashboardData() {
 function PrintFirmwaresData() {
   const {session,expire}=useAuth();
   const data=useQuery({queryKey:['ps-firmwares',session?.user.id],queryFn:({signal})=>getFirmwares(signal),refetchInterval:60_000});
-  useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
-  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
+  const inventory=useQuery({queryKey:['ps-inventory',session?.user.id],queryFn:({signal})=>getInventory(signal),refetchInterval:30_000});
+  const error=data.error??inventory.error;
+  useEffect(()=>{if(error&&psErrorKey(error)==='sessionExpired') void expire();},[error,expire]);
+  const refresh=async()=>{await Promise.all([data.refetch({throwOnError:true}),inventory.refetch({throwOnError:true})]);};
+  if(error&&psErrorKey(error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data&&inventory.data)return <PrintFirmwaresPage data={data.data} inventory={inventory.data} refreshing={data.isFetching||inventory.isFetching} onRefresh={refresh}/>;
+  if(error)return <StateView kind="error" onRetry={()=>{void refresh().catch(()=>{});}}/>;
   return <StateView kind="loading"/>;
 }
 // OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.

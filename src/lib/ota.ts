@@ -116,7 +116,7 @@ export async function getTargetEvents(targetId: string, signal?: AbortSignal): P
   if (data.ok !== true) throw new PsError('ota.error.other');
   return list(data.events).map(item => {
     const e = obj(item) ?? bad();
-    return { id: String(e.id ?? ''), phase: slug(e.phase), status: slug(e.status), progress: pct(e.progress), error_code: str(e.error_code), error_detail: str(e.error_detail), detail: text(e.detail), created_at: str(e.created_at) };
+    return { id: String(e.id ?? ''), phase: str(e.phase), status: str(e.status), progress: pct(e.progress), error_code: str(e.error_code), error_detail: str(e.error_detail), detail: text(e.detail), created_at: str(e.created_at) };
   });
 }
 export async function createGroup(name: string, r: Ring): Promise<void> {

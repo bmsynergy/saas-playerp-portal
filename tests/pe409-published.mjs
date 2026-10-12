@@ -9,7 +9,7 @@ const login=await fetch(api+'/auth/v1/token?grant_type=password',{method:'POST',
 const report={origin,kind:'Published portal + real existing DEV records; read-only',at:new Date().toISOString(),lists:[],checks:[],errors:[]};
 const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE??'/home/coredev/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
 async function rpc(name,body={}){const r=await fetch(api+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});assert.equal(r.status,200,name);return r.json();}
-const allowed=new Set(['portal_access','is_platform_staff','portal_tenant_directory','portal_tenant_detail','portal_ps_fleet','portal_ps_devices','portal_ps_inventory','ps_firmware_list','ps_panel_state','ps_panel_device','ps_panel_ota','ps_panel_printer_jobs','ps_ota_admin_overview','ps_ota_admin_deployments_page','ps_ota_admin_targets_page','ps_ota_admin_audit_page','ps_ota_admin_events_page']);
+const allowed=new Set(['portal_access','is_platform_staff','portal_tenant_directory','portal_tenant_detail','portal_ps_fleet','portal_ps_devices','portal_ps_inventory','ps_firmware_list','ps_panel_state','ps_panel_device','ps_panel_ota','ps_panel_printer_jobs','ps_ota_admin_overview','ps_ota_admin_deployments_page','ps_ota_admin_targets_page','ps_ota_admin_audit_page','ps_ota_admin_events_page','ps_ota_target_events']);
 try {
  const ctx=await browser.newContext({viewport:{width:1440,height:950},locale:'en-US'});await ctx.addInitScript(s=>{localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(s));localStorage.setItem('playerp.locale','en');},session);
  const calls=[];
@@ -20,7 +20,7 @@ try {
  for(const args of [
   ['/admin/tenants','tenants','tenants-search'],['/admin/staff','staff','staff-search'],
   ['/admin/print-servers','dashboard','inventory-filter-search'],['/admin/print-servers/list','fleet','fleet-filter-search'],['/admin/print-servers/inventory','devices','devices-search'],
-  ['/admin/print-servers/firmwares','fw-releases','fw-releases-search'],['/admin/print-servers/firmwares','fw-installed','fw-installed-search'],
+  ['/admin/print-servers/firmwares','fw-releases','fw-releases-search'],
   ['/admin/print-servers/updates','editions','editions-search'],['/admin/print-servers/updates','groups','groups-search'],['/admin/print-servers/updates','ota-devices','ota-devices-search'],['/admin/print-servers/updates','deployments','deployments-search'],['/admin/print-servers/updates','audit','audit-search']])await inspect(...args);
  const venues=await rpc('portal_tenant_directory');const selected=venues[0];calls.length=0;await inspect(`/admin/tenants/${selected.id}/users`,'venue-users','venue-users-search');
  await page.goto(origin+`/admin/tenants/${selected.id}/print-servers?lang=en`);await expect(page.getByTestId('fleet-pagination')).toBeVisible();assert(!calls.includes('portal_ps_fleet'));report.checks.push('Real selected-venue list uses ps_panel_state, no global fleet request');

@@ -1,0 +1,45 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Real DEV session and backend, own disposable firmware only",
+  "checks": [
+    {
+      "criterion": 1,
+      "inventory": 103,
+      "controls": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "chartFilter": "matches live inventory"
+    },
+    {
+      "criterion": 2,
+      "card": "actual uploaded test firmware; multiline/full-width notes/no overflow at 1440,834,390"
+    },
+    {
+      "criterion": 3,
+      "deleted_id": "d105eab0-0488-4609-9d07-67ccbcdc3f18",
+      "http": 200,
+      "file_removed": true,
+      "cancel": "no mutation",
+      "refresh": "absent after page reload"
+    },
+    {
+      "criterion": 4,
+      "events": 9,
+      "target": "e30aa3a1-028c-45e9-9254-62c693ca2fe4",
+      "pagination": false
+    }
+  ],
+  "screenshots": [
+    "distribution-real-1440.png",
+    "firmware-real-1440.png",
+    "firmware-real-834.png",
+    "firmware-real-390.png",
+    "delete-success-real-390.png",
+    "events-real-1440.png"
+  ]
+}

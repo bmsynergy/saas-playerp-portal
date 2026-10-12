@@ -41,6 +41,7 @@ async function setup(width=1440,role='super_admin') {
   if(name==='portal_ps_fleet')return send(fleet);
   if(name==='portal_ps_devices')return send({devices:seq(i=>({id:`device-${i}`,serial:`Fixture ${i}`,hostname:`Fixture ${i}`,model:'rpi4-2gb',status:i%2?'stock':'assigned',venue_id:i%2?null:a,venue_name:i%2?null:'Fixture Venue',created_at:date(i)}))});
   if(name==='portal_ps_inventory')return send({contract_version:1,generated_at:date(0),online_window_seconds:180,items:seq(i=>({id:`device-${i}`,device_id:`device-${i}`,label:`Fixture ${i}`,hostname:`Fixture ${i}`,assignment:i%2?'unassigned':'assigned',venue_id:i%2?null:a,venue_name:i%2?null:'Fixture Venue',last_venue_name:null,connection:i%2?'unassigned':'online',last_seen_at:date(i),last_report_at:date(i),firmware_version:'0.3.15',firmware_known:true,error_count:0,warning_count:0,printers_total:1,pending_jobs:0,last_issue_at:null,issues:[]}))});
+  if(name==='ps_ota_target_events')return send({ok:true,events});
   if(name==='ps_firmware_list')return send({releases,installed:seq(i=>({version:`Fixture ${i}`,print_servers:2,uploaded:i%2===0}))});
   if(name==='ps_panel_state'){if(role==='owner'&&args.p_venue_id!==a)return send({code:'42501'},403);const row=fleet.find(v=>v.venue_id===args.p_venue_id);return send({venue_id:args.p_venue_id,can_manage:true,print_server:row.print_server,printers,pending_enrollment:null,last_scan:null});}
   if(name==='ps_panel_device')return send({ok:true,device:null,cert:{},rotations:[],cert_operations:[],can_manage:false,is_platform_admin:true});
@@ -77,7 +78,6 @@ try {
   ['/admin/print-servers/list','fleet','[data-testid^="fleet-row-"]','fleet-filter-search','fleet'],
   ['/admin/print-servers/inventory','devices','[data-testid^="inv-row-"]','devices-search'],
   ['/admin/print-servers/firmwares','fw-releases','[data-testid^="fw-row-"]','fw-releases-search'],
-  ['/admin/print-servers/firmwares','fw-installed','[data-testid="fw-installed"] > li','fw-installed-search'],
   [`/admin/tenants/${a}/print-servers/detail`,'printers','[data-testid^="printer-row-"]','printers-search'],
   ['/admin/print-servers/updates','editions','[data-testid^="ota-release-"]','editions-search'],
   ['/admin/print-servers/updates','groups','[data-testid^="ota-group-group-"]','groups-search'],
@@ -86,7 +86,7 @@ try {
   ['/admin/print-servers/updates','audit','[data-testid="ota-audit"] > li','audit-search'],
  ]) {await page.goto(origin+path+'?lang=en');if(id==='printers')await page.getByTestId('printers-toggle').click();await traverse(page,id,page.locator(selector),search,dateId);}
  await page.goto(origin+'/admin/print-servers/updates?lang=en');await page.getByTestId('ota-deployment-deployment-0').locator('summary').click();await traverse(page,'targets-deployment-0',page.locator('[data-testid="ota-deployment-deployment-0"] [data-testid^="ota-target-"]'),'targets-deployment-0-search');
- await page.getByTestId('ota-events-toggle-target-0').click();await traverse(page,'events-target-0',page.getByTestId('ota-events-target-0').locator('>li'),'events-target-0-search');
+ await page.getByTestId('ota-events-toggle-target-0').click();await expect(page.getByTestId('ota-events-target-0').locator('>li')).toHaveCount(63);await expect(page.getByTestId('events-target-0-pagination')).toHaveCount(0);
  // Original technical payload stays behind the admin disclosure, real errors remain visible.
  await expect(page.getByTestId('ota-events-target-0')).toContainText('Health check timed out');
  await expect(page.getByTestId('ota-events-target-0')).toContainText('Unrecognized phase: future_phase');
