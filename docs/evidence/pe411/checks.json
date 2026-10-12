@@ -1,0 +1,10 @@
+{
+  "kind": "Synthetic local fixtures; NOT server authorization or published DEV evidence",
+  "checks": [
+    "synthetic 390px: hidden/copy/preview/download; fresh-read change blocks old export; access loss clears; no overflow",
+    "synthetic 1440px: hidden/copy/preview/download; fresh-read change blocks old export; access loss clears; no overflow",
+    "synthetic create/assign preserves serial, activation separate; legacy absent blocks label and explains P13",
+    "single raster: 590×354, pHYs 11811/11811 metre, black/white, >=18px margins, full max SSID/serial, 4 steps, no admin/QR; print CSS 50×30mm"
+  ],
+  "errors": []
+}

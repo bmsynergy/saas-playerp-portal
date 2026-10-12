@@ -1,0 +1,36 @@
+# Etiqueta de recuperación — complemento PE-411.3
+
+**Todavía no publicado.** La interfaz está preparada y comprobada con datos sintéticos.
+Falta que Tom aplique y pruebe la autorización y separación de credenciales en DEV, acuerde
+la conciliación legacy y devuelva sus referencias. Después Uma publica el portal.
+
+Recorrido previsto una vez publicado:
+1. Entra en https://playerp.dev.bmore.app/admin/print-servers/inventory con tu cuenta autorizada
+   y abre la ficha del aparato asignado. Como owner, abre Print Servers dentro de tu propio local.
+2. Consulta o copia el código administrativo por separado, solo si figura confirmado. Ese código
+   no se imprime y no forma parte de ningún QR. La activación de un uso es otro código diferente.
+3. Abre la vista previa y descarga el PNG identificado por el serial. Si indica ausente/no verificado,
+   no existe aún una etiqueta válida: no uses el ejemplo sintético para tu aparato.
+4. Imprime desde el navegador a 50×30 mm y 100%/tamaño real, sin ajustar a página ni cabeceras/pies.
+   Elige tú la impresora y el papel de etiquetas. El portal no envía nada directamente a una impresora.
+5. La etiqueta indica: apagar/encender; conectar a la Wi-Fi indicada dentro de 90 segundos; introducir
+   su contraseña; abrir http://10.77.0.1. La URL de recuperación es HTTP local.
+6. Reimprime cuando cambie el SSID o contraseña **confirmados**. Mientras una rotación está pendiente
+   o falla, el dato anterior confirmado sigue siendo el vigente; no imprimas valores futuros.
+
+**Aparato legacy:** debe comprobarse físicamente identidad y vínculo al local. La lectura local
+Wi-Fi autenticada no demuestra el código administrativo; necesitas acceso administrativo local
+para verificar este último. Tom debe acordar un canal seguro de conciliación sin copiar toda la
+configuración, rotar claves ni cambiar hostname, CA o credencial técnica. Mientras no se pueda
+verificar un valor, permanece ausente. En este trabajo no se ha leído ni cambiado el PS real.
+
+**Raspberry nueva:** crear y asignar inventario no instala el aparato. P13 sigue pendiente:
+hace falta una base instalada compatible o un instalador inicial que no forma parte de esta pieza.
+Con esa base preparada y la activación completada, solicita explícitamente las rotaciones Wi-Fi y
+del código en un aparato compatible y espera sus confirmaciones reales; el éxito del alta no basta
+para marcarlos aplicados. No se ejecuta ni se programa ninguna rotación u OTA en este trabajo.
+
+No se imprime QR en 50×30 mm para conservar espacio legible a los datos completos y los cuatro pasos.
+El QR Wi-Fi ya existente permanece en pantalla solo con valores confirmados al revelar la clave.
+El raster es 590×354 px, proporción 5:3, 300dpi (pHYs 11811). El redondeo equivale a 49.95×29.97 mm;
+el diálogo usa 50×30 mm. El resultado sobre papel requiere la impresora y calibración de Beny.

@@ -10,7 +10,9 @@ export type OpStatus = 'pending' | 'applied' | 'failed';
 export type DeviceOp = { command_id: string; kind: string; status: OpStatus; requested_at: string | null; completed_at: string | null; error_code: string | null };
 export type DeviceSheet = {
   device: { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean } | null;
-  wifi: { ssid: string; psk: string; admin_code: string; wifi_applied_at: string | null; admin_code_applied_at: string | null } | null;
+  appliedWifi: { ssid: string; psk: string; applied_at: string } | null;
+  appliedAdminCode: { code: string; applied_at: string } | null;
+  credentialAccess: boolean; can_manage_credentials: boolean;
   rotations: DeviceOp[];
   cert: { hostname: string | null; not_before: string | null; not_after: string | null; der_sha256: string | null; updated_at: string | null; status: 'valid' | 'expired' | 'none' };
   cert_operations: DeviceOp[];
@@ -29,13 +31,31 @@ function op(v: unknown): DeviceOp {
   const status = o.status === 'applied' || o.status === 'failed' ? o.status : 'pending';
   return { command_id: String(o.command_id ?? ''), kind: String(o.kind ?? ''), status, requested_at: str(o.requested_at), completed_at: str(o.completed_at), error_code: code(o.error_code) };
 }
+export function confirmedAt(value: unknown): string | null {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value)) && Date.parse(value) <= Date.now()
+    ? value : null;
+}
+export function validRecoveryWifi(ssid: unknown, password: unknown): boolean {
+  return typeof ssid === 'string' && new TextEncoder().encode(ssid).length >= 1
+    && new TextEncoder().encode(ssid).length <= 32 && !/[\p{C}\p{Zl}\p{Zp}]/u.test(ssid)
+    && typeof password === 'string' && /^[0-9]{10}$/.test(password);
+}
 export function projectDeviceSheet(v: unknown): DeviceSheet {
   const s = obj(v) ?? bad();
   if (s.ok !== true) throw psErrorFromCode(s.error);
   const d = obj(s.device); const w = obj(s.wifi); const c = obj(s.cert) ?? {};
+  // Fail closed until Tom's server-side contract is deployed. A status=active or an
+  // enrollment-generated value is not proof that a device applied that value.
+  const credentialAccess = s.credentials_version === 1 && s.can_read_credentials === true;
+  const wifiAt = confirmedAt(w?.wifi_applied_at);
+  const codeAt = confirmedAt(w?.admin_code_applied_at);
   return {
+    credentialAccess, can_manage_credentials: credentialAccess && s.can_manage_credentials === true,
+    appliedWifi: credentialAccess && wifiAt && validRecoveryWifi(w?.ssid, w?.psk)
+      ? { ssid: w!.ssid as string, psk: w!.psk as string, applied_at: wifiAt } : null,
+    appliedAdminCode: credentialAccess && codeAt && typeof w?.admin_code === 'string' && /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$/.test(w.admin_code)
+      ? { code: w.admin_code, applied_at: codeAt } : null,
     device: d && typeof d.id === 'string' ? { id: d.id, serial: String(d.serial ?? ''), hostname: String(d.hostname ?? ''), model: String(d.model ?? ''), status: String(d.status ?? ''), legacy: d.legacy === true } : null,
-    wifi: w && typeof w.ssid === 'string' ? { ssid: w.ssid, psk: String(w.psk ?? ''), admin_code: String(w.admin_code ?? ''), wifi_applied_at: str(w.wifi_applied_at), admin_code_applied_at: str(w.admin_code_applied_at) } : null,
     rotations: Array.isArray(s.rotations) ? s.rotations.map(op) : [],
     cert: { hostname: str(c.hostname), not_before: str(c.not_before), not_after: str(c.not_after), der_sha256: str(c.der_sha256), updated_at: str(c.updated_at),
       status: c.status === 'valid' || c.status === 'expired' ? c.status : 'none' },
@@ -100,6 +120,6 @@ export async function revokeDevice(deviceId: string, retire: boolean) { return a
 
 // QR content for the Wi-Fi label: Wi-Fi only (WPA), never the administrative code or a token.
 export function wifiQrPayload(ssid: string, psk: string): string {
-  const esc = (v: string) => v.replace(/([\;,:"])/g, '\\$1');
+  const esc = (v: string) => v.replace(/([\\;,:"])/g, '\\$1');
   return `WIFI:T:WPA;S:${esc(ssid)};P:${esc(psk)};;`;
 }
