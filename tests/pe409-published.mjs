@@ -1,0 +1,29 @@
+// PE-409.7: read-only verification of the published portal using existing DEV accounts.
+import {chromium,expect} from '@playwright/test';
+import assert from 'node:assert/strict';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+const origin=process.env.PORTAL_TEST_ORIGIN??'https://playerp.dev.bmore.app',out=process.env.LIVE_OUTPUT_DIR??'test-results/pe409';await mkdir(out,{recursive:true});
+const api='https://fzwzmwstxlsxdzdmphyq.supabase.co',key=(await readFile('src/lib/config.ts','utf8')).match(/SUPABASE_PUBLIC_KEY\s*=\s*"([^"]+)"/)[1];
+const account=JSON.parse(await readFile('/home/coredev/.coredeva-private/pe321-portal-dev/cuentas.json','utf8')).staff_activo;
+const login=await fetch(api+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:account.email,password:account.password})});assert.equal(login.status,200);const session=await login.json();session.expires_at=Math.floor(Date.now()/1000)+session.expires_in;
+const report={origin,kind:'Published portal + real existing DEV records; read-only',at:new Date().toISOString(),lists:[],checks:[],errors:[]};
+const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE??'/home/coredev/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
+async function rpc(name,body={}){const r=await fetch(api+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});assert.equal(r.status,200,name);return r.json();}
+const allowed=new Set(['portal_access','is_platform_staff','portal_tenant_directory','portal_tenant_detail','portal_ps_fleet','portal_ps_devices','portal_ps_inventory','ps_firmware_list','ps_panel_state','ps_panel_device','ps_panel_ota','ps_panel_printer_jobs','ps_ota_admin_overview','ps_ota_admin_deployments_page','ps_ota_admin_targets_page','ps_ota_admin_audit_page','ps_ota_admin_events_page']);
+try {
+ const ctx=await browser.newContext({viewport:{width:1440,height:950},locale:'en-US'});await ctx.addInitScript(s=>{localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(s));localStorage.setItem('playerp.locale','en');},session);
+ const calls=[];
+ await ctx.route('**/rest/v1/rpc/**',route=>{const name=new URL(route.request().url()).pathname.split('/').pop();calls.push(name);if(allowed.has(name))return route.continue();report.errors.push('Blocked non-read RPC '+name);return route.abort();});
+ await ctx.route('**/functions/v1/**',route=>{const name=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();if(['platform-staff-admin','platform-identity-admin'].includes(name)&&body?.action==='list')return route.continue();report.errors.push('Blocked non-read edge '+name);return route.abort();});
+ const page=await ctx.newPage();page.setDefaultTimeout(20000);page.on('pageerror',e=>report.errors.push(e.message));
+ async function inspect(path,id,search,from=id){await page.goto(origin+path+'?lang=en');const range=page.getByTestId(id+'-pagination-range'),next=page.getByTestId(id+'-pagination-next');await expect(range).toBeVisible();await page.getByTestId(id+'-pagination-size').selectOption('10');await expect(range).toBeVisible();const first=await range.innerText();let pages=1;while(await next.isEnabled()){const old=await range.innerText();await next.click();await expect(range).not.toHaveText(old);pages++;assert(pages<200);}const last=await range.innerText();if(search){await page.getByTestId(search).fill('pe409-no-match-846d1203');await expect(range).toContainText('0 results');await expect(page.getByTestId(id+'-pagination-prev')).toBeDisabled();await page.getByTestId(search).fill('');}let date=null;if(await page.getByTestId(from+'-from').count()){await page.getByTestId(from+'-from').fill('2026-10-11');await page.getByTestId(from+'-to').fill('2026-10-11');await expect(range).toBeVisible();await expect(page.getByTestId(id+'-pagination-prev')).toBeDisabled();date=await range.innerText();}report.lists.push({list:id,first,last,pages,day:date?'2026-10-11':undefined,date,emptyAndReset:!!search});console.log('PASS published '+id+' '+first+' → '+last);}
+ for(const args of [
+  ['/admin/tenants','tenants','tenants-search'],['/admin/staff','staff','staff-search'],
+  ['/admin/print-servers','dashboard','inventory-filter-search'],['/admin/print-servers/list','fleet','fleet-filter-search'],['/admin/print-servers/inventory','devices','devices-search'],
+  ['/admin/print-servers/firmwares','fw-releases','fw-releases-search'],['/admin/print-servers/firmwares','fw-installed','fw-installed-search'],
+  ['/admin/print-servers/updates','editions','editions-search'],['/admin/print-servers/updates','groups','groups-search'],['/admin/print-servers/updates','ota-devices','ota-devices-search'],['/admin/print-servers/updates','deployments','deployments-search'],['/admin/print-servers/updates','audit','audit-search']])await inspect(...args);
+ const venues=await rpc('portal_tenant_directory');const selected=venues[0];calls.length=0;await inspect(`/admin/tenants/${selected.id}/users`,'venue-users','venue-users-search');
+ await page.goto(origin+`/admin/tenants/${selected.id}/print-servers?lang=en`);await expect(page.getByTestId('fleet-pagination')).toBeVisible();assert(!calls.includes('portal_ps_fleet'));report.checks.push('Real selected-venue list uses ps_panel_state, no global fleet request');
+ await ctx.close();assert.deepEqual(report.errors,[]);report.passed=true;
+}finally {await browser.close();await fetch(api+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+session.access_token}});await writeFile(out+'/published.json',JSON.stringify(report,null,2));}
+console.log(JSON.stringify(report,null,2));

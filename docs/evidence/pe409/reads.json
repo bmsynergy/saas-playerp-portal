@@ -1,0 +1,166 @@
+{
+  "kind": "Existing DEV data; read-only user JWT calls",
+  "at": "2026-10-12T01:10:42.826Z",
+  "lists": [
+    {
+      "list": "deployments",
+      "total": 167,
+      "pages": 4,
+      "size": 50,
+      "first": 50,
+      "last": 17,
+      "day": "2026-10-11",
+      "filtered": 6,
+      "empty": 0,
+      "invalid": "22023",
+      "aggregatesStable": true,
+      "stableIdOrder": true,
+      "statusFilter": {
+        "value": "committed",
+        "total": 68
+      }
+    },
+    {
+      "list": "targets",
+      "total": 167,
+      "pages": 4,
+      "size": 50,
+      "first": 50,
+      "last": 17,
+      "day": "2026-10-11",
+      "filtered": 6,
+      "empty": 0,
+      "invalid": "22023",
+      "aggregatesStable": true,
+      "stableIdOrder": true,
+      "statusFilter": {
+        "value": "committed",
+        "total": 68
+      }
+    },
+    {
+      "list": "audit",
+      "total": 202,
+      "pages": 5,
+      "size": 50,
+      "first": 50,
+      "last": 2,
+      "day": "2026-10-11",
+      "filtered": 9,
+      "empty": 0,
+      "invalid": "22023",
+      "aggregatesStable": true,
+      "stableIdOrder": true,
+      "statusFilter": {
+        "value": "ps_ota_edition_signed",
+        "total": 15
+      }
+    },
+    {
+      "list": "events",
+      "total": 1075,
+      "pages": 22,
+      "size": 50,
+      "first": 50,
+      "last": 25,
+      "day": "2026-10-11",
+      "filtered": 68,
+      "empty": 0,
+      "invalid": "22023",
+      "aggregatesStable": true,
+      "stableIdOrder": true,
+      "statusFilter": {
+        "value": "committed",
+        "total": 68
+      }
+    },
+    {
+      "list": "printer queue",
+      "total": 114,
+      "pages": 3,
+      "size": 50,
+      "first": 50,
+      "last": 14,
+      "day": "2026-10-11",
+      "filtered": 0
+    }
+  ],
+  "checks": [
+    {
+      "label": "tenants",
+      "shape": {
+        "rows": 10
+      }
+    },
+    {
+      "label": "fleet",
+      "shape": {
+        "rows": 10
+      }
+    },
+    {
+      "label": "inventory",
+      "shape": {
+        "devices": 17
+      }
+    },
+    {
+      "label": "firmwares",
+      "shape": {
+        "releases": 20,
+        "installed": 3
+      }
+    },
+    {
+      "label": "overview-complete-arrays",
+      "releases": 18,
+      "groups": 7,
+      "devices": 3
+    },
+    {
+      "label": "owner denied deployments",
+      "status": 403,
+      "code": "42501"
+    },
+    {
+      "label": "owner denied targets",
+      "status": 403,
+      "code": "42501"
+    },
+    {
+      "label": "owner denied audit",
+      "status": 403,
+      "code": "42501"
+    },
+    {
+      "label": "owner denied events",
+      "status": 403,
+      "code": "42501"
+    },
+    {
+      "label": "owner permitted selected venue",
+      "http": 200,
+      "venueMatches": true,
+      "printers": 1
+    },
+    {
+      "label": "owner permitted selected venue",
+      "http": 200,
+      "venueMatches": true,
+      "printers": 2
+    },
+    {
+      "label": "owner denied unowned venue",
+      "http": 403,
+      "code": "42501"
+    }
+  ],
+  "auditActions": [
+    "ps_ota_edition_signed",
+    "ps_ota_deployed",
+    "ps_ota_group_members_set",
+    "ps_ota_group_created"
+  ],
+  "legacyOverview": 50,
+  "passed": true
+}

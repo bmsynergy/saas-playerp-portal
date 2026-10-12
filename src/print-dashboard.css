@@ -15,7 +15,7 @@
 .print-dashboard-filters{display:grid;grid-template-columns:minmax(180px,1.4fr) repeat(3,minmax(120px,1fr)) auto;gap:10px;align-items:end}
 .print-dashboard-filters label{display:grid;gap:6px;min-width:0}
 .print-dashboard-filters label>span{color:var(--muted);font-size:.69rem;font-weight:800}
-.print-dashboard-filters select,.print-dashboard-search{height:39px;width:100%;min-width:0;border:1px solid var(--control-line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.print-dashboard-filters select,.print-dashboard-search{height:44px;width:100%;min-width:0;border:1px solid var(--control-line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .print-dashboard-filters select{padding:0 28px 0 10px;font-size:.76rem}
 .print-dashboard-search{display:flex!important;align-items:center;gap:7px;padding:0 10px}
 .print-dashboard-search svg{flex:none;color:var(--muted)}

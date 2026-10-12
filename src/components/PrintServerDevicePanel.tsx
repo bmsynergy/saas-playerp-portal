@@ -1,3 +1,4 @@
+import { useAuth } from '../hooks/useAuth';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
@@ -16,7 +17,8 @@ type Result = { ok: boolean; text: string };
 
 export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   const { t, locale } = useLocale();
-  const sheet = useQuery({ queryKey: ['ps-device', venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal), refetchInterval: 10_000 });
+  const {session} = useAuth();
+  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal), refetchInterval: 10_000 });
   const [show, setShow] = useState({ psk: false, code: false });
   const [qr, setQr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

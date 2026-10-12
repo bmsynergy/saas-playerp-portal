@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Check, MailPlus, RotateCcw, ShieldCheck, UserRoundX, X } from 'lucide-react';
-import { otherVenuesLabel, slugLabel, venueRoleLabel, type VenueUser, type VenueUserAction, type VenueUserInvite, type VenueUsers } from '../lib/venueUsers';
+import { slugLabel, venueRoleLabel, type VenueUser, type VenueUserAction, type VenueUserInvite, type VenueUsers } from '../lib/venueUsers';
 import { useLocale } from '../locales';
 import { PortalDialog } from '../components/PortalDialog';
 import { VenueUsersList } from './VenueUsersList';
@@ -64,12 +64,11 @@ export function VenueUsersTab({ data, busy, error, notice, onInvite, onAction }:
   return <div className="page-stack staff-page" data-testid="venue-users">
     {(error || (localError && !inviting)) && <div className="form-error" role="alert"><UserRoundX size={19}/><span>{t((!inviting && localError) || error || 'genericError')}</span></div>}
     {notice && <div className="staff-notice" role="status"><Check size={18}/><span>{t(notice)}</span></div>}
-    <VenueUsersList venueId={venue.id} scope="admin" users={users} name={displayName} email={person => person.email} lead={fill('identity.lead', { venue: venue.name })} headers={[t('name'), t('email'), t('identity.roleHere'), t('state'), t('staff.actions')]}
+    <VenueUsersList venueId={venue.id} scope="admin" users={users} name={displayName} email={person => person.email} status={person => person.status} memberSince={person => person.member_since} lead={fill('identity.lead', { venue: venue.name })} headers={[t('name'), t('email'), t('identity.roleHere'), t('state'), t('staff.actions')]}
       toolbar={<button type="button" className="button button-primary" data-testid="venue-users-invite" disabled={busy || !roles.length} onClick={openInvite}><MailPlus size={17}/>{t('identity.invite')}</button>}
       row={person => {
-        const others = otherVenuesLabel(t, person.other_venue_count);
         return <tr key={person.user_id} data-testid="venue-user-row">
-          <td data-label={t('name')} className="staff-identity"><strong>{person.full_name?.trim() || t('notProvided')}{person.is_self && <span className="staff-self">{t('staff.you')}</span>}</strong>{others && <small title={t('identity.otherVenuesHint')}>{others}</small>}</td>
+          <td data-label={t('name')} className="staff-identity"><strong>{person.full_name?.trim() || t('notProvided')}{person.is_self && <span className="staff-self">{t('staff.you')}</span>}</strong></td>
           <td data-label={t('email')}><span className="venue-user-email">{person.email}</span></td>
           <td data-label={t('identity.roleHere')}><span className="staff-role"><ShieldCheck size={15}/>{venueRoleLabel(t, person.role)}</span></td>
           <td data-label={t('state')}><span className={`status-badge staff-status staff-status-${person.status === 'inactive' ? 'revoked' : person.status}`}><span className="badge-dot"/>{slugLabel(t, 'identity.status', person.status)}</span></td>

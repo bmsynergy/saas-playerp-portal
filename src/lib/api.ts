@@ -38,8 +38,11 @@ export async function getDirectory(signal?: AbortSignal): Promise<OwnerVenue[]> 
 export async function getTenant(id: string, signal?: AbortSignal): Promise<TenantDetail | null> {
   const data = await rpc('portal_tenant_detail', {p_venue_id:id}, signal);
   if (data === null) return null;
+  if (data?.venue?.id !== id) throw new PortalError('accessDenied');
   if (!data?.venue || !Array.isArray(data.print_servers)) throw new PortalError('genericError');
-  return {venue:venue(data.venue),print_servers:data.print_servers.map(server)};
+  const servers = data.print_servers.map(server) as PrintServerSummary[];
+  if (servers.some(item => item.venue_id !== id)) throw new PortalError('accessDenied');
+  return {venue:venue(data.venue),print_servers:servers};
 }
 export async function getOwnerVenues(id: string, signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_owner_venues', {p_venue_id:id}, signal);

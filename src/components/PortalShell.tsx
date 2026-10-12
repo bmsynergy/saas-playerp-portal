@@ -112,7 +112,8 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
       return [root, { label: ownerVenue.name }, { label: ownerSectionItems.find(item => item.section === ownerContext.section)?.label ?? t('ownerDashboard') }];
     }
     if (path === '/' || path === '/admin') return [{ label: root.label }];
-    if (path.startsWith('/admin/print-servers/')) return [root, { label: t('ps.nav'), to: canManageStaff ? '/admin/print-servers' : undefined }, { label: t('ps.detailEyebrow') }];
+    const printSections: Record<string,string> = { '/admin/print-servers/list':'fw.tab.list', '/admin/print-servers/inventory':'inv.tab', '/admin/print-servers/firmwares':'fw.tab.firmwares', '/admin/print-servers/updates':'ota.tab' };
+    if (path.startsWith('/admin/print-servers/')) return [root, { label: t('ps.nav'), to: canManageStaff ? '/admin/print-servers' : undefined }, { label: t(printSections[path] ?? 'ps.detailEyebrow') }];
     if (/^\/admin\/tenants\/[^/]+\/users$/.test(path)) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails'), to: canViewTenants ? path.slice(0, -'/users'.length) : undefined }, { label: t('identity.tab') }];
     const venuePrint = path.match(/^(\/admin\/tenants\/[^/]+)\/print-servers(\/detail)?$/);
     if (venuePrint) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined },

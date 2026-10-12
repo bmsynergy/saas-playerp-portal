@@ -1,3 +1,5 @@
+import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
+import { validDateRange } from '../lib/adminLists';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Inbox, RefreshCw } from 'lucide-react';
 import { psErrorKey, type PanelPrinter, type PrinterJob, type PrinterJobsPage, type PrintServerApi } from '../lib/printServerApi';
@@ -15,6 +17,9 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
   const [open, setOpen] = useState(false);
   const detailId = useId();
   const [offset, setOffset] = useState(0);
+  const [pageSize,setPageSize] = useState(QUEUE_PAGE_SIZE);
+  const list = useAdminListFilters(() => setOffset(0));
+  const valid = validDateRange(list.filters.from,list.filters.to);
   const [page, setPage] = useState<PrinterJobsPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -23,17 +28,18 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
 
   const load = useCallback(async (at: number) => {
     const id = ++request.current;
-    setLoading(true); setErrorKey(null);
+    setLoading(true); setErrorKey(null); setPage(null);
+    if (!valid) {setLoading(false);return;}
     try {
-      const next = await api.getPrinterJobs(venueId, printer.id, QUEUE_PAGE_SIZE, at);
+      const next = await api.getPrinterJobs(venueId, printer.id, pageSize, at, list.filters);
       if (id !== request.current) return;
       // The queue shrank under this page: step back to the last page that exists.
-      const last = Math.max(0, (Math.ceil(next.total / QUEUE_PAGE_SIZE) - 1) * QUEUE_PAGE_SIZE);
+      const last = Math.max(0, (Math.ceil(next.total / pageSize) - 1) * pageSize);
       if (next.jobs.length === 0 && at > 0 && last !== at) { setOffset(last); return; }
       setPage(next);
     } catch (error) { if (id === request.current) setErrorKey(psErrorKey(error)); }
     finally { if (id === request.current) setLoading(false); }
-  }, [api, venueId, printer.id]);
+  }, [api, venueId, printer.id, pageSize, list.filters, valid]);
   // A newer request, or leaving the page, discards whatever is still in flight.
   useEffect(() => { void load(offset); return () => { request.current += 1; }; }, [load, offset, reloadKey]);
 
@@ -54,8 +60,8 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
   }
 
   const total = page?.total ?? 0;
-  const pages = Math.max(1, Math.ceil(total / QUEUE_PAGE_SIZE));
-  const current = Math.min(pages, Math.floor(offset / QUEUE_PAGE_SIZE) + 1);
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const current = Math.min(pages, Math.floor(offset / pageSize) + 1);
   const shown = page?.jobs ?? [];
   const name = printer.label || t('notProvided');
   const notice = printer.last_error || printer.last_report?.error;
@@ -77,8 +83,10 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
       <span className="staff-self-note" data-testid={`queue-total-${printer.id}`}>{fill(t(total === 1 ? 'ps.jobs.totalOne' : 'ps.jobs.total'), { n: total })}</span>
       <button type="button" className="button button-secondary ps-queue-refresh" data-testid={`queue-refresh-${printer.id}`} aria-label={`${t('ps.jobs.refresh')}: ${name}`} disabled={loading} onClick={() => void load(offset)}>{loading ? <span className="spinner ps-spinner"/> : <RefreshCw size={15}/>}{t('ps.jobs.refresh')}</button>
     </div>
+    <AdminListFilters id={`queue-${printer.id}`} {...list} statuses={['pending','printing','sent','done','failed','expired','cancelled','unconfirmed'].map(value=>({value,label:label('ps.jobs.status',value,'ps.jobs.status.unknown')}))} dateLabel={t('ps.jobs.date')}/>
+    <label className="field"><span>{t('ps.pagination.rows')}</span><select value={pageSize} onChange={e=>{setPageSize(Number(e.target.value));setOffset(0);}}>{[10,25,50].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
     {errorKey && <div className="form-error ps-scan-error" role="alert" data-testid={`queue-error-${printer.id}`}><AlertTriangle size={19}/><span>{t(errorKey)}</span></div>}
-    {!page ? (!errorKey && <p className="staff-self-note" data-testid={`queue-loading-${printer.id}`}>{t('ps.jobs.loading')}</p>)
+    {!page ? (!errorKey && valid && <p className="staff-self-note" data-testid={`queue-loading-${printer.id}`}>{t('ps.jobs.loading')}</p>)
       : total === 0 ? <div className="staff-empty ps-queue-empty" data-testid={`queue-empty-${printer.id}`}><Inbox size={25}/><strong>{t('ps.jobs.empty')}</strong><span>{t('ps.jobs.emptyHint')}</span></div>
       : <>
         <div className="staff-table-wrap"><table className="staff-table ps-jobs-table"><thead><tr><th>{t('state')}</th><th>{t('ps.jobs.date')}</th><th>{t('ps.jobs.source')}</th><th>{t('ps.jobs.attempts')}</th><th>{t('ps.jobs.error')}</th></tr></thead><tbody>{shown.map(job => {
@@ -92,9 +100,9 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
           </tr>;
         })}</tbody></table></div>
         <div className="ps-queue-pager">
-          <button type="button" className="button button-secondary" data-testid={`queue-prev-${printer.id}`} disabled={loading || offset === 0} onClick={() => setOffset(Math.max(0, offset - QUEUE_PAGE_SIZE))}><ChevronLeft size={15}/>{t('ps.jobs.prev')}</button>
+          <button type="button" className="button button-secondary" data-testid={`queue-prev-${printer.id}`} disabled={loading || offset === 0} onClick={() => setOffset(Math.max(0, offset - pageSize))}><ChevronLeft size={15}/>{t('ps.jobs.prev')}</button>
           <span className="staff-self-note" data-testid={`queue-page-${printer.id}`}>{fill(t('ps.jobs.page'), { n: current, m: pages })}</span>
-          <button type="button" className="button button-secondary" data-testid={`queue-next-${printer.id}`} disabled={loading || offset + QUEUE_PAGE_SIZE >= total} onClick={() => setOffset(offset + QUEUE_PAGE_SIZE)}>{t('ps.jobs.next')}<ChevronRight size={15}/></button>
+          <button type="button" className="button button-secondary" data-testid={`queue-next-${printer.id}`} disabled={loading || offset + pageSize >= total} onClick={() => setOffset(offset + pageSize)}>{t('ps.jobs.next')}<ChevronRight size={15}/></button>
         </div>
       </>}
     </div>

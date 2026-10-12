@@ -9,7 +9,7 @@ import { VenueUsersTab } from './pages/VenueUsersTab';
 import { getOwnerUsers, ownerUsersRequest, type OwnerUser, type OwnerUserAction, type OwnerUserInvite } from './lib/ownerUsers';
 import { OwnerUsersSection } from './pages/OwnerUsersSection';
 import { InvitationPage } from './pages/InvitationPage';
-import { getFleet, getInventory, getPanelState, printServerApi, psErrorKey, withFailureHook } from './lib/printServerApi';
+import { getFleet, getInventory, getPanelState, printServerApi, psErrorKey, withFailureHook, panelFleetRow } from './lib/printServerApi';
 import { PrintFleetPage } from './pages/PrintFleetPage';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
@@ -180,7 +180,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
-    printServers={canManageUsers?(tab==='print-server-detail'?<VenuePrintServerData key={id} venue={data.data.venue} scope="admin"/>:<PrintFleetData key={id} venueId={id}/>):undefined}/>;
+    printServers={canManageUsers?(tab==='print-server-detail'?<VenuePrintServerData key={id} venue={data.data.venue} scope="admin"/>:<VenueFleetData key={id} venue={data.data.venue}/>):undefined}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -253,7 +253,7 @@ function VenueUsersData({venueId}:{venueId:string}) {
   if(data.error&&staffErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.error&&staffErrorKey(data.error)==='sessionExpired')return <StateView kind="loading"/>;
   if(data.isPending)return <StateView kind="loading"/>;
-  if(data.isError&&!data.data) {
+  if(data.isError) {
     const code=staffErrorKey(data.error);
     return <StateView kind={code==='accessDenied'?'denied':code==='identity.error.venueNotFound'?'notFound':'error'} onRetry={()=>void data.refetch()}/>;
   }
@@ -261,7 +261,7 @@ function VenueUsersData({venueId}:{venueId:string}) {
   return <VenueUsersTab data={data.data} busy={busy} error={error} notice={notice}
     onInvite={(invite:VenueUserInvite)=>run({action:'invite',...invite},result=>result.created===false?'identity.addedExisting':result.email_sent===false?'identity.invitedNoEmail':'identity.invited')}
     onAction={(action:VenueUserAction,person:VenueUser,value)=>run({action,user_id:person.user_id,...(action==='set_role'?{role:value}:action==='send_recovery'?{locale}:{})},
-      result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':Number(result.remaining_venue_count)>0?'identity.revokedKeepsOthers':'identity.revoked')}/>;
+      result=>action==='send_recovery'?'staff.recoverySent':result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':'identity.revoked')}/>;
 }
 // Print Server fleet: platform Admin only (the same gate as venue users and Staff).
 // The backend validates every RPC again and answers 42501 when it refuses.
@@ -294,8 +294,8 @@ function PrintFirmwaresData() {
   const data=useQuery({queryKey:['ps-firmwares',session?.user.id],queryFn:({signal})=>getFirmwares(signal),refetchInterval:60_000});
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
 // OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.
@@ -304,8 +304,8 @@ function PrintUpdatesData() {
   const data=useQuery({queryKey:['ps-ota',session?.user.id],queryFn:({signal})=>getOtaOverview(signal),refetchInterval:10_000});
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
 // Inventory of Print Server units: platform Admin only; portal_ps_devices answers 42501 otherwise.
@@ -315,32 +315,33 @@ function PrintDevicesData() {
   const venues=useDirectory();
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={()=>data.refetch()}/>;
   if(data.isError||venues.isError)return <StateView kind="error" onRetry={()=>{void data.refetch();void venues.refetch();}}/>;
+  if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={()=>data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-function PrintFleetData({venueId}:{venueId?:string}) {
+function PrintFleetData() {
   const {expire}=useAuth();
   const data=useFleet();
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
-  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.isError&&venueId)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintFleetPage rows={data.data} venueId={venueId} detailHref={venueId === undefined ? undefined : () => `/admin/tenants/${encodeURIComponent(venueId)}/print-servers/detail`}/>;
-  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  if(data.isError)return <StateView kind={psErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
+  if(data.data)return <PrintFleetPage rows={data.data}/>;
   return <StateView kind="loading"/>;
 }
-// Global routes may read the fleet; an embedded venue section never needs it.
+// A venue list reads only its selected venue; no fleet or global options enter its cache.
+function VenueFleetData({venue}:{venue:OwnerVenue}) {
+  const {session}=useAuth();
+  const data=useQuery({queryKey:['ps-state','admin',session?.user.id,venue.id],queryFn:({signal})=>getPanelState(venue.id,signal),refetchInterval:10_000});
+  if(data.isError)return <StateView kind={psErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
+  if(data.isPending)return <StateView kind="loading"/>;
+  if(!data.data)return <StateView kind="notFound"/>;
+  return <PrintFleetPage rows={[panelFleetRow(data.data,venue)]} venueId={venue.id} detailHref={()=>`/admin/tenants/${encodeURIComponent(venue.id)}/print-servers/detail`}/>;
+}
 function PrintServerDetailData({venueId}:{venueId:string}) {
-  const {expire}=useAuth();
-  const fleet=useFleet();
-  useEffect(()=>{if(fleet.error&&psErrorKey(fleet.error)==='sessionExpired')void expire();},[fleet.error,expire]);
-  if(fleet.isError)return <StateView kind={psErrorKey(fleet.error)==='accessDenied'?'denied':'error'} onRetry={()=>void fleet.refetch()}/>;
-  if(!fleet.data)return <StateView kind="loading"/>;
-  const row=fleet.data.find(item=>item.venue_id===venueId);
-  if(!row)return <StateView kind="notFound"/>;
-  const venue:OwnerVenue={id:row.venue_id,name:row.venue_name,slug:row.venue_slug,is_active:row.venue_is_active,
-    city:null,state:null,address:null,phone:null,email:null,timezone:null};
-  return <VenuePrintServerData key={venueId} venue={venue} scope="admin" embedded={false}/>;
+  const detail=useTenantDetail(venueId);
+  if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
+  if(detail.isPending)return <StateView kind="loading"/>;
+  if(!detail.data)return <StateView kind="notFound"/>;
+  return <VenuePrintServerData key={venueId} venue={detail.data.venue} scope="admin" embedded={false}/>;
 }
 // The same panel contract serves both scopes, always with the user's JWT and
 // selected venue. Scope is presentation, never an authorization grant.

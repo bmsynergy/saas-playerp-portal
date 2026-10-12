@@ -1,3 +1,4 @@
+import { EMPTY_LIST_FILTERS, utcBounds, type ListFilterState } from './adminLists';
 import { certificateDerFingerprint, certificateFilename, formatFingerprint } from './certificate';
 import { projectInventory, type Inventory } from './printInventory';
 import { supabase } from './supabase';
@@ -203,8 +204,8 @@ export async function getCommand(commandId: string): Promise<PanelScan> {
   return projectScan(data) ?? bad();
 }
 // Read-only: both ids travel together, so the backend never answers with another venue's or printer's jobs.
-export async function getPrinterJobs(venueId: string, printerId: string, limit: number, offset: number): Promise<PrinterJobsPage> {
-  return projectPrinterJobs(await action('ps_panel_printer_jobs', { p_venue_id: venueId, p_printer_id: printerId, p_limit: limit, p_offset: offset }));
+export async function getPrinterJobs(venueId: string, printerId: string, limit: number, offset: number, filters: ListFilterState = EMPTY_LIST_FILTERS): Promise<PrinterJobsPage> {
+  return projectPrinterJobs(await action('ps_panel_printer_jobs', { p_venue_id: venueId, p_printer_id: printerId, p_limit: limit, p_offset: offset, p_query: filters.query.trim() || null, p_status: filters.status || null, ...utcBounds(filters.from, filters.to) }));
 }
 export async function addPrinter(venueId: string, input: NewPrinter): Promise<{ id: string | null; label: string | null }> {
   const data = await action('ps_panel_add_printer', { p_venue_id: venueId, p_label: input.label.trim(), p_mac_address: input.mac_address.trim(),
@@ -242,4 +243,15 @@ export function withFailureHook(api: PrintServerApi, onFailure: (key: string) =>
   return { createEnrollment: wrap(api.createEnrollment), revokePrintServer: wrap(api.revokePrintServer), getCaCert: wrap(api.getCaCert), requestScan: wrap(api.requestScan),
     getCommand: wrap(api.getCommand), getPrinterJobs: wrap(api.getPrinterJobs), addPrinter: wrap(api.addPrinter), renamePrinter: wrap(api.renamePrinter), setPrinterActive: wrap(api.setPrinterActive),
     testPrint: wrap(api.testPrint), removePrinter: wrap(api.removePrinter) };
+}
+
+// The panel contains the full printer set for this venue. Revoked history is not
+// in this contract; this row is used only for its active-server list.
+export function panelFleetRow(state: PanelState, venue: {id:string;name:string;slug:string|null;is_active:boolean|null}): FleetRow {
+  if(state.venue_id !== venue.id) throw new PortalError('accessDenied');
+  return {venue_id:venue.id,venue_name:venue.name,venue_slug:venue.slug,venue_is_active:venue.is_active,
+    print_server:state.print_server,pending_enrollment:state.pending_enrollment,revoked_count:0,last_revoked_at:null,
+    printers_total:state.printers.length,printers_active:state.printers.filter(p=>p.is_active).length,
+    printers_paused:state.printers.filter(p=>!p.is_active).length,printers_with_error:state.printers.filter(p=>p.last_error||p.last_report?.error).length,
+    pending_jobs:state.printers.reduce((n,p)=>n+p.pending_jobs,0)};
 }

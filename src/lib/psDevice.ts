@@ -83,7 +83,8 @@ export async function uploadCert(printServerId: string, certPem: string, chainPe
 // Platform inventory (platform Admin only; the backend answers 42501 to anyone else).
 export async function getInventoryDevices(signal?: AbortSignal): Promise<InventoryDevice[]> {
   const data = obj(await rpc('portal_ps_devices', {}, signal)) ?? bad();
-  return (Array.isArray(data.devices) ? data.devices : []).map((v: unknown) => {
+  if (!Array.isArray(data.devices)) return bad();
+  return data.devices.map((v: unknown) => {
     const d = obj(v) ?? bad();
     return { id: String(d.id), serial: String(d.serial ?? ''), hostname: String(d.hostname ?? ''), model: String(d.model ?? ''), status: String(d.status ?? ''), legacy: d.legacy === true,
       venue_id: str(d.venue_id), venue_name: str(d.venue_name), print_server_id: str(d.print_server_id), software_version: str(d.software_version),

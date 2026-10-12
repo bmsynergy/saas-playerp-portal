@@ -1,22 +1,35 @@
-# PE-409.5 — checkpoint pendiente de backend
+# PE-409.7 — integración de listas de administración
 
-Base publicada conservada: a40a74c33cccf18d9a2f380f36ce62d31e8757a9.
-No publicar este checkpoint como entrega de las listas: todavía no están integradas.
+Se retoma el checkpoint PE-409.5 sobre la base DEV
+`a40a74c33cccf18d9a2f380f36ce62d31e8757a9`, conservando sus cambios.
+El backend necesario dejó de estar pendiente: Tom versionó y aplicó solo en DEV
+la migración `20261012010000_pe409_ps_admin_list_pages.sql` en el commit
+`996e8b1df1055051d3fa55840d585fdc0182c896`; main verificado:
+`3fc198028953922f11bee08f01d9e3e463cb39fd`.
+Contrato definitivo: `_docs/pe409-read-contract.md` del backend.
 
-Lily dejó AdminListFilters y traducciones EN/ES sin importarlos desde páginas.
-Faltan integración de listas, CSS, aislamiento de venue, estados, contratos OTA/cola,
-formato humano de eventos, pruebas por lista y publicación. El componente es un
-borrador reutilizable, no evidencia de los criterios. Al integrarlo, mover helpers
-de filtrado a src/lib bajo responsabilidad de Uma y no consultar con fechas inválidas.
-La revisión de Gaby detectó un marcador de interpolación sin consumidor; se retiró.
-Al integrar list.unknownPhase, añadir la fase original como texto separado del rótulo.
+Las lecturas paginadas de despliegues, destinos, auditoría y eventos sustituyen
+el uso de las colecciones truncadas del overview. La cola conserva su RPC con
+los filtros añadidos. El resto pagina las colecciones completas de sus lecturas
+actuales. Los filtros de fecha indican su campo y usan días completos UTC;
+las fechas invertidas no envían una consulta y los filtros reinician la página.
 
-La lectura de Supabase DEV fue rechazada porque requiere aprobación y la política
-de esta sesión es never. El traspaso pide a Tom contratos de lectura y aplicación
-DEV, documentados en el backend en `_docs/pe409-read-contract-handoff.md`.
-No hay dependencia de RPC nueva en este checkpoint. No se ha operado dispositivo.
+Las listas de venue consultan exclusivamente su estado y detalle, con cachés
+por usuario y venue. Se han retirado de la vista las referencias a otras sedes.
+No se alteran las reglas de identidad ni membresía. Los eventos se presentan
+al leerlos, con fase, versión, resultado/error, hora y progreso general; sus
+datos originales siguen bajo diagnóstico técnico con la autorización existente.
 
-Al retomar, revalidar current antes de integrar: no sustituir la base publicada por
-main del portal. Corregir useFleet en ámbito venue usando ps_panel_state y venue
-seleccionado, retirar other_venue_count de proyección/vista, incluir usuario y ámbito
-en cachés. Mantener diagnósticos bajo autorización admin actual y conservar originales.
+Validación focalizada reproducible:
+- `npm test`: pruebas unitarias, incluidas fechas, parámetros y aislamiento.
+- `npm run build`: TypeScript y compilación de producción.
+- `node tests/pe409-read-live.mjs`: lecturas de datos existentes en DEV.
+- `node tests/pe409-lists.mjs`: fixtures aislados de 63 filas, estados, filtros,
+  paginación, aislamiento, capturas EN/ES a 390/1440 y teclado del modal.
+- `node tests/pe409-published.mjs`: recorrido de solo lectura sobre el portal
+  publicado; requiere las cuentas de prueba existentes fuera del repositorio.
+
+Los scripts no crean despliegues, envían trabajos, firman paquetes ni operan
+aparatos. La evidencia resumida y sin credenciales está en
+[evidence/pe409](evidence/pe409/README.md). La entrega del trabajo registra el
+SHA exacto publicado y la comprobación posterior sobre la URL de DEV.

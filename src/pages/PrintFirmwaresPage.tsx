@@ -4,6 +4,9 @@ import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List
 import { FirmwareError, firmwareDownloadUrl, sha256OfFile, uploadFirmware, type FirmwareList, type FirmwareRelease } from '../lib/firmware';
 import { errorCode } from '../lib/errors';
 import { useLocale } from '../locales';
+import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
+import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
+import { matchesText, matchesUtcDay } from '../lib/adminLists';
 
 // Global Print Server sections. Only platform Admins reach them (the route gate and every RPC).
 export function PrintServersTabs() {
@@ -35,6 +38,12 @@ export function PrintFirmwaresPage({ data, refreshing, onRefresh }: { data: Firm
   const sizeFormatter = useMemo(() => new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US', { maximumFractionDigits: 1 }), [locale]);
   const size = (bytes: number | null) => bytes === null ? t('notProvided') : bytes >= 1048576 ? `${sizeFormatter.format(bytes / 1048576)} MB` : `${sizeFormatter.format(bytes / 1024)} KB`;
   const busy = stage !== 'idle';
+  const installedFilters = useAdminListFilters();
+  const releaseFilters = useAdminListFilters();
+  const installed = data.installed.filter(item => matchesText(installedFilters.filters.query, item.version) && (!installedFilters.filters.status || (installedFilters.filters.status === 'uploaded' ? item.uploaded : !item.uploaded)));
+  const releases = data.releases.filter(item => matchesText(releaseFilters.filters.query, item.version, item.revision, item.notes, item.filename, item.model, item.arch) && (!releaseFilters.filters.status || item.status === releaseFilters.filters.status) && matchesUtcDay(item.created_at, releaseFilters.filters.from, releaseFilters.filters.to));
+  const installedPagination = usePrintListPagination(installed.length);
+  const releasesPagination = usePrintListPagination(releases.length);
   const set = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }));
 
   async function submit(event: FormEvent) {
@@ -91,15 +100,18 @@ export function PrintFirmwaresPage({ data, refreshing, onRefresh }: { data: Firm
       </dl>}
     </section>
     <section className="staff-panel" aria-labelledby="fw-installed-title">
-      <div className="section-heading"><div><p className="eyebrow">{t('fw.installedEyebrow')}</p><h2 id="fw-installed-title">{t('fw.installedTitle')}</h2></div></div>
-      {data.installed.length === 0 ? <div className="inline-empty">{t('fw.noneInstalled')}</div> : <ul className="fw-installed" data-testid="fw-installed">
-        {data.installed.map(item => <li key={item.version || '-'} data-testid={`fw-installed-${item.version || 'unknown'}`}><strong>{item.version || t('notProvided')}</strong><span>{t('fw.psCount').replace('{n}', String(item.print_servers))}</span><span className={`server-status ${item.uploaded ? 'server-online' : 'server-pending'}`}><span className="badge-dot"/>{t(item.uploaded ? 'fw.uploaded' : 'fw.notUploaded')}</span></li>)}
+      <div className="section-heading"><div><p className="eyebrow">{t('fw.installedEyebrow')}</p><h2 id="fw-installed-title">{t('fw.installedTitle')}</h2></div><span className="count-pill">{installed.length} / {data.installed.length}</span></div>
+      <AdminListFilters id="fw-installed" filters={installedFilters.filters} set={(key, value) => { installedFilters.set(key, value); installedPagination.reset(); }} clear={() => { installedFilters.clear(); installedPagination.reset(); }} statuses={[{ value: 'uploaded', label: t('fw.uploaded') }, { value: 'missing', label: t('fw.notUploaded') }]}/>
+      {installed.length === 0 ? <div className="inline-empty">{data.installed.length ? t('list.noMatches') : t('fw.noneInstalled')}</div> : <ul className="fw-installed" data-testid="fw-installed">
+        {installed.slice(installedPagination.start, installedPagination.end).map(item => <li key={item.version || '-'} data-testid={`fw-installed-${item.version || 'unknown'}`}><strong>{item.version || t('notProvided')}</strong><span>{t('fw.psCount').replace('{n}', String(item.print_servers))}</span><span className={`server-status ${item.uploaded ? 'server-online' : 'server-pending'}`}><span className="badge-dot"/>{t(item.uploaded ? 'fw.uploaded' : 'fw.notUploaded')}</span></li>)}
       </ul>}
+      <PrintListPagination pagination={installedPagination} id="fw-installed"/>
     </section>
     <section className="servers-panel" aria-labelledby="fw-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t('fw.listEyebrow')}</p><h2 id="fw-list-title">{t('fw.listTitle')}</h2></div><button type="button" className="button button-secondary" onClick={() => void onRefresh()} disabled={refreshing}><RefreshCw size={15}/>{t('refresh')}</button></div>
-      {data.releases.length === 0 ? <div className="inline-empty" data-testid="fw-empty">{t('fw.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table"><thead><tr><th scope="col">{t('fw.col.version')}</th><th scope="col">{t('fw.col.model')}</th><th scope="col">{t('fw.col.file')}</th><th scope="col">SHA-256</th><th scope="col">{t('fw.col.state')}</th><th scope="col">{t('fw.col.uploaded')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
-        {data.releases.map(r => <tr key={r.id} data-testid={`fw-row-${r.id}`} data-status={r.status}>
+      <div className="admin-list-toolbar"><AdminListFilters id="fw-releases" filters={releaseFilters.filters} set={(key, value) => { releaseFilters.set(key, value); releasesPagination.reset(); }} clear={() => { releaseFilters.clear(); releasesPagination.reset(); }} statuses={[{ value: 'ready', label: t('fw.loaded') }, { value: 'rejected', label: t('fw.rejected') }]} dateLabel={t('list.uploaded')}/><span className="directory-count">{releases.length} / {data.releases.length}</span></div>
+      {releases.length === 0 ? <div className="inline-empty" data-testid="fw-empty">{data.releases.length ? t('list.noMatches') : t('fw.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table fw-release-table"><thead><tr><th scope="col">{t('fw.col.version')}</th><th scope="col">{t('fw.col.model')}</th><th scope="col">{t('fw.col.file')}</th><th scope="col">SHA-256</th><th scope="col">{t('fw.col.state')}</th><th scope="col">{t('fw.col.uploaded')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
+        {releases.slice(releasesPagination.start, releasesPagination.end).map(r => <tr key={r.id} data-testid={`fw-row-${r.id}`} data-status={r.status}>
           <td data-label={t('fw.col.version')}><span className="fw-cell"><strong>{r.version}</strong>{r.revision && <small className="ps-sub">{t('fw.revision')} {r.revision}</small>}{r.notes && <small className="ps-sub fw-row-notes">{r.notes}</small>}</span></td>
           <td data-label={t('fw.col.model')}>{MODELS.find(m => m.value === r.model)?.label ?? r.model} · {r.arch}</td>
           <td data-label={t('fw.col.file')}><span className="fw-cell"><span className="fw-filename">{r.filename}</span><small className="ps-sub">{size(r.size_bytes)}</small></span></td>
@@ -111,6 +123,7 @@ export function PrintFirmwaresPage({ data, refreshing, onRefresh }: { data: Firm
           <td data-label={t('staff.actions')}>{r.status === 'ready' && <button type="button" className="button button-secondary" data-testid={`fw-download-${r.id}`} onClick={() => void download(r.id)}><Download size={15}/>{t('fw.download')}</button>}</td>
         </tr>)}
       </tbody></table></div>}
+      <PrintListPagination pagination={releasesPagination} id="fw-releases"/>
     </section>
   </div>;
 }

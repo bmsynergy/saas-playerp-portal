@@ -77,7 +77,7 @@ describe('printer queue', () => {
   it('asks for one venue and one printer with limit and offset, and maps its errors', async () => {
     answer({ ok: true, venue_id: venue, printer_id: 'pr-1', limit: 10, offset: 10, total: 0, jobs: [] });
     expect(await getPrinterJobs(venue, 'pr-1', 10, 10)).toEqual({ jobs: [], total: 0, limit: 10, offset: 10 });
-    expect(rpc).toHaveBeenLastCalledWith('ps_panel_printer_jobs', { p_venue_id: venue, p_printer_id: 'pr-1', p_limit: 10, p_offset: 10 });
+    expect(rpc).toHaveBeenLastCalledWith('ps_panel_printer_jobs', { p_venue_id: venue, p_printer_id: 'pr-1', p_limit: 10, p_offset: 10, p_query:null, p_status:null, p_from:null, p_to:null });
     answer({ ok: false, error: 'printer_not_found' });
     await expect(getPrinterJobs(venue, 'pr-x', 10, 0)).rejects.toSatisfy(error => psErrorKey(error) === 'ps.error.printerNotFound');
     answer(null, { code: '42501', message: 'forbidden' });

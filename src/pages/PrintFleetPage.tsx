@@ -5,6 +5,8 @@ import { EMPTY_FLEET_FILTER, FLEET_PRINTERS, FLEET_SIGNALS, FLEET_STATES, NO_VER
 import { useLocale } from '../locales';
 import { PrintServersTabs } from './PrintFirmwaresPage';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
+import { AdminDateFilters } from '../components/AdminListFilters';
+import { matchesUtcDay } from '../lib/adminLists';
 
 export const fleetStateClass = { online: 'server-online', offline: 'server-offline', pending: 'server-pending', none: 'server-noSignal' } as const;
 
@@ -13,6 +15,7 @@ type PrintFleetPageProps = { rows: FleetRow[]; venueId?: string; detailHref?: (r
 export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProps) {
   const { locale, t } = useLocale();
   const [filter, setFilter] = useState<FleetFilter>(EMPTY_FLEET_FILTER);
+  const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
   const [now, setNow] = useState(() => Date.now());
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }), [locale]);
 
@@ -22,14 +25,14 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
 
   const isVenue = venueId !== undefined;
   const scopedRows = useMemo(() => isVenue ? venueServerRows(rows, venueId) : rows, [rows, venueId, isVenue]);
-  const filtered = useMemo(() => isVenue ? filterVenueServers(rows, venueId, filter, now) : filterFleet(rows, filter, now), [rows, venueId, isVenue, filter, now]);
+  const filtered = useMemo(() => (isVenue ? filterVenueServers(rows, venueId, filter, now) : filterFleet(rows, filter, now)).filter(row => matchesUtcDay(row.print_server?.last_seen_at, dateFilter.from, dateFilter.to)), [rows, venueId, isVenue, filter, now, dateFilter]);
   const pagination = usePrintListPagination(filtered.length);
   const visible = filtered.slice(pagination.start, pagination.end);
   const versions = useMemo(() => fleetVersions(scopedRows), [scopedRows]);
   const venues = useMemo(() => [...scopedRows].sort((a, b) => a.venue_name.localeCompare(b.venue_name)), [scopedRows]);
   const set = <K extends keyof FleetFilter>(key: K, value: FleetFilter[K]) => { setFilter(current => ({ ...current, [key]: value })); pagination.reset(); };
 
-  useEffect(() => { setFilter(EMPTY_FLEET_FILTER); pagination.reset(); }, [venueId]);
+  useEffect(() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }, [venueId]);
 
   return <div className="page-stack staff-page" data-testid="fleet-page">
     {!isVenue && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{locale === 'es' ? 'Ver dashboard' : 'View dashboard'}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
@@ -46,7 +49,8 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
         <select data-testid="fleet-filter-signal" aria-label={t('ps.filter.signal')} value={filter.signal} onChange={event => set('signal', event.target.value as FleetFilter['signal'])}><option value="">{t('ps.filter.anySignal')}</option>{FLEET_SIGNALS.map(item => <option key={item} value={item}>{t(`ps.filter.signal.${item}`)}</option>)}</select>
         <select data-testid="fleet-filter-state" aria-label={t('ps.filter.state')} value={filter.state} onChange={event => set('state', event.target.value as FleetFilter['state'])}><option value="">{t('ps.filter.anyState')}</option>{FLEET_STATES.filter(item => !isVenue || item === 'online' || item === 'offline').map(item => <option key={item} value={item}>{t(`ps.state.${item}`)}</option>)}</select>
         <select data-testid="fleet-filter-printers" aria-label={t('ps.filter.printers')} value={filter.printers} onChange={event => set('printers', event.target.value as FleetFilter['printers'])}><option value="">{t('ps.filter.anyPrinters')}</option>{FLEET_PRINTERS.map(item => <option key={item} value={item}>{t(`ps.filter.printers.${item}`)}</option>)}</select>
-        <button type="button" className="staff-action-link" data-testid="fleet-filter-clear" disabled={!isFiltered(filter)} onClick={() => { setFilter(EMPTY_FLEET_FILTER); pagination.reset(); }}><FilterX size={14}/>{t('ps.filter.clear')}</button>
+        <AdminDateFilters id="fleet" label={t('list.lastContact')} from={dateFilter.from} to={dateFilter.to} onChange={(key, value) => { setDateFilter(current => ({ ...current, [key]: value })); pagination.reset(); }}/>
+        <button type="button" className="staff-action-link" data-testid="fleet-filter-clear" disabled={!isFiltered(filter) && !dateFilter.from && !dateFilter.to} onClick={() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }}><FilterX size={14}/>{t('ps.filter.clear')}</button>
       </div>
       {filtered.length === 0 ? <div className="staff-empty" data-testid="fleet-empty"><Server size={27}/><strong>{t(isVenue ? (scopedRows.length ? 'ps.venueNoMatches' : 'ps.venueEmpty') : (scopedRows.length ? 'ps.noMatches' : 'ps.emptyFleet'))}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t(isVenue ? 'ps.col.device' : 'ps.col.venue')}</th><th>{t('ps.col.state')}</th><th>{t('version')}</th><th>{t('lastSignal')}</th><th>{t('ps.col.printers')}</th><th>{t('ps.col.queue')}</th>{(!isVenue || detailHref) && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{visible.map(row => {
         const state = fleetState(row); const server = row.print_server;

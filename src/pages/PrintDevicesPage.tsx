@@ -6,6 +6,9 @@ import { psErrorKey } from '../lib/printServerApi';
 import type { OwnerVenue } from '../lib/types';
 import { useLocale } from '../locales';
 import { PrintServersTabs } from './PrintFirmwaresPage';
+import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
+import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
+import { matchesText, matchesUtcDay } from '../lib/adminLists';
 
 // Platform inventory of Print Server units (PE-384). Serial and hostname are issued by the
 // platform; assigning issues a one-use activation code that is shown once and stored only as a
@@ -22,6 +25,10 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
   const [copied, setCopied] = useState(false);
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const sortedVenues = useMemo(() => [...venues].sort((a, b) => a.name.localeCompare(b.name)), [venues]);
+  const { filters, set, clear } = useAdminListFilters();
+  const [assignment, setAssignment] = useState('');
+  const filtered = devices.filter(device => matchesText(filters.query, device.serial, device.hostname, device.model, device.venue_name, device.software_version) && (!filters.status || device.status === filters.status) && (!assignment || (assignment === 'assigned' ? !!device.venue_id : !device.venue_id)) && matchesUtcDay(device.created_at, filters.from, filters.to));
+  const pagination = usePrintListPagination(filtered.length);
 
   async function run<T>(fn: () => Promise<T>, ok: (value: T) => string | null) {
     setBusy(true); setResult(null);
@@ -37,8 +44,9 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
       <div className="section-heading"><div><p className="eyebrow">{t('inv.eyebrow')}</p><h2 id="inv-list-title">{t('inv.listTitle')}</h2></div>
         <button type="button" className="button button-primary" data-testid="inv-create" disabled={busy} onClick={() => void run(() => createDevice('rpi4-2gb'), v => t('inv.created').replace('{serial}', String((v.device as { serial?: string })?.serial ?? '')))}><Plus size={16}/>{t('inv.create')}</button></div>
       <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="inv-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
-      {devices.length === 0 ? <div className="inline-empty">{t('inv.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table"><thead><tr><th scope="col">{t('dev.serial')}</th><th scope="col">{t('ps.hostname')}</th><th scope="col">{t('fw.model')}</th><th scope="col">{t('state')}</th><th scope="col">{t('inv.venue')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
-        {devices.map(d => <tr key={d.id} data-testid={`inv-row-${d.serial}`} data-status={d.status}>
+      <div className="admin-list-toolbar"><AdminListFilters id="devices" filters={filters} set={(key, value) => { set(key, value); pagination.reset(); }} clear={() => { clear(); setAssignment(''); pagination.reset(); }} statuses={[...new Set(devices.map(device => device.status))].sort().map(value => ({ value, label: t(`dev.deviceStatus.${value}`) }))} dateLabel={t('list.created')}/><label className="admin-assignment-filter"><span>{t('dash.filter.assignment')}</span><select value={assignment} onChange={event => { setAssignment(event.target.value); pagination.reset(); }} data-testid="devices-assignment"><option value="">{t('dash.filter.allVenues')}</option><option value="assigned">{t('dash.filter.assigned')}</option><option value="unassigned">{t('dash.filter.unassigned')}</option></select></label><span className="directory-count">{filtered.length} / {devices.length}</span></div>
+      {filtered.length === 0 ? <div className="inline-empty">{devices.length ? t('list.noMatches') : t('inv.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table"><thead><tr><th scope="col">{t('dev.serial')}</th><th scope="col">{t('ps.hostname')}</th><th scope="col">{t('fw.model')}</th><th scope="col">{t('state')}</th><th scope="col">{t('inv.venue')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
+        {filtered.slice(pagination.start, pagination.end).map(d => <tr key={d.id} data-testid={`inv-row-${d.serial}`} data-status={d.status}>
           <td data-label={t('dev.serial')}><strong className="ps-mono">{d.serial}</strong></td>
           <td data-label={t('ps.hostname')}><span className="fw-cell">{d.hostname}</span></td>
           <td data-label={t('fw.model')}>{d.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : d.model}</td>
@@ -51,6 +59,7 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
           </div>}</td>
         </tr>)}
       </tbody></table></div>}
+      <PrintListPagination pagination={pagination} id="devices"/>
     </section>
     {code && <section className="staff-panel inv-code" role="alertdialog" aria-labelledby="inv-code-title" data-testid="inv-code">
       <div className="section-heading"><div><p className="eyebrow">{t('inv.codeEyebrow')}</p><h2 id="inv-code-title">{t('inv.codeTitle').replace('{serial}', code.serial).replace('{venue}', code.venue)}</h2></div></div>

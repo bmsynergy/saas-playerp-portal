@@ -1,0 +1,127 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Local candidate UI + real existing DEV records; read-only",
+  "at": "2026-10-12T01:17:28.449Z",
+  "lists": [
+    {
+      "list": "tenants",
+      "first": "1\u201310 of 10 results",
+      "last": "1\u201310 of 10 results",
+      "pages": 1,
+      "date": null,
+      "emptyAndReset": true
+    },
+    {
+      "list": "staff",
+      "first": "1\u20135 of 5 results",
+      "last": "1\u20135 of 5 results",
+      "pages": 1,
+      "day": "2026-10-11",
+      "date": "0\u20130 of 0 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "dashboard",
+      "first": "1\u201310 of 103 results",
+      "last": "101\u2013103 of 103 results",
+      "pages": 11,
+      "day": "2026-10-11",
+      "date": "1\u20134 of 4 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "fleet",
+      "first": "1\u201310 of 10 results",
+      "last": "1\u201310 of 10 results",
+      "pages": 1,
+      "day": "2026-10-11",
+      "date": "1\u20131 of 1 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "devices",
+      "first": "1\u201310 of 17 results",
+      "last": "11\u201317 of 17 results",
+      "pages": 2,
+      "day": "2026-10-11",
+      "date": "1\u20135 of 5 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "fw-releases",
+      "first": "1\u201310 of 20 results",
+      "last": "11\u201320 of 20 results",
+      "pages": 2,
+      "day": "2026-10-11",
+      "date": "1\u20133 of 3 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "fw-installed",
+      "first": "1\u20133 of 3 results",
+      "last": "1\u20133 of 3 results",
+      "pages": 1,
+      "date": null,
+      "emptyAndReset": true
+    },
+    {
+      "list": "editions",
+      "first": "1\u201310 of 18 results",
+      "last": "11\u201318 of 18 results",
+      "pages": 2,
+      "day": "2026-10-11",
+      "date": "1\u20133 of 3 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "groups",
+      "first": "1\u20137 of 7 results",
+      "last": "1\u20137 of 7 results",
+      "pages": 1,
+      "day": "2026-10-11",
+      "date": "0\u20130 of 0 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "ota-devices",
+      "first": "1\u20133 of 3 results",
+      "last": "1\u20133 of 3 results",
+      "pages": 1,
+      "day": "2026-10-11",
+      "date": "1\u20131 of 1 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "deployments",
+      "first": "1\u201310 of 167 results",
+      "last": "161\u2013167 of 167 results",
+      "pages": 17,
+      "day": "2026-10-11",
+      "date": "1\u20136 of 6 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "audit",
+      "first": "1\u201310 of 202 results",
+      "last": "201\u2013202 of 202 results",
+      "pages": 21,
+      "day": "2026-10-11",
+      "date": "1\u20139 of 9 results",
+      "emptyAndReset": true
+    },
+    {
+      "list": "venue-users",
+      "first": "1\u20131 of 1 results",
+      "last": "1\u20131 of 1 results",
+      "pages": 1,
+      "day": "2026-10-11",
+      "date": "0\u20130 of 0 results",
+      "emptyAndReset": true
+    }
+  ],
+  "checks": [
+    "Real selected-venue list uses ps_panel_state, no global fleet request"
+  ],
+  "errors": [],
+  "passed": true
+}

@@ -2,6 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Check, Clock3, MailPlus, RotateCcw, ShieldCheck, UserRoundX, UsersRound, X } from 'lucide-react';
 import { useLocale } from '../locales';
 import { PortalDialog } from '../components/PortalDialog';
+import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
+import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
+import { matchesText, matchesUtcDay } from '../lib/adminLists';
 
 export type StaffRole = 'super_admin' | 'support' | 'operations';
 export type StaffMember = {
@@ -38,6 +41,9 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
   const [pending, setPending] = useState<Pending | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const dateLocale = locale === 'es' ? 'es-ES' : 'en-US';
+  const { filters, set, clear } = useAdminListFilters();
+  const filtered = members.filter(member => matchesText(filters.query, member.full_name, member.email, member.role) && (!filters.status || member.status === filters.status) && matchesUtcDay(member.created_at, filters.from, filters.to));
+  const pagination = usePrintListPagination(filtered.length);
 
   useEffect(() => setInviteLocale(locale), [locale]);
 
@@ -92,8 +98,9 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
       </form>
     </section>
     <section className="staff-panel" aria-labelledby="staff-list-title">
-      <div className="section-heading"><div><p className="eyebrow">{t('staff.directoryEyebrow')}</p><h2 id="staff-list-title">{t('staff.listTitle')}</h2></div><span className="count-pill">{members.length}</span></div>
-      {busy && members.length === 0 ? <div className="staff-empty" role="status"><span className="spinner"/>{t('staff.loading')}</div> : members.length === 0 ? <div className="staff-empty"><UsersRound size={27}/><strong>{t('staff.emptyTitle')}</strong><span>{t('staff.emptyBody')}</span></div> : <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th>{t('name')}</th><th>{t('staff.roleLabel')}</th><th>{t('state')}</th><th>{t('staff.lastAccess')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{members.map(member => {
+      <div className="section-heading"><div><p className="eyebrow">{t('staff.directoryEyebrow')}</p><h2 id="staff-list-title">{t('staff.listTitle')}</h2></div><span className="count-pill">{filtered.length} / {members.length}</span></div>
+      <AdminListFilters id="staff" filters={filters} set={(key, value) => { set(key, value); pagination.reset(); }} clear={() => { clear(); pagination.reset(); }} statuses={['active', 'invited', 'revoked'].map(value => ({ value, label: t(`staff.status.${value}`) }))} dateLabel={t('list.created')}/>
+      {busy && members.length === 0 ? <div className="staff-empty" role="status"><span className="spinner"/>{t('staff.loading')}</div> : filtered.length === 0 ? <div className="staff-empty"><UsersRound size={27}/><strong>{members.length ? t('list.noMatches') : t('staff.emptyTitle')}</strong><span>{members.length ? t('list.noMatchesHint') : t('staff.emptyBody')}</span></div> : <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th>{t('name')}</th><th>{t('staff.roleLabel')}</th><th>{t('state')}</th><th>{t('staff.lastAccess')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{filtered.slice(pagination.start, pagination.end).map(member => {
         const self = member.is_self || member.user_id === currentUserId;
         return <tr key={member.user_id}>
           <td data-label={t('name')} className="staff-identity"><strong>{member.full_name?.trim() || t('notProvided')}{self && <span className="staff-self">{t('staff.you')}</span>}</strong><small>{member.email}</small></td>
@@ -111,6 +118,7 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
           </td>
         </tr>;
       })}</tbody></table></div>}
+      <PrintListPagination pagination={pagination} id="staff"/>
     </section>
     {pending && (() => { const member = members.find(item => item.user_id === pending.userId); return member ? <PortalDialog title={t('staff.confirmAction')} titleId="staff-confirm-title" descriptionId="staff-confirm-body" onClose={() => setPending(null)} dismissible={!busy} alert actions={<><button className="button button-primary" type="button" disabled={busy} onClick={() => void confirm(member)}><Check size={15}/>{t('staff.confirm')}</button><button className="button button-secondary" type="button" disabled={busy} onClick={() => setPending(null)}><X size={15}/>{t('staff.cancel')}</button></>}><p id="staff-confirm-body">{pendingText(member)}</p>{error && <div className="form-error" role="alert">{t(error)}</div>}</PortalDialog> : null; })()}
   </div>;

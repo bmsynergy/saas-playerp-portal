@@ -1,3 +1,4 @@
+import { utcBounds } from './adminLists';
 import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { PortalError } from './errors';
@@ -13,7 +14,7 @@ export type OtaRelease = {
   id: string; version: string; revision: string | null; model: string; arch: string; filename: string; sha256: string | null; size_bytes: number | null;
   created_at: string | null; edition_id: string | null; edition_status: 'preparing' | 'signed' | null; signed_at: string | null; key_id: string | null; canary_confirmed_at: string | null;
 };
-export type OtaGroup = { id: string; name: string; ring: Ring; members: string[] };
+export type OtaGroup = { id: string; name: string; ring: Ring; created_at: string | null; members: string[] };
 export type OtaTarget = {
   id: string; deployment_id: string | null; print_server_id: string; edition_id: string | null; from_version: string | null; desired_version: string | null;
   installed_version: string | null; status: string; phase: string | null; progress: number | null; error_code: string | null; error_detail: string | null;
@@ -49,13 +50,13 @@ function target(v: unknown): OtaTarget {
   if (typeof t.id !== 'string') return bad();
   return { id: t.id, deployment_id: str(t.deployment_id), print_server_id: String(t.print_server_id ?? ''), edition_id: str(t.edition_id),
     from_version: str(t.from_version), desired_version: str(t.desired_version), installed_version: str(t.installed_version),
-    status: slug(t.status) ?? 'pending', phase: slug(t.phase), progress: pct(t.progress), error_code: str(t.error_code), error_detail: str(t.error_detail),
+    status: str(t.status) ?? 'unknown', phase: str(t.phase), progress: pct(t.progress), error_code: str(t.error_code), error_detail: str(t.error_detail),
     signed: t.signed === true, issued_at: str(t.issued_at), expires_at: str(t.expires_at), offered_at: str(t.offered_at), updated_at: str(t.updated_at),
     venue_name: str(t.venue_name), hostname: str(t.hostname) };
 }
 export function projectOverview(v: unknown): OtaOverview {
   const d = obj(v) ?? bad();
-  if (d.ok !== true) return bad();
+  if (d.ok !== true || ['keys','releases','groups','devices','deployments','audit'].some(key=>!Array.isArray(d[key]))) return bad();
   return {
     server_time: str(d.server_time),
     keys: list(d.keys).map(item => { const k = obj(item) ?? bad(); return { key_id: String(k.key_id ?? ''), public_key_b64: str(k.public_key_b64), active: k.active === true }; }),
@@ -70,7 +71,7 @@ export function projectOverview(v: unknown): OtaOverview {
     groups: list(d.groups).map(item => {
       const g = obj(item) ?? bad();
       if (typeof g.id !== 'string') return bad();
-      return { id: g.id, name: String(g.name ?? ''), ring: ring(g.ring) ?? 'lab', members: list(g.members).filter((m): m is string => typeof m === 'string') };
+      return { id: g.id, name: String(g.name ?? ''), ring: ring(g.ring) ?? 'lab', created_at: str(g.created_at), members: list(g.members).filter((m): m is string => typeof m === 'string') };
     }),
     devices: list(d.devices).map(item => {
       const s = obj(item) ?? bad();
@@ -171,4 +172,38 @@ export function statusClass(status: string): string {
   if (status === 'rolled_back') return 'server-offline';
   if (status === 'rejected' || status === 'failed') return 'server-revoked';
   return 'server-pending';
+}
+
+// PE-409: complementary reads keep the legacy overview contract compatible.
+export type OtaDeploymentItem = Omit<OtaDeployment, 'targets'> & { target_count: number; target_by_status: Record<string, number> };
+export type OtaAuditItem = OtaAudit & { id: string; created_at: string | null };
+export type OtaEventItem = OtaEvent & { target_id: string | null; print_server_id: string | null; target_from_version: string | null; target_desired_version: string | null; hostname: string | null };
+export type OtaPageItems = { deployments: OtaDeploymentItem; targets: OtaTarget; audit: OtaAuditItem; events: OtaEventItem };
+export type OtaPageKind = keyof OtaPageItems;
+export type ReadPage<T> = { items: T[]; total: number; limit: number; offset: number; aggregates: { population: string; by_status: Record<string,number>; target_by_status: Record<string,number>; target_count: number } };
+export type OtaPageFilter = import('./adminLists').ListFilterState & { ring?: string; action?: string; phase?: string };
+const counts = (v: unknown): Record<string,number> => Object.fromEntries(Object.entries(obj(v) ?? {}).filter((entry): entry is [string,number] => typeof entry[1] === 'number' && entry[1] >= 0));
+export function projectOtaPage<K extends OtaPageKind>(kind: K, value: unknown): ReadPage<OtaPageItems[K]> {
+  const data = obj(value) ?? bad();
+  if (data.ok !== true || !Array.isArray(data.items) || typeof data.total !== 'number') return bad();
+  const aggregate = obj(data.aggregates) ?? {};
+  const items = data.items.map(v => {
+    const r = obj(v) ?? bad();
+    if (typeof r.id !== 'string' && typeof r.id !== 'number') return bad();
+    if (kind === 'targets') return target(v);
+    if (kind === 'deployments') return {id:String(r.id),ring:ring(r.ring),group_id:str(r.group_id),group_name:str(r.group_name),edition_id:str(r.edition_id),version:str(r.version),created_at:str(r.created_at),created_by_email:str(r.created_by_email),target_count:num(r.target_count)??0,target_by_status:counts(r.target_by_status)};
+    if (kind === 'audit') return {id:String(r.id),at:str(r.at),created_at:str(r.created_at),action:String(r.action??''),target_type:str(r.target_type),target_id:str(r.target_id),metadata:text(r.metadata),actor_email:str(r.actor_email)};
+    // Keep original detail as text for authorized diagnostics. Never rewrite persisted events.
+    return {id:String(r.id),target_id:str(r.target_id),print_server_id:str(r.print_server_id),phase:str(r.phase),status:str(r.status),progress:pct(r.progress),error_code:str(r.error_code),error_detail:str(r.error_detail),detail:text(r.detail),created_at:str(r.created_at),target_from_version:str(r.target_from_version),target_desired_version:str(r.target_desired_version),hostname:str(r.hostname)};
+  }) as OtaPageItems[K][];
+  return {items,total:data.total,limit:num(data.limit)??25,offset:num(data.offset)??0,aggregates:{population:str(aggregate.population)??'',by_status:counts(aggregate.by_status),target_by_status:counts(aggregate.target_by_status),target_count:num(aggregate.target_count)??0}};
+}
+export async function getOtaPage<K extends OtaPageKind>(kind: K, filters: OtaPageFilter, limit: number, offset: number, parentId: string | null, signal?: AbortSignal): Promise<ReadPage<OtaPageItems[K]>> {
+  const params: Record<string,unknown> = {p_limit:limit,p_offset:offset,p_query:filters.query.trim()||null,...utcBounds(filters.from,filters.to)};
+  if(kind==='audit') params.p_action=filters.status||null;
+  else params.p_status=filters.status||null;
+  if(kind==='deployments') params.p_ring=filters.ring||null;
+  if(kind==='targets') params.p_deployment_id=parentId;
+  if(kind==='events') {params.p_target_id=parentId;params.p_phase=filters.phase||null;}
+  return projectOtaPage(kind,await rpc(`ps_ota_admin_${kind}_page`,params,signal));
 }

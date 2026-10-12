@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const invoke = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/supabase', () => ({ supabase: { functions: { invoke } } }));
-import { getVenueUsers, otherVenuesLabel, projectVenueUsers, slugLabel, venueRoleLabel, venueUserCodes, venueUsersRequest } from '../src/lib/venueUsers';
+import { getVenueUsers, projectVenueUsers, slugLabel, venueRoleLabel, venueUserCodes, venueUsersRequest } from '../src/lib/venueUsers';
 import { staffErrorKey } from '../src/lib/staff';
 import { en } from '../src/locales/en';
 import { es } from '../src/locales/es';
@@ -23,13 +23,13 @@ describe('venue users projection', () => {
     const list = projectVenueUsers(rawList);
     expect(list).toEqual({ venue: { id: venue, name: 'Centro', is_active: true },
       users: [{ user_id: user, email: 'ana@example.invalid', full_name: 'Ana Ruiz', role: 'front_desk', status: 'active', protected: false,
-        member_since: '2026-09-01T10:00:00Z', last_sign_in_at: null, other_venue_count: 2, is_self: false }],
+        member_since: '2026-09-01T10:00:00Z', last_sign_in_at: null, is_self: false }],
       roles: ['manager', 'front_desk'] });
     expect(JSON.stringify(list)).not.toMatch(/HASH|TOKEN|secret|extra/);
   });
   it('defaults optional fields safely', () => {
     const [person] = projectVenueUsers({ ...rawList, users: [{ user_id: user, email: 'a@example.invalid', role: 'super_admin', status: 'inactive', protected: true, other_venue_count: -3 }] }).users;
-    expect(person).toMatchObject({ full_name: null, protected: true, member_since: null, other_venue_count: 0, is_self: false, status: 'inactive' });
+    expect(person).toMatchObject({ full_name: null, protected: true, member_since: null, is_self: false, status: 'inactive' });
   });
   it('rejects malformed answers with the generic error', () => {
     for (const data of [{}, { ...rawList, venue: null }, { ...rawList, users: null }, { ...rawList, roles: 'manager' },
@@ -79,10 +79,7 @@ describe('venue users labels', () => {
     expect([slugLabel(t(en), 'staff.role', 'super_admin'), slugLabel(t(en), 'staff.role', 'support'), slugLabel(t(en), 'staff.role', 'operations')]).toEqual(['Admin', 'Support', 'Operations']);
     for (const status of ['active', 'invited', 'inactive']) expect(slugLabel(t(es), 'identity.status', status)).not.toBe(status);
   });
-  it('hints at other venues only when there are any', () => {
-    expect(otherVenuesLabel(t(es), 0)).toBe('');
-    expect(otherVenuesLabel(t(es), 1)).toBe('+1 local más');
-    expect(otherVenuesLabel(t(es), 2)).toBe('+2 locales más');
-    expect(otherVenuesLabel(t(en), 3)).toBe('+3 more venues');
+  it('omits cross-venue metadata before caching', () => {
+    expect(JSON.stringify(projectVenueUsers(rawList))).not.toContain('other_venue_count');
   });
 });

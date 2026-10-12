@@ -4,6 +4,8 @@ import { AlertCircle, ArrowRight, Clock3, FilterX, RefreshCw, Search, Server, X 
 import { ASSIGNED_VENUE, EMPTY_INVENTORY_FILTER, UNKNOWN_VERSION, UNASSIGNED_VENUE, filterInventory, inventoryVersions, summarizeInventory, type Inventory, type InventoryFilter, type InventoryItem } from '../lib/printInventory';
 import { useLocale } from '../locales';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
+import { AdminDateFilters } from '../components/AdminListFilters';
+import { matchesUtcDay } from '../lib/adminLists';
 import '../print-dashboard.css';
 import { PrintServersTabs } from './PrintFirmwaresPage';
 
@@ -13,16 +15,17 @@ type Metric = { key: string; state: string; count: number; tone: string };
 export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: Props) {
   const { locale, t } = useLocale();
   const [filter, setFilter] = useState<InventoryFilter>(EMPTY_INVENTORY_FILTER);
+  const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
   const listRef = useRef<HTMLElement>(null);
   const listTitleRef = useRef<HTMLHeadingElement>(null);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }), [locale]);
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US'), [locale]);
-  const filtered = useMemo(() => filterInventory(inventory.items, filter), [inventory.items, filter]);
+  const filtered = useMemo(() => filterInventory(inventory.items, filter).filter(item => matchesUtcDay(item.last_seen_at, dateFilter.from, dateFilter.to)), [inventory.items, filter, dateFilter]);
   const pagination = usePrintListPagination(filtered.length);
   const visible = filtered.slice(pagination.start, pagination.end);
   const summary = useMemo(() => summarizeInventory(filtered), [filtered]);
   const versions = useMemo(() => inventoryVersions(inventory.items), [inventory.items]);
-  const changed = Object.values(filter).some(Boolean);
+  const changed = Object.values(filter).some(Boolean) || !!dateFilter.from || !!dateFilter.to;
   const metrics: Metric[] = [
     { key: 'total', state: '', count: summary.total, tone: 'neutral' },
     { key: 'online', state: 'online', count: summary.online, tone: 'success' },
@@ -66,7 +69,8 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
         <label><span>{t('dash.filter.assignment')}</span><select value={filter.venue} onChange={event => set('venue', event.target.value)} data-testid="inventory-filter-venue"><option value="">{t('dash.filter.allVenues')}</option><option value={ASSIGNED_VENUE}>{t('dash.filter.assigned')}</option><option value={UNASSIGNED_VENUE}>{t('dash.filter.unassigned')}</option></select></label>
         <label><span>{t('dash.state')}</span><select value={filter.state} onChange={event => set('state', event.target.value)} data-testid="inventory-filter-state"><option value="">{t('ps.filter.anyState')}</option>{['online', 'offline', 'unknown', 'unassigned', 'errors', 'warnings'].map(state => <option key={state} value={state}>{t(`dash.${state}`)}</option>)}</select></label>
         <label><span>{t('dash.version')}</span><select value={filter.version} onChange={event => set('version', event.target.value)} data-testid="inventory-filter-version"><option value="">{t('ps.filter.allVersions')}</option>{versions.map(version => <option key={version ?? UNKNOWN_VERSION} value={version ?? UNKNOWN_VERSION}>{version ?? t('dash.unknownVersion')}</option>)}</select></label>
-        <button className="print-dashboard-clear" type="button" disabled={!changed} onClick={() => { setFilter(EMPTY_INVENTORY_FILTER); pagination.reset(); }} data-testid="dashboard-filter-clear"><FilterX size={15}/>{t('ps.filter.clear')}</button>
+        <AdminDateFilters id="dashboard" label={t('list.lastContact')} from={dateFilter.from} to={dateFilter.to} onChange={(key, value) => { setDateFilter(current => ({ ...current, [key]: value })); pagination.reset(); }}/>
+        <button className="print-dashboard-clear" type="button" disabled={!changed} onClick={() => { setFilter(EMPTY_INVENTORY_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }} data-testid="dashboard-filter-clear"><FilterX size={15}/>{t('ps.filter.clear')}</button>
       </div>
     </section>
 

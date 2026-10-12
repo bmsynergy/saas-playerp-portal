@@ -10,7 +10,7 @@ export type VenueUser = {
   role: string; status: VenueUserStatus;
   // Legacy venue super admin: read-only here.
   protected: boolean; member_since: string | null; last_sign_in_at: string | null;
-  other_venue_count: number; is_self: boolean;
+  is_self: boolean;
 };
 export type VenueUsers = { venue: { id: string; name: string; is_active: boolean | null }; users: VenueUser[]; roles: string[] };
 export type VenueUserAction = 'set_role' | 'revoke' | 'send_recovery';
@@ -34,9 +34,6 @@ export function slugLabel(t: (key: string) => string, prefix: string, slug: stri
   return label===key ? slug : label;
 }
 export function venueRoleLabel(t: (key: string) => string, role: string) { return slugLabel(t,'identity.role',role); }
-export function otherVenuesLabel(t: (key: string) => string, count: number) {
-  return count>0 ? t(count===1?'identity.otherVenuesOne':'identity.otherVenuesMany').replace('{count}',String(count)) : '';
-}
 
 const str = (v: unknown) => typeof v === 'string' ? v : null;
 const bad = (): never => { throw new PortalError('genericError'); };
@@ -45,7 +42,7 @@ function user(v: unknown): VenueUser {
   if (!u || typeof u.user_id !== 'string' || typeof u.email !== 'string' || typeof u.role !== 'string' || !['active','invited','inactive'].includes(String(u.status))) return bad();
   return {user_id:u.user_id,email:u.email,full_name:str(u.full_name),role:u.role,status:u.status as VenueUserStatus,protected:u.protected===true,
     member_since:str(u.member_since),last_sign_in_at:str(u.last_sign_in_at),
-    other_venue_count:typeof u.other_venue_count==='number'&&u.other_venue_count>0?Math.floor(u.other_venue_count):0,is_self:u.is_self===true};
+    is_self:u.is_self===true};
 }
 // Explicit allow-list: nothing beyond these fields reaches state or the query cache.
 export function projectVenueUsers(data: Record<string,unknown>): VenueUsers {
@@ -60,5 +57,7 @@ export function venueUsersRequest(venueId: string, body: Record<string,unknown>)
   return invokeFunction('platform-identity-admin',{...body,venue_id:venueId},venueUserCodes);
 }
 export async function getVenueUsers(venueId: string): Promise<VenueUsers> {
-  return projectVenueUsers(await venueUsersRequest(venueId,{action:'list'}));
+  const result = projectVenueUsers(await venueUsersRequest(venueId,{action:'list'}));
+  if (result.venue.id !== venueId) throw new PortalError('accessDenied');
+  return result;
 }
