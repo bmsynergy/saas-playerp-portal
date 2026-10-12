@@ -5,16 +5,17 @@ import { getDeviceSheet, type DeviceSheet } from '../lib/psDevice';
 import { generateLabelPng, labelDataFromSheet, labelFilename, labelFingerprint, printLabel } from '../lib/psLabel';
 import { useLocale } from '../locales';
 
-type Props = { venueId: string; sheet: DeviceSheet };
+type Props = { venueId: string; sheet: DeviceSheet; pendingWifi?: boolean };
 
 // A preview is deliberately opt-in: it contains the confirmed recovery password.
-export function PrintServerLabel({ venueId, sheet }: Props) {
+export function PrintServerLabel({ venueId, sheet, pendingWifi = false }: Props) {
   const { t } = useLocale();
   const queryClient = useQueryClient();
   const [preview, setPreview] = useState<{ url: string; fingerprint: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const data = labelDataFromSheet(sheet);
+  const wifiPending = pendingWifi || sheet.rotations.some(operation => operation.kind === 'wifi' && operation.status === 'pending');
   const fingerprint = data ? labelFingerprint(data) : null;
   const identity = `${venueId}:${sheet.device?.id ?? ''}:${sheet.credentialAccess}`;
   const generation = useRef(0);
@@ -104,6 +105,7 @@ export function PrintServerLabel({ venueId, sheet }: Props) {
     <h3 id="dev-label-title">{t('dev.label.title')}</h3>
     <p className="ps-cert-small">{t('dev.label.lead')}</p>
     <p className="ps-cert-small">{t('dev.label.reprintHint')} {t('dev.label.printHint')}</p>
+    {wifiPending && <p className="dev-label-pending" role="status" data-testid="dev-label-pending"><RefreshCw size={16}/><span>{t('dev.label.pending')}</span></p>}
     <p className="ps-cert-small"><a className="text-link" href="/examples/PS-XXXXXXXX-50x30mm.png" download="PS-XXXXXXXX-50x30mm.png">{t('dev.label.sample')}</a></p>
     {data ? <>
       <div className="staff-actions dev-label-actions">
@@ -111,7 +113,7 @@ export function PrintServerLabel({ venueId, sheet }: Props) {
         <button type="button" className="button button-secondary" data-testid="dev-label-download" disabled={busy} onClick={() => void act('download')}><Download size={15}/>{t('dev.label.download')}</button>
         <button type="button" className="button button-secondary" data-testid="dev-label-print" disabled={busy} onClick={() => void act('print')}><Printer size={15}/>{t('dev.label.print')}</button>
       </div>
-      {preview && preview.fingerprint === fingerprint && <figure className="dev-label-preview"><img src={preview.url} data-testid="dev-label-preview-image" alt={t('dev.label.previewAlt')} width={590} height={354}/><figcaption>{t('dev.label.printHint')}</figcaption><button type="button" className="button button-secondary" data-testid="dev-label-hide" onClick={() => setPreview(null)}><EyeOff size={15}/>{t('dev.label.hide')}</button></figure>}
+      {preview && preview.fingerprint === fingerprint && <figure className="dev-label-preview"><img src={preview.url} data-testid="dev-label-preview-image" alt={t('dev.label.previewAlt')} width={590} height={354}/><figcaption>{wifiPending ? `${t('dev.label.pending')} ` : ''}{t('dev.label.printHint')}</figcaption><button type="button" className="button button-secondary" data-testid="dev-label-hide" onClick={() => setPreview(null)}><EyeOff size={15}/>{t('dev.label.hide')}</button></figure>}
     </> : <p className="inline-empty" data-testid="dev-label-disabled">{t('dev.label.unavailable')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
     {notice && <p className="dev-label-notice" role="status"><RefreshCw size={16}/>{notice}</p>}
   </section>;

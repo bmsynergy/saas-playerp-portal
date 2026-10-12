@@ -1,0 +1,18 @@
+{
+  "unit_tests": {
+    "command": "npm test",
+    "files": 12,
+    "passed": 98,
+    "failed": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "result": "passed",
+    "note": "Existing Vite chunk-size warning; no build error"
+  },
+  "browser_commands": [
+    "node tests/ps-credential-browser.mjs",
+    "node tests/ps-label-browser.mjs"
+  ],
+  "boundary": "All credential actions intercepted with synthetic browser responses. No device commands, backend changes, firmware, OTA or physical printing."
+}

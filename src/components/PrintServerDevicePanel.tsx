@@ -1,5 +1,5 @@
 import { useAuth } from '../hooks/useAuth';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { AlertTriangle, Check, Clock3, Copy, Eye, EyeOff, FileKey2, KeyRound, RefreshCw, Upload, Wifi, X } from 'lucide-react';
@@ -8,6 +8,8 @@ import { psErrorKey } from '../lib/printServerApi';
 import { formatFingerprint } from '../lib/certificate';
 import { useLocale } from '../locales';
 import { PrintServerLabel } from './PrintServerLabel';
+import { PortalDialog } from './PortalDialog';
+import { reconcileCredentialOperation, type CredentialKind, type CredentialOperation } from '../lib/psCredentialOperation';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
 type Props = { venueId: string; printServerId: string | null };
@@ -21,10 +23,30 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   const [qr, setQr] = useState<{ url: string; ssid: string; psk: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const [confirm, setConfirm] = useState<'wifi' | 'code' | 'renew' | null>(null);
+  const [confirm, setConfirm] = useState<'renew' | null>(null);
+  const [credentialDialog, setCredentialDialog] = useState<{ scope: string; kind: CredentialKind; phase: 'confirm' | 'progress' } | null>(null);
+  const [credentialOperations, setCredentialOperations] = useState<Partial<Record<CredentialKind, CredentialOperation & { scope: string }>>>({});
+  const [copyNotice, setCopyNotice] = useState<{ scope: string; ok: boolean; text: string } | null>(null);
   const [certPem, setCertPem] = useState(''); const [chainPem, setChainPem] = useState('');
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const data = sheet.data;
+  const accessError = sheet.isError ? psErrorKey(sheet.error) : null;
+  const accessLost = accessError === 'accessDenied' || accessError === 'sessionExpired';
+  const trackingUnavailable = sheet.isError && !accessLost;
+  const operationScope = JSON.stringify([session?.user.id, venueId, printServerId, data?.device?.id, data?.credentialAccess, data?.can_manage_credentials, accessLost]);
+  const scopeRef = useRef(operationScope);
+  scopeRef.current = operationScope;
+  const operationFor = (kind: CredentialKind) => {
+    const entry = credentialOperations[kind];
+    return entry?.scope === operationScope ? data ? reconcileCredentialOperation(entry, data.rotations) : entry : null;
+  };
+  const activeDialog = credentialDialog?.scope === operationScope ? credentialDialog : null;
+  const dialogOperation = activeDialog ? operationFor(activeDialog.kind) : null;
+  useEffect(() => {
+    setCredentialDialog(null);
+    setCredentialOperations({});
+    setCopyNotice(null);
+  }, [operationScope]);
   const wifi = data?.credentialAccess ? data.appliedWifi : null;
   const adminCode = data?.credentialAccess ? data.appliedAdminCode : null;
   // Revealed values belong to this exact identity and confirmed snapshot. A new snapshot
@@ -41,6 +63,21 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   useEffect(() => { setShow({ ssid: false, psk: false, code: false }); setQr(null); }, [wifi?.ssid, wifi?.psk, adminCode?.code]);
 
   useEffect(() => {
+    if (!data) return;
+    setCredentialOperations(previous => {
+      let changed = false;
+      const next = { ...previous };
+      for (const kind of ['wifi', 'admin_code'] as const) {
+        const entry = previous[kind];
+        if (!entry || entry.scope !== operationScope) continue;
+        const updated = reconcileCredentialOperation(entry, data.rotations);
+        if (updated.phase !== entry.phase || updated.errorKey !== entry.errorKey) { next[kind] = { ...updated, scope: operationScope }; changed = true; }
+      }
+      return changed ? next : previous;
+    });
+  }, [data?.rotations, operationScope]);
+
+  useEffect(() => {
     if (!wifi || !show.psk) { setQr(null); return; }
     let live = true;
     void QRCode.toDataURL(wifiQrPayload(wifi.ssid, wifi.psk), { margin: 1, width: 220 }).then(url => { if (live) setQr({ url, ssid: wifi.ssid, psk: wifi.psk }); });
@@ -48,8 +85,27 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   }, [wifi?.ssid, wifi?.psk, show.psk]);
 
   async function copy(value: string) {
-    try { await navigator.clipboard.writeText(value); setResult({ ok: true, text: t('dev.copied') }); }
-    catch { setResult({ ok: false, text: t('dev.copyFailed') }); }
+    const scope = operationScope;
+    try { await navigator.clipboard.writeText(value); if (scopeRef.current === scope) setCopyNotice({ scope, ok: true, text: t('dev.copied') }); }
+    catch { if (scopeRef.current === scope) setCopyNotice({ scope, ok: false, text: t('dev.copyFailed') }); }
+  }
+
+  async function requestCredential(kind: CredentialKind) {
+    const scope = operationScope;
+    if (!data?.can_manage_credentials || !data.device || sheet.isError || scopeRef.current !== scope) return;
+    setCredentialDialog({ scope, kind, phase: 'progress' });
+    setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: 'sending' } }));
+    try {
+      const response = kind === 'wifi' ? await rotateWifi(venueId) : await rotateAdminCode(venueId);
+      if (scopeRef.current !== scope) return;
+      const commandId = typeof response.command_id === 'string' && response.command_id.trim() ? response.command_id : null;
+      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId, phase: commandId ? 'pending' : 'failed', errorKey: commandId ? undefined : 'dev.rotationTrackingFailed' } }));
+      if (commandId) void sheet.refetch();
+    } catch (error) {
+      if (scopeRef.current !== scope) return;
+      const key = psErrorKey(error);
+      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: 'failed', errorKey: t(key) === key ? 'dev.error.other' : key } }));
+    }
   }
 
   async function run(fn: () => Promise<unknown>, okKey: string) {
@@ -59,7 +115,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
     finally { setBusy(false); setConfirm(null); }
   }
 
-  if (sheet.isError) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(psErrorKey(sheet.error) === 'accessDenied' ? 'accessDenied' : 'genericError')}</div></section>;
+  if (accessLost || (sheet.isError && !data)) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div></section>;
   if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div></section>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
   const pendingRotation = (kind: string) => data.rotations.some(o => o.kind === kind && o.status === 'pending');
@@ -68,6 +124,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   return <>
     <section className="detail-panel ps-device-panel" aria-labelledby="ps-device-title" data-testid="ps-device-panel">
       <div className="section-heading"><div><p className="eyebrow">{t('dev.eyebrow')}</p><h2 id="ps-device-title">{t('dev.title')}</h2></div><span className="section-icon"><Wifi size={20}/></span></div>
+      {trackingUnavailable && <p className="dev-tracking-warning" role="status" data-testid="dev-tracking-warning"><AlertTriangle size={16}/><span>{t('dev.trackingUnavailable')}</span></p>}
       {!data.device ? <div className="inline-empty" data-testid="ps-device-none">{t('dev.noDevice')}</div> : <>
         <dl className="dev-facts">
           <div><dt>{t('dev.serial')}</dt><dd data-testid="dev-serial">{data.device.serial}</dd></div>
@@ -83,14 +140,22 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
               <div><dt>{t('dev.adminCode')}</dt><dd className="dev-secret" data-testid="dev-admin-code">{adminCode ? <><span className="ps-mono">{show.code ? adminCode.code : '••••••••••'}</span><button type="button" className="icon-button" aria-label={t(show.code ? 'dev.hideCode' : 'dev.showCode')} onClick={() => setShow(s => ({ ...s, code: !s.code }))}>{show.code ? <EyeOff size={16}/> : <Eye size={16}/>}</button><button type="button" className="icon-button" aria-label={t('dev.copyCode')} onClick={() => void copy(adminCode.code)}><Copy size={16}/></button></> : <>{t('dev.credentialAbsent')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></>}</dd></div>
               <div><dt>{t('dev.applied')}</dt><dd>{t('dev.psk')}: {date(wifi?.applied_at ?? null)}<br/>{t('dev.adminCode')}: {date(adminCode?.applied_at ?? null)}</dd></div>
             </dl>
+            {copyNotice?.scope === operationScope && <p className={`dev-copy-notice ${copyNotice.ok ? 'dev-copy-ok' : 'dev-copy-error'}`} role="status" aria-live="polite" data-testid="dev-copy-result">{copyNotice.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{copyNotice.text}</span></p>}
             {data.can_manage_credentials && <div className="staff-actions">
-              <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={busy || pendingRotation('wifi')} onClick={() => setConfirm('wifi')}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
-              <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={busy || pendingRotation('admin_code')} onClick={() => setConfirm('code')}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
+              <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={busy || sheet.isError || pendingRotation('wifi') || ['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
+              <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={busy || sheet.isError || pendingRotation('admin_code') || ['sending', 'pending'].includes(operationFor('admin_code')?.phase ?? '')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
             </div>}
+            {(['wifi', 'admin_code'] as const).map(kind => {
+              const current = operationFor(kind);
+              return current && <p key={kind} className={`dev-operation-notice dev-operation-${current.phase}`} role="status" aria-live="polite" data-testid={`dev-operation-${kind}`} data-phase={current.phase}>
+                {current.phase === 'applied' ? <Check size={16}/> : current.phase === 'failed' ? <AlertTriangle size={16}/> : <Clock3 size={16}/>}
+                <span><strong>{t(`dev.op.${kind}`)}:</strong> {t(`dev.rotationPhase.${current.phase}`)}{current.phase === 'failed' && current.errorKey ? ` ${t(current.errorKey) === current.errorKey ? t('dev.error.other') : t(current.errorKey)}` : ''}{kind === 'wifi' && current.phase === 'applied' ? ` ${t('dev.label.reprint')}` : ''}</span>
+              </p>;
+            })}
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
         </div> : <p className="owner-section-lead">{t('dev.credentialsRestricted')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
-        {data.credentialAccess && data.device && <PrintServerLabel key={`${session?.user.id}:${venueId}:${data.device.id}`} venueId={venueId} sheet={data}/>}
+        {data.credentialAccess && data.device && <PrintServerLabel key={`${session?.user.id}:${venueId}:${data.device.id}`} venueId={venueId} sheet={data} pendingWifi={['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')}/>}
         <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><p>{t('dev.help.legacy')}</p><p>{t('dev.help.p13')}</p><p>{t('dev.help.activation')}</p></details>
         {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${o.error_code}` : ''}</small></li>)}</ul></div>}
       </>}
@@ -120,13 +185,26 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="dev-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
 
     {confirm && <div className="dev-confirm" role="alertdialog" aria-labelledby="dev-confirm-title" data-testid="dev-confirm">
-      <p id="dev-confirm-title"><Clock3 size={16}/>{t(`dev.confirm.${confirm}`)}</p>
+      <p id="dev-confirm-title"><Clock3 size={16}/>{t('dev.confirm.renew')}</p>
       <div className="staff-actions">
-        <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={busy} onClick={() => void run(
-          confirm === 'wifi' ? () => rotateWifi(venueId) : confirm === 'code' ? () => rotateAdminCode(venueId) : () => renewCert(printServerId!),
-          confirm === 'renew' ? 'dev.https.renewRequested' : 'dev.rotationRequested')}><Check size={15}/>{t('dev.confirm.accept')}</button>
+        <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={busy} onClick={() => void run(() => renewCert(printServerId!), 'dev.https.renewRequested')}><Check size={15}/>{t('dev.confirm.accept')}</button>
         <button type="button" className="button button-secondary" disabled={busy} onClick={() => setConfirm(null)}><X size={15}/>{t('dev.confirm.cancel')}</button>
       </div>
     </div>}
+    {activeDialog && <PortalDialog
+      title={t(`dev.rotationTitle.${activeDialog.kind}`)} titleId="dev-credential-dialog-title" descriptionId="dev-credential-dialog-description"
+      testId="dev-confirm" onClose={() => setCredentialDialog(null)}
+      actions={activeDialog.phase === 'confirm' ? <>
+        <button type="button" className="button button-secondary" onClick={() => setCredentialDialog(null)}>{t('dev.confirm.cancel')}</button>
+        <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={sheet.isError} onClick={() => void requestCredential(activeDialog.kind)}><Check size={15}/>{t('dev.confirm.accept')}</button>
+      </> : <button type="button" className="button button-secondary" data-testid="dev-dialog-close" onClick={() => setCredentialDialog(null)}>{t('dev.confirm.close')}</button>}>
+      {activeDialog.phase === 'confirm' ? <div id="dev-credential-dialog-description"><p>{t(`dev.confirm.${activeDialog.kind === 'wifi' ? 'wifi' : 'code'}`)}</p>{trackingUnavailable && <p className="dev-tracking-warning" role="status"><AlertTriangle size={16}/>{t('dev.trackingUnavailable')}</p>}</div>
+        : <div id="dev-credential-dialog-description" className={`dev-dialog-status dev-dialog-${dialogOperation?.phase ?? 'sending'}`} role="status" aria-live="polite" data-testid="dev-credential-status" data-phase={dialogOperation?.phase ?? 'sending'}>
+          {dialogOperation?.phase === 'applied' ? <Check size={20}/> : dialogOperation?.phase === 'failed' ? <AlertTriangle size={20}/> : <Clock3 size={20}/>}
+          <p>{t(`dev.rotationPhase.${dialogOperation?.phase ?? 'sending'}`)}{dialogOperation?.phase === 'failed' && dialogOperation.errorKey ? ` ${t(dialogOperation.errorKey) === dialogOperation.errorKey ? t('dev.error.other') : t(dialogOperation.errorKey)}` : ''}</p>
+          {activeDialog.kind === 'wifi' && dialogOperation?.phase === 'applied' && <p>{t('dev.label.reprint')}</p>}
+          {trackingUnavailable && <p>{t('dev.trackingUnavailable')}</p>}
+        </div>}
+    </PortalDialog>}
   </>;
 }

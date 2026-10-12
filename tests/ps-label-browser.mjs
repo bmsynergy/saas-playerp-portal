@@ -1,8 +1,11 @@
 // PE-411: synthetic local fixtures, all external requests intercepted. No live authorization claim.
 import {chromium,expect} from '@playwright/test';
 import assert from 'node:assert/strict';
+import jsQR from 'jsqr';
+import {PNG} from 'pngjs';
+import QRCode from 'qrcode';
 import {mkdir,writeFile} from 'node:fs/promises';
-const origin='http://127.0.0.1:18799',out='docs/evidence/pe411';await mkdir(out,{recursive:true});
+const origin='http://127.0.0.1:18799',out='docs/evidence/ps-credential-ux';await mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE??'/home/coredev/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
 const uid='11111111-1111-4111-8111-111111111111',venueId='22222222-2222-4222-8222-222222222222';
 const user={id:uid,email:'synthetic@example.invalid',aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
@@ -45,6 +48,7 @@ async function setup(width,lang='en'){
 try{
  for(const width of [390,1440]){
   const {ctx,page,state}=await setup(width),panel=page.getByTestId('ps-device-panel');
+  state.sheet.rotations=[{command_id:'fixture-pending',kind:'wifi',status:'pending'}];await page.reload();await expect(page.getByTestId('dev-label-pending')).toBeVisible();
   await expect(page.getByTestId('dev-psk')).not.toContainText(wifi.psk);
   await page.getByTestId('dev-ssid').getByRole('button').first().click();await page.getByTestId('dev-psk').getByRole('button').first().click();
   await expect(page.getByTestId('dev-ssid')).toContainText(wifi.ssid);await expect(page.getByTestId('dev-psk')).toContainText(wifi.psk);
@@ -77,12 +81,40 @@ try{
   const result={width:bitmap.width,height:bitmap.height,monochrome,bounds:{minX,minY,maxX,maxY},texts,printCalls,base64:await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result.split(',')[1]);r.readAsDataURL(blob);})};document.querySelectorAll('iframe').forEach(f=>f.contentWindow.dispatchEvent(new Event('afterprint')));return result;
  },{device,wifi});
  assert.equal(raster.width,590);assert.equal(raster.height,354);assert.ok(raster.monochrome);assert.ok(raster.bounds.minX>=18&&raster.bounds.minY>=18&&raster.bounds.maxX<=571&&raster.bounds.maxY<=335);
- assert.ok(raster.texts.includes(device.serial)&&raster.texts.includes(wifi.ssid)&&raster.texts.includes(`Password: ${wifi.psk}`));assert.ok(raster.texts.includes('4 Open http://10.77.0.1'));assert.ok(!raster.texts.some(s=>s.includes(wifi.admin_code)));assert.equal(raster.printCalls.length,1);assert.match(raster.printCalls[0],/size:50mm 30mm;margin:0/);
- const bytes=Buffer.from(raster.base64,'base64');let offset=8,phys=[];while(offset<bytes.length){const len=bytes.readUInt32BE(offset),type=bytes.toString('ascii',offset+4,offset+8);if(type==='pHYs')phys.push([bytes.readUInt32BE(offset+8),bytes.readUInt32BE(offset+12),bytes[offset+16]]);offset+=len+12;}assert.deepEqual(phys,[[11811,11811,1]]);
+ assert.ok(raster.texts.includes(device.serial)&&raster.texts.includes(wifi.ssid)&&raster.texts.includes(`Password: ${wifi.psk}`));assert.ok(raster.texts.includes('3 Open http://10.77.0.1'));assert.ok(!raster.texts.some(s=>s.includes(wifi.admin_code)));assert.equal(raster.printCalls.length,1);assert.match(raster.printCalls[0],/size:50mm 30mm;margin:0/);
+ const bytes=Buffer.from(raster.base64,'base64');
+ const decoded=PNG.sync.read(bytes),payload='WIFI:T:WPA;S:'+wifi.ssid.replace(/([\\;,:"])/g,'\\$1')+';P:'+wifi.psk+';;';
+ assert.equal(jsQR(new Uint8ClampedArray(decoded.data),decoded.width,decoded.height)?.data,payload);
+ const qr=QRCode.create(payload,{errorCorrectionLevel:'M'}),quiet=4,area=166,scale=Math.floor(area/(qr.modules.size+8)),size=(qr.modules.size+8)*scale;
+ assert.ok(scale>=3);const x0=590-18-area+Math.floor((area-size)/2),y0=170+Math.floor((area-size)/2);
+ for(let row=0;row<qr.modules.size+8;row++)for(let col=0;col<qr.modules.size+8;col++){
+  const black=row>=quiet&&col>=quiet&&row<qr.modules.size+quiet&&col<qr.modules.size+quiet&&qr.modules.get(row-quiet,col-quiet);
+  for(let y=0;y<scale;y++)for(let x=0;x<scale;x++)assert.equal(decoded.data[((y0+row*scale+y)*590+x0+col*scale+x)*4],black?0:255);
+ }
+ assert.deepEqual(raster.texts.slice(-4),['1 Power off/on','2 Connect to Wi-Fi above','within 90 s','3 Open http://10.77.0.1']);
+ assert.ok(!payload.includes(wifi.admin_code)&&!payload.includes('token'));
+ checks.push('Final PNG decoded exactly to applied WPA payload; all QR modules square integer pixels, quiet zone 4, ECC M, scale '+scale+' px/module; no admin/token');
+ let offset=8,phys=[];while(offset<bytes.length){const len=bytes.readUInt32BE(offset),type=bytes.toString('ascii',offset+4,offset+8);if(type==='pHYs')phys.push([bytes.readUInt32BE(offset+8),bytes.readUInt32BE(offset+12),bytes[offset+16]]);offset+=len+12;}assert.deepEqual(phys,[[11811,11811,1]]);
+ const fixtures=await page.evaluate(async({device,wifi})=>{
+  const {projectDeviceSheet}=await import('/src/lib/psDevice.ts'),{labelDataFromSheet,generateLabelPng}=await import('/src/lib/psLabel.ts');
+  const base={ok:true,credentials_version:1,can_read_credentials:true,can_manage_credentials:true,device,wifi,rotations:[]};
+  const list=[['applied',base],['pending',{...base,rotations:[{command_id:'pending-fixture',kind:'wifi',status:'pending'}],wifi:{...wifi,pending_wifi_psk:'9876543210',pending_ssid:'NOT_APPLIED'},technical_token:'TECHNICAL_SENTINEL'}],['absent',{...base,wifi:{...wifi,wifi_applied_at:null}}],['maximum-escaped',{...base,wifi:{...wifi,ssid:'\\'.repeat(32)}}]];
+  const result=[];for(const [name,raw] of list){const label=labelDataFromSheet(projectDeviceSheet(raw));if(!label){result.push({name,available:false});continue;}
+   const blob=await generateLabelPng(label);result.push({name,available:true,ssid:label.ssid,password:label.password,base64:await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result.split(',')[1]);r.readAsDataURL(blob);})});
+  }return result;
+ },{device,wifi});
+ for(const fixture of fixtures){
+  if(fixture.name==='absent'){assert.equal(fixture.available,false);continue;}
+  const png=PNG.sync.read(Buffer.from(fixture.base64,'base64')),scan=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);
+  const expected='WIFI:T:WPA;S:'+fixture.ssid.replace(/([\\;,:"])/g,'\\$1')+';P:'+fixture.password+';;';
+  assert.equal(scan?.data,expected);assert.ok(!scan.data.includes(wifi.admin_code)&&!scan.data.includes('TECHNICAL_SENTINEL')&&!scan.data.includes('NOT_APPLIED'));
+  if(fixture.name==='pending')assert.equal(fixture.password,wifi.psk);
+ }
+ checks.push('Export fixtures applied/pending/absent/32 escaped characters: final PNG decoded exactly to applied values; pending keeps prior credentials; absent produces no label');
  await mkdir('public/examples',{recursive:true});await writeFile('public/examples/PS-XXXXXXXX-50x30mm.png',bytes);await writeFile(`${out}/composition.json`,JSON.stringify({...raster,base64:undefined},null,2));
  await page.setContent(`<style>@page{size:50mm 30mm;margin:0}body{margin:0}img{display:block;width:50mm;height:30mm}</style><img src="data:image/png;base64,${raster.base64}">`);
  const physical=await page.locator('img').boundingBox();assert.ok(Math.abs(physical.width-50/25.4*96)<0.1&&Math.abs(physical.height-30/25.4*96)<0.1);
  await page.pdf({path:`${out}/synthetic-physical-50x30.pdf`,width:'50mm',height:'30mm',printBackground:true,displayHeaderFooter:false,preferCSSPageSize:true});
- checks.push('single raster: 590×354, pHYs 11811/11811 metre, black/white, >=18px margins, full max SSID/serial, 4 steps, no admin/QR; print CSS 50×30mm');await ctx.close();assert.deepEqual(errors,[]);
+ checks.push('single raster: 590×354, pHYs 11811/11811 metre, black/white, >=18px margins, full max SSID/serial, 3 steps in two columns, mandatory Wi-Fi QR, no admin/token; print CSS 50×30mm');await ctx.close();assert.deepEqual(errors,[]);
  await writeFile(`${out}/checks.json`,JSON.stringify({kind:'Synthetic local fixtures; NOT server authorization or published DEV evidence',checks,errors},null,2));console.log(JSON.stringify({checks,errors},null,2));
 }finally{await browser.close();}

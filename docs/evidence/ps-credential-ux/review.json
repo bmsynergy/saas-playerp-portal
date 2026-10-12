@@ -1,0 +1,8 @@
+{
+  "reviewer": "Gaby",
+  "mode": "read-only, same session",
+  "scope": "Credential dialogs, operation correlation, applied-only label/QR, focused tests; diff against 4373662",
+  "finding_corrected": "Transient polling errors unmounted the modal; corrected to preserve dialog and show tracking warning. Access denial or expired session fails closed.",
+  "verdict": "No verifiable findings in the corrected implementation.",
+  "limits": "Gaby did not verify remote commit or DEV publication; primary agent verifies those separately."
+}

@@ -1,0 +1,25 @@
+{
+  "width": 590,
+  "height": 354,
+  "monochrome": true,
+  "bounds": {
+    "minX": 18,
+    "minY": 21,
+    "maxX": 571,
+    "maxY": 319
+  },
+  "texts": [
+    "PlayERP",
+    "PS-XXXXXXXX",
+    "Wi-Fi (SSID)",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWW;:\"\\",
+    "Password: 0123456789",
+    "1 Power off/on",
+    "2 Connect to Wi-Fi above",
+    "within 90 s",
+    "3 Open http://10.77.0.1"
+  ],
+  "printCalls": [
+    "@page{size:50mm 30mm;margin:0}html,body{margin:0;padding:0;width:50mm;height:30mm}img{display:block;width:50mm;height:30mm}Print Server label"
+  ]
+}

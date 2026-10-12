@@ -1,4 +1,5 @@
-import { confirmedAt, validRecoveryWifi, type DeviceSheet } from './psDevice';
+import QRCode from 'qrcode';
+import { confirmedAt, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from './psDevice';
 
 export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string };
 export const LABEL_WIDTH = 590;
@@ -7,9 +8,9 @@ export const LABEL_PPM = 11811; // 300 dpi; raster rounds to 49.95 × 29.97 mm.
 export const LABEL_MARGIN = 18; // 1.524 mm at 300 dpi, at least 1.5 mm on each edge.
 export const LABEL_STEPS = [
   '1 Power off/on',
-  '2 Connect to Wi-Fi above (within 90 s)',
-  '3 Enter password above',
-  '4 Open http://10.77.0.1',
+  '2 Connect to Wi-Fi above',
+  'within 90 s',
+  '3 Open http://10.77.0.1',
 ] as const;
 
 function validLabel(d: LabelData): boolean {
@@ -63,7 +64,7 @@ export function withPhysicalResolution(png: Uint8Array): Uint8Array {
   return result;
 }
 
-/** A single raster composition serves preview, download and browser print. No QR/admin code. */
+/** A single raster serves preview, download and print. The QR contains only applied Wi-Fi. */
 export async function generateLabelPng(data: LabelData): Promise<Blob> {
   if (!validLabel(data)) throw new Error('label_unavailable');
   const canvas = document.createElement('canvas'); canvas.width = LABEL_WIDTH; canvas.height = LABEL_HEIGHT;
@@ -87,7 +88,23 @@ export async function generateLabelPng(data: LabelData): Promise<Blob> {
   line(data.ssid, 110, 'bold 25px monospace');
   line(`Password: ${data.password}`, 147, 'bold 26px monospace');
   ctx.fillRect(left, 166, width, 2);
-  LABEL_STEPS.forEach((value, i) => line(value, 199 + i * 40, '22px Arial, sans-serif'));
+  // Two columns. The QR uses the largest integer scale that fits with a full
+  // four-module quiet zone. Never resample a QR or sacrifice module readability.
+  const qr = QRCode.create(wifiQrPayload(data.ssid, data.password), { errorCorrectionLevel: 'M' });
+  const quiet = 4, qrArea = 166, qrLeft = LABEL_WIDTH - left - qrArea, qrTop = 170;
+  const scale = Math.floor(qrArea / (qr.modules.size + quiet * 2));
+  if (scale < 3) throw new Error('label_does_not_fit');
+  const qrSize = (qr.modules.size + quiet * 2) * scale;
+  const qrX = qrLeft + Math.floor((qrArea - qrSize) / 2);
+  const qrY = qrTop + Math.floor((qrArea - qrSize) / 2);
+  ctx.imageSmoothingEnabled = false;
+  const textWidth = qrLeft - left - 12;
+  LABEL_STEPS.forEach((value, i) => line(value, [199, 241, 269, 315][i], 'bold 22px Arial, sans-serif', i === 2 ? left + 18 : left, i === 2 ? textWidth - 18 : textWidth));
+  for (let row = 0; row < qr.modules.size; row++) {
+    for (let col = 0; col < qr.modules.size; col++) {
+      if (qr.modules.get(row, col)) ctx.fillRect(qrX + (col + quiet) * scale, qrY + (row + quiet) * scale, scale, scale);
+    }
+  }
   // Thermal label: only opaque pure black/white, no antialiasing gray or color pixels.
   const pixels = ctx.getImageData(0, 0, LABEL_WIDTH, LABEL_HEIGHT);
   for (let i = 0; i < pixels.data.length; i += 4) {
