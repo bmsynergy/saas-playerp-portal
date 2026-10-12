@@ -1,0 +1,24 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "mode": "synthetic Auth/RPC; no real account",
+  "passed": 16,
+  "records": [
+    "Missing, malformed and duplicate requests fail before Auth/RPC",
+    "Anonymous login retains normalized request (owner)",
+    "Anonymous login retains normalized request (mixed owner/staff)",
+    "No preselection + two venues + re-confirm after change + exact RPC payload 390px en",
+    "No preselection + two venues + re-confirm after change + exact RPC payload 390px es",
+    "No preselection + two venues + re-confirm after change + exact RPC payload 1440px en",
+    "No preselection + two venues + re-confirm after change + exact RPC payload 1440px es",
+    "Venue outside the pilot is shown disabled and cannot be granted",
+    "Only one available/prior venue still needs explicit selection",
+    "No owned venues: cannot allow; denial sends no venues",
+    "Unknown/expired/decided requests, missing session and loading errors are readable and fail closed",
+    "RPC session rejection clears local session and preserves request through login",
+    "Pilot/ownership and save errors translated without raw server details",
+    "Double click produces one decision and locks the selected venue while pending",
+    "Unsafe returned redirect is rejected",
+    "Session removal discards consent and returns to login"
+  ],
+  "browserErrors": []
+}
