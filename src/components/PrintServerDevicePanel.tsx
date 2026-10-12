@@ -115,8 +115,10 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
     finally { setBusy(false); setConfirm(null); }
   }
 
-  if (accessLost || (sheet.isError && !data)) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div></section>;
-  if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div></section>;
+  const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
+  const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} pendingWifi={['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')}/>;
+  if (accessLost || (sheet.isError && !data)) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section>;
+  if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div>{label}{help}</section>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
   const pendingRotation = (kind: string) => data.rotations.some(o => o.kind === kind && o.status === 'pending');
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
@@ -155,10 +157,10 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
         </div> : <p className="owner-section-lead">{t('dev.credentialsRestricted')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
-        {data.credentialAccess && data.device && <PrintServerLabel key={`${session?.user.id}:${venueId}:${data.device.id}`} venueId={venueId} sheet={data} pendingWifi={['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')}/>}
-        <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><p>{t('dev.help.legacy')}</p><p>{t('dev.help.p13')}</p><p>{t('dev.help.activation')}</p></details>
         {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${o.error_code}` : ''}</small></li>)}</ul></div>}
       </>}
+      {label}
+      {help}
       <p className="ps-cert-small">{t('dev.tokensNote')}</p>
     </section>
 
