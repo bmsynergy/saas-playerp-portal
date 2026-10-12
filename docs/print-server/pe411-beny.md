@@ -1,10 +1,10 @@
 # Etiqueta de recuperación — complemento PE-411.3
 
-**Todavía no publicado.** La interfaz está preparada y comprobada con datos sintéticos.
-Falta que Tom aplique y pruebe la autorización y separación de credenciales en DEV, acuerde
-la conciliación legacy y devuelva sus referencias. Después Uma publica el portal.
+**Backend confirmado y aplicado en DEV por Tom** en `f071571f82a50694648c395073560d2a5bfe8226`.
+Este complemento consume el contrato acordado de credenciales confirmadas.
+La publicación y su comprobación quedan registradas en la entrega de Uma.
 
-Recorrido previsto una vez publicado:
+Recorrido en DEV:
 1. Entra en https://playerp.dev.bmore.app/admin/print-servers/inventory con tu cuenta autorizada
    y abre la ficha del aparato asignado. Como owner, abre Print Servers dentro de tu propio local.
 2. Consulta o copia el código administrativo por separado, solo si figura confirmado. Ese código
@@ -20,14 +20,18 @@ Recorrido previsto una vez publicado:
 
 **Aparato legacy:** debe comprobarse físicamente identidad y vínculo al local. La lectura local
 Wi-Fi autenticada no demuestra el código administrativo; necesitas acceso administrativo local
-para verificar este último. Tom debe acordar un canal seguro de conciliación sin copiar toda la
-configuración, rotar claves ni cambiar hostname, CA o credencial técnica. Mientras no se pueda
+para verificar este último. El [acuerdo con Tom](https://github.com/bmsynergy/saas-playerp-backend/blob/f071571f82a50694648c395073560d2a5bfe8226/_docs/print-server/pe411-credenciales-confirmadas-y-conciliacion-legacy.md)
+exige verificar el código iniciando sesión en la administración local HTTPS con la confianza
+existente. Para Wi-Fi, leer `/api/wifi/recovery` con esa sesión y comprobar la conexión dentro
+de 90 segundos tras encender, abriendo http://10.77.0.1. Sin copiar toda la configuración,
+rotar claves ni cambiar hostname, CA o credencial técnica. El canal restringido de registro
+requiere una RPC futura: este acuerdo no lo implementa ni ejecuta. El legacy sigue ausente
+y con etiqueta bloqueada hasta que se registren las pruebas por ese canal. Mientras no se pueda
 verificar un valor, permanece ausente. En este trabajo no se ha leído ni cambiado el PS real.
 
 **Raspberry nueva:** crear y asignar inventario no instala el aparato. P13 sigue pendiente:
 hace falta una base instalada compatible o un instalador inicial que no forma parte de esta pieza.
-Con esa base preparada y la activación completada, solicita explícitamente las rotaciones Wi-Fi y
-del código en un aparato compatible y espera sus confirmaciones reales; el éxito del alta no basta
+Con esa base preparada y la activación completada, pulsa por separado «Rotar Wi-Fi» y «Rotar código» en un aparato compatible y espera sus confirmaciones reales; el éxito del alta no basta
 para marcarlos aplicados. No se ejecuta ni se programa ninguna rotación u OTA en este trabajo.
 
 No se imprime QR en 50×30 mm para conservar espacio legible a los datos completos y los cuatro pasos.

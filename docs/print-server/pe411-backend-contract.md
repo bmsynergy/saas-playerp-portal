@@ -1,11 +1,22 @@
 # PE-411.3 — dependencia para Tom, solo DEV
 
-Estado: **propuesta concreta pendiente de acuerdo, implementación y comprobación de Tom**.
-No es un acuerdo ya ejecutado ni autoriza operar el PS físico. El portal no se publicará hasta
-que este contrato esté versionado en backend y aplicado en Supabase DEV `fzwzmwstxlsxdzdmphyq`.
+Estado: **contrato aceptado, implementado, versionado y aplicado por Tom en DEV**.
+Backend main: `f071571f82a50694648c395073560d2a5bfe8226` (PE-411.4).
+Migración nueva: `_migrations/20261012160000_pe411_ps_credentials_confirmed_contract.sql`;
+26/26 comprobaciones con fixtures DEV y transacción revertida, según entrega oficial de Tom.
+El portal consume la versión 1 sin cambios de forma. No se ha operado ningún PS físico.
 
-Base portal servida comprobada al comenzar: `9df27e403f248d1ae7f605956eedc9bde2fe1e19`.
-Backend leído: `0377126` en main. Migraciones nuevas en `_migrations/`, sin editar PE-384/407/408/409.
+Base portal servida revalidada al retomar: `9df27e403f248d1ae7f605956eedc9bde2fe1e19`.
+El backend `0377126` fue la lectura inicial de la propuesta y queda sustituido por el SHA anterior.
+
+Acuerdo legacy definitivo: [documento de Tom](https://github.com/bmsynergy/saas-playerp-backend/blob/f071571f82a50694648c395073560d2a5bfe8226/_docs/print-server/pe411-credenciales-confirmadas-y-conciliacion-legacy.md).
+La identidad/vínculo y confianza HTTPS se verifican junto al aparato; el código se prueba iniciando
+sesión local y el Wi-Fi mediante lectura autenticada y conexión dentro de 90 s. La futura RPC
+restringida de registro admitirá pruebas parciales, sin inventar ni rotar. No se implementa ni
+se ejecuta esa conciliación en esta pieza; el legacy permanece ausente y bloquea etiqueta.
+
+Se conserva debajo la propuesta original como antecedente; los futuros y solicitudes a Tom
+que contiene ya están resueltos por su entrega, salvo el registro legacy futuro indicado arriba.
 
 ## Contrato compatible propuesto
 

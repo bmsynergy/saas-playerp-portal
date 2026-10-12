@@ -1,3 +1,31 @@
+# PE-411 — verificación al retomar el 12-oct-2026
+
+Frontend recuperado desde `067515fc`, descendiente de la base DEV `9df27e4`.
+Revalidación HTTP antes de cambios: SHA-256 del HTML
+`4fc654eaa9da305e83a95aae6d3a5208cfcb8a62be31f2f5d3fd480e4c9a713c` (sin cambio).
+GitHub backend main revalidado con `git ls-remote`: `f071571f82a50694648c395073560d2a5bfe8226`.
+Entrega oficial de Tom leída por `coredeva-leer PE-411.4`, artefacto
+`f12fec47-67f6-490b-ac13-4162fadc9a4b`, SHA-256 `07e042cb13556ad85557e0630b57f82bd553b66def1da210f75a95231264618a`:
+contrato aplicado en DEV, 26/26 fixtures server-side con rollback, legado ausente y acuerdo escrito.
+Esta sesión no repite sus mutaciones ni opera aparatos.
+
+Comprobaciones repetidas sobre esta integración:
+- Build correcto, solo aviso heredado del tamaño del bundle.
+- 25/25 pruebas focalizadas de etiqueta, API e inventario.
+- Navegador: 390/1440, mostrar/ocultar/copiar, alta/asignación simulada, pérdida de permiso,
+  relectura antes de exportar y cambio de aplicado invalida; cero errores. Las capturas se regeneraron.
+- Raster y composición comprobados: 590×354, pHYs 11811 por eje, blanco/negro, margen mínimo 18px,
+  serial completo y SSID sintético máximo; CSS/PDF 50×30mm. PNG inspeccionado visualmente.
+- Gaby, en esta sesión, solo lectura: sin hallazgos funcionales; dos textos de estado desactualizados
+  corregidos en la ayuda y el contrato. El acuerdo conserva la propuesta original como antecedente.
+
+Las capturas usan respuestas sintéticas interceptadas y NO prueban por sí solas autorización real.
+La evidencia server-side corresponde a Tom; la publicación se verifica en la entrega de Uma.
+
+---
+
+## Registro de la preparación anterior (conservado como historial)
+
 # PE-411.3 — comprobación focalizada del complemento
 
 **Solo fixtures sintéticos locales. No acredita permisos server-side, acuerdo legacy ni publicación DEV.**
