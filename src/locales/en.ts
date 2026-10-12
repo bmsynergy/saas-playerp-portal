@@ -649,6 +649,8 @@ export const en = {
   'ota.target': "Target",
   'ota.targetGroup': "A group",
   'ota.targetDevices': "Selected devices",
+  'ota.devicesSelected': "{selected} of {total} devices selected",
+  'ota.deviceModel': "Model",
   'ota.group': "Group",
   'ota.chooseGroup': "Choose a group",
   'ota.deploy': "Deploy",

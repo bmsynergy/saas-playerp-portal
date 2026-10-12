@@ -35,6 +35,7 @@ async function setup(width,lang='en'){
    if(['installed','deployment_in_progress','not_found'].includes(state.deleteMode))return send({ok:false,error:state.deleteMode},state.deleteMode==='not_found'?404:409);
    state.releases=state.releases.filter(r=>r.id!==args.id);return send({ok:true,deleted:{id:args.id},file_removed:state.deleteMode!=='partial'});
   }
+  if(name==='portal_ps_devices')return send({devices:[{id:'device-0',print_server_id:'ps-0',model:'rpi4-2gb'}]});
   if(name==='ps_ota_admin_overview')return send({ok:true,keys:[],releases:[],groups:[],devices:[{print_server_id:'ps-0',venue_id:venueId,venue_name:'Fixture Venue',hostname:'Print Server 0',installed_version:'0.3.0',online:true,last_seen_at:date,target}],deployments:[],audit:[]});
   if(name==='ps_ota_target_events'){assert.deepEqual(args,{p_target_id:'target-current'});return send({ok:true,events});}
   if(name==='ps_ota_admin_deployments_page'||name==='ps_ota_admin_audit_page')return send({ok:true,total:0,items:[],limit:25,offset:0,aggregates:{}});

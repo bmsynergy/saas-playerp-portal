@@ -1,3 +1,4 @@
+import { getInventoryDevices, type InventoryDevice } from './psDevice';
 import { utcBounds } from './adminLists';
 import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
@@ -22,7 +23,7 @@ export type OtaTarget = {
   venue_name: string | null; hostname: string | null;
 };
 export type OtaDevice = {
-  print_server_id: string; venue_id: string | null; venue_name: string | null; hostname: string | null; serial: string | null;
+  print_server_id: string; venue_id: string | null; venue_name: string | null; hostname: string | null; serial: string | null; model: string | null;
   installed_version: string | null; last_seen_at: string | null; online: boolean; target: OtaTarget | null;
 };
 export type OtaDeployment = {
@@ -54,7 +55,8 @@ function target(v: unknown): OtaTarget {
     signed: t.signed === true, issued_at: str(t.issued_at), expires_at: str(t.expires_at), offered_at: str(t.offered_at), updated_at: str(t.updated_at),
     venue_name: str(t.venue_name), hostname: str(t.hostname) };
 }
-export function projectOverview(v: unknown): OtaOverview {
+export function projectOverview(v: unknown, inventory: Pick<InventoryDevice, 'print_server_id' | 'model'>[] = []): OtaOverview {
+  const models = new Map(inventory.filter(d => d.print_server_id).map(d => [d.print_server_id, d.model]));
   const d = obj(v) ?? bad();
   if (d.ok !== true || ['keys','releases','groups','devices','deployments','audit'].some(key=>!Array.isArray(d[key]))) return bad();
   return {
@@ -76,7 +78,7 @@ export function projectOverview(v: unknown): OtaOverview {
     devices: list(d.devices).map(item => {
       const s = obj(item) ?? bad();
       if (typeof s.print_server_id !== 'string') return bad();
-      return { print_server_id: s.print_server_id, venue_id: str(s.venue_id), venue_name: str(s.venue_name), hostname: str(s.hostname), serial: str(s.serial),
+      return { print_server_id: s.print_server_id, venue_id: str(s.venue_id), venue_name: str(s.venue_name), hostname: str(s.hostname), serial: str(s.serial), model: str(models.get(s.print_server_id)),
         installed_version: str(s.installed_version), last_seen_at: str(s.last_seen_at), online: s.online === true, target: s.target ? target(s.target) : null };
     }),
     deployments: list(d.deployments).map(item => {
@@ -109,7 +111,9 @@ async function action(name: string, params: Record<string, unknown>): Promise<Ra
 }
 
 export async function getOtaOverview(signal?: AbortSignal): Promise<OtaOverview> {
-  return projectOverview(await rpc('ps_ota_admin_overview', {}, signal));
+  // Reuse the authorized inventory read: the OTA overview does not expose hardware models.
+  const [overview, inventory] = await Promise.all([rpc('ps_ota_admin_overview', {}, signal), getInventoryDevices(signal)]);
+  return projectOverview(overview, inventory);
 }
 export async function getTargetEvents(targetId: string, signal?: AbortSignal): Promise<OtaEvent[]> {
   const data = obj(await rpc('ps_ota_target_events', { p_target_id: targetId }, signal)) ?? bad();

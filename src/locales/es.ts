@@ -651,6 +651,8 @@ export const es: Record<keyof typeof en, string> = {
   'ota.target': "Destino",
   'ota.targetGroup': "Un grupo",
   'ota.targetDevices': "Aparatos seleccionados",
+  'ota.devicesSelected': "{selected} de {total} aparatos seleccionados",
+  'ota.deviceModel': "Modelo",
   'ota.group': "Grupo",
   'ota.chooseGroup': "Elige un grupo",
   'ota.deploy': "Desplegar",

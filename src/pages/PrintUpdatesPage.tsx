@@ -180,13 +180,32 @@ function GroupEditor({ groupId, initial, devices, busy, onSave, onCancel }: { gr
   </div>;
 }
 function DeviceChecklist({ devices, picked, toggle, busy, prefix }: { devices: OtaDevice[]; picked: Set<string>; toggle: (id: string) => void; busy: boolean; prefix: string }) {
-  const { t } = useLocale();
-  const rows=useLocalList(devices,(d,f)=>matchesText(f.query,d.hostname,d.serial,d.installed_version,d.venue_name)&&(!f.status||(d.online?'online':'offline')===f.status)&&matchesUtcDay(d.last_seen_at,f.from,f.to));
-  if (devices.length === 0) return <div className="inline-empty">{t('ota.noDevices')}</div>;
-  return <><AdminListFilters id={prefix} {...rows.list} dateLabel={t('list.lastContact')} statuses={['online','offline'].map(value=>({value,label:t(`ps.state.${value}`)}))}/>{rows.pagination.total===0&&<div className="inline-empty">{t('list.noMatches')}</div>}<ul className="ota-checklist">{rows.items.map(d => <li key={d.print_server_id}><label>
-    <input type="checkbox" checked={picked.has(d.print_server_id)} disabled={busy} data-testid={`${prefix}-${d.print_server_id}`} onChange={() => toggle(d.print_server_id)}/>
-    <span><strong>{d.hostname ?? d.serial ?? d.print_server_id}</strong><small className="ps-sub">{d.venue_name ?? t('inv.unassigned')} · {d.installed_version ?? t('notProvided')} · {d.online ? t('ps.state.online') : t('ps.state.offline')}</small></span>
-  </label></li>)}</ul><PrintListPagination id={prefix} pagination={rows.pagination}/></>;
+  const l = useLabels(); const { t } = l;
+  const rows=useLocalList(devices,(d,f)=>matchesText(f.query,d.hostname,d.serial,d.model,d.installed_version,d.venue_name)&&(!f.status||(d.online?'online':'offline')===f.status)&&matchesUtcDay(d.last_seen_at,f.from,f.to));
+  return <div className="ota-device-picker">
+    <p className="ota-selection-summary" role="status" aria-live="polite" data-testid={`${prefix}-summary`}>{fill(t('ota.devicesSelected'), { selected: picked.size, total: devices.length })}</p>
+    {devices.length === 0 ? <div className="inline-empty">{t('ota.noDevices')}</div> : <>
+      <AdminListFilters id={prefix} {...rows.list} dateLabel={t('list.lastContact')} statuses={['online','offline'].map(value=>({value,label:t(`ps.state.${value}`)}))}/>
+      {rows.pagination.total===0&&<div className="inline-empty">{t('list.noMatches')}</div>}
+      <div className="ota-checklist-shell"><ul className="ota-checklist">{rows.items.map(d => {
+        const hostname = d.hostname ?? d.serial ?? d.print_server_id;
+        return <li key={d.print_server_id}><label className="ota-device-card" data-selected={picked.has(d.print_server_id)}>
+          <input type="checkbox" checked={picked.has(d.print_server_id)} disabled={busy} data-testid={`${prefix}-${d.print_server_id}`} onChange={() => toggle(d.print_server_id)}/>
+          <span className="ota-device-content">
+            <strong className="ota-device-hostname" title={hostname}>{hostname}</strong>
+            <span className="ota-device-details">
+              <span><small>{t('inv.venue')}</small><span title={d.venue_name ?? undefined}>{d.venue_name ?? t('inv.unassigned')}</span></span>
+              <span><small>{t('ota.deviceModel')}</small><span title={d.model ?? undefined}>{d.model ?? t('notProvided')}</span></span>
+              <span><small>{t('ota.installed')}</small><span title={d.installed_version ?? undefined}>{d.installed_version ?? t('notProvided')}</span></span>
+              <span><small>{t('state')}</small><span className={`server-status ${d.online ? 'server-online' : 'server-offline'}`}><span className="badge-dot"/>{t(`ps.state.${d.online ? 'online' : 'offline'}`)}</span></span>
+              <span><small>{t('list.lastContact')}</small><time dateTime={d.last_seen_at ?? undefined} title={l.date(d.last_seen_at)}>{l.date(d.last_seen_at)}</time></span>
+            </span>
+          </span>
+        </label></li>;
+      })}</ul></div>
+      <PrintListPagination id={prefix} pagination={rows.pagination}/>
+    </>}
+  </div>;
 }
 
 export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
