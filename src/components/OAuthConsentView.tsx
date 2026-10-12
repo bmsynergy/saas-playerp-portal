@@ -3,24 +3,25 @@ import { useLocale } from '../locales';
 export type OAuthConsentViewProps = {
   context: {
     client: { id: string; name: string; redirect_host: string | null };
-    venues: { venue_id: string; nombre: string; concedida: boolean }[];
+    venues: { venue_id: string; nombre: string; concedida: boolean; elegible?: boolean }[];
   } | null;
-  selectedVenueId: string;
+  selectedVenueIds: string[];
   confirmed: boolean;
   busy: boolean;
   errorKey: string;
-  onSelect: (id: string) => void;
+  onToggle: (id: string) => void;
   onConfirm: (checked: boolean) => void;
   onDecide: (approve: boolean) => void;
 };
 
 /** Presentation only: the parent owns the request, session, selection and decision. */
 export function OAuthConsentView({
-  context, selectedVenueId, confirmed, busy, errorKey, onSelect, onConfirm, onDecide,
+  context, selectedVenueIds, confirmed, busy, errorKey, onToggle, onConfirm, onDecide,
 }: OAuthConsentViewProps) {
   const { t } = useLocale();
-  const selectedVenue = context?.venues.find((venue) => venue.venue_id === selectedVenueId);
-  const canAllow = Boolean(selectedVenue && confirmed && !busy);
+  // Selected venues in the order shown (PE-410: one or several per connection).
+  const selectedVenues = context?.venues.filter((venue) => selectedVenueIds.includes(venue.venue_id)) ?? [];
+  const canAllow = selectedVenues.length > 0 && confirmed && !busy;
 
   if (!context) {
     return <section className="oauth-consent" aria-busy={!errorKey}>
@@ -42,24 +43,25 @@ export function OAuthConsentView({
           <legend>{t('oauth.pickVenues')}</legend>
           {context.venues.map((venue) => <label key={venue.venue_id} className="oauth-venue">
             <input
-              type="radio"
+              type="checkbox"
               name="venue"
               value={venue.venue_id}
-              checked={selectedVenueId === venue.venue_id}
-              onChange={() => onSelect(venue.venue_id)}
+              checked={selectedVenueIds.includes(venue.venue_id)}
+              disabled={venue.elegible === false}
+              onChange={() => onToggle(venue.venue_id)}
             />
-            <span>{venue.nombre}</span>
+            <span>{venue.nombre}{venue.elegible === false && <> <small>({t('oauth.notEligible')})</small></>}</span>
           </label>)}
         </fieldset>}
     <p className="oauth-note">{t('oauth.replaceVenue')} {t('oauth.futureVenues')}</p>
-    {selectedVenue && <label className="oauth-confirm">
+    {selectedVenues.length > 0 && <label className="oauth-confirm">
       <input
         type="checkbox"
         checked={confirmed}
         disabled={busy}
         onChange={(event) => onConfirm(event.target.checked)}
       />
-      <span>{t('oauth.confirmVenuePrefix')} <strong>{selectedVenue.nombre}</strong>{t('oauth.confirmVenueSuffix')}</span>
+      <span>{t('oauth.confirmVenuePrefix')} <strong>{selectedVenues.map((venue) => venue.nombre).join(', ')}</strong>{t('oauth.confirmVenueSuffix')}</span>
     </label>}
     {errorKey && <p className="oauth-error" role="alert">{t(errorKey)}</p>}
     <div className="oauth-actions">

@@ -12,7 +12,7 @@ export function consentPath(id: string): string {
 export type ConsentContext = {
   request_id: string;
   client: { id: string; name: string; redirect_host: string | null };
-  venues: { venue_id: string; nombre: string; concedida: boolean }[];
+  venues: { venue_id: string; nombre: string; concedida: boolean; elegible?: boolean }[];
 };
 
 export function validConsentContext(value: unknown, requestId: string): value is ConsentContext {
@@ -20,7 +20,8 @@ export function validConsentContext(value: unknown, requestId: string): value is
   return !!c && c.request_id === requestId && !!c.client && typeof c.client.id === 'string'
     && typeof c.client.name === 'string' && (c.client.redirect_host === null || typeof c.client.redirect_host === 'string')
     && Array.isArray(c.venues) && c.venues.every(v => !!v && typeof v.venue_id === 'string'
-      && UUID.test(v.venue_id) && typeof v.nombre === 'string' && typeof v.concedida === 'boolean')
+      && UUID.test(v.venue_id) && typeof v.nombre === 'string' && typeof v.concedida === 'boolean'
+      && (v.elegible === undefined || typeof v.elegible === 'boolean'))
     && new Set(c.venues.map(v => v.venue_id)).size === c.venues.length;
 }
 

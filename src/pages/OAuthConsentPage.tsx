@@ -9,7 +9,7 @@ import { consentErrorKey, consentRedirect, validConsentContext, type ConsentCont
 export function OAuthConsentPage({ requestId }: { requestId: string }) {
   const { expire } = useAuth();
   const [context, setContext] = useState<ConsentContext | null>(null);
-  const [selectedVenueId, setSelectedVenueId] = useState('');
+  const [selectedVenueIds, setSelectedVenueIds] = useState<string[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const [errorKey, setErrorKey] = useState('');
   const [busy, setBusy] = useState(false);
@@ -30,7 +30,7 @@ export function OAuthConsentPage({ requestId }: { requestId: string }) {
         }
         if (!validConsentContext(data, requestId)) { setErrorKey('oauth.invalid'); return; }
         setContext(data);
-        // Even one available or previously granted venue needs a fresh explicit choice.
+        // PE-410: nothing is preselected, not even venues already granted to this assistant.
       } catch (error) {
         if (live) setErrorKey(consentErrorKey(error, 'oauth.loadFailed'));
       }
@@ -38,19 +38,23 @@ export function OAuthConsentPage({ requestId }: { requestId: string }) {
     return () => { live = false; active.current = false; };
   }, [requestId, expire]);
 
-  function select(id: string) {
+  // PE-410: several venues per connection. Any change to the selection asks for a fresh confirmation.
+  function toggle(id: string) {
     if (deciding.current) return;
-    setSelectedVenueId(id); setConfirmed(false); setErrorKey('');
+    setSelectedVenueIds(ids => ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]);
+    setConfirmed(false); setErrorKey('');
   }
 
   async function decide(approve: boolean) {
     if (deciding.current || !context) return;
-    if (approve && (!confirmed || !context.venues.some(v => v.venue_id === selectedVenueId))) return;
+    // Only eligible venues of this context, in the order shown; the RPC revalidates ownership and pilot scope.
+    const chosen = context.venues.filter(v => v.elegible !== false && selectedVenueIds.includes(v.venue_id)).map(v => v.venue_id);
+    if (approve && (!confirmed || chosen.length === 0 || chosen.length !== selectedVenueIds.length)) return;
     deciding.current = true; setBusy(true); setErrorKey('');
     let redirecting = false;
     try {
       const { data, error } = await supabase.rpc('mcp_consent_decide', {
-        p_request_id: requestId, p_approve: approve, p_venue_ids: approve ? [selectedVenueId] : null,
+        p_request_id: requestId, p_approve: approve, p_venue_ids: approve ? chosen : null,
       });
       if (!active.current) return;
       if (error) {
@@ -72,7 +76,7 @@ export function OAuthConsentPage({ requestId }: { requestId: string }) {
     }
   }
 
-  return <OAuthConsentView context={context} selectedVenueId={selectedVenueId} confirmed={confirmed}
-    busy={busy} errorKey={errorKey} onSelect={select} onConfirm={setConfirmed}
+  return <OAuthConsentView context={context} selectedVenueIds={selectedVenueIds} confirmed={confirmed}
+    busy={busy} errorKey={errorKey} onToggle={toggle} onConfirm={setConfirmed}
     onDecide={approve => void decide(approve)}/>;
 }

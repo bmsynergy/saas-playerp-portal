@@ -58,32 +58,39 @@ try {
     assert.equal(new URL(page.url()).searchParams.get('next'),`/oauth/consent?request_id=${rid}`);
     await page.getByLabel('Password',{exact:true}).fill('synthetic-password-only');
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
-    await page.getByRole('radio').first().waitFor();
+    await page.locator('.oauth-venue input').first().waitFor();
     assert.equal(new URL(page.url()).pathname,'/oauth/consent');
     assert(requests.some(r=>r.path.endsWith('/mcp_consent_context')&&r.body.p_request_id===rid));
     pass(`Anonymous login retains normalized request (${mixed?'mixed owner/staff':'owner'})`);await ctx.close();
   }
   for(const width of [390,1440]) for(const lang of ['en','es']) {
     const {ctx,page,requests}=await setup({width,lang});await open(page);
-    const radios=page.getByRole('radio');await radios.first().waitFor();
-    assert.equal(await page.locator('input[type=radio]:checked').count(),0);
+    const boxes=page.locator('.oauth-venue input'),confirm=page.locator('.oauth-confirm input');await boxes.first().waitFor();
+    assert.equal(await boxes.count(),2);assert.equal(await page.locator('.oauth-venue input:checked').count(),0);
     const approve=page.getByRole('button',{name:lang==='es'?'Permitir':'Allow',exact:true});
-    assert(await approve.isDisabled());await radios.first().check();assert(await approve.isDisabled());
-    await page.getByRole('checkbox').check();assert(await approve.isEnabled());
-    await radios.nth(1).check();assert.equal(await page.locator('input[type=radio]:checked').count(),1);
-    assert(!(await page.getByRole('checkbox').isChecked()));assert(await approve.isDisabled());
-    assert.match(await page.locator('.oauth-confirm').innerText(),/Sample Garden/);
-    await page.getByRole('checkbox').check();
+    await page.screenshot({path:`${output}/multi-venue-entry-${width}-${lang}.png`,fullPage:true});
+    assert(await approve.isDisabled());await boxes.first().check();assert(await approve.isDisabled());
+    await confirm.check();assert(await approve.isEnabled());
+    await boxes.nth(1).check();assert.equal(await page.locator('.oauth-venue input:checked').count(),2);
+    assert(!(await confirm.isChecked()));assert(await approve.isDisabled());
+    assert.match(await page.locator('.oauth-confirm').innerText(),/Sample Harbor, Sample Garden/);
+    await confirm.check();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-    await page.screenshot({path:`${output}/single-venue-${width}-${lang}.png`,fullPage:true});
+    await page.screenshot({path:`${output}/multi-venue-${width}-${lang}.png`,fullPage:true});
     await approve.click();await page.waitForURL('https://client.example/**');
     const decisions=requests.filter(r=>r.path.endsWith('/mcp_consent_decide'));
-    assert.equal(decisions.length,1);assert.deepEqual(decisions[0].body,{p_request_id:rid,p_approve:true,p_venue_ids:[v2]});
-    pass(`Explicit single venue + re-confirm selection + exact RPC payload ${width}px ${lang}`);await ctx.close();
+    assert.equal(decisions.length,1);assert.deepEqual(decisions[0].body,{p_request_id:rid,p_approve:true,p_venue_ids:[v1,v2]});
+    pass(`No preselection + two venues + re-confirm after change + exact RPC payload ${width}px ${lang}`);await ctx.close();
   }
   {
-    const {ctx,page}=await setup({list:[venues[0]]});await open(page);await page.getByRole('radio').waitFor();
-    assert(!(await page.getByRole('radio').isChecked()));assert(await allow(page).isDisabled());
+    const {ctx,page}=await setup({list:[{...venues[0],elegible:true},{...venues[1],elegible:false}]});await open(page);
+    const boxes=page.locator('.oauth-venue input');await boxes.first().waitFor();
+    assert(await boxes.nth(1).isDisabled());assert(!(await boxes.nth(0).isChecked()));assert(await allow(page).isDisabled());
+    pass('Venue outside the pilot is shown disabled and cannot be granted');await ctx.close();
+  }
+  {
+    const {ctx,page}=await setup({list:[venues[0]]});await open(page);await page.locator('.oauth-venue input').waitFor();
+    assert(!(await page.locator('.oauth-venue input').isChecked()));assert(await allow(page).isDisabled());
     pass('Only one available/prior venue still needs explicit selection');await ctx.close();
   }
   {
@@ -95,7 +102,7 @@ try {
   const contextErrors={mcp_request_unknown:/does not exist/,mcp_request_expired:/expired/,mcp_request_already_decided:/already been answered/,mcp_consent_denied:/Sign in/, 'network-fixture':/could not be loaded/};
   for(const [contextError,expected] of Object.entries(contextErrors)) {
     const {ctx,page}=await setup({contextError});await open(page);await page.getByRole('alert').waitFor();assert.match(await page.getByRole('alert').innerText(),expected);
-    assert.equal(await page.getByRole('radio').count(),0);await ctx.close();
+    assert.equal(await page.locator('.oauth-venue input').count(),0);await ctx.close();
   }
   pass('Unknown/expired/decided requests, missing session and loading errors are readable and fail closed');
   {
@@ -108,28 +115,28 @@ try {
     pass('RPC session rejection clears local session and preserves request through login');await ctx.close();
   }
 
-  const decisionErrors={mcp_piloto_owner_no_permitido:/account cannot connect/,mcp_piloto_una_sola_sede:/just one venue/,mcp_piloto_sede_no_permitida:/not enabled for the pilot/,mcp_consent_not_owner:/venues you own/, 'network-fixture':/could not be saved/};
+  const decisionErrors={mcp_piloto_owner_no_permitido:/account cannot connect/,mcp_piloto_sede_no_permitida:/not enabled for the pilot/,mcp_consent_not_owner:/venues you own/, 'network-fixture':/could not be saved/};
   for(const [decisionError,expected] of Object.entries(decisionErrors)) {
-    const {ctx,page}=await setup({decisionError});await open(page);await page.getByRole('radio').first().check();await page.getByRole('checkbox').check();await allow(page).click();
+    const {ctx,page}=await setup({decisionError});await open(page);await page.locator('.oauth-venue input').first().check();await page.locator('.oauth-confirm input').check();await allow(page).click();
     await page.getByRole('alert').waitFor();const message=await page.getByRole('alert').innerText();assert.match(message,expected);assert(!message.includes('private internal detail'));
     await ctx.close();
   }
   pass('Pilot/ownership and save errors translated without raw server details');
   {
-    const {ctx,page,requests}=await setup({delay:600,decisionError:'mcp_piloto_owner_no_permitido'});await open(page);await page.getByRole('radio').first().check();await page.getByRole('checkbox').check();
-    await allow(page).evaluate(b=>{b.click();b.click();});assert(await allow(page).isDisabled());assert(await page.getByRole('radio').first().isDisabled());
+    const {ctx,page,requests}=await setup({delay:600,decisionError:'mcp_piloto_owner_no_permitido'});await open(page);await page.locator('.oauth-venue input').first().check();await page.locator('.oauth-confirm input').check();
+    await allow(page).evaluate(b=>{b.click();b.click();});assert(await allow(page).isDisabled());assert(await page.locator('.oauth-venue input').first().isDisabled());
     await page.getByRole('alert').waitFor();assert.equal(requests.filter(r=>r.path.endsWith('/mcp_consent_decide')).length,1);
     pass('Double click produces one decision and locks the selected venue while pending');await ctx.close();
   }
   {
     const {ctx,page}=await setup({redirect:'javascript:alert(1)'});await open(page);await page.getByRole('button',{name:'Deny',exact:true}).click();await page.getByRole('alert').waitFor();
-    assert.match(page.url(),/\/oauth\/consent/);assert.equal(await page.getByRole('radio').count(),0);
+    assert.match(page.url(),/\/oauth\/consent/);assert.equal(await page.locator('.oauth-venue input').count(),0);
     pass('Unsafe returned redirect is rejected');await ctx.close();
   }
   {
-    const {ctx,page}=await setup();await open(page);await page.getByRole('radio').first().check();await page.getByRole('checkbox').check();
+    const {ctx,page}=await setup();await open(page);await page.locator('.oauth-venue input').first().check();await page.locator('.oauth-confirm input').check();
     await page.evaluate(()=>{localStorage.removeItem('playerp.portal.dev.auth');window.dispatchEvent(new StorageEvent('storage',{key:'playerp.portal.dev.auth',newValue:null}));});
-    await page.getByLabel('Email address',{exact:true}).waitFor();assert.equal(await page.getByRole('radio').count(),0);
+    await page.getByLabel('Email address',{exact:true}).waitFor();assert.equal(await page.locator('.oauth-venue input').count(),0);
     pass('Session removal discards consent and returns to login');await ctx.close();
   }
   assert.deepEqual(errors,[]);
