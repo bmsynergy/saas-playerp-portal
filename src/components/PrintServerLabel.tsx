@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Eye, EyeOff, Printer, RefreshCw } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { DeviceSheet } from '../lib/psDevice';
+import { latestRotation, type DeviceSheet } from '../lib/psDevice';
 import { getRecoveryLabel, type RecoveryLabelMissing } from '../lib/psRecoveryLabel';
 import { generateLabelPng, labelFilename, labelFingerprint, printLabel } from '../lib/psLabel';
 import { useLocale } from '../locales';
@@ -28,6 +28,9 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
   const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
     && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
   const ready = !!data && !accessLost && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
+  const latestWifi = sheet ? latestRotation(sheet.rotations, 'wifi') : null;
+  const replacementReady = ready && latestWifi?.status === 'applied' && !!sheet?.appliedWifi
+    && !!latestWifi.requested_at && Date.parse(sheet.appliedWifi.applied_at) >= Date.parse(latestWifi.requested_at);
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);
   const mounted = useRef(false);
@@ -127,6 +130,10 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
     <h3 id="dev-label-title">{t('dev.label.title')}</h3>
     <p className="ps-cert-small">{t('dev.label.lead')}</p>
     <p className="ps-cert-small">{t('dev.label.reprintHint')} {t('dev.label.printHint')}</p>
+    {replacementReady && <div className="dev-label-replacement" role="status" data-testid="dev-label-replacement-ready">
+      <p>{t('dev.label.replaceReady')}</p>
+      <button type="button" className="button button-primary" data-testid="dev-label-print-replacement" disabled={busy} onClick={() => void act('print')}><Printer size={15}/>{t('dev.label.printReplace')}</button>
+    </div>}
     <div className="staff-actions dev-label-actions">
       <button type="button" className="button button-secondary" data-testid="dev-label-preview-action" disabled={!ready || busy} onClick={() => void act('preview')}><Eye size={15}/>{t('dev.label.preview')}</button>
       <button type="button" className="button button-secondary" data-testid="dev-label-download" disabled={!ready || busy} onClick={() => void act('download')}><Download size={15}/>{t('dev.label.download')}</button>

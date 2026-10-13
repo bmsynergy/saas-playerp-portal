@@ -1,0 +1,17 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Synthetic owner browser responses; all backend traffic intercepted, no real rotations or physical printing.",
+  "checks": [
+    {
+      "locale": "es",
+      "width": 390,
+      "result": "Own venue only; both confirmations; sending/accepted/offline/received/applied; refresh retains progress; no duplicate; old Wi-Fi before ACK; updated QR and print after applied; admin failure retains code and label; assignment rejection; permission removal and foreign venue hide actions."
+    },
+    {
+      "locale": "en",
+      "width": 1440,
+      "result": "Own venue only; both confirmations; sending/accepted/offline/received/applied; refresh retains progress; no duplicate; old Wi-Fi before ACK; updated QR and print after applied; admin failure retains code and label; assignment rejection; permission removal and foreign venue hide actions."
+    }
+  ],
+  "errors": []
+}
