@@ -25,7 +25,8 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
   const fingerprint = data ? labelFingerprint(data) : null;
   // A sheet update or rotation hides a preview during render, before effects run.
   const scope = JSON.stringify([userId, venueId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost]);
-  const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId;
+  const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
+    && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
   const ready = !!data && !accessLost && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);

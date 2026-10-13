@@ -12,7 +12,7 @@ describe('PE-428 rotation status projection', () => {
     expect(s.appliedWifi?.ssid).toBe('PS-REC');
     expect(s.appliedAdminCode).toBeNull();
     expect(s.ps_online).toBe(true);
-    expect(s.rotations[0]).toMatchObject({ wait_reason: 'printing', received_at: past, error_detail: 'x y', previous_kept: false });
+    expect(s.rotations[0]).toMatchObject({ wait_reason: 'printing', received_at: past, error_detail: null, previous_kept: false });
   });
   it('unknown reasons become other; pending fallback follows the contract', () => {
     const s = projectDeviceSheet({ ...base, rotations: [{ command_id: 'c', kind: 'wifi', status: 'pending', wait_reason: 'weird' }] });

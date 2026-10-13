@@ -47,6 +47,7 @@ const codes: Record<string, string> = {
   ca_cert_invalid: 'ps.error.invalidCert',
   no_ca_cert_reported: 'ps.error.noCaCert', print_server_not_found: 'ps.error.printServerNotFound', venue_not_found: 'ps.error.venueNotFound',
   command_not_found: 'ps.error.commandNotFound', printer_paused: 'ps.error.printerPaused',
+  no_device_credentials: 'dev.error.no_device_credentials', device_offline: 'dev.error.device_offline',
   wifi_not_confirmed: 'dev.error.wifi_not_confirmed', admin_code_not_confirmed: 'dev.error.admin_code_not_confirmed',
   forbidden: 'accessDenied', not_authorized: 'accessDenied', access_denied: 'accessDenied',
 };

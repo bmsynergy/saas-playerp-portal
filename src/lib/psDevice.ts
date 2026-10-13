@@ -21,7 +21,7 @@ export type DeviceSheet = {
   cert: { hostname: string | null; not_before: string | null; not_after: string | null; der_sha256: string | null; updated_at: string | null; status: 'valid' | 'expired' | 'none' };
   cert_operations: DeviceOp[];
   can_manage: boolean; is_platform_admin: boolean;
-  ps_online: boolean; last_seen_at: string | null;
+  ps_online: boolean | null; last_seen_at: string | null;
   wifiMethod: string | null; adminCodeMethod: string | null;
 };
 export type InventoryDevice = { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null;
@@ -36,10 +36,9 @@ function op(v: unknown): DeviceOp {
   const o = obj(v) ?? bad();
   const status = o.status === 'applied' || o.status === 'failed' ? o.status : 'pending';
   const wait = typeof o.wait_reason === 'string' ? (WAIT_REASONS as readonly string[]).includes(o.wait_reason) ? o.wait_reason as WaitReason : 'other' : null;
-  // error_detail is plain text without secrets by contract; still bounded and stripped of control chars.
-  const detail = typeof o.error_detail === 'string' ? o.error_detail.replace(/[\p{C}]/gu, ' ').trim().slice(0, 300) || null : null;
+  // Unstructured device errors never enter UI state (they may contain secrets).
   return { command_id: String(o.command_id ?? ''), kind: String(o.kind ?? ''), status, requested_at: str(o.requested_at), completed_at: str(o.completed_at), error_code: code(o.error_code),
-    received_at: str(o.received_at), wait_reason: status === 'pending' ? wait : null, wait_updated_at: str(o.wait_updated_at), error_detail: detail, previous_kept: o.previous_kept === true };
+    received_at: str(o.received_at), wait_reason: status === 'pending' ? wait : null, wait_updated_at: str(o.wait_updated_at), error_detail: null, previous_kept: o.previous_kept === true };
 }
 const ts = (v: string | null | undefined) => { const n = v ? Date.parse(v) : NaN; return Number.isFinite(n) ? n : -Infinity; };
 // Latest rotation of one kind (by requested_at, falling back to list order: the backend lists newest first).
@@ -49,9 +48,9 @@ export function latestRotation(rotations: DeviceOp[], kind: string): DeviceOp | 
   return best;
 }
 // Reason shown for a pending item. Falls back to the contract rule when the backend sent none.
-export function pendingReason(item: DeviceOp, psOnline: boolean): WaitReason | 'other' {
+export function pendingReason(item: DeviceOp, psOnline: boolean | null): WaitReason | 'other' {
   if (item.wait_reason) return item.wait_reason;
-  if (!psOnline) return 'device_offline';
+  if (psOnline === false) return 'device_offline';
   return item.received_at ? 'applying' : 'awaiting_device';
 }
 export function confirmedAt(value: unknown): string | null {
@@ -84,7 +83,7 @@ export function projectDeviceSheet(v: unknown): DeviceSheet {
       status: c.status === 'valid' || c.status === 'expired' ? c.status : 'none' },
     cert_operations: Array.isArray(s.cert_operations) ? s.cert_operations.map(op) : [],
     can_manage: s.can_manage === true, is_platform_admin: s.is_platform_admin === true,
-    ps_online: s.ps_online === true, last_seen_at: str(s.last_seen_at),
+    ps_online: typeof s.ps_online === 'boolean' ? s.ps_online : null, last_seen_at: str(s.last_seen_at),
     wifiMethod: credentialAccess && wifiAt ? code(w?.wifi_method) : null, adminCodeMethod: credentialAccess && codeAt ? code(w?.admin_code_method) : null,
   };
 }
@@ -96,7 +95,11 @@ async function rpc(name: string, params: Raw = {}, signal?: AbortSignal): Promis
 }
 async function action(name: string, params: Raw): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();
-  if (data.ok !== true) throw psErrorFromCode(data.error);
+  if (data.ok === false) {
+    const error = psErrorFromCode(data.error);
+    throw error instanceof PsError ? error : new PsError('dev.progress.requestRejectedUnknown');
+  }
+  if (data.ok !== true) return bad();
   return data;
 }
 export async function getDeviceSheet(venueId: string, signal?: AbortSignal): Promise<DeviceSheet> {

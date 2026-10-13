@@ -3,37 +3,41 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { AlertTriangle, Check, Clock3, Copy, Eye, EyeOff, FileKey2, KeyRound, RefreshCw, Upload, Wifi, X } from 'lucide-react';
-import { getDeviceSheet, latestRotation, pendingReason, renewCert, rotateAdminCode, rotateWifi, uploadCert, wifiQrPayload, type DeviceOp } from '../lib/psDevice';
-import { relativeTime } from '../lib/printFleet';
-import { psErrorKey } from '../lib/printServerApi';
+import { getDeviceSheet, getLegacyContext, latestRotation, pendingReason, renewCert, rotateAdminCode, rotateWifi, uploadCert, wifiQrPayload, type DeviceOp } from '../lib/psDevice';
+import { PsError, psErrorKey } from '../lib/printServerApi';
 import { formatFingerprint } from '../lib/certificate';
 import { useLocale } from '../locales';
 import { PrintServerLabel } from './PrintServerLabel';
 import { PortalDialog } from './PortalDialog';
-import { reconcileCredentialOperation, type CredentialKind, type CredentialOperation } from '../lib/psCredentialOperation';
+import { reconcileCredentialOperation, credentialBlocked, credentialProgress, credentialErrorKey, type CredentialKind, type CredentialOperation } from '../lib/psCredentialOperation';
+
+import { CredentialProgress } from './CredentialProgress';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
-type Props = { venueId: string; printServerId: string | null };
+type Props = { venueId: string; printServerId: string | null; adminScope?: boolean };
 type Result = { ok: boolean; text: string };
 
-export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
+export function PrintServerDevicePanel({ venueId, printServerId, adminScope = false }: Props) {
   const { t, locale } = useLocale();
   const {session} = useAuth();
-  // PE-428: poll every ~10 s only while a rotation is pending (server-side or just requested here).
   const localPending = useRef(false);
+  const inFlight = useRef<string | null>(null);
   const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal),
-    refetchInterval: query => localPending.current || query.state.data?.rotations.some(o => o.status === 'pending') ? 10_000 : false });
-  const [now, setNow] = useState(() => Date.now());
+    gcTime: 0, refetchOnMount: 'always', retry: false,
+    refetchInterval: query => localPending.current || query.state.status === 'error' || query.state.data?.rotations.some(o => o.status === 'pending') ? 10_000 : 30_000 });
+  // Reuse the existing read-only PE-428 context; a link is only offered when authorized and available.
+  const legacy = useQuery({ queryKey: ['ps-legacy-context', session?.user.id, venueId], queryFn: ({ signal }) => getLegacyContext(venueId, signal),
+    enabled: adminScope && sheet.data?.is_platform_admin === true && sheet.data?.device?.legacy === true, retry: false });
   const [visibility, setVisibility] = useState({ scope: '', ssid: false, psk: false, code: false });
   const [qr, setQr] = useState<{ url: string; ssid: string; psk: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [confirm, setConfirm] = useState<'renew' | null>(null);
   const [credentialDialog, setCredentialDialog] = useState<{ scope: string; kind: CredentialKind; phase: 'confirm' | 'progress' } | null>(null);
-  const [credentialOperations, setCredentialOperations] = useState<Partial<Record<CredentialKind, CredentialOperation & { scope: string }>>>({});
+  const [credentialOperations, setCredentialOperations] = useState<Partial<Record<CredentialKind, CredentialOperation & { scope: string; credentialSnapshot?: string }>>>({});
   const [copyNotice, setCopyNotice] = useState<{ scope: string; ok: boolean; text: string } | null>(null);
   const [certPem, setCertPem] = useState(''); const [chainPem, setChainPem] = useState('');
-  const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
+  const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v && Number.isFinite(Date.parse(v)) ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const data = sheet.data;
   const accessError = sheet.isError ? psErrorKey(sheet.error) : null;
   const accessLost = accessError === 'accessDenied' || accessError === 'sessionExpired';
@@ -43,23 +47,31 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   scopeRef.current = operationScope;
   const operationFor = (kind: CredentialKind) => {
     const entry = credentialOperations[kind];
-    return entry?.scope === operationScope ? data ? reconcileCredentialOperation(entry, data.rotations) : entry : null;
+    if (entry?.scope !== operationScope) return null;
+    if (entry.phase === 'rejected' && entry.credentialSnapshot && entry.credentialSnapshot !== JSON.stringify([data?.appliedWifi, data?.appliedAdminCode])) return null;
+    const latest = data && latestRotation(data.rotations, kind);
+    if (['applied', 'failed'].includes(entry.phase) && latest && latest.command_id !== entry.commandId) return null;
+    return data ? reconcileCredentialOperation(entry, data.rotations) : entry;
   };
   const activeDialog = credentialDialog?.scope === operationScope ? credentialDialog : null;
-  const dialogOperation = activeDialog ? operationFor(activeDialog.kind) : null;
   useEffect(() => {
     setCredentialDialog(null);
     setCredentialOperations({});
     setCopyNotice(null);
   }, [operationScope]);
-  localPending.current = (['wifi', 'admin_code'] as const).some(kind => ['sending', 'pending'].includes(operationFor(kind)?.phase ?? ''));
-  const anyPending = localPending.current || !!data?.rotations.some(o => o.status === 'pending');
-  useEffect(() => {
-    setNow(Date.now());
-    if (!anyPending) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
-    return () => window.clearInterval(timer);
-  }, [anyPending, sheet.dataUpdatedAt]);
+  localPending.current = (['wifi', 'admin_code'] as const).some(kind => credentialBlocked(operationFor(kind)));
+  const uncertain = !sheet.isFetchedAfterMount || sheet.isError;
+  const reconcileHref = adminScope && data?.is_platform_admin === true && !uncertain && !legacy.isError && legacy.data?.legacy && legacy.data.print_server_status === 'active'
+    && legacy.data.device_id === data?.device?.id && legacy.data.print_server_id === printServerId && legacy.data.ca_cert_der_sha256 ? '#legacy-reconcile-title' : undefined;
+  const absence = (kind: CredentialKind) => {
+    if (!data?.credentialAccess) return null;
+    if ((['wifi', 'admin_code'] as const).some(k => operationFor(k)?.errorKey === 'dev.error.no_device_credentials')) return 'dev.error.no_device_credentials';
+    const local = operationFor(kind);
+    if (local?.phase === 'rejected' && ['dev.error.no_device_credentials', 'dev.error.wifi_not_confirmed', 'dev.error.admin_code_not_confirmed'].includes(local.errorKey ?? '')) return local.errorKey;
+    return !(kind === 'wifi' ? data.appliedWifi : data.appliedAdminCode) ? `dev.error.${kind === 'wifi' ? 'wifi' : 'admin_code'}_not_confirmed` : null;
+  };
+  const blocked = (kind: CredentialKind) => busy || uncertain || !!absence(kind) || credentialBlocked(operationFor(kind)) || !!data?.rotations.some(o => o.kind === kind && o.status === 'pending');
+  const progressFor = (kind: CredentialKind) => credentialProgress(kind, data?.rotations ?? [], operationFor(kind), data?.ps_online ?? null, trackingUnavailable);
   const wifi = data?.credentialAccess ? data.appliedWifi : null;
   const adminCode = data?.credentialAccess ? data.appliedAdminCode : null;
   // Revealed values belong to this exact identity and confirmed snapshot. A new snapshot
@@ -84,7 +96,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
         const entry = previous[kind];
         if (!entry || entry.scope !== operationScope) continue;
         const updated = reconcileCredentialOperation(entry, data.rotations);
-        if (updated.phase !== entry.phase || updated.errorKey !== entry.errorKey) { next[kind] = { ...updated, scope: operationScope }; changed = true; }
+        if (updated.phase !== entry.phase || updated.errorKey !== entry.errorKey || updated.commandId !== entry.commandId || updated.requestedAt !== entry.requestedAt) { next[kind] = { ...updated, scope: operationScope }; changed = true; }
       }
       return changed ? next : previous;
     });
@@ -105,19 +117,33 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
 
   async function requestCredential(kind: CredentialKind) {
     const scope = operationScope;
-    if (!data?.can_manage_credentials || !data.device || sheet.isError || scopeRef.current !== scope) return;
+    if (!data?.can_manage_credentials || !data.device || blocked(kind) || inFlight.current === scope || scopeRef.current !== scope) return;
+    inFlight.current = scope;
+    const previousIds = data.rotations.filter(o => o.kind === kind).map(o => o.command_id);
     setCredentialDialog({ scope, kind, phase: 'progress' });
-    setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: 'sending' } }));
+    setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: 'sending', previousIds } }));
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const response = kind === 'wifi' ? await rotateWifi(venueId) : await rotateAdminCode(venueId);
+      // A timeout only stops waiting; it must never retry the write.
+      const response = await Promise.race([
+        kind === 'wifi' ? rotateWifi(venueId) : rotateAdminCode(venueId),
+        new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('response_uncertain')), 20_000); }),
+      ]);
       if (scopeRef.current !== scope) return;
-      const commandId = typeof response.command_id === 'string' && response.command_id.trim() ? response.command_id : null;
-      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId, phase: commandId ? 'pending' : 'failed', errorKey: commandId ? undefined : 'dev.rotationTrackingFailed' } }));
-      if (commandId) { localPending.current = true; void sheet.refetch(); }
+      const commandId = response.ok === true && typeof response.command_id === 'string' && response.command_id.trim() ? response.command_id : null;
+      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId, phase: commandId ? 'pending' : 'uncertain', already: response.already === true, previousIds } }));
+      localPending.current = true;
+      void sheet.refetch();
     } catch (error) {
       if (scopeRef.current !== scope) return;
       const key = psErrorKey(error);
-      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: 'failed', errorKey: t(key) === key ? 'dev.error.other' : key } }));
+      // A backend ok:false is a rejection; transport/malformed responses leave acceptance unknown.
+      const rejected = error instanceof PsError || key === 'accessDenied' || key === 'sessionExpired';
+      setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId: null, phase: rejected ? 'rejected' : 'uncertain', errorKey: rejected ? key : 'dev.progress.trackingLost', previousIds, credentialSnapshot: JSON.stringify([data.appliedWifi, data.appliedAdminCode]) } }));
+      if (!rejected) { localPending.current = true; void sheet.refetch(); }
+    } finally {
+      clearTimeout(timer);
+      if (inFlight.current === scope) inFlight.current = null;
     }
   }
 
@@ -129,27 +155,14 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   }
 
   const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
-  const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} pendingWifi={['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')}/>;
+  const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} pendingWifi={uncertain || credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
   if (accessLost || (sheet.isError && !data)) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section>;
   if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div>{label}{help}</section>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
-  const pendingRotation = (kind: string) => data.rotations.some(o => o.kind === kind && o.status === 'pending');
-  const errorText = (code: string | null) => { const key = `dev.error.${code ?? 'other'}`; return t(key) === key ? (code ?? t('dev.error.other')) : t(key); };
-  // Status of the latest rotation per kind. The confirmed value above always comes from the
-  // `wifi` object (last value the device confirmed); a requested value is never shown as applied.
-  const rotationStatus = (kind: 'wifi' | 'admin_code') => {
-    const item = latestRotation(data.rotations, kind);
-    if (!item) return null;
-    const reason = item.status === 'pending' ? pendingReason(item, data.ps_online) : null;
-    const ago = relativeTime(item.requested_at, now, locale);
-    return <div key={kind} className={`dev-operation-notice dev-operation-${item.status}`} role="status" aria-live="polite" data-testid={`dev-rotation-status-${kind}`} data-status={item.status} data-wait-reason={reason ?? undefined}>
-      {item.status === 'applied' ? <Check size={16}/> : item.status === 'failed' ? <AlertTriangle size={16}/> : <Clock3 size={16}/>}
-      <span><strong>{t(`dev.op.${kind}`)}: {t(`dev.rotationState.${item.status}`)}</strong>
-        {item.status === 'pending' && <>{ago ? ` · ${t('dev.rotation.requestedAgo').replace('{ago}', ago)}` : ''}<br/>{t(`dev.waitReason.${reason}`)}{item.received_at ? <><br/>{t('dev.rotation.receivedAt').replace('{date}', date(item.received_at))}</> : null}</>}
-        {item.status === 'applied' && ` · ${date(item.completed_at)}${kind === 'wifi' ? ` ${t('dev.label.reprint')}` : ''}`}
-        {item.status === 'failed' && <>{item.completed_at ? ` · ${date(item.completed_at)}` : ''}<br/>{errorText(item.error_code)}{item.error_detail ? ` (${item.error_detail})` : ''}{item.previous_kept ? <><br/>{t('dev.rotation.previousKept')}</> : null}</>}
-      </span>
-    </div>;
+  const errorText = (code: string | null) => { const key = credentialErrorKey(code); return t(key) === key ? t('dev.progress.rotationErrorUnknown') : t(key); };
+  const rotationStatus = (kind: CredentialKind) => {
+    const operation = progressFor(kind);
+    return operation ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref}/> : null;
   };
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
@@ -163,7 +176,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
           <div><dt>{t('ps.hostname')}</dt><dd data-testid="dev-hostname">{data.device.hostname}</dd></div>
           <div><dt>{t('fw.model')}</dt><dd>{data.device.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : data.device.model}</dd></div>
           <div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${data.device.status}`)}{data.device.legacy ? ` · ${t('dev.legacy')}` : ''}</dd></div>
-          <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>
+          <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online === null ? 'notProvided' : data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>
         </dl>
         {data.credentialAccess ? <div className="dev-wifi">
           <div className="dev-wifi-values">
@@ -175,18 +188,10 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
             </dl>
             {copyNotice?.scope === operationScope && <p className={`dev-copy-notice ${copyNotice.ok ? 'dev-copy-ok' : 'dev-copy-error'}`} role="status" aria-live="polite" data-testid="dev-copy-result">{copyNotice.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{copyNotice.text}</span></p>}
             {data.can_manage_credentials && <div className="staff-actions">
-              <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={busy || sheet.isError || pendingRotation('wifi') || ['sending', 'pending'].includes(operationFor('wifi')?.phase ?? '')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
-              <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={busy || sheet.isError || pendingRotation('admin_code') || ['sending', 'pending'].includes(operationFor('admin_code')?.phase ?? '')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
+              <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={blocked('wifi')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
+              <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={blocked('admin_code')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
             </div>}
-            {(['wifi', 'admin_code'] as const).map(kind => {
-              const current = operationFor(kind);
-              // Once the device has the request, the per-kind status below (from ps_panel_device) is authoritative.
-              const shown = current && (current.phase === 'sending' || (current.phase === 'failed' && !current.commandId) || (current.phase === 'pending' && !data.rotations.some(o => o.command_id === current.commandId)));
-              return shown && <p key={kind} className={`dev-operation-notice dev-operation-${current.phase}`} role="status" aria-live="polite" data-testid={`dev-operation-${kind}`} data-phase={current.phase}>
-                {current.phase === 'applied' ? <Check size={16}/> : current.phase === 'failed' ? <AlertTriangle size={16}/> : <Clock3 size={16}/>}
-                <span><strong>{t(`dev.op.${kind}`)}:</strong> {t(`dev.rotationPhase.${current.phase}`)}{current.phase === 'failed' && current.errorKey ? ` ${t(current.errorKey) === current.errorKey ? t('dev.error.other') : t(current.errorKey)}` : ''}{kind === 'wifi' && current.phase === 'applied' ? ` ${t('dev.label.reprint')}` : ''}</span>
-              </p>;
-            })}
+            {(['wifi', 'admin_code'] as const).map(kind => absence(kind) && <p key={kind} className="dev-tracking-warning" data-testid={`dev-credentials-missing-${kind}`}><AlertTriangle size={16}/><span>{t(`dev.op.${kind}`)}: {t(absence(kind)!)}. {t('dev.progress.credentialsStep')} {reconcileHref && <a href={reconcileHref}>{t('dev.progress.reconcileLink')}</a>}</span></p>)}
             <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
@@ -207,7 +212,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
         <div><dt>{t('dev.https.validity')}</dt><dd data-testid="https-validity">{date(data.cert.not_before)} → {date(data.cert.not_after)} <span className={`server-status ${data.cert.status === 'valid' ? 'server-online' : 'server-revoked'}`}><span className="badge-dot"/>{t(`dev.https.${data.cert.status}`)}</span></dd></div>
         <div className="dev-wide"><dt>{t('ps.cert.fingerprintDer')}</dt><dd className="ps-mono fw-hash" data-testid="https-fingerprint">{fp ?? t('notProvided')}</dd></div>
       </dl>}
-      {data.cert_operations.length > 0 && <div className="dev-ops"><h3>{t('dev.https.operations')}</h3><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${t(`dev.error.${o.error_code}`) === `dev.error.${o.error_code}` ? o.error_code : t(`dev.error.${o.error_code}`)}` : ''}</small></li>)}</ul></div>}
+      {data.cert_operations.length > 0 && <div className="dev-ops"><h3>{t('dev.https.operations')}</h3><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}</small></li>)}</ul></div>}
       {data.is_platform_admin && printServerId && <div className="dev-cert-admin">
         <button type="button" className="button button-secondary" data-testid="https-renew" disabled={busy || data.cert_operations.some(o => o.status === 'pending')} onClick={() => setConfirm('renew')}><RefreshCw size={15}/>{t('dev.https.renew')}</button>
         <details className="dev-upload"><summary>{t('dev.https.uploadTitle')}</summary>
@@ -233,15 +238,11 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
       testId="dev-confirm" onClose={() => setCredentialDialog(null)}
       actions={activeDialog.phase === 'confirm' ? <>
         <button type="button" className="button button-secondary" onClick={() => setCredentialDialog(null)}>{t('dev.confirm.cancel')}</button>
-        <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={sheet.isError} onClick={() => void requestCredential(activeDialog.kind)}><Check size={15}/>{t('dev.confirm.accept')}</button>
+        <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={blocked(activeDialog.kind)} onClick={() => void requestCredential(activeDialog.kind)}><Check size={15}/>{t('dev.confirm.accept')}</button>
       </> : <button type="button" className="button button-secondary" data-testid="dev-dialog-close" onClick={() => setCredentialDialog(null)}>{t('dev.confirm.close')}</button>}>
       {activeDialog.phase === 'confirm' ? <div id="dev-credential-dialog-description"><p>{t(`dev.confirm.${activeDialog.kind === 'wifi' ? 'wifi' : 'code'}`)}</p>{trackingUnavailable && <p className="dev-tracking-warning" role="status"><AlertTriangle size={16}/>{t('dev.trackingUnavailable')}</p>}</div>
-        : <div id="dev-credential-dialog-description" className={`dev-dialog-status dev-dialog-${dialogOperation?.phase ?? 'sending'}`} role="status" aria-live="polite" data-testid="dev-credential-status" data-phase={dialogOperation?.phase ?? 'sending'}>
-          {dialogOperation?.phase === 'applied' ? <Check size={20}/> : dialogOperation?.phase === 'failed' ? <AlertTriangle size={20}/> : <Clock3 size={20}/>}
-          <p>{t(`dev.rotationPhase.${dialogOperation?.phase ?? 'sending'}`)}{dialogOperation?.phase === 'failed' && dialogOperation.errorKey ? ` ${t(dialogOperation.errorKey) === dialogOperation.errorKey ? t('dev.error.other') : t(dialogOperation.errorKey)}` : ''}</p>
-          {activeDialog.kind === 'wifi' && dialogOperation?.phase === 'applied' && <p>{t('dev.label.reprint')}</p>}
-          {trackingUnavailable && <p>{t('dev.trackingUnavailable')}</p>}
-        </div>}
+        : <div id="dev-credential-dialog-description">{progressFor(activeDialog.kind) && <CredentialProgress compact operation={progressFor(activeDialog.kind)!} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref}/>}</div>}
+
     </PortalDialog>}
   </>;
 }

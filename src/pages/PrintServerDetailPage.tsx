@@ -285,7 +285,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
 
     {scope === 'owner' && <PrintServerOtaBlock venueId={venueId}/>}
 
-    <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null}/>
+    <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null} adminScope={scope === 'admin'}/>
 
     {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId}/>}
 
