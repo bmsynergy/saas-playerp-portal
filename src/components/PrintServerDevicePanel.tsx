@@ -161,7 +161,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
     finally { setBusy(false); setConfirm(null); }
   }
 
-  const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
+  const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.enroll')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
   const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} pendingWifi={uncertain || credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
   if (accessLost || (sheet.isError && !data)) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="alert" className="ps-cert-small">{t(accessLost ? accessError! : 'genericError')}</p></section></>;
   if (!data) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="status" className="ps-cert-small">{t('dev.loading')}</p></section></>;
@@ -171,6 +171,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
     const operation = progressFor(kind);
     return operation ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref} onReconcile={focusReconciliation}/> : null;
   };
+  // PE-438: a PS enrolled with 0.3.21+ confirms by itself; conciliation is only for legacy units.
+  const newEnroll = !!data.enroll && !data.device?.legacy && ['pending', 'applied', 'failed'].includes(data.enroll.state);
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
   return <>
@@ -183,6 +185,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
           <div><dt>{t('ps.hostname')}</dt><dd data-testid="dev-hostname">{data.device.hostname}</dd></div>
           <div><dt>{t('fw.model')}</dt><dd>{data.device.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : data.device.model}</dd></div>
           <div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${data.device.status}`)}{data.device.legacy ? ` · ${t('dev.legacy')}` : ''}</dd></div>
+          {data.enroll && !data.device.legacy && data.enroll.state !== 'not_expected' && <div><dt>{t('dev.enroll.title')}</dt><dd data-testid="dev-enroll" data-state={data.enroll.state}><span className={`server-status ${data.enroll.state === 'applied' ? 'server-online' : data.enroll.state === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{t(`dev.enroll.state.${data.enroll.state}`)}</span>{data.enroll.state === 'failed' && <small className="dev-enroll-parts">{(['wifi', 'admin_code'] as const).map(k => `${t(`dev.op.${k}`)}: ${t(`dev.enroll.part.${data.enroll![k]}`)}${data.enroll![k] === 'failed' && data.enroll![`${k}_error`] ? ` (${data.enroll![`${k}_error`]})` : ''}`).join(' · ')}</small>}</dd></div>}
           <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online === null ? 'notProvided' : data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>
         </dl>
         {data.credentialAccess ? <div className="dev-wifi">
@@ -198,7 +201,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
               <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={blocked('wifi')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
               <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={blocked('admin_code')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
             </div>}
-            {(['wifi', 'admin_code'] as const).map(kind => absence(kind) && !progressFor(kind) && <p key={kind} className="dev-tracking-warning" data-testid={`dev-credentials-missing-${kind}`}><AlertTriangle size={16}/><span>{t(`dev.op.${kind}`)}: {t(absence(kind)!)}. {t('dev.progress.credentialsStep')} {reconcileHref && <a href={reconcileHref} onClick={focusReconciliation}>{t('dev.progress.reconcileLink')}</a>}</span></p>)}
+            {(['wifi', 'admin_code'] as const).map(kind => absence(kind) && !progressFor(kind) && <p key={kind} className="dev-tracking-warning" data-testid={`dev-credentials-missing-${kind}`}><AlertTriangle size={16}/><span>{t(`dev.op.${kind}`)}: {newEnroll ? t(`dev.enroll.part.${data.enroll![kind]}`) : t(absence(kind)!)}. {newEnroll ? t(`dev.enroll.next.${data.enroll!.state}`) : <>{t('dev.progress.credentialsStep')} {reconcileHref && <a href={reconcileHref} onClick={focusReconciliation}>{t('dev.progress.reconcileLink')}</a>}</>}</span></p>)}
             <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}

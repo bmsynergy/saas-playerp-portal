@@ -31,8 +31,11 @@ verificar un valor, permanece ausente. En este trabajo no se ha leído ni cambia
 
 **Raspberry nueva:** crear y asignar inventario no instala el aparato. P13 sigue pendiente:
 hace falta una base instalada compatible o un instalador inicial que no forma parte de esta pieza.
-Con esa base preparada y la activación completada, pulsa por separado «Rotar Wi-Fi» y «Rotar código» en un aparato compatible y espera sus confirmaciones reales; el éxito del alta no basta
-para marcarlos aplicados. No se ejecuta ni se programa ninguna rotación u OTA en este trabajo.
+Con esa base preparada y la 0.3.21 o posterior, el alta basta (PE-438): el propio aparato confirma la Wi-Fi
+de recuperación y el código que aplicó, la ficha pasa a «Alta: aplicada» y la etiqueta queda disponible sin
+conciliar ni rotar. Rotar sigue disponible como acción voluntaria. La conciliación es solo para aparatos legacy.
+Un PS nuevo nunca se marca aplicado por el alta en sí, por crear inventario ni por una acción del portal: solo
+por la confirmación autenticada del aparato. No se ejecuta ni se programa ninguna rotación u OTA en este trabajo.
 
 No se imprime QR en 50×30 mm para conservar espacio legible a los datos completos y los cuatro pasos.
 El QR Wi-Fi ya existente permanece en pantalla solo con valores confirmados al revelar la clave.

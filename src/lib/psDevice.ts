@@ -23,7 +23,20 @@ export type DeviceSheet = {
   can_manage: boolean; is_platform_admin: boolean;
   ps_online: boolean | null; last_seen_at: string | null;
   wifiMethod: string | null; adminCodeMethod: string | null;
+  // PE-438: the new PS confirms by itself what it applied at enrollment (no secrets here).
+  enroll: EnrollCredentials | null;
 };
+export type EnrollPartState = 'pending' | 'applied' | 'failed' | 'not_expected' | 'not_applicable' | 'not_emitted';
+export type EnrollCredentials = { state: 'pending' | 'applied' | 'failed' | 'not_expected' | 'not_applicable'; wifi: EnrollPartState; admin_code: EnrollPartState;
+  wifi_error: string | null; admin_code_error: string | null; acked_at: string | null };
+const ENROLL_PARTS: readonly EnrollPartState[] = ['pending', 'applied', 'failed', 'not_expected', 'not_applicable', 'not_emitted'];
+export function projectEnroll(v: unknown): EnrollCredentials | null {
+  const e = obj(v);
+  if (!e || !['pending', 'applied', 'failed', 'not_expected', 'not_applicable'].includes(String(e.state))) return null;
+  const part = (x: unknown): EnrollPartState => (ENROLL_PARTS as readonly unknown[]).includes(x) ? x as EnrollPartState : 'pending';
+  return { state: e.state as EnrollCredentials['state'], wifi: part(e.wifi), admin_code: part(e.admin_code),
+    wifi_error: code(e.wifi_error), admin_code_error: code(e.admin_code_error), acked_at: str(e.acked_at) };
+}
 export type InventoryDevice = { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null;
   arch?: string | null; label?: string | null; model_label?: string | null;
   print_server_id: string | null; software_version: string | null; last_seen_at: string | null; online: boolean; created_at: string | null };
@@ -86,6 +99,7 @@ export function projectDeviceSheet(v: unknown): DeviceSheet {
     can_manage: s.can_manage === true, is_platform_admin: s.is_platform_admin === true,
     ps_online: typeof s.ps_online === 'boolean' ? s.ps_online : null, last_seen_at: str(s.last_seen_at),
     wifiMethod: credentialAccess && wifiAt ? code(w?.wifi_method) : null, adminCodeMethod: credentialAccess && codeAt ? code(w?.admin_code_method) : null,
+    enroll: projectEnroll(s.enroll_credentials),
   };
 }
 async function rpc(name: string, params: Raw = {}, signal?: AbortSignal): Promise<unknown> {
