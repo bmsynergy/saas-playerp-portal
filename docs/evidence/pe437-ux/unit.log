@@ -3,31 +3,31 @@
 > vitest run
 
 
- RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/8e5a36a2-55c7-4694-9265-f82b14add9b2/portal
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/812be479-8105-4079-ab5d-6886fedbe5ef/portal
 
- ✓ tests/printFleet.test.ts (14 tests) 29ms
- ✓ tests/core.test.ts (7 tests) 89ms
- ✓ tests/access.test.ts (16 tests) 37ms
- ✓ tests/invitation.test.ts (9 tests) 18ms
- ✓ tests/firmwareEligibility.test.ts (13 tests) 30ms
- ✓ tests/printServerApi.test.ts (15 tests) 73ms
- ✓ tests/legacyEvidence.test.ts (32 tests) 23ms
- ✓ tests/ownerUsers.test.ts (6 tests) 38ms
- ✓ tests/psAdminDevice.test.ts (11 tests) 27ms
- ✓ tests/psRotationStatus.test.ts (4 tests) 10ms
- ✓ tests/venueUsers.test.ts (8 tests) 27ms
- ✓ tests/printInventory.test.ts (5 tests) 20ms
- ✓ tests/firmwareDelete.test.ts (9 tests) 18ms
- ✓ tests/psCredentialOperation.test.ts (9 tests) 17ms
- ✓ tests/adminLists.test.ts (5 tests) 10ms
- ✓ tests/psLabel.test.ts (5 tests) 11ms
- ✓ tests/oauthConsent.test.ts (5 tests) 17ms
- ✓ tests/psRecoveryLabel.test.ts (7 tests) 6ms
- ✓ tests/otaEvents.test.ts (2 tests) 7ms
+ ✓ tests/printServerApi.test.ts (15 tests) 29ms
+ ✓ tests/psAdminDevice.test.ts (11 tests) 20ms
+ ✓ tests/printFleet.test.ts (14 tests) 30ms
+ ✓ tests/access.test.ts (16 tests) 11ms
+ ✓ tests/venueUsers.test.ts (8 tests) 19ms
+ ✓ tests/legacyEvidence.test.ts (32 tests) 26ms
+ ✓ tests/firmwareEligibility.test.ts (13 tests) 21ms
+ ✓ tests/ownerUsers.test.ts (6 tests) 18ms
+ ✓ tests/printInventory.test.ts (5 tests) 17ms
+ ✓ tests/psLabel.test.ts (5 tests) 9ms
+ ✓ tests/psCredentialOperation.test.ts (9 tests) 6ms
+ ✓ tests/invitation.test.ts (9 tests) 10ms
+ ✓ tests/adminLists.test.ts (5 tests) 8ms
+ ✓ tests/oauthConsent.test.ts (5 tests) 5ms
+ ✓ tests/psRotationStatus.test.ts (4 tests) 6ms
+ ✓ tests/firmwareDelete.test.ts (9 tests) 15ms
+ ✓ tests/psRecoveryLabel.test.ts (7 tests) 8ms
+ ✓ tests/core.test.ts (7 tests) 58ms
  ✓ tests/otaDeviceModels.test.ts (4 tests) 6ms
+ ✓ tests/otaEvents.test.ts (2 tests) 6ms
 
  Test Files  20 passed (20)
       Tests  186 passed (186)
-   Start at  22:14:32
-   Duration  12.09s (transform 1.14s, setup 0ms, collect 2.21s, tests 514ms, environment 7ms, prepare 3.27s)
+   Start at  22:26:48
+   Duration  6.32s (transform 790ms, setup 0ms, collect 1.44s, tests 325ms, environment 4ms, prepare 1.42s)
 

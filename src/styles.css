@@ -363,6 +363,7 @@ button:disabled:active,
   text-decoration:none!important;
   transform:none!important;
   animation:none!important;
+  transition:none!important;
 }
 button:disabled svg { color:inherit!important; animation:none!important; transform:none!important; }
 button:disabled * { cursor:not-allowed!important; }

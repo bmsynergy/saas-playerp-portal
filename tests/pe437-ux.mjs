@@ -132,5 +132,5 @@ try{
  await other.page.locator('.auth-submit').click({force:true});await other.page.keyboard.press('Enter');assert.equal(other.state.authWrites,1);
  await expect.poll(()=>!!other.state.releaseAuth).toBe(true);other.state.releaseAuth();await expect(other.page.locator('.auth-success')).toBeVisible();await other.ctx.close();
  checks.push('Shared non-PS password form: disabled semantic, readable grey, separate accessible loading, mouse/keyboard cannot duplicate intercepted request');
- assert.deepEqual(errors,[]);await writeFile(`${out}/checks.json`,JSON.stringify({checks,errors,backend:'all intercepted; pending Tom contract, no real device operations'},null,2));console.log(checks.join('\n'));
+ assert.deepEqual(errors,[]);await writeFile(`${out}/checks.json`,JSON.stringify({checks,errors,backend:'all intercepted; real read contract verified separately against Tom PE-437.4; no real device operations'},null,2));console.log(checks.join('\n'));
 }finally{await browser.close();}

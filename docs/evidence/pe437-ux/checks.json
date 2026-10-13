@@ -12,5 +12,5 @@
     "Shared non-PS password form: disabled semantic, readable grey, separate accessible loading, mouse/keyboard cannot duplicate intercepted request"
   ],
   "errors": [],
-  "backend": "all intercepted; pending Tom contract, no real device operations"
+  "backend": "all intercepted; real read contract verified separately against Tom PE-437.4; no real device operations"
 }
