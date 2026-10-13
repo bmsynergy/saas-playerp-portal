@@ -66,7 +66,7 @@ try{
   assert.equal((await page.getByTestId('inv-create').innerText()).trim(),'Add Print Server');await expect(page.getByTestId('inv-create').locator('svg')).toHaveCount(1);
   await noOverflow(page);assert.ok(await page.locator('.inv-actions .button').evaluateAll(els=>els.every(e=>e.scrollWidth<=e.clientWidth)),'action text fits');await page.screenshot({path:`${out}/inventory-${width}.png`,fullPage:true});
   await page.getByTestId('inv-create').click();let dialog=page.getByTestId('admin-device-add-dialog');
-  await expect(dialog.locator('select').nth(0)).toHaveValue('future');await expect(dialog.locator('select').nth(1)).toHaveValue('armhf');
+  await expect(dialog.locator('select').nth(0)).toHaveValue('future');await expect(dialog.locator('select').nth(1)).toHaveValue('armhf');assert.ok(await dialog.locator('select,input:not([role=combobox]),.venue-combobox-control').evaluateAll(els=>els.every(e=>Math.abs(e.getBoundingClientRect().height-44)<1)),'uniform Add controls');
   
   await page.getByTestId('inv-add-venue').fill('Ponce');await expect(dialog.getByRole('option',{name:/New Park/})).toBeVisible();await expect(dialog.getByRole('option',{name:/Fixture Venue/})).toHaveCount(0);await expect(dialog.getByRole('option',{name:'Not assigned',exact:true})).toBeVisible();
   await page.getByTestId('inv-add-venue').press('ArrowDown');await page.getByTestId('inv-add-venue').press('Enter');await expect(page.getByTestId('inv-add-venue')).toHaveValue('New Park');

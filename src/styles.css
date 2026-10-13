@@ -337,3 +337,4 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 .inv-inventory-table .inv-actions .button svg{flex:none}
 @media(max-width:700px){.inv-inventory-table td:last-child{width:100%;min-width:0}.inv-inventory-table .inv-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;width:auto}.inv-inventory-table .inv-actions .button{width:auto;min-width:140px}}
 @media(max-width:450px){.inv-inventory-table .inv-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr)}.inv-inventory-table .inv-actions .button{width:100%}}
+.admin-device-form .field>input,.admin-device-form .field>select,[data-testid="admin-device-manage-dialog"] .field>input{box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;border:1px solid var(--control-line);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--ink);font:inherit;font-size:.8rem}

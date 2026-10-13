@@ -20,7 +20,7 @@ try{
   await page.screenshot({path:`${out}/inventory-${width}.png`,fullPage:true});
   const catalogResponse=page.waitForResponse(r=>r.url().endsWith('/rpc/ps_admin_device_models'));await page.getByTestId('inv-create').click();const catalog=await(await catalogResponse).json();assert.equal(catalog.ok,true);assert.ok(catalog.default);
   let dialog=page.getByTestId('admin-device-add-dialog');await expect(dialog.locator('select').nth(0)).toHaveValue(catalog.default.model);await expect(dialog.locator('select').nth(1)).toHaveValue(catalog.default.arch);
-  assert.equal((await page.getByTestId('inv-create').innerText()).trim(),'Add Print Server');
+  assert.equal((await page.getByTestId('inv-create').innerText()).trim(),'Add Print Server');assert.ok(await dialog.locator('select,input:not([role=combobox]),.venue-combobox-control').evaluateAll(els=>els.every(e=>Math.abs(e.getBoundingClientRect().height-44)<1)),'uniform Add controls');
   const venuesResponse=page.waitForResponse(r=>r.url().endsWith('/rpc/ps_admin_venue_search'));await page.getByTestId('inv-add-venue').click();const venues=await(await venuesResponse).json();assert.equal(venues.ok,true);assert.ok(venues.venues.length);
   await expect(dialog.getByRole('option',{name:'Not assigned',exact:true})).toBeVisible();
   const needle=venues.venues[0].name;
