@@ -36,7 +36,7 @@ describe('CA DER evidence and reconciliation boundary', () => {
   it('requires physical check and valid values with zero RPC',async()=>{
     await expect(reconcileLegacy(ctx(),'wifi',wifi,false,ca)).rejects.toMatchObject({key:'legacy.error.physical_check_required'});
     await expect(reconcileLegacy(ctx(),'wifi',{ssid:'Test',psk:'short'},true,ca)).rejects.toMatchObject({key:'legacy.error.invalid_value'});
-    await expect(reconcileLegacy(ctx(),'admin_code',{admin_code:'invalid'},true,ca)).rejects.toMatchObject({key:'legacy.error.invalid_value'});
+    await expect(reconcileLegacy(ctx(),'admin_code',{admin_code:'has space'},true,ca)).rejects.toMatchObject({key:'legacy.error.invalid_value'});
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   for(const changed of [{device_id:'other'},{serial:'other'},{print_server_id:'other'},{venue_id:'other'},{ca_der_sha256:'0'.repeat(64)},{legacy:false},{wifi_confirmed:true},{print_server_status:'revoked'}]) it(`live identity/state changed ${Object.keys(changed)[0]}: no mutation`,async()=>{

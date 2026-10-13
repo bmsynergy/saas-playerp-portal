@@ -6,15 +6,15 @@ import { getRecoveryLabel, type RecoveryLabelMissing } from '../lib/psRecoveryLa
 import { generateLabelPng, labelFilename, labelFingerprint, printLabel } from '../lib/psLabel';
 import { useLocale } from '../locales';
 
-type Props = { venueId: string; userId?: string; sheet?: DeviceSheet; pendingWifi?: boolean; accessLost?: boolean };
+type Props = { venueId: string; userId?: string; sheet?: DeviceSheet; pendingWifi?: boolean; accessLost?: boolean; sheetUnavailable?: boolean };
 type Action = 'preview' | 'download' | 'print';
 
 // A preview is opt-in because its image contains the confirmed recovery password.
-export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, accessLost = false }: Props) {
+export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, accessLost = false, sheetUnavailable = false }: Props) {
   const { t } = useLocale();
   const queryClient = useQueryClient();
   const queryKey = ['ps-recovery-label', userId, venueId] as const;
-  const labelQuery = useQuery({ queryKey, queryFn: ({ signal }) => getRecoveryLabel(venueId, signal), refetchInterval: 5_000, gcTime: 0, enabled: !!userId && !!venueId });
+  const labelQuery = useQuery({ queryKey, queryFn: ({ signal }) => getRecoveryLabel(venueId, signal), refetchInterval: query => pendingWifi || query.state.data?.wifiRotationPending || sheet?.enroll?.state === 'pending' ? 5_000 : false, gcTime: 0, enabled: !!userId && !!venueId });
   const [preview, setPreview] = useState<{ url: string; fingerprint: string; scope: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -24,10 +24,10 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
   const data = state?.ready && state.label ? state.label : null;
   const fingerprint = data ? labelFingerprint(data) : null;
   // A sheet update or rotation hides a preview during render, before effects run.
-  const scope = JSON.stringify([userId, venueId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost]);
+  const scope = JSON.stringify([userId, venueId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable]);
   const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
     && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
-  const ready = !!data && !accessLost && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
+  const ready = !!data && !accessLost && !sheetUnavailable && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
   const latestWifi = sheet ? latestRotation(sheet.rotations, 'wifi') : null;
   const replacementReady = ready && latestWifi?.status === 'applied' && !!sheet?.appliedWifi
     && !!latestWifi.requested_at && Date.parse(sheet.appliedWifi.applied_at) >= Date.parse(latestWifi.requested_at);
@@ -121,6 +121,7 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
     for (const missing of seen) reasons.push(t(`dev.label.missing.${missing}`));
   }
   if (accessLost) reasons.push(t('dev.label.missing.credentials_permission'));
+  else if (sheetUnavailable) reasons.push(t('dev.label.readError'));
   if (wifiPending) reasons.push(t('dev.label.pending'));
   if (state?.ready && !sheetAllows) reasons.push(t(!sheet ? 'dev.label.loading' : sheet.credentialAccess === false ? 'dev.label.missing.credentials_permission' : 'dev.label.missing.device_not_assigned'));
   if (stale) reasons.push(t('dev.label.refreshing'));

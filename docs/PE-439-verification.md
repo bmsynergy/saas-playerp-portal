@@ -1,0 +1,18 @@
+# PE-439.3 — credential sheet verification
+
+Status: frontend implemented and checked locally; DEV publication blocked by backend prerequisite. These checks use synthetic data and intercepted external requests. No device, real rotation, firmware, production, Lovable or factory changes.
+
+Implementation: Lily adjusted the credential sheet, styles and EN/ES texts; Uma integrated formatting, reconciliation boundary, status/polling and label query. Existing PE-411/415/428/429/437 permissions and label template are reused; pending certificate/enrollment tracking is retained.
+
+| Criterion | Evidence | Status |
+| --- | --- | --- |
+| 1 | `node tests/pe439-credentials.mjs`: admin/owner at 390/1440, SSID visible without toggle, secrets hidden, stable blocks on reveal, 5-5 clipboard, no lateral QR; preview and PNG exported. `docs/evidence/pe439/` contains four hidden captures, four previews and four 590×354 PNGs (existing 50×30 mm template); QR decoded as Wi-Fi, administrative code absent from drawn text and QR. Uma visually inspected all four hidden captures and the PNG. | Local synthetic PASS |
+| 2 | `npm test -- --reporter=dot`: 218/218 across 22 files. Includes known forms 10/5-5/4-4-2, unchanged stored code, exact mixed-case and misleading-hyphen legacy, 4–64 ASCII boundary and invalid whitespace, including trailing CR/LF. Browser checks show/copy and actual form payload using synthetic RPC. `PS_BACKEND_PATH=../backend python3 tests/pe439-local-login.py`: 3/3, including existing login test, canonical/grouped login and exact legacy login with existing controller. Backend source `698b115238de220d7325d6a42630a5ec55b15744`, unchanged. | Frontend/local login PASS; SQL persistence pending |
+| 3 | Same browser run, `docs/evidence/pe439/results.json`: pending/offline and received queried; no invented applying telemetry; applied/failed retain dates and history after reload, no Check Status. Both queries stop for 120,000 ms simulated after each terminal state. Explicit counts are recorded in `queryCounts`. Pending certificates/enrollment and uncertain local request continue sheet polling; network error alone does not. Preview/export reads fresh label data. | Local synthetic PASS |
+| 4 | `npm run build` succeeds; `git diff --check` clean. Gaby's independent review finds no other verified frontend defect or changes to permissions/logging. Backend predicate is the remaining blocker. `docs/handoff/PE-439-backend.md` and proposed SQL explain exactly what must be versioned/applied by Tom before publication. | GitHub branch `uma/pe439-credentials`; no DEV publication claimed |
+
+Gaby independently ran the 34 format/operation tests successfully, reviewed the backend proposal against its source and confirmed only the recognition predicate/comments change; signature, guards, audit and Wi-Fi behavior remain intact. The proposal has not been applied or registered as a backend migration. No live secrets were read or added to logs or evidence.
+
+Run browser checks against a local portal on an authorized port, e.g. `PS_TEST_ORIGIN=http://127.0.0.1:18797 node tests/pe439-credentials.mjs`. The test intercepts all external requests. The Python test binds its isolated existing HTTP fixture only to 18798 and closes it. The SQL prerequisite needs a DEV-authorized backend session; do not publish this frontend until it is confirmed.
+
+DEV destination after backend completion: `playerp.dev`, https://playerp.dev.bmore.app. The official publisher must validate this key when publishing. No publisher execution or live migration verification is claimed in this run because the prerequisite is blocked.

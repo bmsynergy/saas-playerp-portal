@@ -182,11 +182,30 @@ export async function reconcileLegacy(ctx: LegacyContext, kind: LegacyKind, valu
     || normalizeSha256(live.ca_cert_der_sha256 ?? '') !== normalizeSha256(ctx.ca_cert_der_sha256 ?? '')) throw new LegacyError('legacy.error.device_not_linked');
   validateLegacyEvidence(live, kind, values, physicalCheck, evidence);
   const data = obj(await rpc('ps_admin_legacy_credentials_reconcile', { p_serial: ctx.serial, p_print_server_id: ctx.print_server_id, p_ca_der_sha256: normalizeSha256(live.ca_cert_der_sha256!),
-    p_kind: kind, p_values: values, p_method: kind === 'wifi' ? 'recovery_read_and_join' : 'local_login', p_physical_check: physicalCheck })) ?? bad();
+    p_kind: kind, p_values: 'admin_code' in values ? { admin_code: normalizeAdminCode(values.admin_code) } : values, p_method: kind === 'wifi' ? 'recovery_read_and_join' : 'local_login', p_physical_check: physicalCheck })) ?? bad();
   if (data.ok !== true) throw legacyError(data.error);
   return { applied_at: str(data.applied_at) };
 }
-export const validAdminCode = (v: unknown) => typeof v === 'string' && /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$/.test(v);
+// Only the three known representations of the current alphabet are equivalent.
+// Everything else is legacy and must remain byte-for-byte unchanged. The final
+// lookahead requires the exact end; JavaScript $ would also allow a trailing newline.
+const currentAdminCode = /^(?:[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}|[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{5}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{5}|[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{2})(?![\s\S])/i;
+export function normalizeAdminCode(value: string): string {
+  return currentAdminCode.test(value) ? value.replace(/-/g, '').toUpperCase() : value;
+}
+export function formatAdminCode(value: string): string {
+  if (!currentAdminCode.test(value)) return value;
+  const canonical = normalizeAdminCode(value);
+  return `${canonical.slice(0, 5)}-${canonical.slice(5)}`;
+}
+export const validAdminCode = (v: unknown) => typeof v === 'string' && v.length >= 4 && v.length <= 64 && !/[^!-~]/.test(v);
+
+// Pending credentials, certificates and enrollment share the sheet query. A terminal
+// sheet or a network error alone is not a reason to keep querying indefinitely.
+export function deviceSheetPollInterval(sheet: DeviceSheet | undefined, localPending: boolean): number | false {
+  return localPending || sheet?.rotations.some(o => o.status === 'pending')
+    || sheet?.cert_operations.some(o => o.status === 'pending') || sheet?.enroll?.state === 'pending' ? 10_000 : false;
+}
 
 // Upload goes through the edge, which parses the certificate server-side. A private key is refused
 // here before it leaves the browser, and again by the server.
