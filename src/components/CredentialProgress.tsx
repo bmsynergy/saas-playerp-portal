@@ -13,6 +13,8 @@ type Props = {
 const waitingPhases = new Set<CredentialProgressView['phase']>(['sending', 'accepted', 'pending', 'offline', 'received']);
 const credentialErrors = new Set(['no_device_credentials', 'wifi_not_confirmed', 'admin_code_not_confirmed']);
 const safeErrors: Record<string, string> = {
+  'dev.error.device_not_assigned': 'dev.error.device_not_assigned',
+  device_not_assigned: 'dev.error.device_not_assigned',
   'dev.error.device_offline': 'dev.progress.error.device_offline',
   'dev.progress.requestRejectedUnknown': 'dev.progress.requestRejectedUnknown',
   'ps.error.noActivePrintServer': 'ps.error.noActivePrintServer',

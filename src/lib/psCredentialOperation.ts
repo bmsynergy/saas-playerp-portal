@@ -22,7 +22,7 @@ export type CredentialProgressView = {
   already?: boolean;
   previousKept?: boolean;
 };
-const errorCodes = new Set(['wifi_not_confirmed', 'admin_code_not_confirmed', 'no_device_credentials', 'device_offline', 'apply_failed', 'wifi_apply_failed', 'admin_code_apply_failed', 'timeout', 'expired', 'cancelled', 'invalid_value', 'unsupported', 'internal_error']);
+const errorCodes = new Set(['wifi_not_confirmed', 'admin_code_not_confirmed', 'no_device_credentials', 'device_not_assigned', 'device_offline', 'apply_failed', 'wifi_apply_failed', 'admin_code_apply_failed', 'timeout', 'expired', 'cancelled', 'invalid_value', 'unsupported', 'internal_error']);
 export function credentialErrorKey(code: string | null | undefined): string {
   return code && errorCodes.has(code) ? `dev.error.${code}` : 'dev.progress.rotationErrorUnknown';
 }
