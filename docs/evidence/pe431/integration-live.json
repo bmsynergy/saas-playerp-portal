@@ -1,0 +1,44 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "at": "2026-10-13T19:35:39.017Z",
+  "overview": [
+    {
+      "http": 200,
+      "auditIncluded": false,
+      "auditPresent": false
+    },
+    {
+      "http": 200,
+      "auditIncluded": false,
+      "auditPresent": false
+    },
+    {
+      "http": 200,
+      "auditIncluded": false,
+      "auditPresent": false
+    }
+  ],
+  "auditCalls": 4,
+  "widths": [
+    {
+      "width": 1440,
+      "fullWidth": true,
+      "copyExact": true
+    },
+    {
+      "width": 390,
+      "fullWidth": true,
+      "copyExact": true
+    },
+    {
+      "width": 320,
+      "fullWidth": true,
+      "copyExact": true
+    }
+  ],
+  "errors": [],
+  "initialAuditCalls": 0,
+  "range": "1–25 of 213 results",
+  "directJump": true,
+  "passed": true
+}

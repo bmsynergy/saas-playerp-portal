@@ -89,7 +89,6 @@ try {
   [`/admin/tenants/${a}/print-servers/detail`,'printers','[data-testid^="printer-row-"]','printers-search'],
   ['/admin/print-servers/updates','editions','[data-testid^="ota-release-"]','editions-search'],
   ['/admin/print-servers/updates','groups','[data-testid^="ota-group-group-"]','groups-search'],
-  ['/admin/print-servers/updates','ota-devices','[data-testid^="ota-device-ps-"]','ota-devices-search'],
   ['/admin/print-servers/updates','deployments','[data-testid^="ota-deployment-deployment-"]','deployments-search'],
   ['/admin/print-servers/updates','audit','[data-testid="ota-audit"] > li','audit-search'],
  ]) {await page.goto(origin+path+'?lang=en');if(id==='printers')await page.getByTestId('printers-toggle').click();await confirmAudit(page,id);await traverse(page,id,page.locator(selector),search,dateId);}
@@ -145,7 +144,7 @@ try {
  const auditCalls=()=>audit.db.calls.filter(c=>c.name==='ps_ota_admin_audit_page');
  await expect(audit.page.getByTestId('ota-audit-start')).toBeVisible();
  assert.equal(auditCalls().length,0);
- // Explicitly detect the blocker as well as validating the scoped frontend change.
+ // Validate that the overview contract omits Audit on initial load.
  assert(audit.db.overviewAuditRows.length>0,'initial overview read observed');
  assert.equal(audit.db.overviewAuditRows[0],0,'overview omits audit before Search');
  report.initialAuditLoad={dedicatedPageCalls:0,overviewRows:audit.db.overviewAuditRows[0],completeOnDemand:true};

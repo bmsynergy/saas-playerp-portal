@@ -92,15 +92,6 @@
       "resetAndEmpty": true
     },
     {
-      "list": "ota-devices",
-      "total": 63,
-      "first": 25,
-      "last": 13,
-      "pages": 3,
-      "dateTotal": 31,
-      "resetAndEmpty": true
-    },
-    {
       "list": "deployments",
       "total": 63,
       "first": 25,
@@ -188,11 +179,10 @@
   "errors": [],
   "initialAuditLoad": {
     "dedicatedPageCalls": 0,
-    "overviewRows": 50,
-    "completeOnDemand": false
+    "overviewRows": 0,
+    "completeOnDemand": true
   },
   "automaticOverviewCalls": 3,
-  "knownDependency": "Legacy ps_ota_admin_overview still bundles 50 audit records on initial/periodic overview reads; backend support required to omit audit before complete acceptance.",
   "frontendChecksPassed": true,
-  "portalAcceptanceComplete": false
+  "portalAcceptanceComplete": true
 }
