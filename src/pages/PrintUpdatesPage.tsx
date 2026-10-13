@@ -135,7 +135,7 @@ function TargetHead() {
 
 function DeploymentTargets({deploymentId}:{deploymentId:string}) {
   const state=useOtaPage('targets',deploymentId),{t}=useLocale();
-  return <div><PageFilters state={state} kind="targets" id={`targets-${deploymentId}`} dateLabel={t('list.issuedAt')}/>
+  return <div><ReadState state={state}/>
     {state.valid&&!state.query.isError&&state.query.data&&<><div className="table-scroll"><table className="servers-table fw-table ota-table"><TargetHead/><tbody>{state.query.data.items.map(target=><TargetRow key={target.id} target={target}/>)}</tbody></table></div><PrintListPagination id={`targets-${deploymentId}`} pagination={state.pagination}/></>}
   </div>;
 }

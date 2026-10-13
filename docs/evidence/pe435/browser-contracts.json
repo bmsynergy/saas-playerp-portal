@@ -1,0 +1,112 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Synthetic intercepted API contracts; no live mutations",
+  "checks": [
+    {
+      "width": 390,
+      "criterion1": {
+        "directTargetsAndEvents": true,
+        "scopedDeployment": true,
+        "noInternalFilters": true
+      },
+      "criterion2": {
+        "explicitDefaultSecondModel": "future/armhf",
+        "venueSearchCityAndKeyboard": true,
+        "singlePlus": true
+      },
+      "criterion3": {
+        "order": [
+          "devices-search",
+          "devices-status",
+          "devices-assignment",
+          "devices-version",
+          "devices-from",
+          "devices-to",
+          "Clear filters"
+        ],
+        "uniformHeight": 44,
+        "noOverflow": true,
+        "clearAssignmentAndVersion": true
+      },
+      "criterion4": {
+        "cleanActions": true,
+        "assignAndAtomicMove": true,
+        "rejectedMoveKeptAssignment": true,
+        "separateUnassignAndDelete": true,
+        "serialConfirmation": true,
+        "blockedDeleteHidden": true
+      }
+    },
+    {
+      "width": 834,
+      "criterion1": {
+        "directTargetsAndEvents": true,
+        "scopedDeployment": true,
+        "noInternalFilters": true
+      },
+      "criterion2": {
+        "explicitDefaultSecondModel": "future/armhf",
+        "venueSearchCityAndKeyboard": true,
+        "singlePlus": true
+      },
+      "criterion3": {
+        "order": [
+          "devices-search",
+          "devices-status",
+          "devices-assignment",
+          "devices-version",
+          "devices-from",
+          "devices-to",
+          "Clear filters"
+        ],
+        "uniformHeight": 44,
+        "noOverflow": true,
+        "clearAssignmentAndVersion": true
+      },
+      "criterion4": {
+        "cleanActions": true,
+        "assignAndAtomicMove": true,
+        "rejectedMoveKeptAssignment": true,
+        "separateUnassignAndDelete": true,
+        "serialConfirmation": true,
+        "blockedDeleteHidden": true
+      }
+    },
+    {
+      "width": 1440,
+      "criterion1": {
+        "directTargetsAndEvents": true,
+        "scopedDeployment": true,
+        "noInternalFilters": true
+      },
+      "criterion2": {
+        "explicitDefaultSecondModel": "future/armhf",
+        "venueSearchCityAndKeyboard": true,
+        "singlePlus": true
+      },
+      "criterion3": {
+        "order": [
+          "devices-search",
+          "devices-status",
+          "devices-assignment",
+          "devices-version",
+          "devices-from",
+          "devices-to",
+          "Clear filters"
+        ],
+        "uniformHeight": 44,
+        "noOverflow": true,
+        "clearAssignmentAndVersion": true
+      },
+      "criterion4": {
+        "cleanActions": true,
+        "assignAndAtomicMove": true,
+        "rejectedMoveKeptAssignment": true,
+        "separateUnassignAndDelete": true,
+        "serialConfirmation": true,
+        "blockedDeleteHidden": true
+      }
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,107 @@
+{
+  "catalog": {
+    "ok": true,
+    "models": [
+      {
+        "sort": 10,
+        "archs": [
+          "arm64"
+        ],
+        "label": "Raspberry Pi 4 · 2 GB",
+        "model": "rpi4-2gb",
+        "active": true,
+        "is_default": true,
+        "default_arch": "arm64"
+      }
+    ],
+    "default": {
+      "arch": "arm64",
+      "label": "Raspberry Pi 4 · 2 GB",
+      "model": "rpi4-2gb"
+    }
+  },
+  "venueSearch": {
+    "ok": true,
+    "count": 13,
+    "fields": [
+      "id",
+      "city",
+      "name",
+      "slug",
+      "state",
+      "is_active",
+      "assigned_device"
+    ]
+  },
+  "devices": 21,
+  "manage": [
+    {
+      "status": "assigned",
+      "ok": true,
+      "actions": {
+        "move": {
+          "reason": null,
+          "allowed": true
+        },
+        "assign": {
+          "reason": "device_already_assigned",
+          "allowed": false
+        },
+        "delete": {
+          "allowed": false,
+          "blockers": [
+            "device_assigned",
+            "active_enrollment",
+            "active_operation",
+            "pending_credential_change"
+          ],
+          "confirm_with": "serial"
+        },
+        "unassign": {
+          "reason": null,
+          "allowed": true
+        }
+      },
+      "delete": {
+        "allowed": false,
+        "blockers": [
+          "device_assigned",
+          "active_enrollment",
+          "active_operation",
+          "pending_credential_change"
+        ]
+      }
+    },
+    {
+      "status": "stock",
+      "ok": true,
+      "actions": {
+        "move": {
+          "reason": "device_not_assigned",
+          "allowed": false
+        },
+        "assign": {
+          "reason": null,
+          "allowed": true
+        },
+        "delete": {
+          "allowed": false,
+          "blockers": [
+            "active_enrollment"
+          ],
+          "confirm_with": "serial"
+        },
+        "unassign": {
+          "reason": null,
+          "allowed": true
+        }
+      },
+      "delete": {
+        "allowed": false,
+        "blockers": [
+          "active_enrollment"
+        ]
+      }
+    }
+  ]
+}

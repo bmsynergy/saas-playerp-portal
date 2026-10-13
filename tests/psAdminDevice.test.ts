@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), getSession: vi.fn() }));
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc: mocks.rpc, auth: { getSession: mocks.getSession } } }));
-import { adminDeviceErrorKey, createAdminDevice, deleteAdminDevice, getAdminDeviceDetail, projectAdminDeviceDetail, projectDeviceModels, updateAdminDevice } from '../src/lib/psAdminDevice';
+import { adminDeviceErrorKey, createAdminDevice, deleteAdminDevice, getAdminDeviceDetail, projectAdminDeviceDetail, projectDeviceModels, projectDeviceModelCatalog, projectAdminDeviceManage, projectAdminVenues, moveAdminDevice, searchAdminVenues, updateAdminDevice } from '../src/lib/psAdminDevice';
 const fixture = () => ({ ok: true, device: { id: 'device', serial: 'PS-12345678', hostname: 'ps', model: 'rpi4-2gb', arch: 'arm64', status: 'stock', legacy: false, venue_id: null },
   update: { current_version: '0.3.1', latest_stable: { edition_id: 'stable', version: '0.3.2', model: 'rpi4-2gb', arch: 'arm64' }, update_available: true, reason: null, active_update: null }, delete: { allowed: true, blockers: [] as string[] } });
 beforeEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
 describe('PE-432 admin device contracts', () => {
   it('projects the model catalogue without a hardcoded hardware choice', () => {
-    expect(projectDeviceModels({ ok: true, models: [{ model: 'new-model', label: 'New model', archs: ['armhf','arm64'], default_arch: 'armhf', secret: 'hidden' }] })).toEqual([{ model: 'new-model', label: 'New model', archs: ['armhf','arm64'], default_arch: 'armhf' }]);
+    expect(projectDeviceModels({ ok: true, models: [{ model: 'new-model', label: 'New model', archs: ['armhf','arm64'], default_arch: 'armhf', active:true, is_default:false, secret: 'hidden' }] })).toEqual([{ model: 'new-model', label: 'New model', archs: ['armhf','arm64'], default_arch: 'armhf', active:true, is_default:false }]);
     expect(() => projectDeviceModels({ok:true,models:[{model:'bad',label:'Bad',archs:['armhf'],default_arch:'arm64'}]})).toThrow();
   });
   it('does not expose credentials or offer incompatible or already active updates', () => {
@@ -46,5 +46,42 @@ describe('PE-432 admin device contracts', () => {
     await expect(updateAdminDevice('device','stable')).rejects.toMatchObject({code:'sessionExpired'}); expect(fetch).not.toHaveBeenCalled();
     const signal=new AbortController().signal,abortSignal=vi.fn().mockResolvedValue({data:fixture()}); mocks.rpc.mockReturnValue({abortSignal});
     await getAdminDeviceDetail('device',signal); expect(abortSignal).toHaveBeenCalledWith(signal);
+  });
+});
+
+
+describe('PE-435 catalogue and Manage contracts', () => {
+  const model = (name: string, active = true, is_default = false) => ({ model: name, label: name, archs: ['armhf', 'arm64'], default_arch: 'armhf', active, is_default });
+  it('selects the explicit active default, not catalogue position; rejects an inconsistent default', () => {
+    const data = { ok: true, default: { model: 'second', label: 'second', arch: 'armhf' }, models: [model('first'), model('second', true, true), model('inactive', false)] };
+    expect(projectDeviceModelCatalog(data)).toMatchObject({ default: { model: 'second', arch: 'armhf' }, models: [{ model: 'first' }, { model: 'second' }] });
+    expect(projectDeviceModelCatalog({ ...data, default: null }).default).toBeNull();
+    expect(() => projectDeviceModelCatalog({ ...data, default: { ...data.default, arch: 'arm64' } })).toThrow();
+    expect(() => projectDeviceModelCatalog({ ...data, models: [model('second', false, true)] })).toThrow();
+  });
+  const manageable = () => ({ ...fixture(), actions: { assign: { allowed: true, reason: null }, move: { allowed: false, reason: 'device_not_assigned' }, unassign: { allowed: false, reason: 'device_not_assigned' }, delete: { allowed: true, confirm_with: 'serial' } } });
+  it('requires both server action permission and deletion guards, and serial confirmation support', () => {
+    const data = manageable();
+    expect(projectAdminDeviceManage(data).actions.delete.allowed).toBe(true);
+    expect(projectAdminDeviceManage({ ...data, delete: { allowed: true, blockers: ['active_operation'] } }).actions.delete.allowed).toBe(false);
+    expect(projectAdminDeviceManage({ ...data, device: { ...data.device, venue_id: 'assigned' } }).actions.delete.allowed).toBe(false);
+    expect(projectAdminDeviceManage({ ...data, actions: { ...data.actions, delete: { allowed: true } } }).actions.delete.allowed).toBe(false);
+    expect(projectAdminDeviceManage({ ...data, actions: { ...data.actions, assign: { allowed: true, reason: 'blocked' } } }).actions.assign.allowed).toBe(false);
+    expect(() => projectAdminDeviceManage({ ...data, actions: null })).toThrow();
+  });
+  it('moves with one atomic backend call and never follows rejection with revoke or delete', async () => {
+    mocks.rpc.mockResolvedValue({ data: { ok: true, enrollment_code: 'one-time', expires_at: null, replaces_device_id: null } });
+    expect(await moveAdminDevice('device', 'new-venue')).toEqual({ code: 'one-time', expires_at: null, replaces: false });
+    expect(mocks.rpc).toHaveBeenCalledWith('ps_admin_device_move', { p_device_id: 'device', p_venue_id: 'new-venue' });
+    mocks.rpc.mockResolvedValue({ data: { ok: false, error: 'unknown_venue' } });
+    await expect(moveAdminDevice('device', 'missing')).rejects.toMatchObject({ key: 'adminDevice.error.unknown_venue' });
+    expect(mocks.rpc.mock.calls.map(call => call[0])).toEqual(['ps_admin_device_move', 'ps_admin_device_move']);
+  });
+  it('searches server-side and projects only visible venue fields, never device credentials', async () => {
+    const response = { ok: true, venues: [{ id: 'venue', name: 'Park', slug: 'park', city: 'Ponce', state: 'PR', is_active: true, address: 'ignored', assigned_device: { id: 'device', serial: 'PS-1', secret: 'hidden' } }] };
+    expect(projectAdminVenues(response)).toEqual([{ id: 'venue', name: 'Park', slug: 'park', city: 'Ponce', state: 'PR', is_active: true, assigned_device: { id: 'device', serial: 'PS-1' } }]);
+    mocks.rpc.mockResolvedValue({ data: response });
+    await searchAdminVenues(' Ponce ', 'venue');
+    expect(mocks.rpc).toHaveBeenCalledWith('ps_admin_venue_search', { p_query: 'Ponce', p_limit: 20, p_include_venue_id: 'venue' });
   });
 });

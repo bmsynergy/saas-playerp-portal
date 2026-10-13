@@ -295,3 +295,45 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 @media(max-width:600px){.admin-device-form,.admin-device-firmware-grid{grid-template-columns:minmax(0,1fr)}.admin-device-review dl>div{display:block}.admin-device-review dd{text-align:left;margin-top:4px}.ota-deployment-stats{align-items:stretch}.ota-deployment-stats .ota-progress{width:100%}}
 
 .admin-device-confirm{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;background:var(--surface-soft)}.admin-device-confirm p{margin:0 0 10px}.admin-device-confirm .staff-actions{flex-wrap:wrap}
+
+/* PE-435: Inventory controls and device management */
+.inv-filter-bar{display:flex;align-items:end;gap:10px 12px;flex-wrap:wrap;margin:12px 0 18px}
+.inv-filter-bar .admin-list-filters{flex:1 1 100%;margin:0;align-items:end}
+.inv-filter-bar .admin-list-filters label{min-width:150px;flex:1 1 150px}
+.inv-filter-bar .admin-list-filters label:first-child{flex:2 1 210px}
+.inv-filter-bar .directory-count{margin-left:auto;align-self:end;min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
+.inv-filter-bar .admin-list-clear{min-height:44px}
+.inv-actions{justify-content:flex-end;flex-wrap:nowrap}
+.inv-actions .button{white-space:nowrap}
+.venue-combobox{position:relative;min-width:0;width:100%}
+.venue-combobox-control{height:44px;display:flex;align-items:center;gap:8px;border:1px solid var(--control-line);border-radius:9px;padding:0 9px;background:var(--surface);color:var(--muted)}
+.venue-combobox-control:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.venue-combobox-control input{flex:1;min-width:0;width:100%;height:40px;padding:0;border:0;background:transparent;box-shadow:none;outline:0;color:var(--ink)}
+.venue-combobox-control button{border:0;background:transparent;color:var(--muted);display:grid;place-items:center;padding:5px;cursor:pointer}
+.venue-combobox-options{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:10;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow);padding:4px}
+.venue-combobox-options button{display:grid;gap:3px;width:100%;text-align:left;border:0;border-radius:7px;background:transparent;padding:8px 10px;color:var(--ink);cursor:pointer}
+.venue-combobox-options button:hover,.venue-combobox-options button.active{background:var(--blue-soft)}
+.venue-combobox-options button strong{font-size:.8rem}
+.venue-combobox-options button small{font-size:.7rem;color:var(--muted)}
+.venue-combobox-options p{padding:8px 10px;color:var(--muted);font-size:.76rem}
+.inv-manage-summary{display:grid;gap:0;margin:0}.inv-manage-summary>div{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:8px 0}
+.inv-manage-summary{border:1px solid var(--line);border-radius:10px;padding:4px 13px}
+.inv-manage-summary>div:last-child{border-bottom:0}
+.inv-manage-secondary{display:grid;justify-items:start;gap:6px;margin-top:4px}
+.inv-manage-secondary small{color:var(--muted)}
+.inv-manage-danger{border-top:1px solid var(--danger-line);padding-top:15px;margin-top:4px;display:grid;justify-items:start;gap:9px}
+.inv-manage-danger h3{margin:0;color:var(--danger);font-size:.79rem}
+@media(max-width:700px){.inv-filter-bar .admin-list-filters label{flex-basis:calc(50% - 12px)}.inv-filter-bar .admin-list-filters label:first-child{flex-basis:100%}}
+@media(max-width:450px){.inv-filter-bar .admin-list-filters label{flex-basis:100%}.inv-filter-bar .admin-list-clear{width:100%}.inv-filter-bar .directory-count{margin-left:0}.inv-actions{flex-wrap:wrap;justify-content:stretch}.inv-actions .button{width:100%}}
+
+@media(max-width:450px){.inv-manage-summary>div{display:grid;gap:4px}.inv-manage-summary dd{text-align:left}}
+
+/* Keep inventory actions and serial readable in the compact admin table. */
+.inv-inventory-table td:first-child{min-width:92px}
+.inv-inventory-table td:first-child .ps-mono{white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.inv-inventory-table td:last-child{width:190px;min-width:190px}
+.inv-inventory-table .inv-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;width:100%}
+.inv-inventory-table .inv-actions .button,.fw-table.inv-inventory-table td:last-child .button{width:100%;min-width:0;min-height:44px;white-space:nowrap;overflow-wrap:normal;word-break:normal;text-align:left;justify-content:flex-start;padding:8px 9px;font-size:.69rem}
+.inv-inventory-table .inv-actions .button svg{flex:none}
+@media(max-width:700px){.inv-inventory-table td:last-child{width:100%;min-width:0}.inv-inventory-table .inv-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;width:auto}.inv-inventory-table .inv-actions .button{width:auto;min-width:140px}}
+@media(max-width:450px){.inv-inventory-table .inv-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr)}.inv-inventory-table .inv-actions .button{width:100%}}
