@@ -83,21 +83,15 @@ function Events({ target }: { target: OtaTarget }) {
   const l=useLabels(),{t}=l;
   const {session}=useAuth();
   const targetId=target.id;
-  // Existing authorized RPC returns every event of this target in chronological order.
+  // Existing authorized RPC returns every event of this target, ordered by ID.
   const query=useQuery({queryKey:['ps-ota-events',session?.user.id,targetId],
     queryFn:({signal})=>getTargetEvents(targetId,signal),enabled:!!session,refetchInterval:10_000});
-  const [filters,setFilters]=useState<import('../lib/ota').OtaPageFilter>(EMPTY_LIST_FILTERS);
-  const list={filters,set:(key:keyof typeof filters,value:string)=>setFilters(f=>({...f,[key]:value})),clear:()=>setFilters(EMPTY_LIST_FILTERS)};
-  const phase=filters.phase??'';
-  const events=(query.data??[]).filter(e=>matchesText(list.filters.query,e.phase,e.status,e.error_code)&&
-    (!list.filters.status||e.status===list.filters.status)&&(!phase||e.phase===phase)&&matchesUtcDay(e.created_at,list.filters.from,list.filters.to));
-  const valid=!list.filters.from||!list.filters.to||list.filters.from<=list.filters.to;
-  return <div><AdminListFilters id={`events-${targetId}`} {...list} dateLabel={t('list.created')}
-    statuses={OTA_STATUSES.map(value=>({value,label:l.status(value)}))}/>
-    <label className="ota-extra-filter"><span>{t('ota.phase')}</span><input data-testid={`events-${targetId}-phase`} value={phase} onChange={e=>list.set('phase',e.target.value)}/></label>
+  // Sort a copy by time; stable ties preserve the RPC's ID order without mutating its cache.
+  const events=[...(query.data??[])].sort((a,b)=>(Date.parse(a.created_at??'')||0)-(Date.parse(b.created_at??'')||0));
+  return <div>
     {query.isError ? <div role="alert" className="form-error">{t(psErrorKey(query.error))}<button type="button" className="button button-secondary" onClick={()=>void query.refetch()}>{t('refresh')}</button></div>
       : query.isPending ? <p role="status" className="inline-empty">{t('dev.loading')}</p>
-      : valid && (events.length ? <ol className="ota-events" data-testid={`ota-events-${targetId}`}>{events.map(e=>{
+      : (events.length ? <ol className="ota-events" data-testid={`ota-events-${targetId}`}>{events.map(e=>{
         const detail=eventDetail(e.detail);
         return <li key={e.id}>
           <time dateTime={e.created_at??undefined}>{l.date(e.created_at)}</time>
