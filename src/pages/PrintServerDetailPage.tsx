@@ -10,6 +10,7 @@ import { PortalDialog } from '../components/PortalDialog';
 import { PrinterQueue } from './PrinterQueue';
 import { PrintServerDevicePanel } from '../components/PrintServerDevicePanel';
 import { PrintServerOtaBlock } from '../components/PrintServerOtaBlock';
+import { PrintServerLegacyReconcile } from '../components/PrintServerLegacyReconcile';
 import { certificateFilename, formatFingerprint } from '../lib/certificate';
 import { AdminDateFilters } from '../components/AdminListFilters';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
@@ -285,6 +286,8 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
     {scope === 'owner' && <PrintServerOtaBlock venueId={venueId}/>}
 
     <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null}/>
+
+    {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId}/>}
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <div className="detail-grid">

@@ -93,3 +93,25 @@ Retorno: SHA remoto backend, migraciones/edges realmente aplicadas en DEV y evid
 acuerdo definitivo de conciliación y pasos físicos que quedan pendientes. Tom revalida el registro
 `playerp.dev` por mecanismo autorizado; aquí solo se ha leído el espejo oficial dev-targets.json,
 no se afirma comprobación SQL de coredeva.dev_target. Entonces Uma integra/publica y verifica.
+
+## PE-428 — Estado real de rotaciones y conciliación legacy (portal)
+
+- `ps_panel_device` añade `ps_online`, `last_seen_at` y, por rotación, `received_at`, `wait_reason`
+  (`applying`, `awaiting_device`, `device_offline`, `ota_active`, `reboot_pending`, `wifi_change`,
+  `printing`, `safety_check_unavailable`, `bridge_unavailable`), `wait_updated_at`, `error_detail`
+  (sin secretos) y `previous_kept`. El portal muestra por tipo (Wi-Fi / código) la última rotación:
+  Pendiente (antigüedad + motivo + "Recibida por el aparato"), Aplicado (solo `status='applied'`,
+  con `completed_at`) o Fallido (`error_code`/`error_detail` y "Se mantiene el valor anterior").
+  El valor mostrado como confirmado sale siempre de `wifi` (último confirmado); un grupo ausente se
+  muestra "Sin confirmar". El panel refresca cada ~10 s solo mientras haya una rotación pendiente.
+- `ps_panel_rotate_*` puede responder `wifi_not_confirmed` / `admin_code_not_confirmed`: no se rota
+  para rellenar una ausencia; primero hay que conciliar.
+- `/admin/print-servers/:venueId` (y `/admin/tenants/:id/print-servers/detail`), solo staff de
+  plataforma: bloque "Conciliar credenciales legacy". Lee `ps_admin_legacy_credentials_context`
+  (identidad sin secretos) y envía `ps_admin_legacy_credentials_reconcile` por separado para
+  `wifi` (`recovery_read_and_join`) y `admin_code` (`local_login`) con `p_physical_check=true`.
+  El staff debe teclear los 12 primeros hex de la huella CA vista en el aparato (comparación en
+  cliente; el RPC revalida el valor completo). Un grupo ya confirmado no se sobrescribe. Los valores
+  no se registran ni se guardan en caché y los campos se vacían tras enviar.
+- `ps_panel_recovery_label` sin cambios: la etiqueta 50x30 solo depende de la Wi-Fi confirmada,
+  no del código administrativo.

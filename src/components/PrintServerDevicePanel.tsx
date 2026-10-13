@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { AlertTriangle, Check, Clock3, Copy, Eye, EyeOff, FileKey2, KeyRound, RefreshCw, Upload, Wifi, X } from 'lucide-react';
-import { getDeviceSheet, renewCert, rotateAdminCode, rotateWifi, uploadCert, wifiQrPayload, type DeviceOp } from '../lib/psDevice';
+import { getDeviceSheet, latestRotation, pendingReason, renewCert, rotateAdminCode, rotateWifi, uploadCert, wifiQrPayload, type DeviceOp } from '../lib/psDevice';
+import { relativeTime } from '../lib/printFleet';
 import { psErrorKey } from '../lib/printServerApi';
 import { formatFingerprint } from '../lib/certificate';
 import { useLocale } from '../locales';
@@ -18,7 +19,11 @@ type Result = { ok: boolean; text: string };
 export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   const { t, locale } = useLocale();
   const {session} = useAuth();
-  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal), refetchInterval: 10_000 });
+  // PE-428: poll every ~10 s only while a rotation is pending (server-side or just requested here).
+  const localPending = useRef(false);
+  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal),
+    refetchInterval: query => localPending.current || query.state.data?.rotations.some(o => o.status === 'pending') ? 10_000 : false });
+  const [now, setNow] = useState(() => Date.now());
   const [visibility, setVisibility] = useState({ scope: '', ssid: false, psk: false, code: false });
   const [qr, setQr] = useState<{ url: string; ssid: string; psk: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -47,6 +52,14 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
     setCredentialOperations({});
     setCopyNotice(null);
   }, [operationScope]);
+  localPending.current = (['wifi', 'admin_code'] as const).some(kind => ['sending', 'pending'].includes(operationFor(kind)?.phase ?? ''));
+  const anyPending = localPending.current || !!data?.rotations.some(o => o.status === 'pending');
+  useEffect(() => {
+    setNow(Date.now());
+    if (!anyPending) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, [anyPending, sheet.dataUpdatedAt]);
   const wifi = data?.credentialAccess ? data.appliedWifi : null;
   const adminCode = data?.credentialAccess ? data.appliedAdminCode : null;
   // Revealed values belong to this exact identity and confirmed snapshot. A new snapshot
@@ -100,7 +113,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
       if (scopeRef.current !== scope) return;
       const commandId = typeof response.command_id === 'string' && response.command_id.trim() ? response.command_id : null;
       setCredentialOperations(previous => ({ ...previous, [kind]: { scope, kind, commandId, phase: commandId ? 'pending' : 'failed', errorKey: commandId ? undefined : 'dev.rotationTrackingFailed' } }));
-      if (commandId) void sheet.refetch();
+      if (commandId) { localPending.current = true; void sheet.refetch(); }
     } catch (error) {
       if (scopeRef.current !== scope) return;
       const key = psErrorKey(error);
@@ -121,6 +134,23 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
   if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div>{label}{help}</section>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
   const pendingRotation = (kind: string) => data.rotations.some(o => o.kind === kind && o.status === 'pending');
+  const errorText = (code: string | null) => { const key = `dev.error.${code ?? 'other'}`; return t(key) === key ? (code ?? t('dev.error.other')) : t(key); };
+  // Status of the latest rotation per kind. The confirmed value above always comes from the
+  // `wifi` object (last value the device confirmed); a requested value is never shown as applied.
+  const rotationStatus = (kind: 'wifi' | 'admin_code') => {
+    const item = latestRotation(data.rotations, kind);
+    if (!item) return null;
+    const reason = item.status === 'pending' ? pendingReason(item, data.ps_online) : null;
+    const ago = relativeTime(item.requested_at, now, locale);
+    return <div key={kind} className={`dev-operation-notice dev-operation-${item.status}`} role="status" aria-live="polite" data-testid={`dev-rotation-status-${kind}`} data-status={item.status} data-wait-reason={reason ?? undefined}>
+      {item.status === 'applied' ? <Check size={16}/> : item.status === 'failed' ? <AlertTriangle size={16}/> : <Clock3 size={16}/>}
+      <span><strong>{t(`dev.op.${kind}`)}: {t(`dev.rotationState.${item.status}`)}</strong>
+        {item.status === 'pending' && <>{ago ? ` · ${t('dev.rotation.requestedAgo').replace('{ago}', ago)}` : ''}<br/>{t(`dev.waitReason.${reason}`)}{item.received_at ? <><br/>{t('dev.rotation.receivedAt').replace('{date}', date(item.received_at))}</> : null}</>}
+        {item.status === 'applied' && ` · ${date(item.completed_at)}${kind === 'wifi' ? ` ${t('dev.label.reprint')}` : ''}`}
+        {item.status === 'failed' && <>{item.completed_at ? ` · ${date(item.completed_at)}` : ''}<br/>{errorText(item.error_code)}{item.error_detail ? ` (${item.error_detail})` : ''}{item.previous_kept ? <><br/>{t('dev.rotation.previousKept')}</> : null}</>}
+      </span>
+    </div>;
+  };
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
   return <>
@@ -133,6 +163,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
           <div><dt>{t('ps.hostname')}</dt><dd data-testid="dev-hostname">{data.device.hostname}</dd></div>
           <div><dt>{t('fw.model')}</dt><dd>{data.device.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : data.device.model}</dd></div>
           <div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${data.device.status}`)}{data.device.legacy ? ` · ${t('dev.legacy')}` : ''}</dd></div>
+          <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>
         </dl>
         {data.credentialAccess ? <div className="dev-wifi">
           <div className="dev-wifi-values">
@@ -140,7 +171,7 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
               <div><dt>{t('dev.ssid')}</dt><dd className="dev-secret" data-testid="dev-ssid">{wifi ? <><span className="ps-mono">{show.ssid ? wifi.ssid : '••••••••••'}</span><button type="button" className="icon-button" aria-label={t(show.ssid ? 'dev.hideSsid' : 'dev.showSsid')} onClick={() => setShow(s => ({ ...s, ssid: !s.ssid }))}>{show.ssid ? <EyeOff size={16}/> : <Eye size={16}/>}</button><button type="button" className="icon-button" aria-label={t('dev.copySsid')} onClick={() => void copy(wifi.ssid)}><Copy size={16}/></button></> : <>{t('dev.credentialAbsent')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></>}</dd></div>
               <div><dt>{t('dev.psk')}</dt><dd className="dev-secret" data-testid="dev-psk">{wifi ? <><span className="ps-mono">{show.psk ? wifi.psk : '••••••••••'}</span><button type="button" className="icon-button" aria-label={t(show.psk ? 'dev.hidePsk' : 'dev.showPsk')} onClick={() => setShow(s => ({ ...s, psk: !s.psk }))}>{show.psk ? <EyeOff size={16}/> : <Eye size={16}/>}</button><button type="button" className="icon-button" aria-label={t('dev.copyPsk')} onClick={() => void copy(wifi.psk)}><Copy size={16}/></button></> : t('dev.credentialAbsent')}</dd></div>
               <div><dt>{t('dev.adminCode')}</dt><dd className="dev-secret" data-testid="dev-admin-code">{adminCode ? <><span className="ps-mono">{show.code ? adminCode.code : '••••••••••'}</span><button type="button" className="icon-button" aria-label={t(show.code ? 'dev.hideCode' : 'dev.showCode')} onClick={() => setShow(s => ({ ...s, code: !s.code }))}>{show.code ? <EyeOff size={16}/> : <Eye size={16}/>}</button><button type="button" className="icon-button" aria-label={t('dev.copyCode')} onClick={() => void copy(adminCode.code)}><Copy size={16}/></button></> : <>{t('dev.credentialAbsent')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></>}</dd></div>
-              <div><dt>{t('dev.applied')}</dt><dd>{t('dev.psk')}: {date(wifi?.applied_at ?? null)}<br/>{t('dev.adminCode')}: {date(adminCode?.applied_at ?? null)}</dd></div>
+              <div><dt>{t('dev.applied')}</dt><dd data-testid="dev-applied-at">{t('dev.psk')}: {wifi ? date(wifi.applied_at) : t('dev.credentialAbsent')}{wifi && data.wifiMethod ? ` · ${t(`dev.method.${data.wifiMethod}`) === `dev.method.${data.wifiMethod}` ? data.wifiMethod : t(`dev.method.${data.wifiMethod}`)}` : ''}<br/>{t('dev.adminCode')}: {adminCode ? date(adminCode.applied_at) : t('dev.credentialAbsent')}{adminCode && data.adminCodeMethod ? ` · ${t(`dev.method.${data.adminCodeMethod}`) === `dev.method.${data.adminCodeMethod}` ? data.adminCodeMethod : t(`dev.method.${data.adminCodeMethod}`)}` : ''}</dd></div>
             </dl>
             {copyNotice?.scope === operationScope && <p className={`dev-copy-notice ${copyNotice.ok ? 'dev-copy-ok' : 'dev-copy-error'}`} role="status" aria-live="polite" data-testid="dev-copy-result">{copyNotice.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{copyNotice.text}</span></p>}
             {data.can_manage_credentials && <div className="staff-actions">
@@ -149,15 +180,19 @@ export function PrintServerDevicePanel({ venueId, printServerId }: Props) {
             </div>}
             {(['wifi', 'admin_code'] as const).map(kind => {
               const current = operationFor(kind);
-              return current && <p key={kind} className={`dev-operation-notice dev-operation-${current.phase}`} role="status" aria-live="polite" data-testid={`dev-operation-${kind}`} data-phase={current.phase}>
+              // Once the device has the request, the per-kind status below (from ps_panel_device) is authoritative.
+              const shown = current && (current.phase === 'sending' || (current.phase === 'failed' && !current.commandId) || (current.phase === 'pending' && !data.rotations.some(o => o.command_id === current.commandId)));
+              return shown && <p key={kind} className={`dev-operation-notice dev-operation-${current.phase}`} role="status" aria-live="polite" data-testid={`dev-operation-${kind}`} data-phase={current.phase}>
                 {current.phase === 'applied' ? <Check size={16}/> : current.phase === 'failed' ? <AlertTriangle size={16}/> : <Clock3 size={16}/>}
                 <span><strong>{t(`dev.op.${kind}`)}:</strong> {t(`dev.rotationPhase.${current.phase}`)}{current.phase === 'failed' && current.errorKey ? ` ${t(current.errorKey) === current.errorKey ? t('dev.error.other') : t(current.errorKey)}` : ''}{kind === 'wifi' && current.phase === 'applied' ? ` ${t('dev.label.reprint')}` : ''}</span>
               </p>;
             })}
+            <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
         </div> : <p className="owner-section-lead">{t('dev.credentialsRestricted')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
-        {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${o.error_code}` : ''}</small></li>)}</ul></div>}
+        {!data.credentialAccess && <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>}
+        {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t(`dev.waitReason.${pendingReason(o, data.ps_online)}`)}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}{o.status === 'failed' && o.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small></li>)}</ul></div>}
       </>}
       {label}
       {help}

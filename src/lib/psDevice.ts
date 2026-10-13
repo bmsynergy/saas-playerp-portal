@@ -7,7 +7,11 @@ import { PsError, psErrorFromCode } from './printServerApi';
 // credential hashes and certificate bodies are never copied into state even if a backend
 // change starts sending them.
 export type OpStatus = 'pending' | 'applied' | 'failed';
-export type DeviceOp = { command_id: string; kind: string; status: OpStatus; requested_at: string | null; completed_at: string | null; error_code: string | null };
+export type WaitReason = 'applying' | 'ota_active' | 'reboot_pending' | 'wifi_change' | 'printing' | 'safety_check_unavailable' | 'bridge_unavailable' | 'device_offline' | 'awaiting_device';
+export const WAIT_REASONS: readonly WaitReason[] = ['applying', 'ota_active', 'reboot_pending', 'wifi_change', 'printing', 'safety_check_unavailable', 'bridge_unavailable', 'device_offline', 'awaiting_device'];
+// PE-428: received_at/wait_reason/error_detail/previous_kept describe what the device did with the request.
+export type DeviceOp = { command_id: string; kind: string; status: OpStatus; requested_at: string | null; completed_at: string | null; error_code: string | null;
+  received_at?: string | null; wait_reason?: WaitReason | 'other' | null; wait_updated_at?: string | null; error_detail?: string | null; previous_kept?: boolean };
 export type DeviceSheet = {
   device: { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean } | null;
   appliedWifi: { ssid: string; psk: string; applied_at: string } | null;
@@ -17,6 +21,8 @@ export type DeviceSheet = {
   cert: { hostname: string | null; not_before: string | null; not_after: string | null; der_sha256: string | null; updated_at: string | null; status: 'valid' | 'expired' | 'none' };
   cert_operations: DeviceOp[];
   can_manage: boolean; is_platform_admin: boolean;
+  ps_online: boolean; last_seen_at: string | null;
+  wifiMethod: string | null; adminCodeMethod: string | null;
 };
 export type InventoryDevice = { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null;
   print_server_id: string | null; software_version: string | null; last_seen_at: string | null; online: boolean; created_at: string | null };
@@ -29,7 +35,24 @@ const bad = (): never => { throw new PortalError('genericError'); };
 function op(v: unknown): DeviceOp {
   const o = obj(v) ?? bad();
   const status = o.status === 'applied' || o.status === 'failed' ? o.status : 'pending';
-  return { command_id: String(o.command_id ?? ''), kind: String(o.kind ?? ''), status, requested_at: str(o.requested_at), completed_at: str(o.completed_at), error_code: code(o.error_code) };
+  const wait = typeof o.wait_reason === 'string' ? (WAIT_REASONS as readonly string[]).includes(o.wait_reason) ? o.wait_reason as WaitReason : 'other' : null;
+  // error_detail is plain text without secrets by contract; still bounded and stripped of control chars.
+  const detail = typeof o.error_detail === 'string' ? o.error_detail.replace(/[\p{C}]/gu, ' ').trim().slice(0, 300) || null : null;
+  return { command_id: String(o.command_id ?? ''), kind: String(o.kind ?? ''), status, requested_at: str(o.requested_at), completed_at: str(o.completed_at), error_code: code(o.error_code),
+    received_at: str(o.received_at), wait_reason: status === 'pending' ? wait : null, wait_updated_at: str(o.wait_updated_at), error_detail: detail, previous_kept: o.previous_kept === true };
+}
+const ts = (v: string | null | undefined) => { const n = v ? Date.parse(v) : NaN; return Number.isFinite(n) ? n : -Infinity; };
+// Latest rotation of one kind (by requested_at, falling back to list order: the backend lists newest first).
+export function latestRotation(rotations: DeviceOp[], kind: string): DeviceOp | null {
+  let best: DeviceOp | null = null;
+  for (const item of rotations) if (item.kind === kind && (!best || ts(item.requested_at) > ts(best.requested_at))) best = item;
+  return best;
+}
+// Reason shown for a pending item. Falls back to the contract rule when the backend sent none.
+export function pendingReason(item: DeviceOp, psOnline: boolean): WaitReason | 'other' {
+  if (item.wait_reason) return item.wait_reason;
+  if (!psOnline) return 'device_offline';
+  return item.received_at ? 'applying' : 'awaiting_device';
 }
 export function confirmedAt(value: unknown): string | null {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value)) && Date.parse(value) <= Date.now()
@@ -53,14 +76,16 @@ export function projectDeviceSheet(v: unknown): DeviceSheet {
     credentialAccess, can_manage_credentials: credentialAccess && s.can_manage_credentials === true,
     appliedWifi: credentialAccess && wifiAt && validRecoveryWifi(w?.ssid, w?.psk)
       ? { ssid: w!.ssid as string, psk: w!.psk as string, applied_at: wifiAt } : null,
-    appliedAdminCode: credentialAccess && codeAt && typeof w?.admin_code === 'string' && /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$/.test(w.admin_code)
-      ? { code: w.admin_code, applied_at: codeAt } : null,
+    appliedAdminCode: credentialAccess && codeAt && validAdminCode(w?.admin_code)
+      ? { code: w!.admin_code as string, applied_at: codeAt } : null,
     device: d && typeof d.id === 'string' ? { id: d.id, serial: String(d.serial ?? ''), hostname: String(d.hostname ?? ''), model: String(d.model ?? ''), status: String(d.status ?? ''), legacy: d.legacy === true } : null,
     rotations: Array.isArray(s.rotations) ? s.rotations.map(op) : [],
     cert: { hostname: str(c.hostname), not_before: str(c.not_before), not_after: str(c.not_after), der_sha256: str(c.der_sha256), updated_at: str(c.updated_at),
       status: c.status === 'valid' || c.status === 'expired' ? c.status : 'none' },
     cert_operations: Array.isArray(s.cert_operations) ? s.cert_operations.map(op) : [],
     can_manage: s.can_manage === true, is_platform_admin: s.is_platform_admin === true,
+    ps_online: s.ps_online === true, last_seen_at: str(s.last_seen_at),
+    wifiMethod: credentialAccess && wifiAt ? code(w?.wifi_method) : null, adminCodeMethod: credentialAccess && codeAt ? code(w?.admin_code_method) : null,
   };
 }
 async function rpc(name: string, params: Raw = {}, signal?: AbortSignal): Promise<unknown> {
@@ -80,6 +105,38 @@ export async function getDeviceSheet(venueId: string, signal?: AbortSignal): Pro
 export async function rotateWifi(venueId: string) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId }); }
 export async function rotateAdminCode(venueId: string) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId }); }
 export async function renewCert(printServerId: string) { return action('ps_admin_cert_renew', { p_print_server_id: printServerId }); }
+
+// PE-428 legacy reconciliation (platform staff only; others get 42501). The context never carries
+// secret values; the values typed by staff go straight to the RPC and are never stored or logged.
+export type LegacyContext = { venue_id: string; device_id: string | null; serial: string | null; legacy: boolean; hostname: string | null; print_server_id: string | null;
+  print_server_status: string | null; ca_cert_der_sha256: string | null; software_version: string | null; last_seen_at: string | null; ps_online: boolean;
+  wifi_confirmed: boolean; wifi_applied_at: string | null; admin_code_confirmed: boolean; admin_code_applied_at: string | null; wifi_method: string | null; admin_code_method: string | null };
+export type LegacyKind = 'wifi' | 'admin_code';
+export const LEGACY_ERRORS = ['device_not_found', 'not_legacy', 'print_server_not_active', 'device_not_linked', 'ca_mismatch', 'bad_kind', 'bad_method', 'physical_check_required', 'invalid_value', 'already_confirmed'] as const;
+export class LegacyError extends Error { constructor(public key: string) { super(key); } }
+const legacyError = (v: unknown) => new LegacyError(`legacy.error.${typeof v === 'string' && (LEGACY_ERRORS as readonly string[]).includes(v) ? v : v === 'forbidden' ? 'forbidden' : 'other'}`);
+export const normalizeSha256 = (v: string) => v.replace(/[^0-9a-f]/gi, '').toLowerCase();
+export function projectLegacyContext(v: unknown): LegacyContext {
+  const s = obj(v) ?? bad();
+  if (s.ok !== true) throw legacyError(s.error);
+  const sha = str(s.ca_der_sha256 ?? s.ca_cert_der_sha256);
+  return { venue_id: String(s.venue_id ?? ''), device_id: str(s.device_id), serial: str(s.serial), legacy: s.legacy === true, hostname: str(s.hostname), print_server_id: str(s.print_server_id),
+    print_server_status: str(s.print_server_status), ca_cert_der_sha256: sha && /^[0-9a-f]{64}$/.test(normalizeSha256(sha)) ? sha : null,
+    software_version: str(s.software_version), last_seen_at: str(s.last_seen_at), ps_online: s.ps_online === true,
+    wifi_confirmed: s.wifi_confirmed === true, wifi_applied_at: str(s.wifi_applied_at), admin_code_confirmed: s.admin_code_confirmed === true, admin_code_applied_at: str(s.admin_code_applied_at),
+    wifi_method: code(s.wifi_method), admin_code_method: code(s.admin_code_method) };
+}
+export async function getLegacyContext(venueId: string, signal?: AbortSignal): Promise<LegacyContext> {
+  return projectLegacyContext(await rpc('ps_admin_legacy_credentials_context', { p_venue_id: venueId }, signal));
+}
+export async function reconcileLegacy(ctx: LegacyContext, kind: LegacyKind, values: { ssid: string; psk: string } | { admin_code: string }, physicalCheck: boolean): Promise<{ applied_at: string | null }> {
+  if (!ctx.serial || !ctx.print_server_id || !ctx.ca_cert_der_sha256) throw new LegacyError('legacy.error.device_not_linked');
+  const data = obj(await rpc('ps_admin_legacy_credentials_reconcile', { p_serial: ctx.serial, p_print_server_id: ctx.print_server_id, p_ca_der_sha256: ctx.ca_cert_der_sha256,
+    p_kind: kind, p_values: values, p_method: kind === 'wifi' ? 'recovery_read_and_join' : 'local_login', p_physical_check: physicalCheck })) ?? bad();
+  if (data.ok !== true) throw legacyError(data.error);
+  return { applied_at: str(data.applied_at) };
+}
+export const validAdminCode = (v: unknown) => typeof v === 'string' && /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$/.test(v);
 
 // Upload goes through the edge, which parses the certificate server-side. A private key is refused
 // here before it leaves the browser, and again by the server.
