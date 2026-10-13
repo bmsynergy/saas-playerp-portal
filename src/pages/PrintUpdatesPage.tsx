@@ -55,6 +55,7 @@ function TargetError({ target }: { target: OtaTarget }) {
 const OTA_STATUSES = ['pending','in_progress','committed','rolled_back','failed','rejected','expired','cancelled','superseded'];
 function ReadState({ state }: {state:ReturnType<typeof useOtaPage>}) {
   const {t}=useLocale();
+  if(!state.started)return <p role="status" className="inline-empty" data-testid="ota-audit-start">{t('ota.auditStart')}</p>;
   if(!state.valid)return null;
   if(state.query.isError)return <div role="alert" className="form-error">{t(psErrorKey(state.query.error))}<button type="button" className="button button-secondary" onClick={()=>void state.query.refetch()}>{t('refresh')}</button></div>;
   if(state.query.isPending)return <p role="status" className="inline-empty">{t('dev.loading')}</p>;
@@ -65,15 +66,19 @@ function PageFilters({state,id,dateLabel,kind}:{state:ReturnType<typeof useOtaPa
   const {t,status,ring}=useLabels();
   return <><AdminListFilters id={id} filters={state.filters} set={state.set} clear={state.clear} dateLabel={dateLabel} statusLabel={kind==='audit'?t('list.action'):kind==='deployments'?t('list.targetStatus'):undefined}
     statuses={(kind==='audit'?['ps_ota_edition_signed','ps_ota_deployed','ps_ota_group_created','ps_ota_group_members_set']:OTA_STATUSES).map(value=>({value,label:kind==='audit'?auditLabel(t,value):status(value)}))}/>
+    {kind==='audit'&&<div className="ota-audit-actions"><button type="button" className="button button-primary" disabled={!state.valid || state.query.isFetching} onClick={state.search} data-testid="ota-audit-search">{t('ota.auditSearch')}</button></div>}
     {kind==='deployments'&&<label className="ota-extra-filter"><span>{t('ota.ring')}</span><select data-testid={`${id}-ring`} value={state.filters.ring??''} onChange={e=>state.set('ring',e.target.value)}><option value="">{t('list.allStates')}</option>{RINGS.map(r=><option key={r} value={r}>{ring(r)}</option>)}</select></label>}
     {kind==='events'&&<label className="ota-extra-filter"><span>{t('ota.phase')}</span><input data-testid={`${id}-phase`} value={state.filters.phase??''} onChange={e=>state.set('phase',e.target.value)}/></label>}
     <ReadState state={state}/></>;
 }
 function Diagnostics({id,value}:{id:string;value:unknown}) {
   const {t}=useLocale();
+  const [copyState,setCopyState]=useState<'idle'|'success'|'error'>('idle');
+  const content=typeof value==='string'?value:JSON.stringify(value,null,2);
+  const copy=async()=>{try{await navigator.clipboard.writeText(content);setCopyState('success');}catch{setCopyState('error');}};
   // This component is mounted only in the platform-admin OTA route. The read RPCs
   // enforce that role too; never used in the owner/venue panel.
-  return <details id={`diagnostic-${id}`} className="ota-diagnostic"><summary>{t('list.diagnostics')}</summary><pre>{typeof value==='string'?value:JSON.stringify(value,null,2)}</pre></details>;
+  return <details id={`diagnostic-${id}`} className="ota-diagnostic" onToggle={()=>setCopyState('idle')}><summary>{t('list.diagnostics')}</summary><div className="ota-diagnostic-actions"><button type="button" className="button button-secondary" onClick={()=>void copy()}><Copy size={14}/>{t('list.copyDiagnostics')}</button><span role="status" aria-live="polite">{copyState==='success'?t('dev.copied'):copyState==='error'?t('dev.copyFailed'):''}</span></div><pre>{content}</pre></details>;
 }
 function auditLabel(t:(key:string)=>string,action:string) {
   const key=`ota.auditAction.${action}`,label=t(key);
@@ -153,9 +158,9 @@ function Deployments() {
 }
 function Audit() {
   const state=useOtaPage('audit'),l=useLabels(),{t}=l;
-  return <section className="servers-panel" aria-labelledby="ota-audit-title"><div className="section-heading"><h2 id="ota-audit-title">{t('ota.auditTitle')}</h2><span className="count-pill">{state.query.data?.total??'—'}</span></div>
+  return <section className="servers-panel" aria-labelledby="ota-audit-title"><div className="section-heading"><h2 id="ota-audit-title">{t('ota.auditTitle')}</h2><span className="count-pill">{state.started?state.query.data?.total??'—':'—'}</span></div>
     <PageFilters state={state} kind="audit" id="audit" dateLabel={t('list.created')}/>
-    {state.valid&&!state.query.isError&&state.query.data&&<><ul className="ota-audit" data-testid="ota-audit">{state.query.data.items.map(a=>{const facts=auditFacts(a.metadata);return <li key={a.id}><time dateTime={a.at??undefined}>{l.date(a.at)}</time><strong>{auditLabel(t,a.action)}</strong><span>{facts.version&&<>{t('list.eventVersion')}: {facts.version} · </>}{facts.group&&<>{facts.group} · </>}{facts.ring&&<>{l.ring(facts.ring)} · </>}{facts.status&&<>{l.status(facts.status)} · </>}{a.actor_email??t('notProvided')}</span>{facts.error&&<span className="ps-error-text">{facts.error}</span>}<Diagnostics id={`audit-${a.id}`} value={a}/></li>;})}</ul><PrintListPagination id="audit" pagination={state.pagination}/></>}
+    {state.started&&state.valid&&!state.query.isError&&state.query.data&&<><ul className="ota-audit" data-testid="ota-audit">{state.query.data.items.map(a=>{const facts=auditFacts(a.metadata);return <li key={a.id}><time dateTime={a.at??undefined}>{l.date(a.at)}</time><strong>{auditLabel(t,a.action)}</strong><span>{facts.version&&<>{t('list.eventVersion')}: {facts.version} · </>}{facts.group&&<>{facts.group} · </>}{facts.ring&&<>{l.ring(facts.ring)} · </>}{facts.status&&<>{l.status(facts.status)} · </>}{a.actor_email??t('notProvided')}</span>{facts.error&&<span className="ps-error-text">{facts.error}</span>}<Diagnostics id={`audit-${a.id}`} value={a}/></li>;})}</ul><PrintListPagination id="audit" pagination={state.pagination} disabled={state.query.isFetching}/></>}
   </section>;
 }
 function useLocalList<T>(items:T[],matches:(row:T,filters:import('../lib/adminLists').ListFilterState)=>boolean) {

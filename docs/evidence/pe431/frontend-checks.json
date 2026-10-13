@@ -1,0 +1,198 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Isolated synthetic 63-row fixtures; not live RLS evidence",
+  "lists": [
+    {
+      "list": "tenants",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "staff",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "venue-users",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "dashboard",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "fleet",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "devices",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "fw-releases",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "printers",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "editions",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "groups",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "ota-devices",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "deployments",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "audit",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "targets-deployment-0",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "ota-member-group-0",
+      "total": 63,
+      "first": 25,
+      "last": 13,
+      "pages": 3,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    },
+    {
+      "list": "printer queue",
+      "total": 63,
+      "first": 10,
+      "last": 3,
+      "pages": 7,
+      "dateTotal": 31,
+      "resetAndEmpty": true
+    }
+  ],
+  "checks": [
+    "Events: useful unknown-phase fallback, real error visible, original technical payload in authorized disclosure",
+    "Queue: error visible, refresh recovers, original printer/venue retained",
+    "Two venue routes: only requested venue state, no global fleet/directory calls, search cannot find the second venue, cross-venue counts and text absent",
+    "Global assignment All=63, Assigned=32, Not Assigned=31; aggregates independent of page",
+    "Support role: denied UI and no OTA read requests",
+    "tenants: loading, read error, retry recovered",
+    "staff: loading, read error, retry recovered",
+    "venue-users: loading, read error, retry recovered",
+    "dashboard: loading, read error, retry recovered",
+    "fleet: loading, read error, retry recovered",
+    "devices: loading, read error, retry recovered",
+    "fw-releases: loading, read error, retry recovered",
+    "deployments: loading, read error, retry recovered",
+    "320px en: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "320px es: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "390px en: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "390px es: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "1440px en: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "1440px es: long firmware and event text, equal filters, modal focus trap/Escape/return, original error preserved",
+    "PE-431: explicit audit page search, draft filters do not request, 1..N validation, direct server offset, size reset, no polling, empty/re-entry reset, full-width diagnostics and exact clipboard at 1440/390/320px"
+  ],
+  "screenshots": [
+    "firmwares-320-en.png",
+    "events-320-en.png",
+    "firmwares-320-es.png",
+    "events-320-es.png",
+    "firmwares-390-en.png",
+    "events-390-en.png",
+    "firmwares-390-es.png",
+    "events-390-es.png",
+    "firmwares-1440-en.png",
+    "events-1440-en.png",
+    "firmwares-1440-es.png",
+    "events-1440-es.png",
+    "audit-1440.png",
+    "audit-390.png",
+    "audit-320.png"
+  ],
+  "errors": [],
+  "initialAuditLoad": {
+    "dedicatedPageCalls": 0,
+    "overviewRows": 50,
+    "completeOnDemand": false
+  },
+  "automaticOverviewCalls": 3,
+  "knownDependency": "Legacy ps_ota_admin_overview still bundles 50 audit records on initial/periodic overview reads; backend support required to omit audit before complete acceptance.",
+  "frontendChecksPassed": true,
+  "portalAcceptanceComplete": false
+}

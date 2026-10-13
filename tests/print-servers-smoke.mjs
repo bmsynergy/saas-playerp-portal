@@ -1,7 +1,7 @@
 // Synthetic fixtures only: every backend request is answered in-process by an
 // in-memory fake, and anything else leaving the local origin is aborted. This
 // verifies the browser behaviour of /admin/print-servers, NOT live DEV permissions.
-import {chromium} from '@playwright/test';
+import {chromium,expect} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 import {X509Certificate,createHash} from 'node:crypto';
@@ -100,21 +100,21 @@ try{
    const queue=id(`queue-${p1}`),settled=()=>page.locator(`[data-testid="queue-${p1}"][data-loading="false"]`).waitFor(),jobRows=()=>queue.locator('[data-testid^="job-row-"]');
    await settled();await queue.locator("button[aria-expanded]").click();await jobRows().first().waitFor();
    assert.deepEqual(await queue.locator('thead th').allInnerTexts().then(h=>h.map(x=>x.trim().toLowerCase())),['status','date','source','attempts','error']);
-   assert.equal(await jobRows().count(),10);assert.equal(await id(`queue-total-${p1}`).innerText(),'23 jobs');assert.equal(await id(`queue-page-${p1}`).innerText(),'Page 1 of 3');assert(await id(`queue-prev-${p1}`).isDisabled());
+   assert.equal(await jobRows().count(),10);assert.equal(await id(`queue-total-${p1}`).innerText(),'23 jobs');assert.equal(await id(`queue-${p1}-pagination-input`).inputValue(),'1');await expect(id(`queue-${p1}-pagination-page`)).toContainText('of 3');assert(await id(`queue-${p1}-pagination-prev`).isDisabled());
    const first=(await jobRows().nth(0).innerText()).replace(/\s+/g,' ');for(const piece of ['Queued','Test print','0','No error'])assert(first.includes(piece),`first job shows ${piece}: ${first}`);
    assert((await jobRows().nth(1).innerText()).includes('the Print Server was replaced'),'known error code has its message');
    assert((await jobRows().nth(2).innerText()).includes('Print Server error (code: weird_device_code)'),'unknown code is shown as a code');
    const firstId=await jobRows().nth(0).getAttribute('data-testid');
-   await id(`queue-next-${p1}`).click();await id(`queue-page-${p1}`).getByText('Page 2 of 3',{exact:true}).waitFor();await settled();assert.equal(await jobRows().count(),10);assert.notEqual(await jobRows().nth(0).getAttribute('data-testid'),firstId);
-   await id(`queue-next-${p1}`).click();await id(`queue-page-${p1}`).getByText('Page 3 of 3',{exact:true}).waitFor();await settled();assert.equal(await jobRows().count(),3);assert(await id(`queue-next-${p1}`).isDisabled());
-   await id(`queue-prev-${p1}`).click();await id(`queue-page-${p1}`).getByText('Page 2 of 3',{exact:true}).waitFor();await id(`queue-prev-${p1}`).click();await id(`queue-page-${p1}`).getByText('Page 1 of 3',{exact:true}).waitFor();await settled();
+   await id(`queue-${p1}-pagination-next`).click();await expect(id(`queue-${p1}-pagination-input`)).toHaveValue('2');await settled();assert.equal(await jobRows().count(),10);assert.notEqual(await jobRows().nth(0).getAttribute('data-testid'),firstId);
+   await id(`queue-${p1}-pagination-next`).click();await expect(id(`queue-${p1}-pagination-input`)).toHaveValue('3');await settled();assert.equal(await jobRows().count(),3);assert(await id(`queue-${p1}-pagination-next`).isDisabled());
+   await id(`queue-${p1}-pagination-prev`).click();await expect(id(`queue-${p1}-pagination-input`)).toHaveValue('2');await id(`queue-${p1}-pagination-prev`).click();await expect(id(`queue-${p1}-pagination-input`)).toHaveValue('1');await settled();
    assert.deepEqual(db.jobCalls.filter(c=>c.p_printer_id===p1).map(c=>c.p_offset),[0,10,20,10,0]);assert(db.jobCalls.every(c=>c.p_venue_id===v1&&c.p_limit===10));
    record('Queue: state, date, source, attempts and error; previous/next across three pages');
    db.jobs[p1].unshift({id:'77777777-7777-4777-8777-888888888888',status:'printing',source_type:'receipt',print_route:'ps',attempts:1,created_at:iso(0),started_at:iso(0),completed_at:null,error_code:null,attempt_error_code:null});
    const before=db.jobCalls.length;await id(`queue-refresh-${p1}`).click();await id('job-row-77777777-7777-4777-8777-888888888888').waitFor();assert.equal(db.jobCalls.length,before+1);assert.deepEqual(db.jobCalls.at(-1),{p_venue_id:v1,p_printer_id:p1,p_limit:10,p_offset:0});assert.equal(await id(`queue-total-${p1}`).innerText(),'24 jobs');
    record('Queue: refresh asks again and shows the new job');
    await id(`queue-${p2}`).locator('button[aria-expanded]').click();await id(`queue-empty-${p2}`).getByText('Empty queue',{exact:true}).waitFor();assert.equal(await id(`queue-${p2}`).locator('[data-testid^="job-row-"]').count(),0);assert.equal(await id(`queue-total-${p2}`).innerText(),'0 jobs');
-   assert.equal(await id(`queue-prev-${p2}`).count(),0);assert(db.jobCalls.some(c=>c.p_printer_id===p2));
+   assert(await id(`queue-${p2}-pagination-prev`).isDisabled());assert(db.jobCalls.some(c=>c.p_printer_id===p2));
    record('Queue: a printer without jobs shows the empty queue message');
    assert(!(await page.content()).includes('SHOULD-NEVER-SHOW'));await queue.screenshot({path:out+'print-servers-queue.png'});
   }

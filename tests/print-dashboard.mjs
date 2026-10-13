@@ -133,7 +133,7 @@ try {
   await fnext.click();await page.getByTestId('fleet-pagination-size').selectOption('10');await expect(fleetRows).toHaveCount(10);await expect(fprev).toBeDisabled();
   await fnext.click();await page.getByTestId('fleet-filter-clear').click();await expect(fprev).toBeDisabled();
   await page.getByRole('button',{name:'ES',exact:true}).click();
-  await expect(page.getByTestId('fleet-pagination-page')).toContainText('Página 1');
+  await expect(page.getByTestId('fleet-pagination-page')).toContainText('Página');await expect(page.getByTestId('fleet-pagination-input')).toHaveValue('1');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'pagination has no horizontal page overflow');
   await page.getByTestId('fleet-pagination-page').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/pagination-${width}-es.png`});
   record(`${width}px: 63 devices/venues across three pages without duplicates or omissions; full-filter counters and firmware denominator; filter/size reset, refresh shrink, ES pagination and no overflow`);

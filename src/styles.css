@@ -283,3 +283,10 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 /* PE-428 rotation status + legacy reconciliation */
 .dev-rotation-status{display:grid;gap:0}.dev-rotation-status:empty{display:none}
 .legacy-forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.legacy-form{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface);min-width:0}.legacy-form h3{display:flex;align-items:center;gap:8px;font-size:.9rem;margin:0 0 8px}.legacy-form fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}.legacy-form fieldset:disabled{opacity:.6}.legacy-form input[type=text],.legacy-form input[type=password]{width:100%;border:1px solid var(--control-line);border-radius:9px;padding:9px;background:#fff}.legacy-check{display:flex;gap:8px;align-items:flex-start;font-size:.78rem;line-height:1.45}.legacy-check input{margin-top:3px;flex:none}.legacy-form button{justify-self:start}.legacy-mismatch{color:var(--danger)}
+/* Audit detail spans the full card and remains selectable on narrow screens. */
+.ota-audit-actions{display:flex;justify-content:flex-start;margin:0 0 16px}.ota-audit-actions .button{min-height:44px}
+.ota-audit li>.ota-diagnostic,.ota-events li>.ota-diagnostic{grid-column:1/-1;min-width:0;width:100%;max-width:100%}
+.ota-audit li,.ota-events li{min-width:0}
+.ota-diagnostic{min-width:0;width:100%}.ota-diagnostic-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}.ota-diagnostic-actions .button{min-height:40px}.ota-diagnostic-actions [role="status"]{font-size:.72rem;color:var(--muted)}
+.ota-diagnostic pre{width:100%;max-width:100%;min-width:0;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text}
+@media(max-width:450px){.ota-audit-actions .button{width:100%}.ota-audit li>.ota-diagnostic,.ota-events li>.ota-diagnostic{grid-column:1}}

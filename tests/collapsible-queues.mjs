@@ -1,7 +1,7 @@
 // Synthetic fixtures only: every backend request is answered in-process by an
 // in-memory fake, and anything else leaving the local origin is aborted. This
 // verifies the browser behaviour of /admin/print-servers, NOT live DEV permissions.
-import {chromium} from '@playwright/test';
+import {chromium,expect} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 const origin=process.env.PORTAL_TEST_ORIGIN??'http://127.0.0.1:18799';
@@ -112,18 +112,18 @@ try {
   assert.equal(await b.getAttribute('aria-expanded'),'true');
   await a.click();
   await q1.locator('[data-testid^="job-row-"]').first().waitFor();
-  await page.getByTestId(`queue-next-${p1}`).click();
-  await page.getByTestId(`queue-page-${p1}`).getByText('Página 2 de 3',{exact:true}).waitFor();
+  await page.getByTestId(`queue-${p1}-pagination-next`).click();
+  await expect(page.getByTestId(`queue-${p1}-pagination-input`)).toHaveValue('2');
   assert.equal(await a.getAttribute('aria-expanded'),'true');
   await a.click();await a.click();
-  assert.equal(await page.getByTestId(`queue-page-${p1}`).innerText(),'Página 2 de 3');
+  assert.equal(await page.getByTestId(`queue-${p1}-pagination-input`).inputValue(),'2');await expect(page.getByTestId(`queue-${p1}-pagination-page`)).toContainText('de 3');
   const before=db.jobCalls.length;
   await page.getByTestId(`queue-refresh-${p1}`).click();
   await page.locator(`[data-testid="queue-${p1}"][data-loading="false"]`).waitFor();
   assert.equal(db.jobCalls.length,before+1);assert.equal(db.jobCalls.at(-1).p_offset,10);
   assert.equal(await a.getAttribute('aria-expanded'),'true');
-  await page.getByTestId(`queue-prev-${p1}`).click();
-  await page.getByTestId(`queue-page-${p1}`).getByText('Página 1 de 3',{exact:true}).waitFor();
+  await page.getByTestId(`queue-${p1}-pagination-prev`).click();
+  await expect(page.getByTestId(`queue-${p1}-pagination-input`)).toHaveValue('1');
   assert(db.jobCalls.every(c=>c.p_venue_id===v1&&c.p_limit===10));
   assert.equal(await q1.locator('[data-testid^="job-row-"]').count(),10);
   assert(!(await page.content()).includes('SHOULD-NEVER-SHOW'));

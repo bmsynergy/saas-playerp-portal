@@ -4,7 +4,7 @@
 // PS) it only reads. Creates one tagged temporary identity and removes it in finally. No session,
 // password, credential or privileged key is written.
 //   SUPABASE_ACCESS_TOKEN=… PLAYERP_BACKEND_DIR=/path/to/saas-playerp-backend node tests/print-queue-live.mjs
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -95,10 +95,10 @@ try {
  // ---------- Paginación ----------
  tA1=await truth(HARNESS,A1);const pages=Math.ceil(tA1.length/PAGE);
  assert(pages>=2,'A-P1 has more than one page');
- assert.equal(flat(await tid(page,`queue-page-${A1}`).innerText()),`Página 1 de ${pages}`);assert(await tid(page,`queue-prev-${A1}`).isDisabled());
- await tid(page,`queue-next-${A1}`).click();await tid(page,`queue-page-${A1}`).getByText(`Página 2 de ${pages}`,{exact:true}).waitFor();await settled(page,A1);
+ assert.equal(await tid(page,`queue-${A1}-pagination-input`).inputValue(),'1');await expect(tid(page,`queue-${A1}-pagination-page`)).toContainText(`de ${pages}`);assert(await tid(page,`queue-${A1}-pagination-prev`).isDisabled());
+ await tid(page,`queue-${A1}-pagination-next`).click();await expect(tid(page,`queue-${A1}-pagination-input`)).toHaveValue('2');await settled(page,A1);
  const second=await rowIds(page,A1);assert.deepEqual(second,tA1.slice(PAGE,2*PAGE),'page 2 is rows 11-20');
- await tid(page,`queue-prev-${A1}`).click();await tid(page,`queue-page-${A1}`).getByText(`Página 1 de ${pages}`,{exact:true}).waitFor();await settled(page,A1);
+ await tid(page,`queue-${A1}-pagination-prev`).click();await expect(tid(page,`queue-${A1}-pagination-input`)).toHaveValue('1');await settled(page,A1);
  assert.deepEqual(await rowIds(page,A1),tA1.slice(0,PAGE),'back on page 1');
  ok('paginación: siguiente y anterior cambian de página sin solape',{total:tA1.length,pages,page2First:second[0].slice(0,8),page1First:tA1[0].slice(0,8)});
 

@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-13T18:33:44.862Z",
+  "environment": "PlayERP DEV",
+  "rpc": "ps_ota_admin_overview",
+  "status": 200,
+  "contains_audit": true,
+  "audit_rows": 50,
+  "conclusion": "Existing overview includes audit before the separate audit search is requested. No business mutations performed."
+}
