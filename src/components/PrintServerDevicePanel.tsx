@@ -9,6 +9,7 @@ import { PsError, psErrorKey } from '../lib/printServerApi';
 import { formatFingerprint } from '../lib/certificate';
 import { useLocale } from '../locales';
 import { PrintServerLabel } from './PrintServerLabel';
+import { PrintServerSsidAdoption } from './PrintServerSsidAdoption';
 import { PortalDialog } from './PortalDialog';
 import { reconcileCredentialOperation, credentialBlocked, credentialProgress, credentialErrorKey, type CredentialKind, type CredentialOperation } from '../lib/psCredentialOperation';
 
@@ -207,6 +208,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
         </div> : <p className="owner-section-lead">{t('dev.credentialsRestricted')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
         {!data.credentialAccess && <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>}
+        {adminScope && data.is_platform_admin && data.ssidAdoption && (['available', 'pending', 'failed'].includes(data.ssidAdoption.state) || (data.ssidAdoption.state === 'applied' && data.ssidAdoption.reprint_label))
+          && <PrintServerSsidAdoption venueId={venueId} adoption={data.ssidAdoption} onChanged={() => void sheet.refetch()}/>}
         {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t(`dev.waitReason.${pendingReason(o, data.ps_online)}`)}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}{o.status === 'failed' && o.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small></li>)}</ul></div>}
       </>}
       {label}

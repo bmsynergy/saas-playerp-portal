@@ -25,7 +25,21 @@ export type DeviceSheet = {
   wifiMethod: string | null; adminCodeMethod: string | null;
   // PE-438: the new PS confirms by itself what it applied at enrollment (no secrets here).
   enroll: EnrollCredentials | null;
+  // PE-440: canonical recovery SSID derived from the platform serial and the state of its adoption.
+  ssidAdoption: SsidAdoption | null;
 };
+export type SsidAdoptionState = 'available' | 'pending' | 'applied' | 'failed' | 'provisioned' | 'not_reserved';
+export type SsidAdoption = { canonical_ssid: string; current_ssid: string | null; state: SsidAdoptionState; reprint_label: boolean;
+  command_id: string | null; requested_at: string | null; completed_at: string | null; error_code: string | null; previous_kept: boolean };
+const ADOPTION_STATES: readonly SsidAdoptionState[] = ['available', 'pending', 'applied', 'failed', 'provisioned', 'not_reserved'];
+const CANONICAL_SSID = /^PlayERP-Setup-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{8}$/;
+export function projectSsidAdoption(v: unknown): SsidAdoption | null {
+  const a = obj(v);
+  if (!a || !(ADOPTION_STATES as readonly unknown[]).includes(a.state) || typeof a.canonical_ssid !== 'string' || !CANONICAL_SSID.test(a.canonical_ssid)) return null;
+  const current = typeof a.current_ssid === 'string' && validRecoveryWifi(a.current_ssid, '0000000000') ? a.current_ssid : null;
+  return { canonical_ssid: a.canonical_ssid, current_ssid: current, state: a.state as SsidAdoptionState, reprint_label: a.reprint_label === true,
+    command_id: str(a.command_id), requested_at: str(a.requested_at), completed_at: str(a.completed_at), error_code: code(a.error_code), previous_kept: a.previous_kept === true };
+}
 export type EnrollPartState = 'pending' | 'applied' | 'failed' | 'not_expected' | 'not_applicable' | 'not_emitted';
 export type EnrollCredentials = { state: 'pending' | 'applied' | 'failed' | 'not_expected' | 'not_applicable'; wifi: EnrollPartState; admin_code: EnrollPartState;
   wifi_error: string | null; admin_code_error: string | null; acked_at: string | null };
@@ -100,6 +114,7 @@ export function projectDeviceSheet(v: unknown): DeviceSheet {
     ps_online: typeof s.ps_online === 'boolean' ? s.ps_online : null, last_seen_at: str(s.last_seen_at),
     wifiMethod: credentialAccess && wifiAt ? code(w?.wifi_method) : null, adminCodeMethod: credentialAccess && codeAt ? code(w?.admin_code_method) : null,
     enroll: projectEnroll(s.enroll_credentials),
+    ssidAdoption: projectSsidAdoption(s.wifi_ssid_adoption),
   };
 }
 async function rpc(name: string, params: Raw = {}, signal?: AbortSignal): Promise<unknown> {
@@ -122,6 +137,23 @@ export async function getDeviceSheet(venueId: string, signal?: AbortSignal): Pro
 }
 export async function rotateWifi(venueId: string) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId }); }
 export async function rotateAdminCode(venueId: string) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId }); }
+// PE-440: platform staff only (others get 42501). Without confirm it is a read-only preview
+// (current -> canonical); with confirm the backend queues ONE wifi_rotate {canonical SSID, current key}.
+export type SsidAdoptResult = { current_ssid: string | null; canonical_ssid: string; state: 'preview' | 'pending' | 'applied'; command_id: string | null; already: boolean };
+export const ADOPT_ERRORS = ['no_active_print_server', 'device_not_assigned', 'no_device_credentials', 'identity_not_reserved', 'wifi_rotation_pending', 'wifi_not_confirmed',
+  'current_psk_not_supported', 'canonical_ssid_in_use', 'canonical_ssid_pending_elsewhere', 'canonical_ssid_reserved'] as const;
+export class AdoptError extends Error { constructor(public key: string) { super(key); } }
+export function projectAdoptResult(v: unknown): SsidAdoptResult {
+  const r = obj(v) ?? bad();
+  if (r.ok !== true) throw new AdoptError(`adopt.error.${typeof r.error === 'string' && (ADOPT_ERRORS as readonly string[]).includes(r.error) ? r.error : 'other'}`);
+  if (typeof r.canonical_ssid !== 'string' || !CANONICAL_SSID.test(r.canonical_ssid) || !['preview', 'pending', 'applied'].includes(String(r.state))) return bad();
+  return { current_ssid: typeof r.current_ssid === 'string' ? r.current_ssid : null, canonical_ssid: r.canonical_ssid, state: r.state as SsidAdoptResult['state'],
+    command_id: str(r.command_id), already: r.already === true };
+}
+export async function adoptWifiSsid(venueId: string, confirm: boolean): Promise<SsidAdoptResult> {
+  try { return projectAdoptResult(await rpc('ps_admin_wifi_ssid_adopt', { p_venue_id: venueId, p_confirm: confirm })); }
+  catch (error) { if ((error as { code?: string })?.code === '42501') throw new AdoptError('adopt.error.forbidden'); throw error; }
+}
 export async function renewCert(printServerId: string) { return action('ps_admin_cert_renew', { p_print_server_id: printServerId }); }
 
 // PE-428 legacy reconciliation (platform staff only; others get 42501). The context never carries

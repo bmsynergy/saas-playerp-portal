@@ -394,3 +394,5 @@ button:disabled * { cursor:not-allowed!important; }
 /* Keep the date controls grouped for assistive technology while aligning them in the filter grid. */
 .ps-printers-filters .admin-date-filters{grid-column:span 2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
 @media(max-width:500px){.ps-printers-filters .admin-date-filters{grid-column:1;grid-template-columns:minmax(0,1fr)}}
+/* PE-440: device Wi-Fi name adoption */
+.dev-ssid-adoption{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0;display:grid;gap:10px}.dev-ssid-adoption h3{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:0}.dev-ssid-adoption .dev-facts{margin:0}.dev-ssid-adoption .ps-cert-small{display:flex;align-items:center;gap:6px;margin:0}.adopt-change{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.95rem;background:var(--canvas);padding:12px;border-radius:10px}.adopt-keeps{margin:8px 0 0;padding-left:18px;font-size:.82rem;display:grid;gap:4px}
