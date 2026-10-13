@@ -1,6 +1,8 @@
 # PE-439.3 — backend prerequisite for DEV publication
 
-Pending: minimal normalization fix of `ps_admin_legacy_credentials_reconcile` in Supabase DEV `fzwzmwstxlsxdzdmphyq`, versioned in `bmsynergy/saas-playerp-backend` before frontend publication. No firmware, devices or production changes.
+Resolved by Tom in PE-439.4: backend `97e1d293e9d00349afbb98171752941f8c7c7a47`, migration `20261014020000` applied and registered only in DEV; 23/23 synthetic persistence checks PASS. Frontend publication is now authorized by the completed prerequisite. See [updated verification](../PE-439-verification.md).
+
+Historical handoff request (completed): minimal normalization fix of `ps_admin_legacy_credentials_reconcile` in Supabase DEV `fzwzmwstxlsxdzdmphyq`, versioned in `bmsynergy/saas-playerp-backend` before frontend publication. No firmware, devices or production changes.
 
 The MCP read of the live function was denied in this run: `MCP tool call requires approval, but approval policy is never`. No alternative access was attempted. A handoff is required to execute this backend-owned step; this document is a proposed change, not evidence of deployment.
 
