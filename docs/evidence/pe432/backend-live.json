@@ -1,0 +1,34 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Real DEV account and backend; no physical update; one disposable unassigned device",
+  "checks": [
+    {
+      "criterion": 1,
+      "filteredInventoryUrl": "/admin/print-servers/inventory?version=0.0.0-pe384-sim",
+      "noDeviceListOnFirmwares": true
+    },
+    {
+      "criterion": 3,
+      "realCreateDelete": true,
+      "serialConfirmation": true,
+      "assignedDeleteAbsent": true,
+      "currentFirmwareShown": true,
+      "noStableUpdateDisabled": true
+    },
+    {
+      "criterion": 2,
+      "permanentFleetAbsent": true,
+      "deploymentsAndPickerPresent": true
+    },
+    {
+      "criterion": 4,
+      "widths": [
+        390,
+        834,
+        1440
+      ],
+      "noOverflow": true
+    }
+  ],
+  "errors": []
+}

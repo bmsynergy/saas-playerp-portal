@@ -25,6 +25,7 @@ export type DeviceSheet = {
   wifiMethod: string | null; adminCodeMethod: string | null;
 };
 export type InventoryDevice = { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null;
+  arch?: string | null; label?: string | null; model_label?: string | null;
   print_server_id: string | null; software_version: string | null; last_seen_at: string | null; online: boolean; created_at: string | null };
 
 type Raw = Record<string, unknown>;
@@ -167,6 +168,7 @@ export async function getInventoryDevices(signal?: AbortSignal): Promise<Invento
   return data.devices.map((v: unknown) => {
     const d = obj(v) ?? bad();
     return { id: String(d.id), serial: String(d.serial ?? ''), hostname: String(d.hostname ?? ''), model: String(d.model ?? ''), status: String(d.status ?? ''), legacy: d.legacy === true,
+      arch: str(d.arch), label: str(d.label), model_label: str(d.model_label),
       venue_id: str(d.venue_id), venue_name: str(d.venue_name), print_server_id: str(d.print_server_id), software_version: str(d.software_version),
       last_seen_at: str(d.last_seen_at), online: d.online === true, created_at: str(d.created_at) };
   });

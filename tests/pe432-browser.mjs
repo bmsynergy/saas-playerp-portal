@@ -1,0 +1,57 @@
+import {chromium,expect} from '@playwright/test';
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+const origin=process.env.PORTAL_TEST_ORIGIN??'http://127.0.0.1:18799',out=process.env.SMOKE_OUTPUT_DIR??'test-results/pe432';await mkdir(out,{recursive:true});
+const browser=await chromium.launch({headless:true,executablePath:'/home/coredev/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
+const uid='11111111-1111-4111-8111-111111111111',venueId='22222222-2222-4222-8222-222222222222',date='2026-10-13T18:00:00Z';
+const user={id:uid,email:'fixture@example.invalid',aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{}};
+const exp=Math.floor(Date.now()/1000)+3600,enc=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
+const session={access_token:`${enc({alg:'HS256'})}.${enc({sub:uid,exp,aud:'authenticated',role:'authenticated'})}.synthetic`,refresh_token:'synthetic',expires_at:exp,expires_in:3600,token_type:'bearer',user};
+const dev=i=>({id:`device-${i}`,serial:`PS-TEST000${i}`,hostname:`playerp-ps-test000${i}`,model:'rpi4-2gb',model_label:'Raspberry Pi 4 · 2 GB',arch:'arm64',label:`Desk ${i}`,status:i===0?'assigned':'stock',legacy:false,venue_id:i===0?venueId:null,venue_name:i===0?'Fixture Venue':null,print_server_id:i===0?'ps-0':null,software_version:i===2?null:i===1?'0.3.2':'0.3.1',created_at:date});
+const report={origin,kind:'Synthetic intercepted API contracts; no live mutations',checks:[],errors:[]};
+async function setup(width){
+ const ctx=await browser.newContext({viewport:{width,height:1000},locale:'en'});await ctx.addInitScript(session=>{localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(session));localStorage.setItem('playerp.locale','en');},session);
+ const s={devices:[dev(0),dev(1),dev(2)],calls:[],blocked:false,stable:true,updating:false,finished:false};
+ await ctx.route(url=>!url.href.startsWith(origin),async route=>{
+  const url=new URL(route.request().url()),name=url.pathname.split('/').pop();if(url.hostname!=='fzwzmwstxlsxdzdmphyq.supabase.co')return route.abort();
+  const send=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
+  if(url.pathname.startsWith('/auth/v1/'))return send(name==='user'?user:session);
+  if(name==='staff_profiles')return send(null);
+  const args=route.request().postDataJSON()??{};s.calls.push({name,args});
+  if(name==='portal_access')return send({is_platform_staff:true,platform_role:'super_admin',owner_venues:[]});
+  if(name==='is_platform_staff')return send(true);
+  if(name==='portal_tenant_directory')return send([{id:venueId,name:'Fixture Venue',slug:'fixture',is_active:true}]);
+  if(name==='portal_ps_devices')return send({ok:true,devices:s.devices});
+  if(name==='portal_ps_inventory')return send({contract_version:1,generated_at:date,online_window_seconds:180,items:s.devices.map(d=>({id:d.id,device_id:d.id,label:d.label,hostname:d.hostname,assignment:d.venue_id?'assigned':'unassigned',venue_id:d.venue_id,venue_name:d.venue_name,last_venue_name:null,connection:d.venue_id?'online':'unassigned',last_seen_at:null,last_report_at:null,firmware_version:d.software_version,firmware_known:!!d.software_version,error_count:0,warning_count:0,printers_total:null,pending_jobs:null,last_issue_at:null,issues:[]}))});
+  if(name==='ps_firmware_list')return send({releases:[],installed:[]});
+  if(name==='ps_admin_device_models')return send({ok:true,models:[{model:'rpi4-2gb',label:'Raspberry Pi 4 · 2 GB',archs:['arm64'],default_arch:'arm64'},{model:'future',label:'Future model',archs:['armhf','arm64'],default_arch:'armhf'}]});
+  if(name==='ps_admin_device_detail'){const device=s.devices.find(d=>d.id===args.p_device_id);return send({ok:true,device,update:{current_version:device.software_version,latest_stable:s.stable?{edition_id:'stable',version:'0.3.3',model:device.model,arch:device.arch}:null,update_available:s.stable&&!s.updating,reason:s.updating?'update_in_progress':s.stable?null:'no_stable_release',active_update:s.updating?{deployment_id:'single',status:'pending',phase:'queued',progress:0}:null},delete:{allowed:!device.venue_id&&!s.blocked,blockers:device.venue_id?['device_assigned']:s.blocked?['active_operation']:[]}});}
+  if(name==='ps_admin_device_create'){assert.equal(args.p_model,'future');assert.equal(args.p_arch,'armhf');assert.equal(args.p_label,'New desk');s.devices.push({...dev(3),model:'future',arch:'armhf',label:args.p_label});return send({ok:true,device:s.devices.at(-1)});}
+  if(name==='ps_admin_device_delete'){assert.equal(args.p_confirm_serial,'PS-TEST0001');assert.equal(args.p_device_id,'device-1');s.devices=s.devices.filter(d=>d.id!==args.p_device_id);return send({ok:true,deleted_device_id:args.p_device_id});}
+  if(name==='ps-ota-admin'){assert.deepEqual(args,{action:'update_device',device_id:'device-0',edition_id:'stable'});s.updating=true;return send({ok:true,deployment_id:'single',targets:1});}
+  if(name==='ps_ota_admin_overview')return send({ok:true,keys:[],releases:[],groups:[],devices:s.devices.filter(d=>d.print_server_id).map(d=>({...d,installed_version:d.software_version})),deployments:[],audit:[]});
+  if(name==='ps_ota_admin_deployments_page')return send({ok:true,total:2,items:[{id:'live',ring:'general',version:'0.3.3',created_at:date,target_count:2,target_by_status:s.finished?{committed:2}:{in_progress:1,committed:1}},{id:'done',ring:'general',version:'0.3.2',created_at:date,target_count:1,target_by_status:{failed:1}}],aggregates:{target_by_status:{in_progress:1,committed:1,failed:1}}});
+  if(name==='ps_ota_admin_targets_page')return send({ok:true,total:1,items:[{id:'target-live',deployment_id:'live',print_server_id:'ps-0',hostname:'playerp-ps-test0000',venue_name:'Fixture Venue',status:'in_progress',phase:'verifying',progress:64,desired_version:'0.3.3',installed_version:'0.3.1',issued_at:date,updated_at:date}],aggregates:{target_by_status:{in_progress:1}}});
+  if(name==='ps_ota_admin_audit_page')return send({ok:true,total:0,items:[],aggregates:{}});
+  report.errors.push(`Unexpected endpoint ${name}`);return route.abort();
+ });
+ const page=await ctx.newPage();await page.clock.install();page.on('pageerror',e=>report.errors.push(e.message));page.setDefaultTimeout(10000);return {ctx,page,s};
+}
+const noOverflow=async page=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page overflow');
+try{
+ for(const width of [390,834,1440]){
+  const {ctx,page,s}=await setup(width);
+  await page.goto(origin+'/admin/print-servers/firmwares');await expect(page.getByTestId('fw-distribution')).toBeVisible();await expect(page.getByTestId('fw-devices')).toHaveCount(0);
+  await page.getByTestId('fw-legend-0.3.1').click();await expect(page.getByTestId('fw-view-inventory')).toHaveAttribute('href','/admin/print-servers/inventory?version=0.3.1');await page.getByTestId('fw-view-inventory').click();await expect(page.getByTestId('devices-version')).toHaveValue('0.3.1');await expect(page.locator('[data-testid^="inv-row-"]')).toHaveCount(1);await noOverflow(page);
+  await page.getByTestId('devices-version').selectOption('__unknown__');await expect(page.getByTestId('inv-row-PS-TEST0002')).toBeVisible();await expect(page.locator('[data-testid^="inv-row-"]')).toHaveCount(1);
+  await page.getByTestId('devices-version').selectOption('');await expect(page.locator('[data-testid^="inv-row-"]')).toHaveCount(3);await expect(page.getByTestId('inv-delete-PS-TEST0000')).toHaveCount(0);
+  await page.getByTestId('inv-create').click();let dialog=page.getByTestId('admin-device-add-dialog');await expect(dialog.locator('select').first()).toBeVisible();await dialog.locator('select').nth(0).selectOption('future');await expect(dialog.locator('select').nth(1)).toHaveValue('armhf');await dialog.getByLabel('Label (optional)',{exact:true}).fill('New desk');await dialog.getByRole('button',{name:'Review',exact:true}).click();assert.equal(s.calls.filter(c=>c.name==='ps_admin_device_create').length,0);await expect(dialog).toContainText('Future model');await dialog.getByRole('button',{name:'Confirm',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(page.getByTestId('inv-row-PS-TEST0003')).toBeVisible();
+  s.blocked=true;await page.getByTestId('inv-delete-PS-TEST0001').click();dialog=page.getByTestId('admin-device-delete-dialog');await expect(dialog.getByRole('button',{name:'Delete',exact:true})).toBeDisabled();await expect(dialog).toContainText(/operation/i);await page.keyboard.press('Escape');s.blocked=false;
+  await page.getByTestId('inv-delete-PS-TEST0001').click();dialog=page.getByTestId('admin-device-delete-dialog');const del=dialog.getByRole('button',{name:'Delete',exact:true});await expect(del).toBeDisabled();await dialog.getByRole('textbox').fill('wrong');await expect(del).toBeDisabled();await dialog.getByRole('textbox').fill('PS-TEST0001');await expect(del).toBeEnabled();await del.click();await expect(page.getByTestId('inv-row-PS-TEST0001')).toHaveCount(0);
+  await page.getByTestId('inv-row-PS-TEST0000').getByRole('button',{name:/Open.*sheet/i}).click();await expect(page.getByTestId('admin-device-summary')).toContainText('0.3.3');await page.getByTestId('admin-device-update').click();await page.locator('.admin-device-confirm').getByRole('button',{name:'Update',exact:true}).click();await expect(page.getByTestId('admin-device-update')).toBeDisabled();await expect.poll(()=>s.calls.filter(c=>c.name==='ps-ota-admin').length).toBe(1);await expect(page.getByTestId('admin-device-summary')).toContainText('Update in progress');await page.keyboard.press('Escape');
+  await page.goto(origin+'/admin/print-servers/updates');await expect(page.getByTestId('updates-page')).toBeVisible();await expect(page.locator('#ota-fleet-title')).toHaveCount(0);await expect(page.getByTestId('ota-deployment-live')).toHaveAttribute('open','');await expect(page.getByTestId('ota-deployment-done')).not.toHaveAttribute('open','');await expect(page.getByTestId('ota-target-target-live')).toContainText('64%');await expect(page.getByTestId('ota-target-target-live')).toContainText(/verif/i);await expect(page.getByTestId('ota-deployment-live')).toContainText('50%');await noOverflow(page);await page.getByTestId('ota-deployment-live').screenshot({path:`${out}/updates-${width}.png`});s.finished=true;await page.clock.fastForward(11000);await expect(page.getByTestId('ota-deployment-live')).not.toHaveAttribute('open','');
+  await page.getByTestId('ota-deploy-mode').selectOption('devices');await expect(page.locator('.ota-deploy-devices .ota-device-card')).toHaveCount(1);await noOverflow(page);
+  report.checks.push({width,firmwareLinkFilter:true,unknownVersion:true,genericCreateReview:true,deleteStrongConfirmation:true,assignedDeleteAbsent:true,blockedDelete:true,singleUpdate:true,activeExpanded:true,terminalCollapsed:true,terminalTransitionCloses:true,actualTargetProgress:64,newDeploymentPicker:true,noOverflow:true});await ctx.close();
+ }
+ assert.deepEqual(report.errors,[]);await writeFile(`${out}/checks.json`,JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+}finally{await browser.close();}

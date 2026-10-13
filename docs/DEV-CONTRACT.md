@@ -64,3 +64,20 @@ No backend migration, email configuration, production or Lovable change in this 
 - A single persistent shell wraps authenticated routes, including password/invitation and loading/error/denied/not-found states. Scope gates still resolve access before mounting data components. Restricted states expose no area links. Breadcrumbs and secondary navigation use the same permission flags as the main navigation.
 - Four PNGs are exact copies of `bmsynergy/playerp/public/brand` at
   `73655c61f101dbe75429c1fa586f8280782915d9`; neither the source assets nor that repo changed.
+
+## PE-432 — Generic device administration
+
+Frontend consumes the DEV backend contract from main `8a097cb` (PE-432.1):
+`ps_admin_device_models`, five-argument `ps_admin_device_create`,
+`ps_admin_device_detail`, `ps_admin_device_delete`, and `ps-ota-admin` action
+`update_device`. All use the ordinary signed-in platform administrator session.
+
+The server selects the latest signed, canary-confirmed stable release compatible with the
+model and architecture. The frontend passes the displayed edition back on confirmation;
+it never selects simulated/beta/canary releases itself. The device ID is the inventory UUID,
+not the print-server UUID. Delete submits the exact serial and relies on the server to
+recheck assignment, enrollment, deployment and operation blockers at mutation time.
+
+Creation uses the model catalogue and its allowed architectures. Serial, hostname, Wi-Fi
+and administrative credentials remain server-generated under the existing PE-384/411/428
+contract; no credential-generation or rotation behavior is duplicated in this frontend.

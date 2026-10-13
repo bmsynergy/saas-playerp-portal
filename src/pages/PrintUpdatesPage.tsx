@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import { EMPTY_LIST_FILTERS, matchesText, matchesUtcDay } from '../lib/adminLists';
@@ -135,9 +135,13 @@ function DeploymentTargets({deploymentId}:{deploymentId:string}) {
   </div>;
 }
 function Deployment({item}:{item:import('../lib/ota').OtaDeploymentItem}) {
-  const l=useLabels();const [open,setOpen]=useState(false);
-  return <details className="ota-deployment" data-testid={`ota-deployment-${item.id}`} onToggle={e=>setOpen(e.currentTarget.open)}>
-    <summary><span className="fw-cell"><strong>{item.version??l.t('notProvided')} · {l.ring(item.ring)}{item.group_name?` · ${item.group_name}`:''}</strong><small className="ps-sub">{l.date(item.created_at)} · {fill(l.t('ota.targetsCount'),{n:item.target_count})}</small></span><ChevronDown size={18}/></summary>
+  const l=useLabels();const active = Object.entries(item.target_by_status).some(([status, count]) => count > 0 && ['pending', 'in_progress', 'queued', 'running', 'installing', 'verifying'].includes(status));
+  const [open,setOpen]=useState(active);
+  useEffect(() => { setOpen(active); }, [active]);
+  const completed = item.target_by_status.committed ?? 0;
+  const progress = item.target_count ? Math.round(completed / item.target_count * 100) : 0;
+  return <details open={open} className="ota-deployment" data-testid={`ota-deployment-${item.id}`} onToggle={e=>setOpen(e.currentTarget.open)}>
+    <summary><span className="fw-cell"><strong>{item.version??l.t('notProvided')} · {l.ring(item.ring)}{item.group_name?` · ${item.group_name}`:''}</strong><small className="ps-sub">{l.date(item.created_at)} · {fill(l.t('ota.targetsCount'),{n:item.target_count})}</small><span className="ota-deployment-stats"><span className="ota-deployment-count">{l.t('adminDevice.completedCount').replace('{done}', String(completed)).replace('{total}', String(item.target_count))} · {progress}%</span>{Object.entries(item.target_by_status).filter(([,n])=>n>0).map(([status,n])=><span key={status} className="ota-deployment-count">{l.status(status)}: {n}</span>)}</span></span><ChevronDown size={18}/></summary>
     {open&&<DeploymentTargets deploymentId={item.id}/>}
   </details>;
 }
@@ -214,7 +218,6 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
   const [deploy, setDeploy] = useState<{ edition: string; mode: 'group' | 'devices'; group: string; ring: Ring; devices: Set<string> }>({ edition: '', mode: 'group', group: '', ring: 'lab', devices: new Set() });
   const releases=useLocalList(data.releases,(r,f)=>matchesText(f.query,r.version,r.revision,r.model,r.arch)&&(!f.status||(r.edition_status??'none')===f.status)&&matchesUtcDay(r.created_at,f.from,f.to));
   const groups=useLocalList(data.groups,(g,f)=>matchesText(f.query,g.name,g.ring)&&(!f.status||g.ring===f.status)&&matchesUtcDay(g.created_at,f.from,f.to));
-  const devices=useLocalList(data.devices,(d,f)=>matchesText(f.query,d.hostname,d.serial,d.venue_name,d.installed_version)&&(!f.status||(d.target?.status??'none')===f.status)&&matchesUtcDay(d.last_seen_at,f.from,f.to));
   const activeKey = data.keys.find(k => k.active) ?? null;
   const edition = signed.find(r => r.edition_id === deploy.edition) ?? null;
   const deployRing: Ring | null = deploy.mode === 'group' ? data.groups.find(g => g.id === deploy.group)?.ring ?? null : deploy.ring;
@@ -304,22 +307,6 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
       </form>
     </section>
 
-    <section className="servers-panel" aria-labelledby="ota-devices-title">
-      <div className="section-heading"><div><p className="eyebrow">{t('ota.devicesEyebrow')}</p><h2 id="ota-devices-title">{t('ota.devicesTitle')}</h2></div><span className="count-pill">{devices.pagination.total}</span></div>
-      <AdminListFilters id="ota-devices" {...devices.list} dateLabel={t('list.lastContact')} statuses={['none',...OTA_STATUSES].map(value=>({value,label:l.status(value)}))}/>
-      {devices.pagination.total === 0 ? <div className="inline-empty">{t(data.devices.length?'list.noMatches':'ota.noDevices')}</div> : <div className="table-scroll"><table className="servers-table fw-table ota-table"><TargetHead/><tbody>
-        {devices.items.map(d => d.target ? <TargetRow key={d.print_server_id} target={d.target} device={d}/> : <tr key={d.print_server_id} data-testid={`ota-device-${d.print_server_id}`} data-status="none">
-          <td data-label={t('inv.venue')}>{d.venue_name ?? t('inv.unassigned')}</td>
-          <td data-label={t('ps.hostname')}><span className="fw-cell"><strong>{d.hostname ?? t('notProvided')}</strong>{d.serial && <small className="ps-sub ps-mono">{d.serial}</small>}</span></td>
-          <td data-label={t('ota.installed')}>{d.installed_version ?? t('notProvided')}</td>
-          <td data-label={t('ota.desired')}>{t('notProvided')}</td>
-          <td data-label={t('state')}><span className="server-status server-pending"><span className="badge-dot"/>{t('ota.status.none')}</span></td>
-          <td data-label={t('ota.phase')}>—</td><td data-label={t('list.generalProgress')}>—</td><td data-label={t('ota.error')}>—</td><td data-label={t('ota.events')}>—</td>
-        </tr>)}
-      </tbody></table></div>}
-    </section>
-
-    <PrintListPagination id="ota-devices" pagination={devices.pagination}/>
     <Deployments/>
     <Audit/>
 

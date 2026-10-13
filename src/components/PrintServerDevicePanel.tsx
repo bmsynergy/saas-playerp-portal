@@ -12,6 +12,7 @@ import { PortalDialog } from './PortalDialog';
 import { reconcileCredentialOperation, credentialBlocked, credentialProgress, credentialErrorKey, type CredentialKind, type CredentialOperation } from '../lib/psCredentialOperation';
 
 import { CredentialProgress } from './CredentialProgress';
+import { DeviceAdminSummary } from './DeviceAdminSummary';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
 type Props = { venueId: string; printServerId: string | null; adminScope?: boolean };
@@ -203,6 +204,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
       {help}
       <p className="ps-cert-small">{t('dev.tokensNote')}</p>
     </section>
+
+    {adminScope && data.is_platform_admin && data.device && <DeviceAdminSummary deviceId={data.device.id}/>}
 
     <section className="detail-panel" aria-labelledby="ps-https-title" data-testid="ps-https-panel">
       <div className="section-heading"><div><p className="eyebrow">{t('dev.https.eyebrow')}</p><h2 id="ps-https-title">{t('dev.https.title')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>

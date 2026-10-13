@@ -1,0 +1,55 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "kind": "Synthetic intercepted API contracts; no live mutations",
+  "checks": [
+    {
+      "width": 390,
+      "firmwareLinkFilter": true,
+      "unknownVersion": true,
+      "genericCreateReview": true,
+      "deleteStrongConfirmation": true,
+      "assignedDeleteAbsent": true,
+      "blockedDelete": true,
+      "singleUpdate": true,
+      "activeExpanded": true,
+      "terminalCollapsed": true,
+      "terminalTransitionCloses": true,
+      "actualTargetProgress": 64,
+      "newDeploymentPicker": true,
+      "noOverflow": true
+    },
+    {
+      "width": 834,
+      "firmwareLinkFilter": true,
+      "unknownVersion": true,
+      "genericCreateReview": true,
+      "deleteStrongConfirmation": true,
+      "assignedDeleteAbsent": true,
+      "blockedDelete": true,
+      "singleUpdate": true,
+      "activeExpanded": true,
+      "terminalCollapsed": true,
+      "terminalTransitionCloses": true,
+      "actualTargetProgress": 64,
+      "newDeploymentPicker": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "firmwareLinkFilter": true,
+      "unknownVersion": true,
+      "genericCreateReview": true,
+      "deleteStrongConfirmation": true,
+      "assignedDeleteAbsent": true,
+      "blockedDelete": true,
+      "singleUpdate": true,
+      "activeExpanded": true,
+      "terminalCollapsed": true,
+      "terminalTransitionCloses": true,
+      "actualTargetProgress": 64,
+      "newDeploymentPicker": true,
+      "noOverflow": true
+    }
+  ],
+  "errors": []
+}

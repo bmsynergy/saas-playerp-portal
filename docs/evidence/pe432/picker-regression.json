@@ -1,0 +1,183 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "api": "isolated fixtures, no backend mutations",
+  "layouts": [
+    {
+      "lang": "en",
+      "width": 1920,
+      "columns": 3,
+      "minCardWidth": 373.328125,
+      "heights": [
+        191.375,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "columns": 3,
+      "minCardWidth": 329.75,
+      "heights": [
+        191.375,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 1200,
+      "columns": 2,
+      "minCardWidth": 391.203125,
+      "heights": [
+        191.375,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 1024,
+      "columns": 1,
+      "minCardWidth": 669.90625,
+      "heights": [
+        174.578125,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 834,
+      "columns": 1,
+      "minCardWidth": 704.625,
+      "heights": [
+        174.578125,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "columns": 1,
+      "minCardWidth": 308,
+      "heights": [
+        191.375,
+        174.578125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "en",
+      "width": 320,
+      "columns": 1,
+      "minCardWidth": 238,
+      "heights": [
+        279.734375,
+        262.9375
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 1920,
+      "columns": 3,
+      "minCardWidth": 373.328125,
+      "heights": [
+        205.921875,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 1440,
+      "columns": 3,
+      "minCardWidth": 329.75,
+      "heights": [
+        205.921875,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 1200,
+      "columns": 2,
+      "minCardWidth": 391.203125,
+      "heights": [
+        205.921875,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 1024,
+      "columns": 1,
+      "minCardWidth": 669.90625,
+      "heights": [
+        189.125,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 834,
+      "columns": 1,
+      "minCardWidth": 704.625,
+      "heights": [
+        189.125,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 390,
+      "columns": 1,
+      "minCardWidth": 308,
+      "heights": [
+        205.921875,
+        189.125
+      ],
+      "noOverflow": true
+    },
+    {
+      "lang": "es",
+      "width": 320,
+      "columns": 1,
+      "minCardWidth": 238,
+      "heights": [
+        279.734375,
+        262.9375
+      ],
+      "noOverflow": true
+    }
+  ],
+  "selection": [
+    {
+      "lang": "en",
+      "pointerAndKeyboard": true,
+      "selected": 3,
+      "total": 8,
+      "filterPreservesSelection": true,
+      "distinctBackground": true,
+      "hostnameTitle": true,
+      "allFields": true
+    },
+    {
+      "lang": "es",
+      "pointerAndKeyboard": true,
+      "selected": 3,
+      "total": 8,
+      "filterPreservesSelection": true,
+      "distinctBackground": true,
+      "hostnameTitle": true,
+      "allFields": true
+    }
+  ],
+  "errors": []
+}
