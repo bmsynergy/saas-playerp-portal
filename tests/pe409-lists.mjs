@@ -48,7 +48,7 @@ async function setup(width=1440,role='super_admin') {
   if(name==='ps_admin_legacy_credentials_context')return send({ok:true,venue_id:args.p_venue_id,device_id:null,legacy:false});
   if(name==='ps_panel_device')return send({ok:true,device:null,cert:{},rotations:[],cert_operations:[],can_manage:false,is_platform_admin:true});
   if(name==='ps_panel_ota')return send({ok:true,print_servers:[]});
-  if(name==='ps_ota_admin_overview'){db.overviewAuditRows.push(audits.slice(0,50).length);return send({ok:true,keys:[{key_id:'fixture',active:true}],releases,groups:seq(i=>({id:`group-${i}`,name:`Fixture ${i}`,ring:'lab',created_at:date(i),members:[]})),devices:otaDevices,deployments:deployments.slice(0,50),audit:audits.slice(0,50)});}
+  if(name==='ps_ota_admin_overview'){assert.equal(args.p_include_audit,false);db.overviewAuditRows.push(0);return send({ok:true,keys:[{key_id:'fixture',active:true}],releases,groups:seq(i=>({id:`group-${i}`,name:`Fixture ${i}`,ring:'lab',created_at:date(i),members:[]})),devices:otaDevices,deployments:deployments.slice(0,50),audit_included:false});}
   const kind=name.match(/^ps_ota_admin_(deployments|targets|audit|events)_page$/)?.[1];
   if(kind||name==='ps_panel_printer_jobs') {
    let items=structuredClone(kind?{deployments,targets,audit:audits,events}[kind]:jobs);
@@ -147,8 +147,8 @@ try {
  assert.equal(auditCalls().length,0);
  // Explicitly detect the blocker as well as validating the scoped frontend change.
  assert(audit.db.overviewAuditRows.length>0,'initial overview read observed');
- assert.equal(audit.db.overviewAuditRows[0],50,'legacy overview still loads audit before Search');
- report.initialAuditLoad={dedicatedPageCalls:0,overviewRows:audit.db.overviewAuditRows[0],completeOnDemand:false};
+ assert.equal(audit.db.overviewAuditRows[0],0,'overview omits audit before Search');
+ report.initialAuditLoad={dedicatedPageCalls:0,overviewRows:audit.db.overviewAuditRows[0],completeOnDemand:true};
  await audit.page.getByTestId('audit-search').fill('0.3.15');
  await audit.page.getByTestId('audit-from').fill('2026-10-10');
  await audit.page.getByTestId('audit-to').fill('2026-10-11');
@@ -180,8 +180,8 @@ try {
  await audit.page.reload();await expect(audit.page.getByTestId('ota-audit-start')).toBeVisible();await expect(audit.page.getByTestId('ota-audit')).toHaveCount(0);
  report.checks.push('PE-431: explicit audit page search, draft filters do not request, 1..N validation, direct server offset, size reset, no polling, empty/re-entry reset, full-width diagnostics and exact clipboard at 1440/390/320px');
  report.automaticOverviewCalls=audit.db.calls.filter(c=>c.name==='ps_ota_admin_overview').length;
- report.knownDependency='Legacy ps_ota_admin_overview still bundles 50 audit records on initial/periodic overview reads; backend support required to omit audit before complete acceptance.';
+ assert(audit.db.overviewAuditRows.every(count=>count===0),'all overview refreshes omit audit');
  await audit.ctx.close();
- assert.deepEqual(report.errors,[]);report.frontendChecksPassed=true;report.portalAcceptanceComplete=false;
+ assert.deepEqual(report.errors,[]);report.frontendChecksPassed=true;report.portalAcceptanceComplete=true;
 }finally {await writeFile(out+'/fixtures.json',JSON.stringify(report,null,2));await browser.close();}
 assert.deepEqual(report.errors,[]);console.log(JSON.stringify(report,null,2));

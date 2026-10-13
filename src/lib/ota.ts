@@ -58,7 +58,8 @@ function target(v: unknown): OtaTarget {
 export function projectOverview(v: unknown, inventory: Pick<InventoryDevice, 'print_server_id' | 'model'>[] = []): OtaOverview {
   const models = new Map(inventory.filter(d => d.print_server_id).map(d => [d.print_server_id, d.model]));
   const d = obj(v) ?? bad();
-  if (d.ok !== true || ['keys','releases','groups','devices','deployments','audit'].some(key=>!Array.isArray(d[key]))) return bad();
+  if (d.ok !== true || ['keys','releases','groups','devices','deployments'].some(key=>!Array.isArray(d[key])) ||
+      (!Array.isArray(d.audit) && !(d.audit_included === false && d.audit === undefined))) return bad();
   return {
     server_time: str(d.server_time),
     keys: list(d.keys).map(item => { const k = obj(item) ?? bad(); return { key_id: String(k.key_id ?? ''), public_key_b64: str(k.public_key_b64), active: k.active === true }; }),
@@ -112,7 +113,7 @@ async function action(name: string, params: Record<string, unknown>): Promise<Ra
 
 export async function getOtaOverview(signal?: AbortSignal): Promise<OtaOverview> {
   // Reuse the authorized inventory read: the OTA overview does not expose hardware models.
-  const [overview, inventory] = await Promise.all([rpc('ps_ota_admin_overview', {}, signal), getInventoryDevices(signal)]);
+  const [overview, inventory] = await Promise.all([rpc('ps_ota_admin_overview', { p_include_audit: false }, signal), getInventoryDevices(signal)]);
   return projectOverview(overview, inventory);
 }
 export async function getTargetEvents(targetId: string, signal?: AbortSignal): Promise<OtaEvent[]> {
