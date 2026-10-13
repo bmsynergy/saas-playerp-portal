@@ -1,3 +1,4 @@
+import { firmwareBlockReason, type StableFirmware } from './firmwareEligibility';
 import { getInventoryDevices, type InventoryDevice } from './psDevice';
 import { utcBounds } from './adminLists';
 import { supabase } from './supabase';
@@ -33,7 +34,7 @@ export type OtaDeployment = {
 export type OtaAudit = { at: string | null; action: string; target_type: string | null; target_id: string | null; metadata: string | null; actor_email: string | null };
 export type OtaOverview = { server_time: string | null; keys: OtaKey[]; releases: OtaRelease[]; groups: OtaGroup[]; devices: OtaDevice[]; deployments: OtaDeployment[]; audit: OtaAudit[] };
 export type OtaEvent = { id: string; phase: string | null; status: string | null; progress: number | null; error_code: string | null; error_detail: string | null; detail: string | null; created_at: string | null };
-export type PanelOta = { print_server_id: string; hostname: string | null; installed_version: string | null; desired_version: string | null; status: string; phase: string | null; progress: number | null; updated_at: string | null };
+export type PanelOta = { model: string | null; arch: string | null; latest_stable: StableFirmware | null; availability: 'available' | 'unavailable' | 'unknown'; reason: string | null; can_update: false; print_server_id: string; hostname: string | null; installed_version: string | null; desired_version: string | null; status: string; phase: string | null; progress: number | null; updated_at: string | null };
 
 type Raw = Record<string, unknown>;
 const bad = (): never => { throw new PortalError('genericError'); };
@@ -165,7 +166,15 @@ export async function getPanelOta(venueId: string, signal?: AbortSignal): Promis
   if (data.ok !== true) throw new PsError('ota.error.other');
   return list(data.print_servers).map(item => {
     const p = obj(item) ?? bad();
-    return { print_server_id: String(p.print_server_id ?? ''), hostname: str(p.hostname), installed_version: str(p.installed_version), desired_version: str(p.desired_version),
+    // Optional additive v1 read contract; absence is unknown, never 'none available'.
+    const u = obj(p.update), latest = obj(u?.latest_stable);
+    const model = str(p.model), arch = str(p.arch);
+    const stable = latest && str(latest.edition_id) && str(latest.version) && str(latest.model) && str(latest.arch)
+      ? { edition_id: str(latest.edition_id)!, version: str(latest.version)!, model: str(latest.model)!, arch: str(latest.arch)! } : null;
+    const reason = u ? firmwareBlockReason(str(p.installed_version), stable, model, arch, u.update_available === true, str(u.reason)) : 'metadata_missing';
+    const compatible = stable && stable.model === model && stable.arch === arch ? stable : null;
+    return { model, arch, latest_stable: compatible, availability: !u || reason === 'metadata_missing' || reason === 'incompatible' ? 'unknown' : reason === 'no_stable_release' ? 'unavailable' : 'available', reason, can_update: false,
+      print_server_id: String(p.print_server_id ?? ''), hostname: str(p.hostname), installed_version: str(p.installed_version), desired_version: str(p.desired_version),
       status: slug(p.status) ?? 'none', phase: slug(p.phase), progress: pct(p.progress), updated_at: str(p.updated_at) };
   });
 }

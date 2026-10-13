@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "visual DOM admin 390 en: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM admin 390 es: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM admin 1440 en: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM admin 1440 es: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM owner 390 en: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM owner 390 es: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM owner 1440 en: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "visual DOM owner 1440 es: one HTTPS block, CA/leaf, permissions, disabled contrast >=4.5, navigation, filters, no overflow, zero mutations",
+    "UI reconciliation: malformed 16 vs mismatch, explicit check, prefix pairs, full64 independent code, separate loading/result, confirmed form removed and completed block hidden; only two intercepted writes",
+    "Shared non-PS password form: disabled semantic, readable grey, separate accessible loading, mouse/keyboard cannot duplicate intercepted request"
+  ],
+  "errors": [],
+  "backend": "all intercepted; pending Tom contract, no real device operations"
+}

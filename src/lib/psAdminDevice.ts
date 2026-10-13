@@ -1,3 +1,4 @@
+import { firmwareBlockReason } from './firmwareEligibility';
 import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { errorCode, PortalError } from './errors';
@@ -55,9 +56,10 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
   const device = { id: required(d.id), serial: required(d.serial), hostname: required(d.hostname), model: required(d.model), arch: required(d.arch),
     label: str(d.label), status: required(d.status), legacy: d.legacy === true, venue_id: str(d.venue_id), venue_name: str(d.venue_name) };
   const blockers = deletion.blockers.map(required);
+  const reason = firmwareBlockReason(str(u.current_version), latest, device.model, device.arch, u.update_available === true, str(u.reason)) ?? (active ? 'update_in_progress' : null);
   return { device, update: { current_version: str(u.current_version), latest_stable: latest,
-    update_available: u.update_available && !!latest && latest.model === device.model && latest.arch === device.arch && !active && !u.reason,
-    reason: str(u.reason), active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
+    update_available: u.update_available && !!latest && !active && !reason,
+    reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
       progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null },
     delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status !== 'assigned' && !device.legacy, blockers } };
 }
@@ -76,10 +78,12 @@ export async function createAdminDevice(input: NewAdminDevice): Promise<AdminDev
 export async function deleteAdminDevice(id: string, serial: string): Promise<void> {
   await rpc('ps_admin_device_delete', { p_device_id: id, p_confirm_serial: serial });
 }
-export async function updateAdminDevice(id: string, editionId: string): Promise<{ deployment_id: string }> {
+export async function updateAdminDevice(id: string, editionId: string, expectedInstalled?: string | null): Promise<{ deployment_id: string }> {
   const { data: session } = await supabase.auth.getSession();
   const token = session.session?.access_token;
   if (!token) throw new PortalError('sessionExpired');
+  const fresh = await getAdminDeviceDetail(id);
+  if (fresh.device.id !== id || !fresh.update.update_available || fresh.update.latest_stable?.edition_id !== editionId || (expectedInstalled !== undefined && fresh.update.current_version !== expectedInstalled)) throw new AdminDeviceError('adminDevice.updateChanged');
   let response: Response;
   try {
     response = await fetch(`${SUPABASE_URL}/functions/v1/ps-ota-admin`, { method: 'POST',

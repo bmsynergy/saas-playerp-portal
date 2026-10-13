@@ -34,6 +34,7 @@ describe('PE-432 admin device contracts', () => {
   });
   it('requests one device with the displayed edition and the signed-in user session', async () => {
     mocks.getSession.mockResolvedValue({data:{session:{access_token:'user-session'}}});
+    mocks.rpc.mockResolvedValue({data:fixture()});
     const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify({ok:true,deployment_id:'deployment'}),{status:200})); vi.stubGlobal('fetch',fetch);
     expect(await updateAdminDevice('device','stable')).toEqual({deployment_id:'deployment'});
     const [url,request]=fetch.mock.calls[0]; expect(url).toMatch(/functions\/v1\/ps-ota-admin$/); expect(JSON.parse(request.body)).toEqual({action:'update_device',device_id:'device',edition_id:'stable'});

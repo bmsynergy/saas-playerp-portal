@@ -227,10 +227,40 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
   const matchingPrinters = state.printers.filter(printer => [printer.label, printer.mac_address, printer.model, printer.location].some(value => value?.toLocaleLowerCase().includes(printerSearch.trim().toLocaleLowerCase())) && (!printerStatus || (printerStatus === 'active') === printer.is_active) && matchesUtcDay(printer.last_report?.reported_at ?? printer.last_report_at, printerDates.from, printerDates.to));
   const printerPagination = usePrintListPagination(matchingPrinters.length);
 
+  const caContent = <div className="ps-cert-ca" aria-labelledby="ps-cert-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.cert.eyebrow')}</p><h2 id="ps-cert-title">{t('ps.cert.sectionTitle')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
+      <h3 className="ps-cert-subtitle">{t('ps.cert.title')}</h3>
+      <p className="ps-cert-lead">{t('ps.cert.lead')}</p>
+      {certAvailable ? <>
+        <div className="detail-grid ps-cert-facts">
+          <Item icon={<Hash size={19}/>} label={t('ps.cert.fingerprintDer')} testId="ps-cert-fingerprint"><span className="ps-mono ps-cert-hash">{reportedFingerprint}</span></Item>
+          <Item icon={<Clock3 size={19}/>} label={t('ps.cert.updated')}>{date(server?.ca_cert_updated_at ?? null)}</Item>
+        </div>
+        <div className="ps-cert-download-block">
+          <div className="ps-cert-file"><FileKey2 size={19} aria-hidden="true"/><div><strong>{certFile}</strong><span>{t('ps.cert.fileHint')}</span></div></div>
+          <button type="button" className="button button-primary" data-testid="ps-cert-download" disabled={busy} onClick={() => void downloadCert()}><Download size={17}/>{t('ps.cert.download')}</button>
+        </div>
+        <p className="ps-cert-small">{t('ps.cert.publicOnly')}</p>
+      </> : <div className="ps-cert-pending" data-testid="ps-cert-pending" role="status"><Clock3 size={20} aria-hidden="true"/><div><strong>{t('ps.cert.pendingTitle')}</strong><p>{t(certMissing ? 'ps.error.noCaCert' : 'ps.cert.pendingBody')}</p></div></div>}
+      {fingerprintChanged && <div className="ps-cert-changed" role="alert" data-testid="ps-cert-changed"><AlertTriangle size={19} aria-hidden="true"/><div><strong>{t('ps.cert.changedTitle')}</strong><p>{t('ps.cert.changedBody')}</p><span className="ps-mono ps-cert-hash">{downloadedFingerprint}</span></div></div>}
+      <details className="ps-cert-guide" data-testid="ps-cert-guide"><summary><span><FileKey2 size={18} aria-hidden="true"/>{t('ps.cert.guideTitle')}</span><ChevronDown size={18} aria-hidden="true"/></summary>
+        <div className="ps-cert-guide-content">
+          <p>{t('ps.cert.guideIntro')}</p>
+          <ol><li>{t('ps.cert.stepOpen')}</li><li>{t('ps.cert.stepSignIn')}</li><li>{t('ps.cert.stepVenue')}</li><li>{t('ps.cert.stepDownload')}</li><li>{t('ps.cert.stepCompare')}</li></ol>
+          <div className="ps-cert-platforms">
+            <div><h3>{t('ps.cert.iosTitle')}</h3><p>{t('ps.cert.iosBody')}</p></div>
+            <div><h3>{t('ps.cert.windowsTitle')}</h3><p>{t('ps.cert.windowsBody')}</p></div>
+            <div><h3>{t('ps.cert.androidTitle')}</h3><p>{t('ps.cert.androidBody')}</p></div>
+          </div>
+          <p className="ps-cert-guide-caution"><AlertTriangle size={17} aria-hidden="true"/>{t('ps.cert.guideCaution')}</p>
+        </div>
+      </details>
+    </div>;
+
   return <div className="page-stack staff-page" data-testid="ps-detail">
     {scope === 'admin' && <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>}
     {embedded ? <div className="ps-embedded-heading"><h2 data-testid="ps-venue-name">{t('ps.detailEyebrow')}</h2><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div> : <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+    {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
     {stale && <div className="form-error" role="alert"><AlertTriangle size={19}/><span>{t('ps.stale')}</span></div>}
     {!canManage && <div className="staff-self-note" data-testid="ps-read-only">{t('ps.readOnly')}</div>}
 
@@ -255,39 +285,13 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       </div>
     </section>
 
-    <section className="detail-panel ps-cert-panel" aria-labelledby="ps-cert-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.cert.eyebrow')}</p><h2 id="ps-cert-title">{t('ps.cert.title')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
-      <p className="ps-cert-lead">{t('ps.cert.lead')}</p>
-      {certAvailable ? <>
-        <div className="detail-grid ps-cert-facts">
-          <Item icon={<Hash size={19}/>} label={t('ps.cert.fingerprintDer')} testId="ps-cert-fingerprint"><span className="ps-mono ps-cert-hash">{reportedFingerprint}</span></Item>
-          <Item icon={<Clock3 size={19}/>} label={t('ps.cert.updated')}>{date(server?.ca_cert_updated_at ?? null)}</Item>
-        </div>
-        <div className="ps-cert-download-block">
-          <div className="ps-cert-file"><FileKey2 size={19} aria-hidden="true"/><div><strong>{certFile}</strong><span>{t('ps.cert.fileHint')}</span></div></div>
-          <button type="button" className="button button-primary" data-testid="ps-cert-download" disabled={busy} onClick={() => void downloadCert()}><Download size={17}/>{t('ps.cert.download')}</button>
-        </div>
-        <p className="ps-cert-small">{t('ps.cert.publicOnly')}</p>
-      </> : <div className="ps-cert-pending" data-testid="ps-cert-pending" role="status"><Clock3 size={20} aria-hidden="true"/><div><strong>{t('ps.cert.pendingTitle')}</strong><p>{t('ps.cert.pendingBody')}</p></div></div>}
-      {fingerprintChanged && <div className="ps-cert-changed" role="alert" data-testid="ps-cert-changed"><AlertTriangle size={19} aria-hidden="true"/><div><strong>{t('ps.cert.changedTitle')}</strong><p>{t('ps.cert.changedBody')}</p><span className="ps-mono ps-cert-hash">{downloadedFingerprint}</span></div></div>}
-      <details className="ps-cert-guide" data-testid="ps-cert-guide"><summary><span><FileKey2 size={18} aria-hidden="true"/>{t('ps.cert.guideTitle')}</span><ChevronDown size={18} aria-hidden="true"/></summary>
-        <div className="ps-cert-guide-content">
-          <p>{t('ps.cert.guideIntro')}</p>
-          <ol><li>{t('ps.cert.stepOpen')}</li><li>{t('ps.cert.stepSignIn')}</li><li>{t('ps.cert.stepVenue')}</li><li>{t('ps.cert.stepDownload')}</li><li>{t('ps.cert.stepCompare')}</li></ol>
-          <div className="ps-cert-platforms">
-            <div><h3>{t('ps.cert.iosTitle')}</h3><p>{t('ps.cert.iosBody')}</p></div>
-            <div><h3>{t('ps.cert.windowsTitle')}</h3><p>{t('ps.cert.windowsBody')}</p></div>
-            <div><h3>{t('ps.cert.androidTitle')}</h3><p>{t('ps.cert.androidBody')}</p></div>
-          </div>
-          <p className="ps-cert-guide-caution"><AlertTriangle size={17} aria-hidden="true"/>{t('ps.cert.guideCaution')}</p>
-        </div>
-      </details>
-    </section>
+
+
+    {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId}/>}
 
     {scope === 'owner' && <PrintServerOtaBlock venueId={venueId}/>}
 
-    <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null} adminScope={scope === 'admin'}/>
-
-    {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId}/>}
+    <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null} adminScope={scope === 'admin'} caContent={caContent}/>
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <div className="detail-grid">
@@ -327,7 +331,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
       <p className="staff-panel-lead">{t('ps.printers.lead')}</p>
       <button type="button" className="ps-printers-toggle" data-testid="printers-toggle" aria-expanded={printersOpen} aria-controls={printersRegionId} onClick={() => setPrintersOpen(value => !value)}><span>{t(printersOpen ? 'ps.printers.closeList' : 'ps.printers.openList')}</span><ChevronDown size={18} aria-hidden="true"/></button>
       <div id={printersRegionId} hidden={!printersOpen}>
-      {state.printers.length > 0 && <div className="admin-list-toolbar"><label className="field ps-printers-search"><span>{t('ps.printers.search')}</span><span className="field-control"><Search size={17} aria-hidden="true"/><input type="search" data-testid="printers-search" value={printerSearch} onChange={event => { setPrinterSearch(event.target.value); printerPagination.reset(); }} placeholder={t('ps.printers.searchPlaceholder')}/></span></label><label className="admin-assignment-filter"><span>{t('state')}</span><select value={printerStatus} onChange={event => { setPrinterStatus(event.target.value); printerPagination.reset(); }}><option value="">{t('list.allStates')}</option><option value="active">{t('ps.printers.active')}</option><option value="paused">{t('ps.printers.paused')}</option></select></label><AdminDateFilters id="printers" label={t('ps.printers.lastReport')} from={printerDates.from} to={printerDates.to} onChange={(key, value) => { setPrinterDates(current => ({ ...current, [key]: value })); printerPagination.reset(); }}/><span className="directory-count">{matchingPrinters.length} / {state.printers.length}</span></div>}
+      {state.printers.length > 0 && <div className="admin-list-toolbar ps-printers-filters"><label className="field ps-printers-search"><span>{t('ps.printers.search')}</span><span className="field-control"><Search size={17} aria-hidden="true"/><input type="search" data-testid="printers-search" value={printerSearch} onChange={event => { setPrinterSearch(event.target.value); printerPagination.reset(); }} placeholder={t('ps.printers.searchPlaceholder')}/></span></label><label className="admin-assignment-filter"><span>{t('state')}</span><select value={printerStatus} onChange={event => { setPrinterStatus(event.target.value); printerPagination.reset(); }}><option value="">{t('list.allStates')}</option><option value="active">{t('ps.printers.active')}</option><option value="paused">{t('ps.printers.paused')}</option></select></label><AdminDateFilters id="printers" label={t('ps.printers.lastReport')} from={printerDates.from} to={printerDates.to} onChange={(key, value) => { setPrinterDates(current => ({ ...current, [key]: value })); printerPagination.reset(); }}/><span className="directory-count">{matchingPrinters.length} / {state.printers.length}</span></div>}
       {canManage && <div className="staff-actions ps-actions"><button type="button" className="button button-secondary" data-testid="printer-add" aria-expanded={formOpen} disabled={busy} onClick={() => { setFormOpen(!formOpen); if (formOpen) setForm(EMPTY_FORM); }}>{formOpen ? <X size={17}/> : <Plus size={17}/>}{t(formOpen ? 'ps.printers.cancelAdd' : 'ps.printers.add')}</button></div>}
       {canManage && formOpen && <form className="staff-invite-form ps-printer-form" data-testid="printer-form" onSubmit={submitPrinter} noValidate>
         <label className="field"><span>{t('ps.printers.name')} *</span><div className="field-control"><input ref={labelInput} type="text" data-testid="printer-form-label" autoComplete="off" maxLength={80} value={form.label} onChange={event => setForm({ ...form, label: event.target.value })} disabled={busy} required/></div></label>

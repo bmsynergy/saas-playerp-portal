@@ -283,7 +283,7 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 @media(max-width:500px){.fw-distribution-legend,.fw-release-facts{grid-template-columns:minmax(0,1fr)}.fw-device-list li{grid-template-columns:minmax(0,1fr) auto}.fw-device-list li .staff-action-link,.fw-device-list li .ps-sub{grid-column:1/-1}.fw-release-card{padding:16px}.fw-release-actions .button{flex:1;justify-content:center}}
 /* PE-428 rotation status + legacy reconciliation */
 .dev-rotation-status{display:grid;gap:0}.dev-rotation-status:empty{display:none}
-.legacy-forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.legacy-form{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface);min-width:0}.legacy-form h3{display:flex;align-items:center;gap:8px;font-size:.9rem;margin:0 0 8px}.legacy-form fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}.legacy-form fieldset:disabled{opacity:.6}.legacy-form input[type=text],.legacy-form input[type=password]{width:100%;border:1px solid var(--control-line);border-radius:9px;padding:9px;background:#fff}.legacy-check{display:flex;gap:8px;align-items:flex-start;font-size:.78rem;line-height:1.45}.legacy-check input{margin-top:3px;flex:none}.legacy-form button{justify-self:start}.legacy-mismatch{color:var(--danger)}
+.legacy-forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.legacy-form{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface);min-width:0}.legacy-form h3{display:flex;align-items:center;gap:8px;font-size:.9rem;margin:0 0 8px}.legacy-form fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}.legacy-form fieldset:disabled{opacity:1}.legacy-form input[type=text],.legacy-form input[type=password]{width:100%;border:1px solid var(--control-line);border-radius:9px;padding:9px;background:#fff}.legacy-check{display:flex;gap:8px;align-items:flex-start;font-size:.78rem;line-height:1.45}.legacy-check input{margin-top:3px;flex:none}.legacy-form button{justify-self:start}.legacy-mismatch{color:var(--danger)}
 /* Audit detail spans the full card and remains selectable on narrow screens. */
 .ota-audit-actions{display:flex;justify-content:flex-start;margin:0 0 16px}.ota-audit-actions .button{min-height:44px}
 .ota-audit li>.ota-diagnostic,.ota-events li>.ota-diagnostic{grid-column:1/-1;min-width:0;width:100%;max-width:100%}
@@ -338,3 +338,58 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 @media(max-width:700px){.inv-inventory-table td:last-child{width:100%;min-width:0}.inv-inventory-table .inv-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;width:auto}.inv-inventory-table .inv-actions .button{width:auto;min-width:140px}}
 @media(max-width:450px){.inv-inventory-table .inv-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr)}.inv-inventory-table .inv-actions .button{width:100%}}
 .admin-device-form .field>input,.admin-device-form .field>select,[data-testid="admin-device-manage-dialog"] .field>input{box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;border:1px solid var(--control-line);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--ink);font:inherit;font-size:.8rem}
+
+/* Disabled actions remain visibly inactive in every portal surface. */
+button:disabled,
+button:disabled:hover,
+button:disabled:active,
+.button:disabled,
+.button:disabled:hover,
+.button:disabled:active,
+.staff-action-link:disabled,
+.staff-action-link:disabled:hover,
+.icon-button:disabled,
+.icon-button:disabled:hover,
+.ps-danger:disabled,
+.ps-danger-solid:disabled,
+.print-dashboard-clear:disabled,
+.fw-legend-item:disabled {
+  background:#e3e8ef!important;
+  border-color:#b9c2cf!important;
+  color:#475467!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  cursor:not-allowed!important;
+  text-decoration:none!important;
+  transform:none!important;
+  animation:none!important;
+}
+button:disabled svg { color:inherit!important; animation:none!important; transform:none!important; }
+button:disabled * { cursor:not-allowed!important; }
+.ps-cert-ca { min-width:0; }
+.ps-cert-subtitle { font-size:.95rem; margin:0 0 10px; }
+.ps-cert-ca .ps-cert-lead { margin-bottom:18px; }
+.ps-cert-server { border-top:1px solid var(--line); margin-top:22px; padding-top:22px; min-width:0; }
+.ps-cert-server .owner-section-lead { margin:0 0 18px; }
+.ps-cert-server .dev-cert-admin { margin-top:18px; }
+.ps-cert-server .dev-cert-admin .ps-cert-small { margin:6px 0 0; }
+.ps-cert-server .dev-upload .ps-cert-small { margin:8px 0 12px; }
+.ps-cert-server .dev-upload .button { margin-top:12px; }
+.ps-printers-filters { display:grid; grid-template-columns:minmax(180px,2fr) minmax(125px,1fr) minmax(145px,1.1fr) minmax(145px,1.1fr) auto; align-items:end; gap:12px; margin:20px 0 18px; min-width:0; }
+.ps-printers-filters .ps-printers-search { width:auto; min-width:0; margin:0; }
+.ps-printers-filters .ps-printers-search .field-control { height:44px; }
+.ps-printers-filters .ps-printers-search input { height:44px; }
+.ps-printers-filters .admin-assignment-filter { min-width:0; width:100%; margin:0; }
+.ps-printers-filters .admin-date-filters { display:contents; }
+.ps-printers-filters .admin-date-filters label { min-width:0; width:100%; margin:0; }
+.ps-printers-filters .directory-count { align-self:end; display:flex; align-items:center; min-height:44px; white-space:nowrap; }
+.ps-printers-filters .admin-list-date-error { grid-column:1/-1; }
+@media(max-width:1050px){.ps-printers-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-printers-filters .directory-count{justify-self:start}}
+@media(max-width:500px){.ps-printers-filters{grid-template-columns:minmax(0,1fr)}.ps-printers-filters .directory-count{min-height:auto}.ps-printers-filters input,.ps-printers-filters select{max-width:100%}}
+.ps-action-progress{display:flex;align-items:center;gap:9px;margin:0;color:var(--ink);font-size:.8rem;font-weight:700;line-height:1.5}
+.ps-action-progress .spinner{flex:none;width:15px;height:15px;border-width:2px}
+.ps-cert-server .dev-facts dd{overflow-wrap:anywhere}
+.ps-cert-panel .ps-cert-small{max-width:72ch}
+/* Keep the date controls grouped for assistive technology while aligning them in the filter grid. */
+.ps-printers-filters .admin-date-filters{grid-column:span 2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+@media(max-width:500px){.ps-printers-filters .admin-date-filters{grid-column:1;grid-template-columns:minmax(0,1fr)}}

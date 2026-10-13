@@ -119,7 +119,31 @@ export type LegacyKind = 'wifi' | 'admin_code';
 export const LEGACY_ERRORS = ['device_not_found', 'not_legacy', 'print_server_not_active', 'device_not_linked', 'ca_mismatch', 'bad_kind', 'bad_method', 'physical_check_required', 'invalid_value', 'already_confirmed'] as const;
 export class LegacyError extends Error { constructor(public key: string) { super(key); } }
 const legacyError = (v: unknown) => new LegacyError(`legacy.error.${typeof v === 'string' && (LEGACY_ERRORS as readonly string[]).includes(v) ? v : v === 'forbidden' ? 'forbidden' : 'other'}`);
-export const normalizeSha256 = (v: string) => v.replace(/[^0-9a-f]/gi, '').toLowerCase();
+// Only contiguous hex or colon-separated pairs; never repair malformed evidence.
+export function normalizeSha256(value: string): string {
+  const v = value.trim();
+  return /^(?:[0-9a-f]+|[0-9a-f]{2}(?::[0-9a-f]{2})+)$/i.test(v) ? v.replace(/:/g, '').toLowerCase() : '';
+}
+export function caEvidenceStatus(input: string, expected: string | null): 'valid' | 'format' | 'unavailable' | 'mismatch' {
+  const typed = normalizeSha256(input), ca = expected ? normalizeSha256(expected) : '';
+  if (typed.length !== 12 && typed.length !== 64) return 'format';
+  if (ca.length !== 64) return 'unavailable';
+  return (typed.length === 12 ? ca.startsWith(typed) : ca === typed) ? 'valid' : 'mismatch';
+}
+export function needsLegacyReconciliation(ctx: LegacyContext): boolean {
+  return ctx.legacy && (!ctx.wifi_confirmed || !ctx.admin_code_confirmed);
+}
+function validateLegacyEvidence(ctx: LegacyContext, kind: LegacyKind, values: { ssid: string; psk: string } | { admin_code: string }, physicalCheck: boolean, evidence: string) {
+  if (!physicalCheck) throw new LegacyError('legacy.error.physical_check_required');
+  if (!ctx.venue_id || !ctx.device_id || !ctx.serial || !ctx.print_server_id) throw new LegacyError('legacy.error.device_not_linked');
+  if (!ctx.legacy) throw new LegacyError('legacy.error.not_legacy');
+  if (ctx.print_server_status !== 'active') throw new LegacyError('legacy.error.print_server_not_active');
+  const status = caEvidenceStatus(evidence, ctx.ca_cert_der_sha256);
+  if (status !== 'valid') throw new LegacyError(status === 'format' ? 'legacy.fingerprintFormat' : status === 'mismatch' ? 'legacy.fingerprintMismatch' : 'legacy.error.device_not_linked');
+  if (kind !== 'wifi' && kind !== 'admin_code') throw new LegacyError('legacy.error.bad_kind');
+  if (kind === 'wifi' ? ctx.wifi_confirmed : ctx.admin_code_confirmed) throw new LegacyError('legacy.error.already_confirmed');
+  if (!(kind === 'wifi' ? 'ssid' in values && validRecoveryWifi(values.ssid, values.psk) : 'admin_code' in values && validAdminCode(values.admin_code))) throw new LegacyError('legacy.error.invalid_value');
+}
 export function projectLegacyContext(v: unknown): LegacyContext {
   const s = obj(v) ?? bad();
   if (s.ok !== true) throw legacyError(s.error);
@@ -131,11 +155,19 @@ export function projectLegacyContext(v: unknown): LegacyContext {
     wifi_method: code(s.wifi_method), admin_code_method: code(s.admin_code_method) };
 }
 export async function getLegacyContext(venueId: string, signal?: AbortSignal): Promise<LegacyContext> {
-  return projectLegacyContext(await rpc('ps_admin_legacy_credentials_context', { p_venue_id: venueId }, signal));
+  const context = projectLegacyContext(await rpc('ps_admin_legacy_credentials_context', { p_venue_id: venueId }, signal));
+  if (context.venue_id !== venueId) throw new LegacyError('legacy.error.device_not_linked');
+  return context;
 }
-export async function reconcileLegacy(ctx: LegacyContext, kind: LegacyKind, values: { ssid: string; psk: string } | { admin_code: string }, physicalCheck: boolean): Promise<{ applied_at: string | null }> {
-  if (!ctx.serial || !ctx.print_server_id || !ctx.ca_cert_der_sha256) throw new LegacyError('legacy.error.device_not_linked');
-  const data = obj(await rpc('ps_admin_legacy_credentials_reconcile', { p_serial: ctx.serial, p_print_server_id: ctx.print_server_id, p_ca_der_sha256: ctx.ca_cert_der_sha256,
+export async function reconcileLegacy(ctx: LegacyContext, kind: LegacyKind, values: { ssid: string; psk: string } | { admin_code: string }, physicalCheck: boolean, evidence: string): Promise<{ applied_at: string | null }> {
+  validateLegacyEvidence(ctx, kind, values, physicalCheck, evidence);
+  // Re-read with the caller's session: staff permission and the live venue/device/CA link
+  // must still hold. The mutating RPC remains the final atomic authority.
+  const live = await getLegacyContext(ctx.venue_id);
+  if (live.venue_id !== ctx.venue_id || live.device_id !== ctx.device_id || live.serial !== ctx.serial || live.print_server_id !== ctx.print_server_id
+    || normalizeSha256(live.ca_cert_der_sha256 ?? '') !== normalizeSha256(ctx.ca_cert_der_sha256 ?? '')) throw new LegacyError('legacy.error.device_not_linked');
+  validateLegacyEvidence(live, kind, values, physicalCheck, evidence);
+  const data = obj(await rpc('ps_admin_legacy_credentials_reconcile', { p_serial: ctx.serial, p_print_server_id: ctx.print_server_id, p_ca_der_sha256: normalizeSha256(live.ca_cert_der_sha256!),
     p_kind: kind, p_values: values, p_method: kind === 'wifi' ? 'recovery_read_and_join' : 'local_login', p_physical_check: physicalCheck })) ?? bad();
   if (data.ok !== true) throw legacyError(data.error);
   return { applied_at: str(data.applied_at) };

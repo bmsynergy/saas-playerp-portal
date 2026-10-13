@@ -1,8 +1,9 @@
 import { useAuth } from '../hooks/useAuth';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
-import { AlertTriangle, Check, Clock3, Copy, Eye, EyeOff, FileKey2, KeyRound, RefreshCw, Upload, Wifi, X } from 'lucide-react';
+import { AlertTriangle, Check, Clock3, Copy, Eye, EyeOff, KeyRound, RefreshCw, Upload, Wifi, X } from 'lucide-react';
 import { getDeviceSheet, getLegacyContext, latestRotation, pendingReason, renewCert, rotateAdminCode, rotateWifi, uploadCert, wifiQrPayload, type DeviceOp } from '../lib/psDevice';
 import { PsError, psErrorKey } from '../lib/printServerApi';
 import { formatFingerprint } from '../lib/certificate';
@@ -15,10 +16,10 @@ import { CredentialProgress } from './CredentialProgress';
 import { DeviceAdminSummary } from './DeviceAdminSummary';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
-type Props = { venueId: string; printServerId: string | null; adminScope?: boolean };
+type Props = { venueId: string; printServerId: string | null; adminScope?: boolean; caContent?: ReactNode };
 type Result = { ok: boolean; text: string };
 
-export function PrintServerDevicePanel({ venueId, printServerId, adminScope = false }: Props) {
+export function PrintServerDevicePanel({ venueId, printServerId, adminScope = false, caContent }: Props) {
   const { t, locale } = useLocale();
   const {session} = useAuth();
   const localPending = useRef(false);
@@ -62,8 +63,13 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   }, [operationScope]);
   localPending.current = (['wifi', 'admin_code'] as const).some(kind => credentialBlocked(operationFor(kind)));
   const uncertain = !sheet.isFetchedAfterMount || sheet.isError;
-  const reconcileHref = adminScope && data?.is_platform_admin === true && !uncertain && !legacy.isError && legacy.data?.legacy && legacy.data.print_server_status === 'active'
-    && legacy.data.device_id === data?.device?.id && legacy.data.print_server_id === printServerId && legacy.data.ca_cert_der_sha256 ? '#legacy-reconcile-title' : undefined;
+  const reconcileHref = adminScope && data?.is_platform_admin === true && !legacy.isError && legacy.data?.legacy
+    && (!legacy.data.wifi_confirmed || !legacy.data.admin_code_confirmed) ? '#legacy-reconcile-title' : undefined;
+  const focusReconciliation = () => requestAnimationFrame(() => {
+    const target = document.getElementById('legacy-reconcile-title');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target?.focus({ preventScroll: true });
+  });
   const absence = (kind: CredentialKind) => {
     if (!data?.credentialAccess) return null;
     if ((['wifi', 'admin_code'] as const).some(k => operationFor(k)?.errorKey === 'dev.error.no_device_credentials')) return 'dev.error.no_device_credentials';
@@ -157,13 +163,13 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
 
   const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
   const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} pendingWifi={uncertain || credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
-  if (accessLost || (sheet.isError && !data)) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section>;
-  if (!data) return <section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t('dev.loading')}</div>{label}{help}</section>;
+  if (accessLost || (sheet.isError && !data)) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="alert" className="ps-cert-small">{t(accessLost ? accessError! : 'genericError')}</p></section></>;
+  if (!data) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="status" className="ps-cert-small">{t('dev.loading')}</p></section></>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
   const errorText = (code: string | null) => { const key = credentialErrorKey(code); return t(key) === key ? t('dev.progress.rotationErrorUnknown') : t(key); };
   const rotationStatus = (kind: CredentialKind) => {
     const operation = progressFor(kind);
-    return operation ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref}/> : null;
+    return operation ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref} onReconcile={focusReconciliation}/> : null;
   };
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
@@ -192,7 +198,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
               <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={blocked('wifi')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
               <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={blocked('admin_code')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
             </div>}
-            {(['wifi', 'admin_code'] as const).map(kind => absence(kind) && <p key={kind} className="dev-tracking-warning" data-testid={`dev-credentials-missing-${kind}`}><AlertTriangle size={16}/><span>{t(`dev.op.${kind}`)}: {t(absence(kind)!)}. {t('dev.progress.credentialsStep')} {reconcileHref && <a href={reconcileHref}>{t('dev.progress.reconcileLink')}</a>}</span></p>)}
+            {(['wifi', 'admin_code'] as const).map(kind => absence(kind) && !progressFor(kind) && <p key={kind} className="dev-tracking-warning" data-testid={`dev-credentials-missing-${kind}`}><AlertTriangle size={16}/><span>{t(`dev.op.${kind}`)}: {t(absence(kind)!)}. {t('dev.progress.credentialsStep')} {reconcileHref && <a href={reconcileHref} onClick={focusReconciliation}>{t('dev.progress.reconcileLink')}</a>}</span></p>)}
             <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>
           </div>
           {show.psk && qr && wifi && qr.ssid === wifi.ssid && qr.psk === wifi.psk && <figure className="dev-qr" data-testid="dev-qr"><img src={qr.url} alt={t('dev.qrAlt').replace('{ssid}', wifi.ssid)} width={180} height={180}/><figcaption>{t('dev.qrCaption')}</figcaption></figure>}
@@ -207,27 +213,32 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
 
     {adminScope && data.is_platform_admin && data.device && <DeviceAdminSummary deviceId={data.device.id}/>}
 
-    <section className="detail-panel" aria-labelledby="ps-https-title" data-testid="ps-https-panel">
-      <div className="section-heading"><div><p className="eyebrow">{t('dev.https.eyebrow')}</p><h2 id="ps-https-title">{t('dev.https.title')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
+    <section className="detail-panel ps-cert-panel" aria-labelledby="ps-cert-title" data-testid="ps-https-panel">
+      {caContent}
+      <div className="ps-cert-server"><h3 id="ps-https-title" className="ps-cert-subtitle">{t('dev.https.title')}</h3>
       <p className="owner-section-lead">{t('dev.https.lead')}</p>
       {data.cert.status === 'none' ? <div className="inline-empty" data-testid="https-none">{t('dev.https.none')}</div> : <dl className="dev-facts">
         <div><dt>{t('ps.hostname')}</dt><dd data-testid="https-hostname">{data.cert.hostname ?? t('notProvided')}</dd></div>
         <div><dt>{t('dev.https.validity')}</dt><dd data-testid="https-validity">{date(data.cert.not_before)} → {date(data.cert.not_after)} <span className={`server-status ${data.cert.status === 'valid' ? 'server-online' : 'server-revoked'}`}><span className="badge-dot"/>{t(`dev.https.${data.cert.status}`)}</span></dd></div>
-        <div className="dev-wide"><dt>{t('ps.cert.fingerprintDer')}</dt><dd className="ps-mono fw-hash" data-testid="https-fingerprint">{fp ?? t('notProvided')}</dd></div>
+        <div className="dev-wide"><dt>{t('dev.https.fingerprint')}</dt><dd className="ps-mono fw-hash" data-testid="https-fingerprint">{fp ?? t('notProvided')}</dd></div>
       </dl>}
       {data.cert_operations.length > 0 && <div className="dev-ops"><h3>{t('dev.https.operations')}</h3><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}</small></li>)}</ul></div>}
       {data.is_platform_admin && printServerId && <div className="dev-cert-admin">
         <button type="button" className="button button-secondary" data-testid="https-renew" disabled={busy || data.cert_operations.some(o => o.status === 'pending')} onClick={() => setConfirm('renew')}><RefreshCw size={15}/>{t('dev.https.renew')}</button>
+        {(busy || data.cert_operations.some(o => o.status === 'pending')) && <p className="ps-cert-small" role="status">{t(busy ? 'ps.working' : 'dev.waitingPs')}</p>}
         <details className="dev-upload"><summary>{t('dev.https.uploadTitle')}</summary>
           <p className="ps-cert-small">{t('dev.https.uploadHint')}</p>
           <label className="field"><span>{t('dev.https.certPem')}</span><textarea rows={5} value={certPem} data-testid="https-cert-pem" onChange={e => setCertPem(e.target.value)} placeholder="-----BEGIN CERTIFICATE-----"/></label>
           <label className="field"><span>{t('dev.https.chainPem')}</span><textarea rows={4} value={chainPem} data-testid="https-chain-pem" onChange={e => setChainPem(e.target.value)}/></label>
           <button type="button" className="button button-primary" data-testid="https-upload" disabled={busy || !certPem.trim()} onClick={() => void run(async () => { await uploadCert(printServerId, certPem, chainPem); setCertPem(''); setChainPem(''); }, 'dev.https.uploaded')}><Upload size={15}/>{t('dev.https.upload')}</button>
+          {!certPem.trim() && <p className="ps-cert-small">{t('dev.https.certRequired')}</p>}
         </details>
       </div>}
+      </div>
     </section>
 
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="dev-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+    {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
 
     {confirm && <div className="dev-confirm" role="alertdialog" aria-labelledby="dev-confirm-title" data-testid="dev-confirm">
       <p id="dev-confirm-title"><Clock3 size={16}/>{t('dev.confirm.renew')}</p>
@@ -244,7 +255,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
         <button type="button" className="button button-primary" data-testid="dev-confirm-accept" disabled={blocked(activeDialog.kind)} onClick={() => void requestCredential(activeDialog.kind)}><Check size={15}/>{t('dev.confirm.accept')}</button>
       </> : <button type="button" className="button button-secondary" data-testid="dev-dialog-close" onClick={() => setCredentialDialog(null)}>{t('dev.confirm.close')}</button>}>
       {activeDialog.phase === 'confirm' ? <div id="dev-credential-dialog-description"><p>{t(`dev.confirm.${activeDialog.kind === 'wifi' ? 'wifi' : 'code'}`)}</p>{trackingUnavailable && <p className="dev-tracking-warning" role="status"><AlertTriangle size={16}/>{t('dev.trackingUnavailable')}</p>}</div>
-        : <div id="dev-credential-dialog-description">{progressFor(activeDialog.kind) && <CredentialProgress compact operation={progressFor(activeDialog.kind)!} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref}/>}</div>}
+        : <div id="dev-credential-dialog-description">{progressFor(activeDialog.kind) && <CredentialProgress compact operation={progressFor(activeDialog.kind)!} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref} onReconcile={focusReconciliation}/>}</div>}
 
     </PortalDialog>}
   </>;

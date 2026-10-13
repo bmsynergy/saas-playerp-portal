@@ -8,6 +8,7 @@ type Props = {
   compact?: boolean;
   onRetry?: () => void;
   reconcileHref?: string;
+  onReconcile?: () => void;
 };
 
 const waitingPhases = new Set<CredentialProgressView['phase']>(['sending', 'accepted', 'pending', 'offline', 'received']);
@@ -65,7 +66,7 @@ const safeReasons: Record<string, string> = {
   applying: 'dev.progress.wait.applying',
 };
 
-export function CredentialProgress({ operation, compact = false, onRetry, reconcileHref }: Props) {
+export function CredentialProgress({ operation, compact = false, onRetry, reconcileHref, onReconcile }: Props) {
   const { t, locale } = useLocale();
   const waiting = waitingPhases.has(operation.phase);
   const isCredentialError = !!operation.errorKey && credentialErrors.has(operation.errorKey.replace(/^dev\.error\./, ''));
@@ -113,7 +114,7 @@ export function CredentialProgress({ operation, compact = false, onRetry, reconc
     </dl>
     {(onRetry || (isCredentialError && reconcileHref)) && <div className="credential-progress-actions">
       {onRetry && <button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15} aria-hidden="true"/>{t('dev.progress.checkStatus')}</button>}
-      {isCredentialError && reconcileHref && <a className="button button-secondary" href={reconcileHref}>{t('dev.progress.reconcileLink')}</a>}
+      {isCredentialError && reconcileHref && <a className="button button-secondary" href={reconcileHref} onClick={onReconcile}>{t('dev.progress.reconcileLink')}</a>}
     </div>}
   </section>;
 }
