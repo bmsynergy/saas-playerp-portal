@@ -52,7 +52,7 @@ const codes: Record<string, string> = {
   device_not_assigned: 'dev.error.device_not_assigned',
   wifi_not_confirmed: 'dev.error.wifi_not_confirmed', admin_code_not_confirmed: 'dev.error.admin_code_not_confirmed',
   ps_selection_required: 'ps.error.selectionRequired', print_server_not_in_venue: 'accessDenied',
-  label_mismatch: 'ps.error.labelMismatch', same_print_server: 'ps.error.samePrintServer', print_server_not_active: 'ps.error.printServerNotActive',
+  label_mismatch: 'ps.error.labelMismatch', confirmation_mismatch: 'ps.error.labelMismatch', same_print_server: 'ps.error.samePrintServer', print_server_not_active: 'ps.error.printServerNotActive',
   forbidden: 'accessDenied', not_authorized: 'accessDenied', access_denied: 'accessDenied',
 };
 // Known backend slugs become localized keys; raw server text is never shown.
