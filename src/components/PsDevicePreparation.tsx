@@ -25,7 +25,7 @@ export function PsDevicePreparation({ link, canPrepare, blockedReason, onPrepare
     try {
       const out = await prepareDevice(link.device_id, regenerate);
       setResult(out);
-      await onPrepared?.(out.link);
+      try { await onPrepared?.(out.link); } catch { setError(t('fw.refreshFailed')); }
     } catch (err) { setError(psLinkErrorText(err, t, t(errorCode(err)))); }
     finally { setBusy(false); }
   }

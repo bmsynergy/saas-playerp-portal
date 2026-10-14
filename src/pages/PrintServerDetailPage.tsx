@@ -51,7 +51,6 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
   // The one-time enrollment code lives only here: never in storage, the URL, the query cache or a log.
   const [enrollment, setEnrollment] = useState<{ code: string; expires_at: string | null } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [enrollLabel, setEnrollLabel] = useState('');
   const [certMissing, setCertMissing] = useState(false);
   const [downloadedFingerprint, setDownloadedFingerprint] = useState<string | null>(null);
   const [scan, setScan] = useState<PanelScan | null>(null);
@@ -103,12 +102,11 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
   // --- Print Server: assign / replace / revoke -------------------------------
   function askEnrollment() {
-    const label = enrollLabel.trim();
     ask({ title: t(server ? 'ps.replace' : 'ps.assign'), danger: !!server,
       body: fill(t(server ? 'ps.confirm.replace' : 'ps.confirm.assign'), { venue: venueName }),
       run: async () => {
-        const created = await api.createEnrollment(venueId, label);
-        setCopied(false); setEnrollment({ code: created.enrollment_code, expires_at: created.expires_at }); setEnrollLabel('');
+        const created = await api.createEnrollment(venueId, '');
+        setCopied(false); setEnrollment({ code: created.enrollment_code, expires_at: created.expires_at });
         return t('ps.result.enrollmentCreated');
       } });
   }
@@ -298,7 +296,6 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       <div className="ps-section-body">
         {pendingEnrollment && <p className="staff-notice ps-pending" data-testid="ps-enrollment-pending"><Clock3 size={18}/><span>{fill(t('ps.enrollmentPendingUntil'), { time: date(pendingEnrollment.expires_at) })}{pendingEnrollment.label ? ` · ${pendingEnrollment.label}` : ''}</span></p>}
         {scope === 'admin' && canManage && <div className="staff-actions ps-actions">
-          <label className="field ps-inline-field"><span>{t('ps.enrollLabel')}</span><div className="field-control"><input type="text" data-testid="ps-assign-label" autoComplete="off" maxLength={80} value={enrollLabel} onChange={event => setEnrollLabel(event.target.value)} placeholder={t('ps.enrollLabelPlaceholder')} disabled={busy}/></div></label>
           <button type="button" className="button button-primary" data-testid="ps-assign" disabled={busy} onClick={askEnrollment}><Plus size={17}/>{t(server ? 'ps.replace' : 'ps.assign')}</button>
           {server && <button type="button" className="button button-secondary ps-danger" data-testid="ps-revoke" disabled={busy} onClick={askRevoke}><X size={17}/>{t('ps.revoke')}</button>}
         </div>}

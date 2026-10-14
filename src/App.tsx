@@ -1,3 +1,4 @@
+import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
@@ -368,6 +369,10 @@ function PrintUpdatesData() {
   if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
+function PsRefreshWarning({onRetry}:{onRetry:()=>Promise<unknown>}) {
+  const {t}=useLocale();
+  return <div className="staff-notice" role="alert"><span>{t('fw.refreshFailed')}</span><button type="button" className="button button-secondary" onClick={()=>{void onRetry().catch(()=>undefined);}}>{t('retry')}</button></div>;
+}
 // Inventory of Print Server units: platform Admin only; portal_ps_devices answers 42501 otherwise.
 function PrintDevicesData() {
   const {session,expire}=useAuth();
@@ -375,8 +380,8 @@ function PrintDevicesData() {
   const venues=useDirectory();
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.isError||venues.isError)return <StateView kind="error" onRetry={()=>{void data.refetch();void venues.refetch();}}/>;
-  if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={async()=>{ await Promise.all([data.refetch(), queryClient.invalidateQueries({queryKey:['ps-venue-overview']}), queryClient.invalidateQueries({queryKey:['ps-inventory']}), queryClient.invalidateQueries({queryKey:['ps-sheet-resolve']})]); }}/>;
+  if((data.isError&&!data.data)||(venues.isError&&!venues.data))return <StateView kind="error" onRetry={()=>{void data.refetch();void venues.refetch();}}/>;
+  if(data.data&&venues.data)return <>{(data.isError||venues.isError)&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}<PrintDevicesPage devices={data.data} venues={venues.data} onChanged={()=>invalidatePsViews(queryClient)}/></>;
   return <StateView kind="loading"/>;
 }
 // PE-447: venue aggregates share the backend inventory connection and attention rules.
@@ -427,8 +432,8 @@ function VenueDevicesData({venue,scope,choose=false}:{venue:Pick<OwnerVenue,'id'
   usePsFailure(data.error);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.data)return <VenuePrintServersPage data={data.data} choose={choose} hrefFor={(device:VenueDevice)=>sheetHref(scope,venue.id,device.id)}
-    extra={scope==='admin'&&data.data.can_manage?<AddPrintServer venueId={venue.id} venueName={venue.name} onDone={()=>data.refetch()}/>:undefined}
-    onAssignPrinter={async(printerId,printServerId)=>{await setPrinterPrintServer(printerId,printServerId);await data.refetch();}}/>;
+    extra={scope==='admin'&&data.data.can_manage?<AddPrintServer venueId={venue.id} venueName={venue.name} onDone={()=>invalidatePsViews(queryClient)}/>:undefined}
+    onAssignPrinter={async(printerId,printServerId)=>{await setPrinterPrintServer(printerId,printServerId);await invalidatePsViews(queryClient);}}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
@@ -436,18 +441,16 @@ function VenueDevicesData({venue,scope,choose=false}:{venue:Pick<OwnerVenue,'id'
 // The one-time code lives only in this component's state.
 function AddPrintServer({venueId,venueName,onDone}:{venueId:string;venueName:string;onDone:()=>Promise<unknown>}) {
   const {t}=useLocale();
-  const [label,setLabel]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
+  const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
   const [code,setCode]=useState<{code:string;expires_at:string|null}|null>(null);
   const submit=async()=>{
-    if(busy)return; setBusy(true); setError(null);
-    try { const out=await createEnrollment(venueId,label); setCode({code:out.enrollment_code,expires_at:out.expires_at}); setLabel(''); await onDone(); }
+    if(busy||code)return; setBusy(true); setError(null);
+    try { const out=await createEnrollment(venueId,''); setCode({code:out.enrollment_code,expires_at:out.expires_at}); try { await onDone(); } catch { setError(t('fw.refreshFailed')); } }
     catch(e){setError(t(psErrorKey(e)));} finally {setBusy(false);}
   };
-  return <div className="ps-section-body" data-testid="venue-ps-add">
-    <p className="staff-self-note">{t('psm.addPsLead')}</p>
+  return <div className="venue-ps-add" data-testid="venue-ps-add">
     <div className="staff-actions ps-actions">
-      <label className="field ps-inline-field"><span>{t('ps.enrollLabel')}</span><div className="field-control"><input type="text" data-testid="venue-ps-add-label" autoComplete="off" maxLength={80} value={label} onChange={event=>setLabel(event.target.value)} placeholder={t('ps.enrollLabelPlaceholder')} disabled={busy}/></div></label>
-      <button type="button" className="button button-primary" data-testid="venue-ps-add-submit" disabled={busy} onClick={()=>void submit()}>{t('psm.addPs')}</button>
+      <button type="button" className="button button-primary" data-testid="venue-ps-add-submit" disabled={busy||!!code} onClick={()=>void submit()}>{t('psm.addPs')}</button>
     </div>
     {error&&<p className="form-error" role="alert">{error}</p>}
     {code&&<PortalDialog title={t('ps.enrollment.title')} titleId="venue-ps-add-title" testId="enrollment-dialog" onClose={()=>setCode(null)} actions={<button type="button" className="button button-secondary" data-testid="enrollment-close" onClick={()=>setCode(null)}>{t('ps.enrollment.close')}</button>}>
@@ -464,7 +467,7 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   const {session}=useAuth(); const {t}=useLocale();
   const ref=useQuery({queryKey:['ps-sheet-resolve',scope,session?.user.id,id],queryFn:({signal})=>resolveDeviceSheet(id,signal),retry:false});
   usePsFailure(ref.error);
-  if(ref.isError)return <StateView kind={psErrorKey(ref.error)==='accessDenied'?'denied':psErrorKey(ref.error)==='ps.error.printServerNotFound'?'notFound':'error'} onRetry={()=>void ref.refetch()}/>;
+  if(ref.isError&&(!ref.data||['accessDenied','sessionExpired','ps.error.printServerNotFound'].includes(psErrorKey(ref.error))))return <StateView kind={psErrorKey(ref.error)==='accessDenied'?'denied':psErrorKey(ref.error)==='ps.error.printServerNotFound'?'notFound':'error'} onRetry={()=>void ref.refetch()}/>;
   if(!ref.data)return <StateView kind="loading"/>;
   const r=ref.data;
   // The URL never grants access: an owner sheet must belong to the selected venue.
@@ -472,8 +475,8 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   const back=r.venue_id?{href:venueListHref(scope,r.venue_id),label:t('psm.backToVenue')}:{href:'/admin/print-servers/list',label:t('psm.backToList')};
   // PE-462: link/identity panel (badge, reported facts, friendly name, preparation) when the backend sends it.
   const staff=scope==='admin'&&r.is_staff;
-  const linkPanel=r.link?<PsDeviceLinkPanel key={r.link.device_id} link={r.link} isStaff={staff} canEdit={staff||r.can_manage}
-    onChanged={()=>Promise.all([ref.refetch(),queryClient.invalidateQueries({queryKey:['ps-venue-devices']}),queryClient.invalidateQueries({queryKey:['ps-devices']}),queryClient.invalidateQueries({queryKey:['ps-venue-overview']})])}/>:null;
+  const linkPanel=r.link?<>{ref.isError&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}<PsDeviceLinkPanel key={r.link.device_id} link={r.link} isStaff={staff} canEdit={staff||r.can_manage}
+    onChanged={()=>invalidatePsViews(queryClient)}/></>:null;
   // Assigned but not yet synced: the venue's owner/manager sees the link, nothing else exists yet.
   if(!r.print_server_id&&r.venue_id&&r.link&&!staff)return <div className="page-stack staff-page" data-testid="ps-link-sheet"><Link className="back-link" to={back.href}>{back.label}</Link>{linkPanel}</div>;
   if((!r.print_server_id||!r.venue_id)&&!staff)return <StateView kind="denied"/>;
@@ -508,7 +511,7 @@ function PrintServerSheetData({printServerId,venueId,venueName,scope,back,canMan
   if(state.error&&psErrorKey(state.error)==='sessionExpired')return <StateView kind="loading"/>;
   const targets=(devices.data?.devices??[]).filter(d=>d.print_server_id&&d.print_server_id!==printServerId&&(!d.status||d.status==='active'))
     .map(d=>({print_server_id:d.print_server_id!,name:`${deviceName(d)}${d.serial?` (${d.serial})`:''}`,label:d.label}));
-  const refresh=async()=>{await Promise.all([state.refetch(),canManage?devices.refetch():Promise.resolve()]);};
+  const refresh=()=>invalidatePsViews(queryClient);
   if(state.data)return <PrintServerDetailPage scope={scope} embedded={false} printServerId={printServerId} backHref={back.href} backLabel={back.label} replaceTargets={targets}
     venue={{venue_id:venueId,venue_name:venueName,venue_slug:null,venue_is_active:null}}
     state={state.data} api={api} stale={state.isError} refresh={refresh}/>;

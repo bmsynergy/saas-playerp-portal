@@ -62,7 +62,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
       setOutcome({ ...output, venue: output.link?.venue_name ?? venue.name });
       if (output.link) setLink(output.link);
       setMode('assigned');
-      try { await onChanged(); } catch { /* the link is saved; the list refreshes on its own */ }
+      try { await onChanged(); } catch { setError(t('fw.refreshFailed')); }
     } catch (err) { setError(psLinkErrorText(err, t, t(currentId ? adminDeviceErrorKey(err) : psErrorKey(err)))); }
     finally { setBusy(false); }
   }
@@ -110,7 +110,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
         <dl className="inv-manage-summary"><div><dt>{t('dev.serial')}</dt><dd>{detail.device.serial}</dd></div><div><dt>{t('ps.hostname')}</dt><dd>{detail.device.hostname}</dd></div><div><dt>{t('fw.model')}</dt><dd>{device.model_label ?? detail.device.model}</dd></div><div><dt>{t('state')}</dt><dd>{link ? <PsLinkStateBadge state={link.state}/> : t(`dev.deviceStatus.${detail.device.status}`)}</dd></div><div><dt>{t('inv.venue')}</dt><dd>{currentVenue}</dd></div></dl>
         <div className="field inv-manage-venue"><span>{t('inv.chooseVenue')}</span><VenueCombobox value={venue} onChange={setVenue} includeVenueId={currentId} disabled={busy || !action?.allowed} testId="inv-manage-venue"/></div>
         {action && !action.allowed && <p className="owner-section-lead">{reason(action.reason)}</p>}
-        {link?.state === 'pendiente_preparacion' && <PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged().catch(() => undefined)}/>}
+        {link?.state === 'pendiente_preparacion' && <PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/>}
         <div className="inv-manage-secondary">
           {(detail.actions.unassign.allowed || currentId) && <button type="button" className="button button-secondary ps-danger" disabled={!canUnassign} onClick={() => review('unassign')}>{t('inv.revoke')}</button>}
           {currentId && !detail.actions.unassign.allowed && <small>{reason(detail.actions.unassign.reason)}</small>}
@@ -124,7 +124,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
         <p role="status">{t(outcome.already_assigned ? 'psLink.alreadyAssigned' : 'psLink.assigned').replaceAll('{serial}', device.serial).replaceAll('{venue}', outcome.venue)}</p>
         {outcome.link && <p><PsLinkStateBadge state={outcome.link.state} testId="inv-assigned-state"/></p>}
         {(!outcome.link || outcome.link.state === 'asignado_pendiente_sync') && <p className="owner-section-lead">{t('psLink.savedExplain')}</p>}
-        {link?.state === 'pendiente_preparacion' && <><p className="owner-section-lead">{t('psLink.assignedNeedsPrep')}</p><PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged().catch(() => undefined)}/></>}
+        {link?.state === 'pendiente_preparacion' && <><p className="owner-section-lead">{t('psLink.assignedNeedsPrep')}</p><PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/></>}
       </div> : mode === 'assign' ? <p>{t(currentId ? 'inv.moveConfirm' : 'inv.assignConfirm').replaceAll('{serial}', device.serial).replaceAll('{from}', currentVenue).replaceAll('{venue}', venue?.name ?? '')}</p>
         : mode === 'unassign' ? <p>{t('inv.revokeConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p>
           : <><p>{t(mode === 'delete' ? 'adminDevice.deleteWarning' : 'inv.retireConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}', device.serial)}</span><input data-testid="inv-confirm-serial" autoComplete="off" spellCheck={false} value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}

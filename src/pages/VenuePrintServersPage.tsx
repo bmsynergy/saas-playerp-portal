@@ -46,10 +46,9 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
 
   return <div className="page-stack staff-page" data-testid="venue-print-servers">
     <section className="staff-panel" aria-labelledby="venue-ps-title">
-      <div className="section-heading"><div><p className="eyebrow">{t('psm.venueEyebrow')}</p><h2 id="venue-ps-title">{t(choose ? 'psm.chooseTitle' : 'psm.venueTitle')}</h2></div><span className="count-pill">{data.devices.length}</span></div>
+      <div className="section-heading venue-ps-heading"><div><p className="eyebrow">{t('psm.venueEyebrow')}</p><h2 id="venue-ps-title">{t(choose ? 'psm.chooseTitle' : 'psm.venueTitle')}</h2></div><div className="venue-ps-heading-actions"><span className="count-pill">{data.devices.length}</span>{extra}</div></div>
       <p className="staff-panel-lead">{t(choose ? 'psm.chooseLead' : 'psm.venueLead')}</p>
       {choose && <div className="staff-notice" role="status" data-testid="ps-selection-required"><AlertTriangle size={18}/><span>{t('ps.error.selectionRequired')}</span></div>}
-      {extra}
       {data.devices.length === 0 ? <div className="staff-empty" data-testid="venue-ps-empty"><Server size={27}/><strong>{t('psm.venueEmpty')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t('psm.col.device')}</th><th>{t('psm.col.serial')}</th><th>{t('psm.col.connection')}</th><th>{t('psm.col.firmware')}</th><th>{t('lastSignal')}</th><th>{t('psm.col.printers')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{data.devices.map(device => {
         // PE-462: identity from the link and facts as reported by the device ("Pending" when absent).
         const l = device.link; const lastSeen = l ? l.reported.last_seen_at : device.last_seen_at;

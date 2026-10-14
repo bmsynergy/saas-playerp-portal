@@ -473,3 +473,32 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .mcp-clients li{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:9px 13px;background:var(--surface)}
 .mcp-clients small{font-size:.7rem;color:var(--muted,#6b7280)}
 .ps-prep{margin-top:16px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;display:grid;gap:8px}.ps-prep h3{margin:0}.ps-prep ul,.ps-prep ol{margin:0;padding-left:20px;font-size:.8rem;line-height:1.5}.ps-link-panel{padding:22px 25px}.ps-link-name{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin-top:14px}.ps-link-name .field{flex:1;min-width:220px}.ps-link-name p{flex-basis:100%;margin:0}
+
+/* Shared spacing between portal actions and adjacent copy, forms and lists. */
+:root{--portal-action-gap:12px;--portal-action-clearance:18px}
+:is(.staff-actions,.ps-actions,.inv-actions,.fw-actions,.fw-release-actions,.ota-audit-actions,.ota-diagnostic-actions,.credential-progress-actions,.dev-label-actions){column-gap:var(--portal-action-gap);row-gap:10px}
+:is(p,.staff-table-wrap,.staff-notice,.form-error,.inline-empty,.ps-result,.fw-release-facts,.fw-lifecycle-explain,.owner-section-lead)+:is(.staff-actions,.ps-actions,.inv-actions,.fw-actions,.fw-release-actions,.ota-audit-actions,.credential-progress-actions){margin-block-start:var(--portal-action-clearance)}
+:is(.staff-actions,.ps-actions,.inv-actions,.fw-actions,.fw-release-actions,.ota-audit-actions,.credential-progress-actions)+:is(p,.staff-table-wrap,.staff-notice,.form-error,.inline-empty,.ps-result,.fw-release-facts,.owner-section-lead){margin-block-start:var(--portal-action-clearance)}
+.ps-dialog-actions{column-gap:var(--portal-action-gap);row-gap:10px}
+.ps-dialog-body{row-gap:var(--portal-action-gap)}
+.fw-actions,.fw-release-actions{gap:var(--portal-action-gap)}
+.fw-release-head .fw-release-actions{margin-inline-start:auto}
+.fw-lifecycle>.fw-release-actions{margin-block-start:var(--portal-action-clearance)}
+.venue-ps-heading{align-items:flex-start;gap:var(--portal-action-gap) 20px}
+.venue-ps-heading-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:var(--portal-action-gap);margin-inline-start:auto;min-width:0}
+.venue-ps-heading-actions>.button,.venue-ps-heading-actions>.staff-actions{max-width:100%}
+.venue-ps-heading-actions .staff-actions{justify-content:flex-end}
+.venue-ps-heading-actions :is(.venue-ps-add,.ps-actions){margin:0}
+.venue-ps-heading-actions .button{white-space:normal;text-align:center}
+@media(max-width:700px){.venue-ps-heading-actions{flex:1 1 100%;justify-content:flex-end}.venue-ps-heading-actions .staff-actions{justify-content:flex-end}}
+@media(max-width:450px){.venue-ps-heading-actions{align-items:flex-end}.venue-ps-heading-actions .button{min-width:0}}
+
+/* Direct actions use the same clearance when a screen has no action wrapper. */
+:is(.staff-panel,.detail-panel,.servers-panel,.overview-panel,.directory-panel,.ps-dialog-body,.state-view,.inv-manage-danger,.dev-label-replacement)>:is(p,ul,ol,dl,.staff-table-wrap,.table-scroll,.inline-empty,.staff-notice,.form-error,.ps-result)+:is(button.button,a.button,button.ps-printers-toggle){margin-block-start:var(--portal-action-clearance)}
+.staff-panel-lead+button.ps-printers-toggle{margin-block-start:var(--portal-action-clearance)}
+.inline-empty>.button{display:inline-flex;margin-block-start:var(--portal-action-clearance)}
+.state-view p:has(+.button){margin-block-end:0}
+.inv-manage-danger>:is(h3,p,small)+:is(button.button,a.button){margin-block-start:var(--portal-action-gap)}
+.inv-manage-danger>.button{max-width:100%;white-space:normal;text-align:center}
+.dev-label-replacement>p+.button{margin-block-start:var(--portal-action-gap)}
+.ota-diagnostic-actions{gap:var(--portal-action-gap)}

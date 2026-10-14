@@ -33,7 +33,7 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged }: Props) 
   async function save() {
     if (!editable || busy || !check.ok || unchanged) return;
     setBusy(true); setResult(null);
-    try { const out = await setDeviceLabel(link.device_id, check.value); setResult({ ok: true, text: t(out.changed ? 'psLink.nameSaved' : 'psLink.nameUnchanged') }); await onChanged(); }
+    try { const out = await setDeviceLabel(link.device_id, check.value); setResult({ ok: true, text: t(out.changed ? 'psLink.nameSaved' : 'psLink.nameUnchanged') }); try { await onChanged(); } catch { setResult({ ok: false, text: `${t('psLink.nameSaved')} ${t('fw.refreshFailed')}` }); } }
     catch (error) { setResult({ ok: false, text: psLinkErrorText(error, t, t(errorCode(error))) }); }
     finally { setBusy(false); }
   }

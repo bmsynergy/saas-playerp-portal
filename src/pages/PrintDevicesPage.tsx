@@ -68,14 +68,14 @@ export function PrintDevicesPage({ devices, onChanged }: Props) {
     finally { if (catalogRequest.current === controller && !controller.signal.aborted) setModelsLoading(false); }
   }
   async function create() {
-    if (!model?.active || !model.archs.includes(form.arch)) return;
+    if (busy || !model?.active || !model.archs.includes(form.arch)) return;
     setBusy(true); setModelsError('');
     try {
       const out = await createAdminDevice({ model: form.model, arch: form.arch, label: form.label.trim(), venue_id: venue?.id ?? null });
       closeAdd(); setReview(false);
       setResult({ ok: true, text: t('inv.created').replace('{serial}', out.device.serial) });
       if (out.assignment) { setCode({ serial: out.device.serial, venue: venue?.name ?? '', ...out.assignment }); setCopied(false); }
-      await onChanged();
+      try { await onChanged(); } catch { setResult({ ok: false, text: `${t('inv.created').replace('{serial}', out.device.serial)} ${t('fw.refreshFailed')}` }); }
     } catch (error) { setModelsError(t(adminDeviceErrorKey(error))); }
     finally { setBusy(false); }
   }
