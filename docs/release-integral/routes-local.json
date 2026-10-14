@@ -1,0 +1,295 @@
+{
+  "scope": "local anonymous navigation, no real consent or PROD validation",
+  "rows": [
+    {
+      "route": "/auth/login",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/login",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/forgot",
+      "action": "direct",
+      "finalPath": "/auth/forgot",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/forgot",
+      "action": "reload",
+      "finalPath": "/auth/forgot",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/password",
+      "action": "direct",
+      "finalPath": "/auth/password",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/password",
+      "action": "reload",
+      "finalPath": "/auth/password",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/invitation",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/invitation",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/complete",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/auth/complete",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/oauth/consent",
+      "action": "direct",
+      "finalPath": "/oauth/consent",
+      "status": "passed"
+    },
+    {
+      "route": "/oauth/consent",
+      "action": "reload",
+      "finalPath": "/oauth/consent",
+      "status": "passed"
+    },
+    {
+      "route": "/",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/staff",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/staff",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/users",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/users",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/users/:id",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/users/:id",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/list",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/list",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/inventory",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/inventory",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/firmwares",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/firmwares",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/updates",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/updates",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/devices/:id",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/devices/:id",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/:venueId",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/print-servers/:venueId",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/print-servers",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/print-servers",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/print-servers/detail",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/print-servers/detail",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/users",
+      "action": "direct",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "/admin/tenants/:id/users",
+      "action": "reload",
+      "finalPath": "/auth/login",
+      "status": "passed"
+    },
+    {
+      "route": "*",
+      "action": "direct",
+      "finalPath": "/not-a-route",
+      "status": "passed"
+    },
+    {
+      "route": "*",
+      "action": "reload",
+      "finalPath": "/not-a-route",
+      "status": "passed"
+    }
+  ],
+  "syntacticConsentLoginReturn": true,
+  "pageErrors": []
+}

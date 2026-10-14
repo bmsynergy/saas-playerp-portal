@@ -1,2 +1,3 @@
 import { defineConfig } from 'vitest/config';
-export default defineConfig({test:{include:['tests/*.test.ts']}});
+import { resolvePortalConfig } from './build/portal-config';
+export default defineConfig({define:{__PORTAL_CONFIG__:JSON.stringify(resolvePortalConfig({}))},test:{include:['tests/*.test.ts']}});

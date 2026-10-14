@@ -1,0 +1,278 @@
+[
+  {
+    "edge": "owner-venue-users",
+    "kind": "from",
+    "name": "admin_audit_log",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:198"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_users_list",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:279"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_user_check_invite",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:307"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_user_grant",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:351"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_user_set_role",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:411"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_owner_change",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:430"
+  },
+  {
+    "edge": "owner-venue-users",
+    "kind": "rpc",
+    "name": "owner_venue_user_set_portal_access",
+    "source": "owner-venue-users/functions/owner-venue-users/index.ts:452"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:140"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_users_list",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:181"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "from",
+    "name": "admin_audit_log",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:193"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_check_invite",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:253"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_grant",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:298"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_set_role",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:339"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_authorize_revoke",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:348"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "from",
+    "name": "staff_venue_assignments",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:360"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_record_revoke",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:368"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "from",
+    "name": "staff_roles",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:377"
+  },
+  {
+    "edge": "platform-identity-admin",
+    "kind": "rpc",
+    "name": "platform_venue_user_authorize_recovery",
+    "source": "platform-identity-admin/functions/platform-identity-admin/index.ts:393"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:151"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "rpc",
+    "name": "platform_staff_list",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:173"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "rpc",
+    "name": "platform_staff_set_role",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:186"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "rpc",
+    "name": "platform_staff_set_status",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:198"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "rpc",
+    "name": "platform_staff_authorize_recovery",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:221"
+  },
+  {
+    "edge": "platform-staff-admin",
+    "kind": "from",
+    "name": "admin_audit_log",
+    "source": "platform-staff-admin/functions/platform-staff-admin/index.ts:256"
+  },
+  {
+    "edge": "ps-cert-admin",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "ps-cert-admin/functions/ps-cert-admin/index.ts:111"
+  },
+  {
+    "edge": "ps-cert-admin",
+    "kind": "from",
+    "name": "print_servers",
+    "source": "ps-cert-admin/functions/ps-cert-admin/index.ts:144"
+  },
+  {
+    "edge": "ps-cert-admin",
+    "kind": "rpc",
+    "name": "ps_admin_cert_enqueue_install",
+    "source": "ps-cert-admin/functions/ps-cert-admin/index.ts:156"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:125"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "rpc",
+    "name": "ps_firmware_begin",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:135"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "rpc",
+    "name": "ps_firmware_download",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:151"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "rpc",
+    "name": "ps_firmware_delete",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:161"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "from",
+    "name": "ps_firmware_releases",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:176"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "rpc",
+    "name": "ps_firmware_finalize",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:198"
+  },
+  {
+    "edge": "ps-firmware-admin",
+    "kind": "from",
+    "name": "ps_firmware_releases",
+    "source": "ps-firmware-admin/functions/ps-firmware-admin/index.ts:205"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:116"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_key_register",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:138"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_edition_prepare",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:162"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_edition_store",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:168"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_target_sign",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:182"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_owner_device_update",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:192"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_device_update",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:210"
+  },
+  {
+    "edge": "ps-ota-admin",
+    "kind": "rpc",
+    "name": "ps_ota_deploy",
+    "source": "ps-ota-admin/functions/ps-ota-admin/index.ts:230"
+  },
+  {
+    "edge": "invite-platform-staff",
+    "kind": "rpc",
+    "name": "is_platform_staff",
+    "source": "invite-platform-staff/functions/invite-platform-staff/index.ts:156"
+  },
+  {
+    "edge": "invite-platform-staff",
+    "kind": "rpc",
+    "name": "record_platform_staff_invitation",
+    "source": "invite-platform-staff/functions/invite-platform-staff/index.ts:261"
+  },
+  {
+    "edge": "invite-platform-staff",
+    "kind": "from",
+    "name": "admin_audit_log",
+    "source": "invite-platform-staff/functions/invite-platform-staff/index.ts:315"
+  },
+  {
+    "edge": "invite-platform-staff",
+    "kind": "from",
+    "name": "admin_audit_log",
+    "source": "invite-platform-staff/functions/invite-platform-staff/index.ts:342"
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "route": "/auth/login",
+    "source": "src/App.tsx:506",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/auth/forgot",
+    "source": "src/App.tsx:507",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/auth/password",
+    "source": "src/App.tsx:508",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/auth/invitation",
+    "source": "src/App.tsx:509",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/auth/complete",
+    "source": "src/App.tsx:510",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/oauth/consent",
+    "source": "src/App.tsx:511",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/",
+    "source": "src/App.tsx:512",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin",
+    "source": "src/App.tsx:513",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/staff",
+    "source": "src/App.tsx:514",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/users",
+    "source": "src/App.tsx:516",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/users/:id",
+    "source": "src/App.tsx:517",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers",
+    "source": "src/App.tsx:518",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/list",
+    "source": "src/App.tsx:519",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/inventory",
+    "source": "src/App.tsx:520",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/firmwares",
+    "source": "src/App.tsx:521",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/updates",
+    "source": "src/App.tsx:522",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/devices/:id",
+    "source": "src/App.tsx:523",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/print-servers/:venueId",
+    "source": "src/App.tsx:524",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/tenants",
+    "source": "src/App.tsx:525",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/tenants/:id",
+    "source": "src/App.tsx:526",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/tenants/:id/print-servers",
+    "source": "src/App.tsx:527",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/tenants/:id/print-servers/detail",
+    "source": "src/App.tsx:528",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "/admin/tenants/:id/users",
+    "source": "src/App.tsx:529",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  },
+  {
+    "route": "*",
+    "source": "src/App.tsx:530",
+    "DEV": "incluida en artefacto reproducido",
+    "PROD": "sin verificar"
+  }
+]

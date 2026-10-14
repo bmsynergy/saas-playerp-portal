@@ -1,4 +1,14 @@
-// Public browser configuration. This portal is exclusively PlayERP-dev.
-export const SUPABASE_URL = "https://fzwzmwstxlsxdzdmphyq.supabase.co";
-export const SUPABASE_PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6d3ptd3N0eGxzeGR6ZG1waHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MDE2MjgsImV4cCI6MjA4MTE3NzYyOH0.LHL7u5eRFDsY2bcUWUHI3XRKY--SOFqYJBxKGmVAGlc";
-export const AUTH_STORAGE_KEY = "playerp.portal.dev.auth";
+// Injected by Vite after environment and public-key validation.
+declare const __PORTAL_CONFIG__: {
+  environment: string; url: string; publicKey: string; authStorageKey: string; auxiliaryPrefix: string;
+};
+const config = __PORTAL_CONFIG__;
+// A DEV artifact accidentally mounted on the production host must fail closed.
+if (typeof window !== 'undefined' && window.location.hostname === 'portal.playerp.net' &&
+    (config.environment !== 'prod' || config.url !== 'https://uzzchmvinutuoygtziie.supabase.co')) {
+  throw new Error('Portal production configuration required');
+}
+export const SUPABASE_URL = config.url;
+export const SUPABASE_PUBLIC_KEY = config.publicKey;
+export const AUTH_STORAGE_KEY = config.authStorageKey;
+export const AUXILIARY_STORAGE_PREFIX = config.auxiliaryPrefix;

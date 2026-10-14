@@ -1,0 +1,811 @@
+[
+  {
+    "kind": "RPC",
+    "name": "accept_platform_invitation",
+    "frontend": [
+      "src/lib/staff.ts:42"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260728160100_wi87_platform_invitation_rpcs.sql:134",
+      "_migrations/20261001180000_pe322_accept_platform_invitation_requires_invitation.sql:24"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "is_platform_staff",
+    "frontend": [
+      "src/lib/api.ts:28"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260728010112_wi85_f0_platform_staff_members_and_is_platform_staff.sql:33"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "mcp_consent_context",
+    "frontend": [
+      "src/pages/OAuthConsentPage.tsx:24"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261011223000_pe404_mcp_piloto_sedes_conexion_por_sede_catalogo.sql:267",
+      "_migrations/20261012015100_pe410_mcp_conexion_multisede.sql:129",
+      "_migrations/20261009201528_pe390_mcp_oauth_propio.sql:149"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "mcp_consent_decide",
+    "frontend": [
+      "src/pages/OAuthConsentPage.tsx:56"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261011174442_pe400_mcp_piloto_un_owner_una_sede.sql:211",
+      "_migrations/20261012020100_pe410_mcp_consent_lock.sql:5",
+      "_migrations/20261011223000_pe404_mcp_piloto_sedes_conexion_por_sede_catalogo.sql:298",
+      "_migrations/20261012015100_pe410_mcp_conexion_multisede.sql:165",
+      "_migrations/20261009201528_pe390_mcp_oauth_propio.sql:184",
+      "_migrations/DOWN_20261011174442_pe400_mcp_piloto_un_owner_una_sede.sql:68"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_access",
+    "frontend": [
+      "src/lib/api.ts:28"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261001210000_platform_identity_admin.sql:82",
+      "_migrations/20261002140523_owner_venue_users.sql:443",
+      "_migrations/_solo_dev/pruebas-dev/20261001120000_portal_dev_safe_reads.sql:38"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_owner_venues",
+    "frontend": [
+      "src/lib/api.ts:48"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002140523_owner_venue_users.sql:416",
+      "_migrations/_solo_dev/pruebas-dev/20261001120000_portal_dev_safe_reads.sql:14"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_ps_devices",
+    "frontend": [
+      "src/lib/psDevice.ts:273"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:366",
+      "_migrations/DOWN_20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:24",
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:362"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_ps_fleet",
+    "frontend": [
+      "src/lib/printServerApi.ts:189"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002230000_pe339_ps_ca_cert_der_fingerprint.sql:284",
+      "_migrations/20261001230000_ps_fleet_admin.sql:491",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2212"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_ps_inventory",
+    "frontend": [
+      "src/lib/printServerApi.ts:186"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002164445_ps_inventory_read.sql:1",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2007"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_ps_venue_overview",
+    "frontend": [
+      "src/lib/psVenueOverview.ts:65"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014090000_pe447_ps_vista_por_venue_y_borrado_retirado.sql:121"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_tenant_detail",
+    "frontend": [
+      "src/lib/api.ts:39"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261001210000_platform_identity_admin.sql:119",
+      "_migrations/_solo_dev/pruebas-dev/20261001120000_portal_dev_safe_reads.sql:67"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "portal_tenant_directory",
+    "frontend": [
+      "src/lib/api.ts:34"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261001210000_platform_identity_admin.sql:100",
+      "_migrations/_solo_dev/pruebas-dev/20261001120000_portal_dev_safe_reads.sql:51"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_cert_renew",
+    "frontend": [
+      "src/lib/psDevice.ts:163"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261006232000_pe384_ps_https_cert.sql:184"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_assign",
+    "frontend": [
+      "src/lib/psDevice.ts:285"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:259",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:970"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_create",
+    "frontend": [
+      "src/lib/psDevice.ts:283",
+      "src/lib/psAdminDevice.ts:89"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/DOWN_20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:24",
+      "_migrations/20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:90",
+      "_migrations/DOWN_20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:49",
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:223",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1089",
+      "_migrations/20261014030000_pe440_ps_identidad_unica_ssid_canonico.sql:135",
+      "_migrations/20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:168"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_delete",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:95"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:189",
+      "_migrations/20261014090000_pe447_ps_vista_por_venue_y_borrado_retirado.sql:61",
+      "_migrations/DOWN_20261014090000_pe447_ps_vista_por_venue_y_borrado_retirado.sql:35"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_detail",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:84"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:300",
+      "_migrations/DOWN_20261014050000_pe441_ps_ota_installed_version_guard.sql:130",
+      "_migrations/DOWN_20261014040000_pe441_ps_ota_elegibilidad_por_rol.sql:199",
+      "_migrations/20261014050000_pe441_ps_ota_installed_version_guard.sql:135",
+      "_migrations/20261014040000_pe441_ps_ota_elegibilidad_por_rol.sql:233"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_manage",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:147"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014080000_pe444_ps_retiro_y_ficha_stock.sql:39",
+      "_migrations/DOWN_20261014080000_pe444_ps_retiro_y_ficha_stock.sql:30",
+      "_migrations/20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:296"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_models",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:81",
+      "src/lib/psAdminDevice.ts:130"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/DOWN_20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:11",
+      "_migrations/20261013200000_pe432_ps_alta_generica_borrado_update_unico.sql:76",
+      "_migrations/20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:62"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_move",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:152"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1033",
+      "_migrations/20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:242"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_revoke",
+    "frontend": [
+      "src/lib/psDevice.ts:288"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:310",
+      "_migrations/20261014080000_pe444_ps_retiro_y_ficha_stock.sql:79",
+      "_migrations/DOWN_20261014080000_pe444_ps_retiro_y_ficha_stock.sql:62"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_device_sheet",
+    "frontend": [
+      "src/lib/psAdminDeviceSheet.ts:73"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014080000_pe444_ps_retiro_y_ficha_stock.sql:141"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_legacy_credentials_context",
+    "frontend": [
+      "src/lib/psDevice.ts:210"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013160000_pe428_ps_rotation_notice_and_legacy_reconcile.sql:404",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1459"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_legacy_credentials_reconcile",
+    "frontend": [
+      "src/lib/psDevice.ts:226"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013160000_pe428_ps_rotation_notice_and_legacy_reconcile.sql:440",
+      "_migrations/20261014020000_pe439_ps_legacy_reconcile_code_shapes.sql:11",
+      "_migrations/20261013170000_pe428_ps_legacy_reconcile_code_exact.sql:7"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_venue_search",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:165"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1924",
+      "_migrations/20261013233000_pe435_ps_catalogo_modelos_default_y_manage.sql:331"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_admin_wifi_ssid_adopt",
+    "frontend": [
+      "src/lib/psDevice.ts:160"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1742",
+      "_migrations/20261014030000_pe440_ps_identidad_unica_ssid_canonico.sql:225"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_device_sheet_resolve",
+    "frontend": [
+      "src/lib/psVenueDevices.ts:65"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2346"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_firmware_list",
+    "frontend": [
+      "src/lib/firmware.ts:34"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/DOWN_20261014060000_pe442_ps_ota_disponibilidad_por_edicion.sql:369",
+      "_migrations/20261014060000_pe442_ps_ota_disponibilidad_por_edicion.sql:601",
+      "_migrations/20261006220000_pe384_ps_firmware_releases.sql:201"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_ota_admin_overview",
+    "frontend": [
+      "src/lib/ota.ts:126"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013190000_pe431_ps_ota_overview_sin_auditoria.sql:25",
+      "_migrations/DOWN_20261014060000_pe442_ps_ota_disponibilidad_por_edicion.sql:397",
+      "_migrations/20261007000000_pe385_ps_ota.sql:161",
+      "_migrations/DOWN_20261013190000_pe431_ps_ota_overview_sin_auditoria.sql:6",
+      "_migrations/20261014060000_pe442_ps_ota_disponibilidad_por_edicion.sql:626"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_ota_edition_availability_set",
+    "frontend": [
+      "src/lib/firmware.ts:111"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014060000_pe442_ps_ota_disponibilidad_por_edicion.sql:164"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_ota_group_create",
+    "frontend": [
+      "src/lib/ota.ts:138"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261007000000_pe385_ps_ota.sql:222"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_ota_group_set_members",
+    "frontend": [
+      "src/lib/ota.ts:141"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261007000000_pe385_ps_ota.sql:246"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_ota_target_events",
+    "frontend": [
+      "src/lib/ota.ts:130"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261007000000_pe385_ps_ota.sql:209"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_add_printer",
+    "frontend": [
+      "src/lib/printServerApi.ts:244"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:538",
+      "_migrations/20261001230000_ps_fleet_admin.sql:286",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1550"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_ca_cert",
+    "frontend": [
+      "src/lib/printServerApi.ts:219"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002230000_pe339_ps_ca_cert_der_fingerprint.sql:188",
+      "_migrations/20260930140000_ps_fase1_panel.sql:430",
+      "_migrations/20261001230000_ps_fleet_admin.sql:162",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1354"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_command",
+    "frontend": [
+      "src/lib/printServerApi.ts:236"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:517",
+      "_migrations/20261001230000_ps_fleet_admin.sql:184"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_create_enrollment",
+    "frontend": [
+      "src/lib/printServerApi.ts:208"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:454",
+      "_migrations/20261001230000_ps_fleet_admin.sql:204",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:939"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_device",
+    "frontend": [
+      "src/lib/psDevice.ts:139"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261013160000_pe428_ps_rotation_notice_and_legacy_reconcile.sql:232",
+      "_migrations/20261006234000_pe384_ps_panel_device_current_ps.sql:9",
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:788",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1252",
+      "_migrations/20261014010000_pe438_ps_enroll_credentials_ack.sql:427",
+      "_migrations/20261012160000_pe411_ps_credentials_confirmed_contract.sql:51",
+      "_migrations/20261014030000_pe440_ps_identidad_unica_ssid_canonico.sql:375"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_devices",
+    "frontend": [
+      "src/lib/psVenueDevices.ts:54"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2289"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_ota",
+    "frontend": [
+      "src/lib/ota.ts:174"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/DOWN_20261014040000_pe441_ps_ota_elegibilidad_por_rol.sql:51",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1971",
+      "_migrations/20261014000000_pe437_ps_panel_ota_ultima_estable_owner.sql:22",
+      "_migrations/DOWN_20261014000000_pe437_ps_panel_ota_ultima_estable_owner.sql:2",
+      "_migrations/20261007000000_pe385_ps_ota.sql:272",
+      "_migrations/20261014040000_pe441_ps_ota_elegibilidad_por_rol.sql:262"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_printer_jobs",
+    "frontend": [
+      "src/lib/printServerApi.ts:241"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002150000_ps_panel_printer_jobs.sql:24",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1846",
+      "_migrations/20261012010000_pe409_ps_admin_list_pages.sql:267"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_recovery_label",
+    "frontend": [
+      "src/lib/psRecoveryLabel.ts:30"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261012191906_pe418_ps_recovery_label_source.sql:20",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1395"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_remove_printer",
+    "frontend": [
+      "src/lib/printServerApi.ts:262"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:658",
+      "_migrations/20261001230000_ps_fleet_admin.sql:437"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_replace_print_server",
+    "frontend": [
+      "src/lib/printServerApi.ts:269"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2452",
+      "_migrations/20261014071000_pe443_ps_grants_y_bloqueos.sql:128"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_request_scan",
+    "frontend": [
+      "src/lib/printServerApi.ts:231"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:486",
+      "_migrations/20261001230000_ps_fleet_admin.sql:247",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1502"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_revoke",
+    "frontend": [
+      "src/lib/printServerApi.ts:213"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:471",
+      "_migrations/20261001230000_ps_fleet_admin.sql:228"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_rotate_admin_code",
+    "frontend": [
+      "src/lib/psDevice.ts:145"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:448",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1731"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_rotate_wifi",
+    "frontend": [
+      "src/lib/psDevice.ts:144"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261006230000_pe384_ps_inventory_credentials.sql:443",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1721"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_set_printer_active",
+    "frontend": [
+      "src/lib/printServerApi.ts:253"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:621",
+      "_migrations/20261001230000_ps_fleet_admin.sql:390"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_set_printer_print_server",
+    "frontend": [
+      "src/lib/printServerApi.ts:272"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:2396",
+      "_migrations/20261014071000_pe443_ps_grants_y_bloqueos.sql:182"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_state",
+    "frontend": [
+      "src/lib/printServerApi.ts:193"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20261002230000_pe339_ps_ca_cert_der_fingerprint.sql:220",
+      "_migrations/20260930140000_ps_fase1_panel.sql:371",
+      "_migrations/20261001230000_ps_fleet_admin.sql:105",
+      "_migrations/20261014070000_pe443_multi_ps_por_venue.sql:1177",
+      "_migrations/20261002205609_pe336_ps_panel_state_owner_read.sql:19"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_test_print",
+    "frontend": [
+      "src/lib/printServerApi.ts:256"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:641",
+      "_migrations/20261001230000_ps_fleet_admin.sql:418"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "RPC",
+    "name": "ps_panel_update_printer",
+    "frontend": [
+      "src/lib/printServerApi.ts:250"
+    ],
+    "backend_candidate_definitions": [
+      "_migrations/20260930140000_ps_fase1_panel.sql:588",
+      "_migrations/20261001230000_ps_fleet_admin.sql:346"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "owner-venue-users",
+    "frontend": [
+      "src/lib/ownerUsers.ts:62"
+    ],
+    "backend_candidate_definitions": [
+      "owner-venue-users/functions/owner-venue-users/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "platform-identity-admin",
+    "frontend": [
+      "src/lib/venueUsers.ts:57"
+    ],
+    "backend_candidate_definitions": [
+      "platform-identity-admin/functions/platform-identity-admin/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "platform-staff-admin",
+    "frontend": [
+      "src/lib/staff.ts:33"
+    ],
+    "backend_candidate_definitions": [
+      "platform-staff-admin/functions/platform-staff-admin/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "ps-cert-admin",
+    "frontend": [
+      "src/lib/psDevice.ts:261"
+    ],
+    "backend_candidate_definitions": [
+      "ps-cert-admin/functions/ps-cert-admin/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "ps-firmware-admin",
+    "frontend": [
+      "src/lib/firmware.ts:61"
+    ],
+    "backend_candidate_definitions": [
+      "ps-firmware-admin/functions/ps-firmware-admin/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "ps-ota-admin",
+    "frontend": [
+      "src/lib/psAdminDevice.ts:105",
+      "src/lib/ota.ts:151"
+    ],
+    "backend_candidate_definitions": [
+      "ps-ota-admin/functions/ps-ota-admin/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  },
+  {
+    "kind": "Edge",
+    "name": "invite-platform-staff",
+    "frontend": [
+      "src/App.tsx:216"
+    ],
+    "backend_candidate_definitions": [
+      "invite-platform-staff/functions/invite-platform-staff/index.ts"
+    ],
+    "DEV": "no consultado",
+    "PROD": "no consultado; aprobaci\u00f3n SQL no disponible"
+  }
+]
