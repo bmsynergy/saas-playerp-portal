@@ -1,18 +1,21 @@
 import { supabase } from './supabase';
 import { PortalError } from './errors';
 import { psErrorFromCode, selectionRequired } from './printServerApi';
+import { projectPsLink, type PsDeviceLink } from './psLink';
 
 // PE-443: several Print Servers per venue. A device is addressed by a stable id: the
 // print_server_id when it is active, otherwise its inventory id. Rebuilt field by field.
 export type VenueDevice = {
   id: string; print_server_id: string | null; inventory_device_id: string | null; serial: string | null; label: string | null; hostname: string | null;
   status: string | null; online: boolean; software_version: string | null; last_seen_at: string | null; printers_total: number;
+  link?: PsDeviceLink;
 };
 export type UnassignedPrinter = { id: string; label: string; mac_address: string | null; model: string | null; location: string | null; is_active: boolean };
 export type VenueDevices = { venue_id: string; can_manage: boolean; devices: VenueDevice[]; unassigned_printers: UnassignedPrinter[] };
 export type DeviceSheetRef = {
   kind: 'print_server' | 'inventory'; print_server_id: string | null; inventory_device_id: string | null;
   venue_id: string | null; venue_name: string | null; status: string | null; can_manage: boolean; is_staff: boolean;
+  link?: PsDeviceLink;
 };
 
 type Raw = Record<string, unknown>;
@@ -38,7 +41,7 @@ export function projectVenueDevice(v: unknown): VenueDevice {
   if (!d || typeof d.id !== 'string' || !d.id) return bad();
   return { id: d.id, print_server_id: str(d.print_server_id), inventory_device_id: str(d.inventory_device_id), serial: str(d.serial), label: str(d.label),
     hostname: str(d.hostname), status: str(d.status), online: d.online === true, software_version: str(d.software_version), last_seen_at: str(d.last_seen_at),
-    printers_total: count(d.printers_total) };
+    printers_total: count(d.printers_total), link: projectPsLink(d.link) ?? undefined };
 }
 function unassignedPrinter(v: unknown): UnassignedPrinter {
   const p = obj(v);
@@ -59,7 +62,7 @@ export function projectSheetRef(v: unknown): DeviceSheetRef {
   if (r.kind === 'print_server' && !str(r.print_server_id)) return bad();
   if (r.kind === 'inventory' && !str(r.inventory_device_id)) return bad();
   return { kind: r.kind, print_server_id: str(r.print_server_id), inventory_device_id: str(r.inventory_device_id), venue_id: str(r.venue_id), venue_name: str(r.venue_name),
-    status: str(r.status), can_manage: r.can_manage === true, is_staff: r.is_staff === true };
+    status: str(r.status), can_manage: r.can_manage === true, is_staff: r.is_staff === true, link: projectPsLink(r.link) ?? undefined };
 }
 export async function resolveDeviceSheet(id: string, signal?: AbortSignal): Promise<DeviceSheetRef> {
   const ref = projectSheetRef(await rpc('ps_device_sheet_resolve', { p_id: id }, signal));

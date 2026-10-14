@@ -6,6 +6,8 @@ import { deviceName, type VenueDevice, type VenueDevices } from '../lib/psVenueD
 import { relativeTime } from '../lib/printFleet';
 import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
+import { PsLinkStateBadge } from '../components/PsLinkStateBadge';
+import { reportedOr } from '../lib/psLink';
 
 type Props = {
   data: VenueDevices;
@@ -49,13 +51,15 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
       {choose && <div className="staff-notice" role="status" data-testid="ps-selection-required"><AlertTriangle size={18}/><span>{t('ps.error.selectionRequired')}</span></div>}
       {extra}
       {data.devices.length === 0 ? <div className="staff-empty" data-testid="venue-ps-empty"><Server size={27}/><strong>{t('psm.venueEmpty')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t('psm.col.device')}</th><th>{t('psm.col.serial')}</th><th>{t('psm.col.connection')}</th><th>{t('psm.col.firmware')}</th><th>{t('lastSignal')}</th><th>{t('psm.col.printers')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{data.devices.map(device => {
-        const state = deviceState(device); const relative = relativeTime(device.last_seen_at, now, locale);
-        return <tr key={device.id} data-testid={`venue-ps-row-${device.id}`} data-state={state}>
-          <td data-label={t('psm.col.device')} className="staff-identity"><strong>{deviceName(device)}</strong>{device.hostname && device.hostname !== deviceName(device) && <small>{device.hostname}</small>}</td>
-          <td data-label={t('psm.col.serial')}><span className="ps-mono">{device.serial || t('notProvided')}</span></td>
-          <td data-label={t('psm.col.connection')}><span className={`server-status ${fleetStateClass[state]}`}><span className="badge-dot"/>{state === 'pending' ? t('psm.status.pending') : t(`ps.state.${state}`)}</span></td>
-          <td data-label={t('psm.col.firmware')}><span className="version-text">{device.software_version || t('notProvided')}</span></td>
-          <td data-label={t('lastSignal')}>{relative && device.last_seen_at ? <span className="ps-signal"><span className="staff-date"><Clock3 size={14}/>{relative}</span><small className="ps-sub">{dateFormatter.format(new Date(device.last_seen_at))}</small></span> : <span className="staff-self-note">{t('ps.never')}</span>}</td>
+        // PE-462: identity from the link and facts as reported by the device ("Pending" when absent).
+        const l = device.link; const lastSeen = l ? l.reported.last_seen_at : device.last_seen_at;
+        const state = deviceState(device); const relative = relativeTime(lastSeen, now, locale);
+        return <tr key={device.id} data-testid={`venue-ps-row-${device.id}`} data-state={state} data-link-state={l?.state}>
+          <td data-label={t('psm.col.device')} className="staff-identity">{l ? <><strong>{l.display_name}</strong><small>{l.model_label ?? l.model} · {t('ps.hostname')}: {reportedOr(l.reported.hostname, t('psLink.pending'))}</small></> : <><strong>{deviceName(device)}</strong>{device.hostname && device.hostname !== deviceName(device) && <small>{device.hostname}</small>}</>}</td>
+          <td data-label={t('psm.col.serial')}><span className="ps-mono">{l?.serial || device.serial || t('notProvided')}</span></td>
+          <td data-label={t('psm.col.connection')}>{l && <PsLinkStateBadge state={l.state}/>}{(!l || l.state === 'sincronizado') && <span className={`server-status ${fleetStateClass[state]}`}><span className="badge-dot"/>{state === 'pending' ? t('psm.status.pending') : t(`ps.state.${state}`)}</span>}</td>
+          <td data-label={t('psm.col.firmware')}><span className="version-text">{l ? reportedOr(l.reported.firmware_version, t('psLink.pending')) : device.software_version || t('notProvided')}</span></td>
+          <td data-label={t('lastSignal')}>{relative && lastSeen ? <span className="ps-signal"><span className="staff-date"><Clock3 size={14}/>{relative}</span><small className="ps-sub">{dateFormatter.format(new Date(lastSeen))}</small></span> : <span className="staff-self-note">{t(l ? 'psLink.pending' : 'ps.never')}</span>}</td>
           <td data-label={t('psm.col.printers')}><span className="staff-role"><Printer size={15}/>{device.printers_total}</span></td>
           <td data-label={t('staff.actions')}><Link className="staff-action-link" data-testid={`venue-ps-open-${device.id}`} to={hrefFor(device)}>{t('psm.openSheet')}<span className="sr-only"> {deviceName(device)}</span><ArrowRight size={14}/></Link></td>
         </tr>;

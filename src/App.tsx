@@ -15,6 +15,7 @@ import { VenuePrintServersPage } from './pages/VenuePrintServersPage';
 import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
+import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
@@ -469,11 +470,17 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   // The URL never grants access: an owner sheet must belong to the selected venue.
   if(expectedVenueId&&r.venue_id!==expectedVenueId)return <StateView kind="denied"/>;
   const back=r.venue_id?{href:venueListHref(scope,r.venue_id),label:t('psm.backToVenue')}:{href:'/admin/print-servers/list',label:t('psm.backToList')};
-  if((!r.print_server_id||!r.venue_id)&&(scope!=='admin'||!r.is_staff))return <StateView kind="denied"/>;
+  // PE-462: link/identity panel (badge, reported facts, friendly name, preparation) when the backend sends it.
+  const staff=scope==='admin'&&r.is_staff;
+  const linkPanel=r.link?<PsDeviceLinkPanel key={r.link.device_id} link={r.link} isStaff={staff} canEdit={staff||r.can_manage}
+    onChanged={()=>Promise.all([ref.refetch(),queryClient.invalidateQueries({queryKey:['ps-venue-devices']}),queryClient.invalidateQueries({queryKey:['ps-devices']}),queryClient.invalidateQueries({queryKey:['ps-venue-overview']})])}/>:null;
+  // Assigned but not yet synced: the venue's owner/manager sees the link, nothing else exists yet.
+  if(!r.print_server_id&&r.venue_id&&r.link&&!staff)return <div className="page-stack staff-page" data-testid="ps-link-sheet"><Link className="back-link" to={back.href}>{back.label}</Link>{linkPanel}</div>;
+  if((!r.print_server_id||!r.venue_id)&&!staff)return <StateView kind="denied"/>;
   if(!r.print_server_id||!r.venue_id) return r.inventory_device_id
-    ? <InventoryDeviceSheetData key={r.inventory_device_id} deviceId={r.inventory_device_id} back={back}/>
+    ? <>{linkPanel}<InventoryDeviceSheetData key={r.inventory_device_id} deviceId={r.inventory_device_id} back={back}/></>
     : <StateView kind="notFound"/>;
-  return <PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/>;
+  return <>{linkPanel}<PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/></>;
 }
 function InventoryDeviceSheetData({deviceId,back}:{deviceId:string;back:{href:string;label:string}}) {
   const {session}=useAuth(); const {t}=useLocale();

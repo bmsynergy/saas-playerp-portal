@@ -4,6 +4,8 @@ import type { AdminDeviceSheet } from '../lib/psAdminDeviceSheet';
 import { generateLabelPng, labelFilename, printLabel, type LabelData } from '../lib/psLabel';
 import { useLocale } from '../locales';
 import { InventoryDeviceIdentity } from './InventoryDeviceIdentity';
+import { PsLinkStateBadge } from './PsLinkStateBadge';
+import { PS_LINK_STATES, type PsLinkState } from '../lib/psLink';
 import './InventoryDeviceSheet.css';
 
 type Props = { sheet: AdminDeviceSheet };
@@ -89,7 +91,7 @@ export function InventoryDeviceSheet({ sheet }: Props) {
     </section>
     <div className="stock-sheet-grid">
       <section className="stock-sheet-section" aria-labelledby="stock-link"><h2 id="stock-link">{t('stockSheet.link')}</h2>
-        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{sheet.link.state}</dd></div></dl>}
+        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{(PS_LINK_STATES as readonly string[]).includes(sheet.link.state) ? <PsLinkStateBadge state={sheet.link.state as PsLinkState}/> : sheet.link.state}</dd></div></dl>}
       </section>
       <section className="stock-sheet-section" aria-labelledby="stock-firmware"><h2 id="stock-firmware">{t('stockSheet.firmware')}</h2>
         {sheet.firmware.last_reported_version ? <dl className="dev-facts"><div><dt>{t('stockSheet.lastReported')}</dt><dd className="ps-mono">{sheet.firmware.last_reported_version}</dd></div><div><dt>{t('stockSheet.lastSeen')}</dt><dd>{date(sheet.firmware.last_seen_at)}</dd></div></dl> : <p className="stock-sheet-empty">{reason(sheet.firmware.reason)}</p>}

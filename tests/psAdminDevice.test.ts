@@ -80,7 +80,7 @@ describe('PE-435 catalogue and Manage contracts', () => {
     await expect(getAdminDeviceManage('different')).rejects.toMatchObject({ code: 'accessDenied' });
   });
   it('adds without a replacement id, unassigns and retires with the existing revoke reasons', async () => {
-    mocks.rpc.mockResolvedValue({ data: { ok: true, enrollment_code: 'synthetic', expires_at: null } });
+    mocks.rpc.mockResolvedValue({ data: { ok: true, already_assigned: false, device_id: 'second-device', venue_id: 'venue', print_server_id: null } });
     await assignDevice('second-device', 'venue');
     await revokeDevice('second-device', false);
     await revokeDevice('stock-device', true);
@@ -102,11 +102,14 @@ describe('PE-435 catalogue and Manage contracts', () => {
     expect(() => projectAdminDeviceManage({ ...data, actions: null })).toThrow();
   });
   it('moves with one atomic backend call and never follows rejection with revoke or delete', async () => {
-    mocks.rpc.mockResolvedValue({ data: { ok: true, enrollment_code: 'one-time', expires_at: null, replaces_device_id: null } });
-    expect(await moveAdminDevice('device', 'new-venue')).toEqual({ code: 'one-time', expires_at: null, replaces: false });
+    // PE-462: moving never returns a code, even if one were sent.
+    mocks.rpc.mockResolvedValue({ data: { ok: true, already_assigned: false, device_id: 'device', venue_id: 'new-venue', print_server_id: null, moved_from_venue_id: 'old', enrollment_code: 'pse_leak' } });
+    const moved = await moveAdminDevice('device', 'new-venue');
+    expect(moved).toEqual({ already_assigned: false, device_id: 'device', venue_id: 'new-venue', print_server_id: null, link: null, moved_from_venue_id: 'old' });
+    expect(JSON.stringify(moved)).not.toContain('pse_');
     expect(mocks.rpc).toHaveBeenCalledWith('ps_admin_device_move', { p_device_id: 'device', p_venue_id: 'new-venue' });
-    mocks.rpc.mockResolvedValue({ data: { ok: false, error: 'unknown_venue' } });
-    await expect(moveAdminDevice('device', 'missing')).rejects.toMatchObject({ key: 'adminDevice.error.unknown_venue' });
+    mocks.rpc.mockResolvedValue({ data: { ok: false, error: 'unknown_venue', message: 'El local no existe.', next_step: null } });
+    await expect(moveAdminDevice('device', 'missing')).rejects.toMatchObject({ code: 'unknown_venue', serverMessage: 'El local no existe.', nextStep: null });
     expect(mocks.rpc.mock.calls.map(call => call[0])).toEqual(['ps_admin_device_move', 'ps_admin_device_move']);
   });
   it('searches server-side and projects only visible venue fields, never device credentials', async () => {
