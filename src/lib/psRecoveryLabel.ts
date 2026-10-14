@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { confirmedAt, validRecoveryWifi } from './psDevice';
-import { psErrorFromCode } from './printServerApi';
+import { psErrorFromCode, selectionRequired, withPs } from './printServerApi';
 import type { LabelData } from './psLabel';
 
 export type RecoveryLabelMissing = 'credentials_permission' | 'device_not_assigned' | 'print_server_not_active' | 'wifi_not_confirmed' | 'invalid_label';
@@ -26,9 +26,11 @@ export function projectRecoveryLabel(value: unknown): RecoveryLabelState {
   };
 }
 
-export async function getRecoveryLabel(venueId: string, signal?: AbortSignal): Promise<RecoveryLabelState> {
-  const request = supabase.rpc('ps_panel_recovery_label', { p_venue_id: venueId });
+export async function getRecoveryLabel(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<RecoveryLabelState> {
+  const request = supabase.rpc('ps_panel_recovery_label', { p_venue_id: venueId, ...withPs(printServerId) });
   const { data, error } = await (signal ? request.abortSignal(signal) : request);
   if (error) throw error;
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
   return projectRecoveryLabel(data);
 }

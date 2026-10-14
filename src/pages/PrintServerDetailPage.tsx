@@ -17,7 +17,10 @@ import { PrintListPagination, usePrintListPagination } from '../components/Print
 import { matchesUtcDay } from '../lib/adminLists';
 
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
-type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin' };
+// PE-443: printServerId binds the sheet to ONE device of the venue (the api passed in is bound too).
+type ReplaceTarget = { print_server_id: string; name: string; label: string | null };
+type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin';
+  printServerId?: string | null; backHref?: string; backLabel?: string; replaceTargets?: ReplaceTarget[] };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
 type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
 type Result = { ok: boolean; text: string };
@@ -31,9 +34,14 @@ function Item({ icon, label, children, testId }: { icon: ReactNode; label: strin
   return <div className="detail-item"><span className="detail-item-icon" aria-hidden="true">{icon}</span><div><span className="detail-item-label">{label}</span><strong data-testid={testId}>{children}</strong></div></div>;
 }
 
-export function PrintServerDetailPage({ venue, state, api, refresh, stale = false, embedded = false, scope = 'admin' }: Props) {
+export function PrintServerDetailPage({ venue, state: rawState, api, refresh, stale = false, embedded = false, scope = 'admin', printServerId = null, backHref, backLabel, replaceTargets = [] }: Props) {
   const { locale, t } = useLocale();
-  const server = state.print_server; const pendingEnrollment = state.pending_enrollment; const canManage = state.can_manage;
+  // Only this device's printers: anything explicitly bound to another PS of the venue is left out.
+  const state = printServerId ? { ...rawState, printers: rawState.printers.filter(printer => !printer.print_server_id || printer.print_server_id === printServerId) } : rawState;
+  const server = state.print_server;
+  const sheetPsId = printServerId ?? server?.id ?? null;
+  const [replaceTo, setReplaceTo] = useState('');
+  const [replaceFrom, setReplaceFrom] = useState({ from: '', to: '' }); const pendingEnrollment = state.pending_enrollment; const canManage = state.can_manage;
   const venueName = venue.venue_name; const venueId = state.venue_id;
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -108,6 +116,18 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
     if (!server) return;
     ask({ title: t('ps.revoke'), danger: true, body: fill(t('ps.confirm.revoke'), { venue: venueName, name: server.label || server.hostname || server.id }),
       run: async () => fill(t('ps.result.revoked'), { jobs: (await api.revokePrintServer(server.id)).jobs_cancelled }) });
+  }
+  function askReplaceWith() {
+    const target = replaceTargets.find(item => item.print_server_id === replaceTo);
+    if (!server || !target) return;
+    const fromLabel = replaceFrom.from.trim(); const toLabel = replaceFrom.to.trim();
+    if (fromLabel !== (server.label ?? '').trim() || toLabel !== (target.label ?? '').trim()) { setResult({ ok: false, text: t('ps.error.labelMismatch') }); return; }
+    ask({ title: t('psm.replaceTitle'), danger: true, body: `${server.label || server.hostname || server.id} → ${target.name}. ${t('psm.replaceLead')}`,
+      run: async () => {
+        await api.replacePrintServer(server.id, target.print_server_id, fromLabel, toLabel);
+        setReplaceTo(''); setReplaceFrom({ from: '', to: '' });
+        return t('psm.replaced').replace('{ps}', target.name);
+      } });
   }
   async function copyCode() {
     if (!enrollment) return;
@@ -257,7 +277,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
     </div>;
 
   return <div className="page-stack staff-page" data-testid="ps-detail">
-    {scope === 'admin' && <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>}
+    {backHref ? <Link className="back-link" to={backHref} data-testid="ps-sheet-back"><ArrowLeft size={17}/>{backLabel ?? t('ps.back')}</Link> : scope === 'admin' && <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>}
     {embedded ? <div className="ps-embedded-heading"><h2 data-testid="ps-venue-name">{t('ps.detailEyebrow')}</h2><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div> : <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
     {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
@@ -287,11 +307,21 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
 
 
 
-    {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId}/>}
+    {canManage && server && replaceTargets.length > 0 && <section className="staff-panel" aria-labelledby="ps-replace-with-title" data-testid="ps-replace-with"><div className="section-heading"><div><p className="eyebrow">{t('printServer')}</p><h2 id="ps-replace-with-title">{t('psm.replaceTitle')}</h2></div><span className="section-icon"><Server size={20}/></span></div>
+      <p className="staff-panel-lead">{t('psm.replaceLead')}</p>
+      <div className="staff-actions ps-actions">
+        <label className="field ps-inline-field"><span>{t('psm.replaceDestination')}</span><div className="field-control"><select data-testid="ps-replace-to" value={replaceTo} disabled={busy} onChange={event => setReplaceTo(event.target.value)}><option value="">—</option>{replaceTargets.map(item => <option key={item.print_server_id} value={item.print_server_id}>{item.name}</option>)}</select></div></label>
+        <label className="field ps-inline-field"><span>{t('psm.replaceFromLabel')}</span><div className="field-control"><input type="text" data-testid="ps-replace-from-label" autoComplete="off" maxLength={80} value={replaceFrom.from} disabled={busy} placeholder={server.label ?? ''} onChange={event => setReplaceFrom(current => ({ ...current, from: event.target.value }))}/></div></label>
+        <label className="field ps-inline-field"><span>{t('psm.replaceToLabel')}</span><div className="field-control"><input type="text" data-testid="ps-replace-to-label" autoComplete="off" maxLength={80} value={replaceFrom.to} disabled={busy || !replaceTo} placeholder={replaceTargets.find(item => item.print_server_id === replaceTo)?.label ?? ''} onChange={event => setReplaceFrom(current => ({ ...current, to: event.target.value }))}/></div></label>
+        <button type="button" className="button button-secondary ps-danger" data-testid="ps-replace-submit" disabled={busy || !replaceTo || !replaceFrom.from.trim() || !replaceFrom.to.trim()} onClick={askReplaceWith}><X size={17}/>{t('psm.replaceSubmit')}</button>
+      </div>
+    </section>}
 
-    {scope === 'owner' && <PrintServerOtaBlock venueId={venueId}/>}
+    {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId} printServerId={sheetPsId}/>}
 
-    <PrintServerDevicePanel venueId={venueId} printServerId={server?.id ?? null} adminScope={scope === 'admin'} caContent={caContent}/>
+    {scope === 'owner' && <PrintServerOtaBlock venueId={venueId} printServerId={sheetPsId}/>}
+
+    <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} adminScope={scope === 'admin'} caContent={caContent}/>
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <div className="detail-grid">
@@ -367,7 +397,7 @@ export function PrintServerDetailPage({ venue, state, api, refresh, stale = fals
 
     {state.printers.length > 0 && <section className="staff-panel" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
       <p className="staff-panel-lead">{t('ps.jobs.lead')}</p>
-      <div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={printer.id} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div>
+      <div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div>
       <PrintListPagination pagination={printerPagination} id="queues"/>
     </section>}
 

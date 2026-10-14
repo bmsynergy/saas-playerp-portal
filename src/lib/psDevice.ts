@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { SUPABASE_URL } from './config';
 import { PortalError } from './errors';
-import { PsError, psErrorFromCode } from './printServerApi';
+import { PsError, psErrorFromCode, selectionRequired, withPs } from './printServerApi';
 
 // Device sheet of a venue's Print Server (PE-384). Rebuilt field by field: technical tokens,
 // credential hashes and certificate bodies are never copied into state even if a backend
@@ -125,6 +125,8 @@ async function rpc(name: string, params: Raw = {}, signal?: AbortSignal): Promis
 }
 async function action(name: string, params: Raw): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
   if (data.ok === false) {
     const error = psErrorFromCode(data.error);
     throw error instanceof PsError ? error : new PsError('dev.progress.requestRejectedUnknown');
@@ -132,11 +134,15 @@ async function action(name: string, params: Raw): Promise<Raw> {
   if (data.ok !== true) return bad();
   return data;
 }
-export async function getDeviceSheet(venueId: string, signal?: AbortSignal): Promise<DeviceSheet> {
-  return projectDeviceSheet(await rpc('ps_panel_device', { p_venue_id: venueId }, signal));
+// PE-443: printServerId selects ONE Print Server of the venue; reads never fall back to "the first".
+export async function getDeviceSheet(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<DeviceSheet> {
+  const data = await rpc('ps_panel_device', { p_venue_id: venueId, ...withPs(printServerId) }, signal);
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
+  return projectDeviceSheet(data);
 }
-export async function rotateWifi(venueId: string) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId }); }
-export async function rotateAdminCode(venueId: string) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId }); }
+export async function rotateWifi(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId, ...withPs(printServerId) }); }
+export async function rotateAdminCode(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId, ...withPs(printServerId) }); }
 // PE-440: platform staff only (others get 42501). Without confirm it is a read-only preview
 // (current -> canonical); with confirm the backend queues ONE wifi_rotate {canonical SSID, current key}.
 export type SsidAdoptResult = { current_ssid: string | null; canonical_ssid: string; state: 'preview' | 'pending' | 'applied'; command_id: string | null; already: boolean };
@@ -150,8 +156,8 @@ export function projectAdoptResult(v: unknown): SsidAdoptResult {
   return { current_ssid: typeof r.current_ssid === 'string' ? r.current_ssid : null, canonical_ssid: r.canonical_ssid, state: r.state as SsidAdoptResult['state'],
     command_id: str(r.command_id), already: r.already === true };
 }
-export async function adoptWifiSsid(venueId: string, confirm: boolean): Promise<SsidAdoptResult> {
-  try { return projectAdoptResult(await rpc('ps_admin_wifi_ssid_adopt', { p_venue_id: venueId, p_confirm: confirm })); }
+export async function adoptWifiSsid(venueId: string, confirm: boolean, printServerId?: string | null): Promise<SsidAdoptResult> {
+  try { return projectAdoptResult(await rpc('ps_admin_wifi_ssid_adopt', { p_venue_id: venueId, p_confirm: confirm, ...withPs(printServerId) })); }
   catch (error) { if ((error as { code?: string })?.code === '42501') throw new AdoptError('adopt.error.forbidden'); throw error; }
 }
 export async function renewCert(printServerId: string) { return action('ps_admin_cert_renew', { p_print_server_id: printServerId }); }
@@ -200,16 +206,20 @@ export function projectLegacyContext(v: unknown): LegacyContext {
     wifi_confirmed: s.wifi_confirmed === true, wifi_applied_at: str(s.wifi_applied_at), admin_code_confirmed: s.admin_code_confirmed === true, admin_code_applied_at: str(s.admin_code_applied_at),
     wifi_method: code(s.wifi_method), admin_code_method: code(s.admin_code_method) };
 }
-export async function getLegacyContext(venueId: string, signal?: AbortSignal): Promise<LegacyContext> {
-  const context = projectLegacyContext(await rpc('ps_admin_legacy_credentials_context', { p_venue_id: venueId }, signal));
+export async function getLegacyContext(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<LegacyContext> {
+  const data = await rpc('ps_admin_legacy_credentials_context', { p_venue_id: venueId, ...withPs(printServerId) }, signal);
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
+  const context = projectLegacyContext(data);
   if (context.venue_id !== venueId) throw new LegacyError('legacy.error.device_not_linked');
+  if (printServerId && context.print_server_id && context.print_server_id !== printServerId) throw new LegacyError('legacy.error.device_not_linked');
   return context;
 }
 export async function reconcileLegacy(ctx: LegacyContext, kind: LegacyKind, values: { ssid: string; psk: string } | { admin_code: string }, physicalCheck: boolean, evidence: string): Promise<{ applied_at: string | null }> {
   validateLegacyEvidence(ctx, kind, values, physicalCheck, evidence);
   // Re-read with the caller's session: staff permission and the live venue/device/CA link
   // must still hold. The mutating RPC remains the final atomic authority.
-  const live = await getLegacyContext(ctx.venue_id);
+  const live = await getLegacyContext(ctx.venue_id, undefined, ctx.print_server_id);
   if (live.venue_id !== ctx.venue_id || live.device_id !== ctx.device_id || live.serial !== ctx.serial || live.print_server_id !== ctx.print_server_id
     || normalizeSha256(live.ca_cert_der_sha256 ?? '') !== normalizeSha256(ctx.ca_cert_der_sha256 ?? '')) throw new LegacyError('legacy.error.device_not_linked');
   validateLegacyEvidence(live, kind, values, physicalCheck, evidence);

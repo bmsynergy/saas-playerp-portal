@@ -10,7 +10,7 @@ import { AdminListFilters, useAdminListFilters } from '../components/AdminListFi
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import { matchesText, matchesUtcDay } from '../lib/adminLists';
 import { PortalDialog } from '../components/PortalDialog';
-import { DeviceAdminSummary } from '../components/DeviceAdminSummary';
+import { adminSheetHref } from '../lib/psVenueDevices';
 import { VenueCombobox } from '../components/VenueCombobox';
 import { ManageDeviceDialog } from '../components/ManageDeviceDialog';
 
@@ -35,7 +35,6 @@ export function PrintDevicesPage({ devices, onChanged }: Props) {
   const [venue, setVenue] = useState<AdminVenueOption | null>(null);
   const [review, setReview] = useState(false);
   const [manageDevice, setManageDevice] = useState<InventoryDevice | null>(null);
-  const [sheetDevice, setSheetDevice] = useState<InventoryDevice | null>(null);
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const { filters, set, clear } = useAdminListFilters();
   const [assignment, setAssignment] = useState('');
@@ -95,8 +94,8 @@ export function PrintDevicesPage({ devices, onChanged }: Props) {
           <td data-label={t('fw.model')}><span className="fw-cell">{d.model_label ?? d.model}{d.label && <small className="ps-sub">{d.label}</small>}</span></td>
           <td data-label={t('adminDevice.currentFirmware')}>{d.software_version ?? t('dash.unknownVersion')}</td>
           <td data-label={t('state')}><span className="fw-cell"><span>{t(`dev.deviceStatus.${d.status}`)}{d.legacy ? ` · ${t('dev.legacy')}` : ''}</span>{d.print_server_id && <small className="ps-sub">{d.online ? t('ps.state.online') : t('ps.state.offline')}</small>}</span></td>
-          <td data-label={t('inv.venue')}>{d.venue_id ? <Link className="text-link" to={`/admin/print-servers/${encodeURIComponent(d.venue_id)}`}>{d.venue_name ?? d.venue_id}</Link> : t('inv.unassigned')}</td>
-          <td data-label={t('staff.actions')}><div className="inv-actions"><button type="button" className="button button-secondary" data-testid={`inv-open-${d.serial}`} onClick={() => setSheetDevice(d)}><ExternalLink size={15}/>{t('inv.openSheet')}</button><button type="button" className="button button-secondary" data-testid={`inv-manage-${d.serial}`} onClick={() => setManageDevice(d)}><Settings2 size={15}/>{t('inv.manage')}</button></div></td>
+          <td data-label={t('inv.venue')}>{d.venue_id ? <Link className="text-link" to={`/admin/tenants/${encodeURIComponent(d.venue_id)}/print-servers`}>{d.venue_name ?? d.venue_id}</Link> : t('inv.unassigned')}</td>
+          <td data-label={t('staff.actions')}><div className="inv-actions"><Link className="button button-secondary" data-testid={`inv-open-${d.serial}`} to={adminSheetHref(d.print_server_id ?? d.id)}><ExternalLink size={15}/>{t('inv.openSheet')}</Link><button type="button" className="button button-secondary" data-testid={`inv-manage-${d.serial}`} onClick={() => setManageDevice(d)}><Settings2 size={15}/>{t('inv.manage')}</button></div></td>
         </tr>)}
       </tbody></table></div>}
       <PrintListPagination pagination={pagination} id="devices"/>
@@ -106,6 +105,5 @@ export function PrintDevicesPage({ devices, onChanged }: Props) {
       {modelsLoading ? <p role="status">{t('dev.loading')}</p> : modelsError && !models.length ? <p role="alert" className="form-error">{modelsError}</p> : !review ? <div className="admin-device-form"><label className="field"><span>{t('fw.model')}</span><select value={form.model} onChange={e => { const next = models.find(m => m.model === e.target.value); setForm(f => ({ ...f, model: e.target.value, arch: next?.default_arch ?? '' })); }}><option value="">{t('adminDevice.chooseModel')}</option>{models.filter(m => m.active).map(m => <option key={m.model} value={m.model}>{m.label}</option>)}</select></label><label className="field"><span>{t('fw.arch')}</span><select value={form.arch} onChange={e => setForm(f => ({ ...f, arch: e.target.value }))} disabled={!model}><option value="">{t('adminDevice.chooseArch')}</option>{model?.archs.map(arch => <option key={arch} value={arch}>{arch}</option>)}</select></label><label className="field"><span>{t('adminDevice.label')}</span><input value={form.label} maxLength={80} onChange={e => setForm(f => ({ ...f, label: e.target.value }))}/></label><div className="field"><span>{t('inv.venue')}</span><VenueCombobox value={venue} onChange={setVenue} testId="inv-add-venue"/></div><p className="owner-section-lead admin-device-wide">{t('adminDevice.generatedNote')}</p></div> : <div className="admin-device-review"><p>{t('adminDevice.reviewNote')}</p><dl><div><dt>{t('fw.model')}</dt><dd>{model?.label}</dd></div><div><dt>{t('fw.arch')}</dt><dd>{form.arch}</dd></div><div><dt>{t('adminDevice.label')}</dt><dd>{form.label || t('notProvided')}</dd></div><div><dt>{t('inv.venue')}</dt><dd>{venue?.name ?? t('inv.unassigned')}</dd></div></dl><p>{t('adminDevice.generatedNote')}</p></div>}{modelsError && !!models.length && <p role="alert" className="form-error">{modelsError}</p>}
     </PortalDialog>}
     {manageDevice && <ManageDeviceDialog device={manageDevice} onClose={() => setManageDevice(null)} onChanged={onChanged} onCode={value => { setCode(value); setCopied(false); }} onResult={setResult}/>}
-    {sheetDevice && <PortalDialog title={sheetDevice.serial} titleId="admin-device-sheet-title" testId="admin-device-sheet-dialog" onClose={() => setSheetDevice(null)} actions={<button type="button" className="button button-secondary" onClick={() => setSheetDevice(null)}>{t('inv.codeDone')}</button>}><DeviceAdminSummary deviceId={sheetDevice.id} onChanged={onChanged}/>{sheetDevice.venue_id && <Link className="text-link" to={`/admin/print-servers/${encodeURIComponent(sheetDevice.venue_id)}`} onClick={() => setSheetDevice(null)}>{t('inv.openSheet')}</Link>}</PortalDialog>}
   </div>;
 }

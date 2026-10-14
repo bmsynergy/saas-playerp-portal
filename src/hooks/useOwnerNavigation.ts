@@ -12,6 +12,8 @@ export function useOwnerNavigation(venues: OwnerVenue[]) {
   const known = venues.some(venue => venue.id === selectedId);
   const requestedSection = params.get('section');
   const section: OwnerSection = requestedSection === 'details' || requestedSection === 'users' || requestedSection === 'print-servers' ? requestedSection : 'dashboard';
+  // PE-443: a device sheet inside the Print Servers section (stable device id; still checked by the backend).
+  const device = section === 'print-servers' ? params.get('device') ?? '' : '';
   const onSelect = (id: string) => {
     if (venues.some(venue => venue.id === id)) setParams({venue: id});
   };
@@ -19,5 +21,5 @@ export function useOwnerNavigation(venues: OwnerVenue[]) {
     if (known) setParams(next === 'dashboard' ? {venue: selectedId} : {venue: selectedId, section: next});
   };
   const onOverview = () => setParams({});
-  return {venues, selectedId, known, section, onSelect, onSection, onOverview};
+  return {venues, selectedId, known, section, device, onSelect, onSection, onOverview};
 }

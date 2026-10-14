@@ -8,6 +8,7 @@ import { AdminDateFilters } from '../components/AdminListFilters';
 import { matchesUtcDay } from '../lib/adminLists';
 import '../print-dashboard.css';
 import { PrintServersTabs } from './PrintFirmwaresPage';
+import { adminSheetHref } from '../lib/psVenueDevices';
 
 type Props = { inventory: Inventory; refreshing: boolean; stale: boolean; onRefresh: () => void };
 type Metric = { key: string; state: string; count: number; tone: string };
@@ -102,12 +103,12 @@ function InventoryRow({ item, t, formatDate }: { item: InventoryItem; t: (key: s
   const venue = item.assignment === 'unassigned' ? t('dash.unassigned') : item.venue_name || item.venue_id || t('dash.unknownVenue');
   const notice = item.issues.length ? item.issues.map(issue => `${t(issue.level === 'error' ? 'dash.issueError' : issue.level === 'warning' ? 'dash.issueWarning' : 'dash.issueOther')}: ${issue.code} (${issue.count})`).join(' · ') : item.error_count ? t('dash.errorsCount').replace('{n}', String(item.error_count)) : item.warning_count ? t('dash.warningsCount').replace('{n}', String(item.warning_count)) : t('dash.noNotices');
   return <tr data-testid={`inventory-row-${item.id}`} key={item.id}>
-    <td data-label={t('dash.device')}><strong>{item.label || item.hostname || item.device_id}</strong><small>{item.device_id}</small></td>
+    <td data-label={t('dash.device')}><strong>{item.label || item.hostname || item.serial || item.device_id}</strong><small>{item.serial || item.device_id}</small></td>
     <td data-label={t('dash.venue')}><strong>{venue}</strong>{item.assignment === 'unassigned' && item.last_venue_name && <small>{t('dash.previousVenue')}: {item.last_venue_name}</small>}</td>
     <td data-label={t('dash.state')}><span className={`print-dashboard-status print-dashboard-status-${status}`}><span aria-hidden="true"/>{t(`dash.${status}`)}</span></td>
     <td data-label={t('dash.version')}>{item.firmware_known && item.firmware_version ? item.firmware_version : t('dash.unknownVersion')}</td>
     <td data-label={t('dash.lastContact')}><time dateTime={item.last_seen_at || undefined}>{formatDate(item.last_seen_at)}</time></td>
     <td data-label={t('dash.notices')}><span className={item.error_count ? 'print-dashboard-issue-error' : ''}>{notice}</span>{item.last_issue_at && <small>{formatDate(item.last_issue_at)}</small>}</td>
-    <td data-label={t('staff.actions')}>{item.venue_id && item.assignment === 'assigned' ? <Link to={`/admin/print-servers/${encodeURIComponent(item.venue_id)}`} className="staff-action-link">{t('ps.open')}<span className="sr-only"> {venue}</span><ArrowRight size={14}/></Link> : <span className="print-dashboard-no-detail">{t('dash.noDetail')}</span>}</td>
+    <td data-label={t('staff.actions')}><Link to={adminSheetHref(item.id)} className="staff-action-link" data-testid={`inventory-open-${item.id}`}>{t('ps.open')}<span className="sr-only"> {item.label || item.hostname || item.serial || venue}</span><ArrowRight size={14}/></Link></td>
   </tr>;
 }

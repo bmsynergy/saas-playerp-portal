@@ -7,11 +7,11 @@ import { PortalDialog } from './PortalDialog';
 // PE-440: explicit, per-device staff action to move a PS (typically legacy) to the canonical recovery
 // SSID derived from its platform serial. Only the SSID changes: WPA2 key, admin code, hostname,
 // certificate and token stay. The sheet and label keep the previous name until the device confirms.
-type Props = { venueId: string; adoption: SsidAdoption; onChanged: () => void };
+type Props = { venueId: string; printServerId?: string | null; adoption: SsidAdoption; onChanged: () => void };
 type Dialog = { phase: 'loading' } | { phase: 'confirm'; preview: SsidAdoptResult } | { phase: 'sending'; preview: SsidAdoptResult }
   | { phase: 'sent'; result: SsidAdoptResult } | { phase: 'error'; key: string };
 
-export function PrintServerSsidAdoption({ venueId, adoption, onChanged }: Props) {
+export function PrintServerSsidAdoption({ venueId, printServerId = null, adoption, onChanged }: Props) {
   const { t } = useLocale();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const errorKey = (error: unknown) => error instanceof AdoptError ? error.key : 'adopt.error.other';
@@ -19,14 +19,14 @@ export function PrintServerSsidAdoption({ venueId, adoption, onChanged }: Props)
   async function open() {
     setDialog({ phase: 'loading' });
     try {
-      const preview = await adoptWifiSsid(venueId, false);
+      const preview = await adoptWifiSsid(venueId, false, printServerId);
       setDialog(preview.state === 'preview' ? { phase: 'confirm', preview } : { phase: 'sent', result: preview });
       if (preview.state !== 'preview') onChanged();
     } catch (error) { setDialog({ phase: 'error', key: errorKey(error) }); }
   }
   async function accept(preview: SsidAdoptResult) {
     setDialog({ phase: 'sending', preview });
-    try { setDialog({ phase: 'sent', result: await adoptWifiSsid(venueId, true) }); }
+    try { setDialog({ phase: 'sent', result: await adoptWifiSsid(venueId, true, printServerId) }); }
     catch (error) { setDialog({ phase: 'error', key: errorKey(error) }); }
     finally { onChanged(); }
   }

@@ -3,6 +3,8 @@ import { PortalError } from './errors';
 export type InventoryIssue = { level: string; source: string; code: string; count: number; at: string | null };
 export type InventoryItem = {
   id: string; device_id: string | null; label: string | null; hostname: string | null;
+  // PE-443: one item per Print Server (unassigned inventory devices too).
+  serial: string | null; inventory_device_id: string | null;
   assignment: 'assigned' | 'unassigned'; venue_id: string | null; venue_name: string | null; last_venue_name: string | null;
   connection: 'online' | 'offline' | 'unknown' | 'unassigned';
   last_seen_at: string | null; last_report_at: string | null; firmware_version: string | null; firmware_known: boolean;
@@ -39,6 +41,7 @@ export function projectInventory(value: unknown): Inventory {
     if (typeof row.firmware_known !== 'boolean' || !Array.isArray(row.issues)) return bad();
     return {
       id, device_id: str(row.device_id), label: str(row.label), hostname: str(row.hostname), assignment,
+      serial: str(row.serial), inventory_device_id: str(row.inventory_device_id),
       venue_id, venue_name: str(row.venue_name), last_venue_name: str(row.last_venue_name),
       connection: connection as InventoryItem['connection'],
       last_seen_at: date(row.last_seen_at), last_report_at: date(row.last_report_at),
@@ -63,7 +66,7 @@ export function filterInventory(items: InventoryItem[], filter: InventoryFilter)
     if (filter.venue && (filter.venue === ASSIGNED_VENUE ? item.assignment !== 'assigned' : filter.venue === UNASSIGNED_VENUE ? item.assignment !== 'unassigned' : true)) return false;
     if (filter.version && (filter.version === UNKNOWN_VERSION ? item.firmware_known : !item.firmware_known || item.firmware_version !== filter.version)) return false;
     if (filter.state && (filter.state === 'errors' ? item.error_count === 0 : filter.state === 'warnings' ? item.warning_count === 0 : item.connection !== filter.state)) return false;
-    return !query || [item.label, item.hostname, item.device_id, item.venue_name].some(value => value?.toLocaleLowerCase().includes(query));
+    return !query || [item.label, item.hostname, item.device_id, item.serial, item.venue_name].some(value => value?.toLocaleLowerCase().includes(query));
   });
 }
 export function inventoryVersions(items: InventoryItem[]): (string | null)[] {

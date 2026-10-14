@@ -9,13 +9,13 @@ import { FirmwareUpdateAction } from './FirmwareUpdateAction';
 
 type Confirmation = { printServerId: string; deviceId: string; editionId: string; version: string; installed: string };
 
-export function PrintServerOtaBlock({ venueId }: { venueId: string }) {
+export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId: string; printServerId?: string | null }) {
   const { t, locale } = useLocale();
   const { session } = useAuth();
   const [confirm, setConfirm] = useState<Confirmation | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
-  const q = useQuery({ queryKey: ['ps-panel-ota', session?.user.id, venueId], queryFn: ({ signal }) => getPanelOta(venueId, signal), refetchInterval: 10_000 });
+  const q = useQuery({ queryKey: ['ps-panel-ota', session?.user.id, venueId, printServerId], queryFn: async ({ signal }) => (await getPanelOta(venueId, signal, printServerId)).filter(item => !printServerId || item.print_server_id === printServerId), refetchInterval: 10_000 });
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : null; }, [locale]);
   const label = (prefix: string, v: string | null) => { if (!v) return null; const k = `${prefix}.${v}`; const out = t(k); return out === k ? v : out; };
   const canOffer = (p: PanelOta) => !!(p.can_update && p.device_id && p.latest_stable?.edition_id && p.installed_version && !q.isFetching && !q.isError);
@@ -44,7 +44,7 @@ export function PrintServerOtaBlock({ venueId }: { venueId: string }) {
       const refreshed = await q.refetch();
       const fresh = refreshed.data?.find(item => item.print_server_id === confirm.printServerId);
       if (refreshed.isError || !matches(fresh, confirm)) { setConfirm(null); setNotice(t('adminDevice.updateChanged')); return; }
-      await updateOwnedDevice(venueId, confirm.deviceId, confirm.editionId, confirm.installed);
+      await updateOwnedDevice(venueId, confirm.deviceId, confirm.editionId, confirm.installed, printServerId);
       setConfirm(null); setNotice(t('adminDevice.updateQueued'));
       await q.refetch();
     } catch (error) {

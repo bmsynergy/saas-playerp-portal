@@ -170,8 +170,8 @@ export async function deployEdition(editionId: string, to: DeployTarget): Promis
   return { targets: Array.isArray(data.targets) ? data.targets.length : num(data.targets) ?? 0 };
 }
 
-export async function getPanelOta(venueId: string, signal?: AbortSignal): Promise<PanelOta[]> {
-  const data = obj(await rpc('ps_panel_ota', { p_venue_id: venueId }, signal)) ?? bad();
+export async function getPanelOta(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<PanelOta[]> {
+  const data = obj(await rpc('ps_panel_ota', { p_venue_id: venueId, ...(printServerId ? { p_print_server_id: printServerId } : {}) }, signal)) ?? bad();
   if (data.ok !== true) throw new PsError('ota.error.other');
   return list(data.print_servers).map(item => {
     const p = obj(item) ?? bad();
@@ -189,8 +189,8 @@ export async function getPanelOta(venueId: string, signal?: AbortSignal): Promis
 }
 
 // Re-read the exact venue/device before confirmation; the server repeats all checks atomically.
-export async function updateOwnedDevice(venueId: string, deviceId: string, editionId: string, expectedInstalled: string): Promise<void> {
-  const fresh = (await getPanelOta(venueId)).find(p => p.device_id === deviceId);
+export async function updateOwnedDevice(venueId: string, deviceId: string, editionId: string, expectedInstalled: string, printServerId?: string | null): Promise<void> {
+  const fresh = (await getPanelOta(venueId, undefined, printServerId)).find(p => p.device_id === deviceId && (!printServerId || p.print_server_id === printServerId));
   if (!fresh?.can_update || fresh.latest_stable?.edition_id !== editionId || !expectedInstalled || fresh.installed_version !== expectedInstalled) throw new PsError('adminDevice.updateChanged');
   await call({action: 'update_owned_device', venue_id: venueId, device_id: deviceId, edition_id: editionId, expected_installed_version: expectedInstalled});
 }

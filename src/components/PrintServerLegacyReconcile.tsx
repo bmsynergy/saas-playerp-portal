@@ -13,12 +13,12 @@ import { useLocale } from '../locales';
 type Result = { ok: boolean; text: string };
 
 
-export function PrintServerLegacyReconcile({ venueId }: { venueId: string }) {
+export function PrintServerLegacyReconcile({ venueId, printServerId = null }: { venueId: string; printServerId?: string | null }) {
   const { t, locale } = useLocale();
   const { session } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = ['ps-legacy-context', session?.user.id, venueId] as const;
-  const context = useQuery({ queryKey, queryFn: ({ signal }) => getLegacyContext(venueId, signal), gcTime: 0, retry: false, enabled: !!session?.user.id });
+  const queryKey = ['ps-legacy-context', session?.user.id, venueId, printServerId] as const;
+  const context = useQuery({ queryKey, queryFn: ({ signal }) => getLegacyContext(venueId, signal, printServerId), gcTime: 0, retry: false, enabled: !!session?.user.id });
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const errorKey = context.isError ? context.error instanceof LegacyError ? context.error.key : psErrorKey(context.error) : null;
   // Not platform staff: the backend answers 42501; this block simply does not exist for them.

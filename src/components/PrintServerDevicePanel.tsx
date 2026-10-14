@@ -24,11 +24,11 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   const {session} = useAuth();
   const localPending = useRef(false);
   const inFlight = useRef<string | null>(null);
-  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal),
+  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId, printServerId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal, printServerId),
     gcTime: 0, refetchOnMount: 'always', retry: false,
     refetchInterval: query => deviceSheetPollInterval(query.state.data, localPending.current) });
   // Reuse the existing read-only PE-428 context; a link is only offered when authorized and available.
-  const legacy = useQuery({ queryKey: ['ps-legacy-context', session?.user.id, venueId], queryFn: ({ signal }) => getLegacyContext(venueId, signal),
+  const legacy = useQuery({ queryKey: ['ps-legacy-context', session?.user.id, venueId, printServerId], queryFn: ({ signal }) => getLegacyContext(venueId, signal, printServerId),
     enabled: adminScope && sheet.data?.is_platform_admin === true && sheet.data?.device?.legacy === true, retry: false });
   const [visibility, setVisibility] = useState({ scope: '', psk: false, code: false });
   const [busy, setBusy] = useState(false);
@@ -82,7 +82,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   const adminCode = data?.credentialAccess ? data.appliedAdminCode : null;
   // Revealed values belong to this exact identity and confirmed snapshot. A new snapshot
   // is masked during render itself, before effects run (no one-frame disclosure).
-  const revealScope = JSON.stringify([session?.user.id, venueId, data?.device?.id, data?.credentialAccess, wifi?.ssid, wifi?.psk, adminCode?.code]);
+  const revealScope = JSON.stringify([session?.user.id, venueId, printServerId, data?.device?.id, data?.credentialAccess, wifi?.ssid, wifi?.psk, adminCode?.code]);
   const hidden = { psk: false, code: false };
   const show = visibility.scope === revealScope ? visibility : hidden;
   function setShow(next: typeof hidden | ((previous: typeof hidden) => typeof hidden)) {
@@ -90,7 +90,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   }
 
 
-  useEffect(() => { setShow({ psk: false, code: false }); }, [session?.user.id, venueId, data?.credentialAccess]);
+  useEffect(() => { setShow({ psk: false, code: false }); }, [session?.user.id, venueId, printServerId, data?.credentialAccess]);
   useEffect(() => { setShow({ psk: false, code: false }); }, [wifi?.ssid, wifi?.psk, adminCode?.code]);
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
     try {
       // A timeout only stops waiting; it must never retry the write.
       const response = await Promise.race([
-        kind === 'wifi' ? rotateWifi(venueId) : rotateAdminCode(venueId),
+        kind === 'wifi' ? rotateWifi(venueId, printServerId) : rotateAdminCode(venueId, printServerId),
         new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('response_uncertain')), 20_000); }),
       ]);
       if (scopeRef.current !== scope) return;
@@ -154,7 +154,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   }
 
   const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.enroll')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
-  const label = <PrintServerLabel key={`${session?.user.id}:${venueId}`} userId={session?.user.id} venueId={venueId} sheet={data} accessLost={accessLost} sheetUnavailable={uncertain} pendingWifi={credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
+  const label = <PrintServerLabel key={`${session?.user.id}:${venueId}:${printServerId ?? ''}`} userId={session?.user.id} venueId={venueId} printServerId={printServerId} sheet={data} accessLost={accessLost} sheetUnavailable={uncertain} pendingWifi={credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
   if (accessLost || (sheet.isError && !data)) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="alert" className="ps-cert-small">{t(accessLost ? accessError! : 'genericError')}</p></section></>;
   if (!data) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="status" className="ps-cert-small">{t('dev.loading')}</p></section></>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
@@ -200,7 +200,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
         </div> : <p className="owner-section-lead">{t('dev.credentialsRestricted')} <a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></p>}
         {!data.credentialAccess && <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>}
         {adminScope && data.is_platform_admin && data.ssidAdoption && (['available', 'pending', 'failed'].includes(data.ssidAdoption.state) || (data.ssidAdoption.state === 'applied' && data.ssidAdoption.reprint_label))
-          && <PrintServerSsidAdoption venueId={venueId} adoption={data.ssidAdoption} onChanged={() => void sheet.refetch()}/>}
+          && <PrintServerSsidAdoption venueId={venueId} printServerId={printServerId} adoption={data.ssidAdoption} onChanged={() => void sheet.refetch()}/>}
         {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t(`dev.waitReason.${pendingReason(o, data.ps_online)}`)}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}{o.status === 'failed' && o.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small></li>)}</ul></div>}
       </>}
       {label}

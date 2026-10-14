@@ -17,6 +17,7 @@ export type PanelPrinter = {
   id: string; label: string; location: string | null; model: string | null; mac_address: string | null; paper_width_chars: number | null;
   is_active: boolean; print_route: string | null; last_seen_at: string | null; last_error: string | null;
   last_report: PrinterReport | null; last_report_at: string | null; pending_jobs: number; workstations: Workstation[]; created_at: string | null;
+  print_server_id?: string | null;
 };
 export type ScanCandidate = { mac_address: string | null; local_address: string | null; model: string | null; hostname: string | null; port: number | null; reachable: boolean | null; printer_id: string | null };
 export type ScanResult = { candidates: ScanCandidate[]; count: number; scanned_at: string | null; network: string | null };
@@ -50,6 +51,8 @@ const codes: Record<string, string> = {
   no_device_credentials: 'dev.error.no_device_credentials', device_offline: 'dev.error.device_offline',
   device_not_assigned: 'dev.error.device_not_assigned',
   wifi_not_confirmed: 'dev.error.wifi_not_confirmed', admin_code_not_confirmed: 'dev.error.admin_code_not_confirmed',
+  ps_selection_required: 'ps.error.selectionRequired', print_server_not_in_venue: 'accessDenied',
+  label_mismatch: 'ps.error.labelMismatch', same_print_server: 'ps.error.samePrintServer', print_server_not_active: 'ps.error.printServerNotActive',
   forbidden: 'accessDenied', not_authorized: 'accessDenied', access_denied: 'accessDenied',
 };
 // Known backend slugs become localized keys; raw server text is never shown.
@@ -106,7 +109,7 @@ function printer(v: unknown): PanelPrinter {
   return { id: p.id, label: str(p.label) ?? '', location: str(p.location), model: str(p.model), mac_address: str(p.mac_address), paper_width_chars: num(p.paper_width_chars),
     is_active: p.is_active === true, print_route: str(p.print_route), last_seen_at: str(p.last_seen_at), last_error: str(p.last_error),
     last_report: report ? { reachable: bool(report.reachable), local_address: str(report.local_address), model: str(report.model), state: str(report.state), error: str(report.error), reported_at: str(report.reported_at) } : null,
-    last_report_at: str(p.last_report_at), pending_jobs: count(p.pending_jobs), workstations: list(p.workstations).map(workstation), created_at: str(p.created_at) };
+    last_report_at: str(p.last_report_at), pending_jobs: count(p.pending_jobs), workstations: list(p.workstations).map(workstation), created_at: str(p.created_at), ...(p.print_server_id !== undefined ? { print_server_id: str(p.print_server_id) } : {}) };
 }
 function scanResult(v: unknown): ScanResult | null {
   const r = obj(v);
@@ -146,6 +149,25 @@ export function projectPanelState(v: unknown): PanelState {
     pending_enrollment: pendingEnrollment(s.pending_enrollment), printers: list(s.printers).map(printer), last_scan: projectScan(s.last_scan) };
 }
 
+// PE-443: several active Print Servers per venue. Every per-device read/action passes the
+// selected print_server_id explicitly; without it the backend may answer selection_required
+// and the portal never picks one on its own.
+export class SelectionRequiredError extends PsError {
+  constructor(public print_servers: PsChoice[]) { super('ps.error.selectionRequired'); }
+}
+export type PsChoice = { id: string; label: string | null; hostname: string | null; serial: string | null; inventory_device_id: string | null; software_version: string | null; online: boolean; last_seen_at: string | null; printers_total: number };
+function psChoice(v: unknown): PsChoice | null {
+  const c = obj(v);
+  return c && typeof c.id === 'string' ? { id: c.id, label: str(c.label), hostname: str(c.hostname), serial: str(c.serial), inventory_device_id: str(c.inventory_device_id),
+    software_version: str(c.software_version), online: c.online === true, last_seen_at: str(c.last_seen_at), printers_total: count(c.printers_total) } : null;
+}
+export function selectionRequired(data: unknown): SelectionRequiredError | null {
+  const d = obj(data);
+  if (!d || (d.selection_required !== true && d.error !== 'ps_selection_required')) return null;
+  return new SelectionRequiredError(list(d.print_servers).map(psChoice).filter((c): c is PsChoice => !!c));
+}
+export const withPs = (printServerId?: string | null) => printServerId ? { p_print_server_id: printServerId } : {};
+
 async function rpc(name: string, params: Record<string, unknown> = {}, signal?: AbortSignal): Promise<unknown> {
   const req = supabase.rpc(name, params);
   const { data, error } = await (signal ? req.abortSignal(signal) : req);
@@ -155,6 +177,8 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
 // Write RPCs answer {ok:true,...} or {ok:false,error:'slug'}.
 async function action(name: string, params: Record<string, unknown>): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
   if (data.ok !== true) throw psErrorFromCode(data.error);
   return data;
 }
@@ -165,17 +189,23 @@ export async function getFleet(signal?: AbortSignal): Promise<FleetRow[]> {
   const data = await rpc('portal_ps_fleet', {}, signal);
   return Array.isArray(data) ? data.map(projectFleetRow) : bad();
 }
-export async function getPanelState(venueId: string, signal?: AbortSignal, scope: 'owner' | 'admin' = 'admin'): Promise<PanelState | null> {
-  const data = await rpc('ps_panel_state', { p_venue_id: venueId }, signal);
+export async function getPanelState(venueId: string, signal?: AbortSignal, scope: 'owner' | 'admin' = 'admin', printServerId?: string | null): Promise<PanelState | null> {
+  const data = await rpc('ps_panel_state', { p_venue_id: venueId, ...withPs(printServerId) }, signal);
   if (data === null) return null;
+  const selection = selectionRequired(data);
+  if (selection) throw selection;
   const state = projectPanelState(data);
   if (state.venue_id !== venueId) throw new PortalError('accessDenied');
+  // The answer must be about the requested device, never another PS of the venue.
+  if (printServerId && state.print_server && state.print_server.id !== printServerId) throw new PortalError('accessDenied');
   // Device notes are not part of the owner view; omit them before caching.
   if (scope === 'owner' && state.print_server?.last_status) state.print_server.last_status.note = null;
   return state;
 }
-export async function createEnrollment(venueId: string, label: string): Promise<Enrollment> {
-  const data = await action('ps_panel_create_enrollment', { p_venue_id: venueId, p_label: label.trim() || null, p_ttl_minutes: 60 });
+// Without replacesPrintServerId the enrollment ADDS a Print Server to the venue; with it the new
+// device replaces that one when it activates.
+export async function createEnrollment(venueId: string, label: string, replacesPrintServerId?: string | null): Promise<Enrollment> {
+  const data = await action('ps_panel_create_enrollment', { p_venue_id: venueId, p_label: label.trim() || null, p_ttl_minutes: 60, ...withPs(replacesPrintServerId) });
   return typeof data.enrollment_code === 'string' && data.enrollment_code
     ? { print_server_id: str(data.print_server_id), enrollment_code: data.enrollment_code, expires_at: str(data.expires_at) } : bad();
 }
@@ -185,8 +215,8 @@ export async function revokePrintServer(printServerId: string): Promise<{ jobs_c
 }
 // Public certificate only. Anything that looks like key material is refused here,
 // before it can reach a component or a file.
-export async function getCaCert(venueId: string): Promise<CertDownload> {
-  const data = await action('ps_panel_ca_cert', { p_venue_id: venueId });
+export async function getCaCert(venueId: string, printServerId?: string | null): Promise<CertDownload> {
+  const data = await action('ps_panel_ca_cert', { p_venue_id: venueId, ...withPs(printServerId) });
   const pem = typeof data.ca_cert_pem === 'string' ? data.ca_cert_pem : '';
   if (/PRIVATE\s+KEY/i.test(pem)) throw new PsError('ps.error.privateKeyRefused');
   let computed: string;
@@ -197,8 +227,8 @@ export async function getCaCert(venueId: string): Promise<CertDownload> {
   return { pem, filename: certificateFilename(venueId), derFingerprint: computed,
     pemSha256: str(data.ca_cert_pem_sha256), fingerprint: str(data.ca_cert_fingerprint), updated_at: str(data.ca_cert_updated_at) };
 }
-export async function requestScan(venueId: string): Promise<ScanRequest> {
-  const data = await action('ps_panel_request_scan', { p_venue_id: venueId });
+export async function requestScan(venueId: string, printServerId?: string | null): Promise<ScanRequest> {
+  const data = await action('ps_panel_request_scan', { p_venue_id: venueId, ...withPs(printServerId) });
   return typeof data.command_id === 'string'
     ? { command_id: data.command_id, status: str(data.status) ?? 'pending', already: data.already === true, expires_at: str(data.expires_at), ps_online: data.ps_online === true } : bad();
 }
@@ -207,12 +237,12 @@ export async function getCommand(commandId: string): Promise<PanelScan> {
   return projectScan(data) ?? bad();
 }
 // Read-only: both ids travel together, so the backend never answers with another venue's or printer's jobs.
-export async function getPrinterJobs(venueId: string, printerId: string, limit: number, offset: number, filters: ListFilterState = EMPTY_LIST_FILTERS): Promise<PrinterJobsPage> {
-  return projectPrinterJobs(await action('ps_panel_printer_jobs', { p_venue_id: venueId, p_printer_id: printerId, p_limit: limit, p_offset: offset, p_query: filters.query.trim() || null, p_status: filters.status || null, ...utcBounds(filters.from, filters.to) }));
+export async function getPrinterJobs(venueId: string, printerId: string, limit: number, offset: number, filters: ListFilterState = EMPTY_LIST_FILTERS, printServerId?: string | null): Promise<PrinterJobsPage> {
+  return projectPrinterJobs(await action('ps_panel_printer_jobs', { p_venue_id: venueId, p_printer_id: printerId, p_limit: limit, p_offset: offset, p_query: filters.query.trim() || null, p_status: filters.status || null, ...utcBounds(filters.from, filters.to), ...withPs(printServerId) }));
 }
-export async function addPrinter(venueId: string, input: NewPrinter): Promise<{ id: string | null; label: string | null }> {
+export async function addPrinter(venueId: string, input: NewPrinter, printServerId?: string | null): Promise<{ id: string | null; label: string | null }> {
   const data = await action('ps_panel_add_printer', { p_venue_id: venueId, p_label: input.label.trim(), p_mac_address: input.mac_address.trim(),
-    p_model: input.model.trim() || null, p_location: input.location.trim() || null });
+    p_model: input.model.trim() || null, p_location: input.location.trim() || null, ...withPs(printServerId) });
   const created = obj(data.printer);
   return { id: str(created?.id), label: str(created?.label) };
 }
@@ -234,7 +264,14 @@ export async function removePrinter(printerId: string, force: boolean): Promise<
   if (data.error === 'printer_in_use' && !force) return { removed: false, workstations: list(data.workstations).map(workstation), pending_jobs: count(data.pending_jobs) };
   throw psErrorFromCode(data.error);
 }
-export const printServerApi = { createEnrollment, revokePrintServer, getCaCert, requestScan, getCommand, getPrinterJobs, addPrinter, renamePrinter, setPrinterActive, testPrint, removePrinter };
+// PE-443: explicit replacement between two active PS of the same venue; both labels typed to confirm.
+export async function replacePrintServer(fromId: string, toId: string, fromLabel: string, toLabel: string): Promise<Raw> {
+  return action('ps_panel_replace_print_server', { p_from: fromId, p_to: toId, p_confirm_from_label: fromLabel, p_confirm_to_label: toLabel });
+}
+export async function setPrinterPrintServer(printerId: string, printServerId: string): Promise<void> {
+  await action('ps_panel_set_printer_print_server', { p_printer_id: printerId, p_print_server_id: printServerId });
+}
+export const printServerApi = { createEnrollment, revokePrintServer, getCaCert, requestScan, getCommand, getPrinterJobs, addPrinter, renamePrinter, setPrinterActive, testPrint, removePrinter, replacePrintServer };
 export type PrintServerApi = typeof printServerApi;
 // Wraps every call so the route can react to a failure (expired session, lost
 // permission) without the page knowing about authentication.
@@ -245,7 +282,18 @@ export function withFailureHook(api: PrintServerApi, onFailure: (key: string) =>
   };
   return { createEnrollment: wrap(api.createEnrollment), revokePrintServer: wrap(api.revokePrintServer), getCaCert: wrap(api.getCaCert), requestScan: wrap(api.requestScan),
     getCommand: wrap(api.getCommand), getPrinterJobs: wrap(api.getPrinterJobs), addPrinter: wrap(api.addPrinter), renamePrinter: wrap(api.renamePrinter), setPrinterActive: wrap(api.setPrinterActive),
-    testPrint: wrap(api.testPrint), removePrinter: wrap(api.removePrinter) };
+    testPrint: wrap(api.testPrint), removePrinter: wrap(api.removePrinter), replacePrintServer: wrap(api.replacePrintServer) };
+}
+// PE-443: the device sheet binds ONE Print Server. Every venue-scoped call carries its id, so no
+// read or action can land on another device of the same venue. An enrollment from the sheet
+// replaces this device when the new one activates.
+export function bindPrintServer(api: PrintServerApi, printServerId: string): PrintServerApi {
+  return { ...api,
+    createEnrollment: (venueId, label) => api.createEnrollment(venueId, label, printServerId),
+    getCaCert: venueId => api.getCaCert(venueId, printServerId),
+    requestScan: venueId => api.requestScan(venueId, printServerId),
+    getPrinterJobs: (venueId, printerId, limit, offset, filters) => api.getPrinterJobs(venueId, printerId, limit, offset, filters, printServerId),
+    addPrinter: (venueId, input) => api.addPrinter(venueId, input, printServerId) };
 }
 
 // The panel contains the full printer set for this venue. Revoked history is not

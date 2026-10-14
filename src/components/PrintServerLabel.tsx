@@ -6,15 +6,15 @@ import { getRecoveryLabel, type RecoveryLabelMissing } from '../lib/psRecoveryLa
 import { generateLabelPng, labelFilename, labelFingerprint, printLabel } from '../lib/psLabel';
 import { useLocale } from '../locales';
 
-type Props = { venueId: string; userId?: string; sheet?: DeviceSheet; pendingWifi?: boolean; accessLost?: boolean; sheetUnavailable?: boolean };
+type Props = { venueId: string; printServerId?: string | null; userId?: string; sheet?: DeviceSheet; pendingWifi?: boolean; accessLost?: boolean; sheetUnavailable?: boolean };
 type Action = 'preview' | 'download' | 'print';
 
 // A preview is opt-in because its image contains the confirmed recovery password.
-export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, accessLost = false, sheetUnavailable = false }: Props) {
+export function PrintServerLabel({ venueId, printServerId = null, userId, sheet, pendingWifi = false, accessLost = false, sheetUnavailable = false }: Props) {
   const { t } = useLocale();
   const queryClient = useQueryClient();
-  const queryKey = ['ps-recovery-label', userId, venueId] as const;
-  const labelQuery = useQuery({ queryKey, queryFn: ({ signal }) => getRecoveryLabel(venueId, signal), refetchInterval: query => pendingWifi || query.state.data?.wifiRotationPending || sheet?.enroll?.state === 'pending' ? 5_000 : false, gcTime: 0, enabled: !!userId && !!venueId });
+  const queryKey = ['ps-recovery-label', userId, venueId, printServerId] as const;
+  const labelQuery = useQuery({ queryKey, queryFn: ({ signal }) => getRecoveryLabel(venueId, signal, printServerId), refetchInterval: query => pendingWifi || query.state.data?.wifiRotationPending || sheet?.enroll?.state === 'pending' ? 5_000 : false, gcTime: 0, enabled: !!userId && !!venueId });
   const [preview, setPreview] = useState<{ url: string; fingerprint: string; scope: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
   const data = state?.ready && state.label ? state.label : null;
   const fingerprint = data ? labelFingerprint(data) : null;
   // A sheet update or rotation hides a preview during render, before effects run.
-  const scope = JSON.stringify([userId, venueId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable]);
+  const scope = JSON.stringify([userId, venueId, printServerId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable]);
   const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
     && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
   const ready = !!data && !accessLost && !sheetUnavailable && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
@@ -78,7 +78,7 @@ export function PrintServerLabel({ venueId, userId, sheet, pendingWifi = false, 
     setNotice(null);
     try {
       // Read again for every action; an older preview is never an export source.
-      const fresh = await getRecoveryLabel(venueId, abort.signal);
+      const fresh = await getRecoveryLabel(venueId, abort.signal, printServerId);
       if (!currentRun()) return;
       const current = fresh.ready && !fresh.wifiRotationPending ? fresh.label : null;
       if (!current || labelFingerprint(current) !== fingerprint) {

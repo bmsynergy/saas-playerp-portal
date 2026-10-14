@@ -9,8 +9,12 @@ import { VenueUsersTab } from './pages/VenueUsersTab';
 import { getOwnerUsers, ownerUsersRequest, type OwnerUser, type OwnerUserAction, type OwnerUserInvite } from './lib/ownerUsers';
 import { OwnerUsersSection } from './pages/OwnerUsersSection';
 import { InvitationPage } from './pages/InvitationPage';
-import { getFleet, getInventory, getPanelState, printServerApi, psErrorKey, withFailureHook, panelFleetRow } from './lib/printServerApi';
-import { PrintFleetPage } from './pages/PrintFleetPage';
+import { bindPrintServer, createEnrollment, getInventory, getPanelState, printServerApi, psErrorKey, setPrinterPrintServer, withFailureHook, SelectionRequiredError } from './lib/printServerApi';
+import { adminSheetHref, deviceName, getVenueDevices, ownerSheetHref, resolveDeviceSheet, type VenueDevice } from './lib/psVenueDevices';
+import { VenuePrintServersPage } from './pages/VenuePrintServersPage';
+import { PrintServersListPage } from './pages/PrintServersListPage';
+import { DeviceAdminSummary } from './components/DeviceAdminSummary';
+import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
 import { getFirmwares } from './lib/firmware';
@@ -102,7 +106,7 @@ function AuthRoute({mode}:{mode:'login'|'forgot'|'password'}) {
 }
 function OwnerRoute() {
   const access=useAccess();
-  const {venues,selectedId,known,section,onSelect}=useOwnerNavigation(access.data?.owner_venues??[]);
+  const {venues,selectedId,known,section,device,onSelect}=useOwnerNavigation(access.data?.owner_venues??[]);
   const detail=useOwnerVenue(known?selectedId:'');
   if(!selectedId)return <OwnerPage venues={venues} selectedId="" section={section} onSelect={onSelect}/>;
   if(!known)return <StateView kind="denied"/>;
@@ -113,7 +117,7 @@ function OwnerRoute() {
   if(section==='users'&&selected.is_owner!==true)return <StateView kind="denied"/>;
   return <OwnerPage key={selectedId} venues={venues.map(venue=>venue.id===selectedId?selected:venue)} selectedId={selectedId} section={section} onSelect={onSelect}
     users={section==='users'&&selected.is_owner===true?<OwnerUsersData key={selectedId} venueId={selectedId}/>:undefined}
-    printServers={section==='print-servers'?<VenuePrintServerData key={selectedId} venue={selected} scope="owner"/>:undefined}/>;
+    printServers={section==='print-servers'?(device?<DeviceSheetData key={`${selectedId}:${device}`} id={device} scope="owner" expectedVenueId={selectedId}/>:<VenueDevicesData key={selectedId} venue={selected} scope="owner"/>):undefined}/>;
 }
 // Members of the owner's venue: one request at a time, localized errors, and a fresh
 // access check whenever the backend refuses (it decides ownership on every call).
@@ -180,7 +184,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
-    printServers={canManageUsers?(tab==='print-server-detail'?<VenuePrintServerData key={id} venue={data.data.venue} scope="admin"/>:<VenueFleetData key={id} venue={data.data.venue}/>):undefined}/>;
+    printServers={canManageUsers?(tab==='print-server-detail'?<VenueRedirect key={id} venueId={id}/>:<VenueDevicesData key={id} venue={data.data.venue} scope="admin"/>):undefined}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -265,18 +269,15 @@ function VenueUsersData({venueId}:{venueId:string}) {
 }
 // Print Server fleet: platform Admin only (the same gate as venue users and Staff).
 // The backend validates every RPC again and answers 42501 when it refuses.
-function useFleet() {
-  const {session}=useAuth();
-  return useQuery({queryKey:['ps-fleet',session?.user.id],queryFn:({signal})=>getFleet(signal),refetchInterval:30_000});
-}
-function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false,updates=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean;updates?:boolean}) {
-  const access=useAccess(); const {venueId=''}=useParams();
+function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false,updates=false,device=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean;updates?:boolean;device?:boolean}) {
+  const access=useAccess(); const {venueId='',id=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
   if (firmwares) return <PrintFirmwaresData/>;
   if (inventory) return <PrintDevicesData/>;
   if (updates) return <PrintUpdatesData/>;
-  if (!detail) return list ? <PrintFleetData/> : <PrintDashboardData/>;
-  return UUID.test(venueId) ? <PrintServerDetailData key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
+  if (device) return UUID.test(id) ? <DeviceSheetData key={id} id={id} scope="admin"/> : <StateView kind="notFound"/>;
+  if (!detail) return list ? <PrintServersListData/> : <PrintDashboardData/>;
+  return UUID.test(venueId) ? <VenueRedirect key={venueId} venueId={venueId}/> : <StateView kind="notFound"/>;
 }
 function PrintDashboardData() {
   const {session,expire}=useAuth();
@@ -330,50 +331,124 @@ function PrintDevicesData() {
   if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={()=>data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-function PrintFleetData() {
-  const {expire}=useAuth();
-  const data=useFleet();
+// PE-443: one row per Print Server, from the same inventory read as the dashboard.
+function PrintServersListData() {
+  const {session,expire}=useAuth();
+  const data=useQuery({queryKey:['ps-inventory',session?.user.id],queryFn:({signal})=>getInventory(signal),refetchInterval:30_000});
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
-  if(data.isError)return <StateView kind={psErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintFleetPage rows={data.data}/>;
+  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <PrintServersListPage inventory={data.data}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-// A venue list reads only its selected venue; no fleet or global options enter its cache.
-function VenueFleetData({venue}:{venue:OwnerVenue}) {
-  const {session}=useAuth();
-  const data=useQuery({queryKey:['ps-state','admin',session?.user.id,venue.id],queryFn:({signal})=>getPanelState(venue.id,signal),refetchInterval:10_000});
-  if(data.isError)return <StateView kind={psErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
-  if(data.isPending)return <StateView kind="loading"/>;
-  if(!data.data)return <StateView kind="notFound"/>;
-  return <PrintFleetPage rows={[panelFleetRow(data.data,venue)]} venueId={venue.id} detailHref={()=>`/admin/tenants/${encodeURIComponent(venue.id)}/print-servers/detail`}/>;
-}
-function PrintServerDetailData({venueId}:{venueId:string}) {
-  const detail=useTenantDetail(venueId);
-  if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
-  if(detail.isPending)return <StateView kind="loading"/>;
-  if(!detail.data)return <StateView kind="notFound"/>;
-  return <VenuePrintServerData key={venueId} venue={detail.data.venue} scope="admin" embedded={false}/>;
-}
-// The same panel contract serves both scopes, always with the user's JWT and
-// selected venue. Scope is presentation, never an authorization grant.
-function VenuePrintServerData({venue,scope,embedded=true}:{venue:OwnerVenue;scope:'owner'|'admin';embedded?:boolean}) {
-  const {session,expire}=useAuth();
-  const venueId=venue.id;
-  const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId],
-    queryFn:({signal})=>getPanelState(venueId,signal,scope),refetchInterval:10_000});
-  const api=useMemo(()=>withFailureHook(printServerApi,async key=>{
-    if(key==='sessionExpired')await expire();
-    if(key==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
-  }),[expire]);
+// Session/permission side effects shared by the Print Server reads.
+function usePsFailure(error:unknown) {
+  const {expire}=useAuth();
   useEffect(()=>{
-    if(state.error&&psErrorKey(state.error)==='sessionExpired')void expire();
-    if(state.error&&psErrorKey(state.error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
-  },[state.error,expire]);
+    if(error&&psErrorKey(error)==='sessionExpired')void expire();
+    if(error&&psErrorKey(error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
+  },[error,expire]);
+}
+function useBoundApi(printServerId:string|null) {
+  const {expire}=useAuth();
+  return useMemo(()=>{
+    const api=withFailureHook(printServerApi,async key=>{
+      if(key==='sessionExpired')await expire();
+      if(key==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+    });
+    return printServerId?bindPrintServer(api,printServerId):api;
+  },[expire,printServerId]);
+}
+function useVenueDevices(venueId:string,scope:'owner'|'admin',enabled=true) {
+  const {session}=useAuth();
+  return useQuery({queryKey:['ps-venue-devices',scope,session?.user.id,venueId],queryFn:({signal})=>getVenueDevices(venueId,signal),refetchInterval:15_000,enabled:enabled&&!!venueId});
+}
+const venueListHref=(scope:'owner'|'admin',venueId:string)=>scope==='admin'?`/admin/tenants/${encodeURIComponent(venueId)}/print-servers`:`/?venue=${encodeURIComponent(venueId)}&section=print-servers`;
+const sheetHref=(scope:'owner'|'admin',venueId:string,id:string)=>scope==='admin'?adminSheetHref(id):ownerSheetHref(venueId,id);
+// Old venue-scoped URL: exactly one device opens its sheet; otherwise the venue list (never "the first").
+function VenueRedirect({venueId}:{venueId:string}) {
+  const data=useVenueDevices(venueId,'admin');
+  usePsFailure(data.error);
+  if(data.isError)return <StateView kind={psErrorKey(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
+  if(!data.data)return <StateView kind="loading"/>;
+  return <Navigate to={data.data.devices.length===1?adminSheetHref(data.data.devices[0].id):venueListHref('admin',venueId)} replace/>;
+}
+// All authorized devices of one venue (admin tenant tab and owner section).
+function VenueDevicesData({venue,scope,choose=false}:{venue:Pick<OwnerVenue,'id'|'name'>;scope:'owner'|'admin';choose?:boolean}) {
+  const data=useVenueDevices(venue.id,scope);
+  usePsFailure(data.error);
+  if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <VenuePrintServersPage data={data.data} choose={choose} hrefFor={(device:VenueDevice)=>sheetHref(scope,venue.id,device.id)}
+    extra={scope==='admin'&&data.data.can_manage?<AddPrintServer venueId={venue.id} venueName={venue.name} onDone={()=>data.refetch()}/>:undefined}
+    onAssignPrinter={async(printerId,printServerId)=>{await setPrinterPrintServer(printerId,printServerId);await data.refetch();}}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
+}
+// Adds a NEW Print Server to the venue (enrollment without p_print_server_id: nobody is revoked).
+// The one-time code lives only in this component's state.
+function AddPrintServer({venueId,venueName,onDone}:{venueId:string;venueName:string;onDone:()=>Promise<unknown>}) {
+  const {t}=useLocale();
+  const [label,setLabel]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
+  const [code,setCode]=useState<{code:string;expires_at:string|null}|null>(null);
+  const submit=async()=>{
+    if(busy)return; setBusy(true); setError(null);
+    try { const out=await createEnrollment(venueId,label); setCode({code:out.enrollment_code,expires_at:out.expires_at}); setLabel(''); await onDone(); }
+    catch(e){setError(t(psErrorKey(e)));} finally {setBusy(false);}
+  };
+  return <div className="ps-section-body" data-testid="venue-ps-add">
+    <p className="staff-self-note">{t('psm.addPsLead')}</p>
+    <div className="staff-actions ps-actions">
+      <label className="field ps-inline-field"><span>{t('ps.enrollLabel')}</span><div className="field-control"><input type="text" data-testid="venue-ps-add-label" autoComplete="off" maxLength={80} value={label} onChange={event=>setLabel(event.target.value)} placeholder={t('ps.enrollLabelPlaceholder')} disabled={busy}/></div></label>
+      <button type="button" className="button button-primary" data-testid="venue-ps-add-submit" disabled={busy} onClick={()=>void submit()}>{t('psm.addPs')}</button>
+    </div>
+    {error&&<p className="form-error" role="alert">{error}</p>}
+    {code&&<PortalDialog title={t('ps.enrollment.title')} titleId="venue-ps-add-title" testId="enrollment-dialog" onClose={()=>setCode(null)} actions={<button type="button" className="button button-secondary" data-testid="enrollment-close" onClick={()=>setCode(null)}>{t('ps.enrollment.close')}</button>}>
+      <p className="ps-dialog-venue">{t('ps.confirm.venue')}: <strong>{venueName}</strong></p>
+      <p>{t('ps.enrollment.lead')}</p>
+      <code className="ps-code" data-testid="enrollment-code">{code.code}</code>
+      <p className="ps-dialog-warning">{t('ps.enrollment.once')}</p>
+    </PortalDialog>}
+  </div>;
+}
+// PE-443 device sheet by stable id (print_server_id, or inventory id when not active).
+// ps_device_sheet_resolve decides kind/venue/permission; every later call names this PS.
+function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'admin';expectedVenueId?:string}) {
+  const {session}=useAuth(); const {t}=useLocale();
+  const ref=useQuery({queryKey:['ps-sheet-resolve',scope,session?.user.id,id],queryFn:({signal})=>resolveDeviceSheet(id,signal),retry:false});
+  usePsFailure(ref.error);
+  if(ref.isError)return <StateView kind={psErrorKey(ref.error)==='accessDenied'?'denied':psErrorKey(ref.error)==='ps.error.printServerNotFound'?'notFound':'error'} onRetry={()=>void ref.refetch()}/>;
+  if(!ref.data)return <StateView kind="loading"/>;
+  const r=ref.data;
+  // The URL never grants access: an owner sheet must belong to the selected venue.
+  if(expectedVenueId&&r.venue_id!==expectedVenueId)return <StateView kind="denied"/>;
+  const back=r.venue_id?{href:venueListHref(scope,r.venue_id),label:t('psm.backToVenue')}:{href:'/admin/print-servers/list',label:t('psm.backToList')};
+  if(r.kind==='inventory'||!r.print_server_id||!r.venue_id) return <div className="page-stack staff-page" data-testid="ps-inventory-sheet">
+    <Link className="back-link" to={back.href}>{back.label}</Link>
+    <div className="page-heading detail-heading"><div><p className="eyebrow">{t('psm.sheetEyebrow')}</p><h1>{t('printServer')}</h1><p>{t('psm.inventoryLead')}</p></div></div>
+    <section className="detail-panel"><div className="detail-grid">
+      <div className="detail-item"><div><span className="detail-item-label">{t('psm.linkedVenue')}</span><strong>{r.venue_name||t('psm.unassigned')}</strong></div></div>
+      <div className="detail-item"><div><span className="detail-item-label">{t('state')}</span><strong>{r.status||t('notProvided')}</strong></div></div>
+    </div></section>
+    {scope==='admin'&&r.is_staff&&r.inventory_device_id&&<section className="detail-panel"><DeviceAdminSummary deviceId={r.inventory_device_id}/></section>}
+  </div>;
+  return <PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/>;
+}
+function PrintServerSheetData({printServerId,venueId,venueName,scope,back,canManage}:{printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean}) {
+  const {session}=useAuth();
+  const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId,printServerId],
+    queryFn:({signal})=>getPanelState(venueId,signal,scope,printServerId),refetchInterval:10_000});
+  const devices=useVenueDevices(venueId,scope,canManage);
+  const api=useBoundApi(printServerId);
+  usePsFailure(state.error);
+  if(state.error instanceof SelectionRequiredError)return <VenueDevicesData venue={{id:venueId,name:venueName}} scope={scope} choose/>;
   if(state.error&&psErrorKey(state.error)==='accessDenied')return <StateView kind="denied"/>;
   if(state.error&&psErrorKey(state.error)==='sessionExpired')return <StateView kind="loading"/>;
-  if(state.data)return <PrintServerDetailPage scope={scope} embedded={embedded}
-    venue={{venue_id:venue.id,venue_name:venue.name,venue_slug:venue.slug,venue_is_active:venue.is_active}}
-    state={state.data} api={api} stale={state.isError} refresh={()=>state.refetch()}/>;
+  const targets=(devices.data?.devices??[]).filter(d=>d.print_server_id&&d.print_server_id!==printServerId&&(!d.status||d.status==='active'))
+    .map(d=>({print_server_id:d.print_server_id!,name:`${deviceName(d)}${d.serial?` (${d.serial})`:''}`,label:d.label}));
+  const refresh=async()=>{await Promise.all([state.refetch(),canManage?devices.refetch():Promise.resolve()]);};
+  if(state.data)return <PrintServerDetailPage scope={scope} embedded={false} printServerId={printServerId} backHref={back.href} backLabel={back.label} replaceTargets={targets}
+    venue={{venue_id:venueId,venue_name:venueName,venue_slug:null,venue_is_active:null}}
+    state={state.data} api={api} stale={state.isError} refresh={refresh}/>;
   if(state.isError)return <StateView kind="error" onRetry={()=>void state.refetch()}/>;
   if(state.data===null)return <StateView kind="notFound"/>;
   return <StateView kind="loading"/>;
@@ -434,6 +509,7 @@ export default function App() {
     <Route path="/admin/print-servers/inventory" element={<Scope scope="admin"><PrintServersRoute inventory/></Scope>}/>
     <Route path="/admin/print-servers/firmwares" element={<Scope scope="admin"><PrintServersRoute firmwares/></Scope>}/>
     <Route path="/admin/print-servers/updates" element={<Scope scope="admin"><PrintServersRoute updates/></Scope>}/>
+    <Route path="/admin/print-servers/devices/:id" element={<Scope scope="admin"><PrintServersRoute device/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
