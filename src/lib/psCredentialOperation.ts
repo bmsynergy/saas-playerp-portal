@@ -12,6 +12,7 @@ export type CredentialOperation = {
   previousIds?: string[];
 };
 export type CredentialProgressView = {
+  canCheckStatus: boolean;
   kind: CredentialKind;
   phase: 'sending' | 'accepted' | 'pending' | 'offline' | 'received' | 'applied' | 'failed' | 'rejected' | 'uncertain';
   commandId: string | null;
@@ -52,13 +53,14 @@ export function credentialProgress(kind: CredentialKind, rotations: DeviceOp[], 
   const item = operation?.commandId ? rotations.find(o => o.kind === kind && o.command_id === operation.commandId)
     : operation ? null : latestRotation(rotations, kind);
   if (!operation && !item) return null;
-  const base = { kind, commandId: operation?.commandId ?? item?.command_id ?? null,
+  const base = { kind, canCheckStatus: !trackingLost && (operation ? operation.phase === 'pending' && !!operation.commandId : item?.status === 'pending'), commandId: operation?.commandId ?? item?.command_id ?? null,
     requestedAt: validDate(item?.requested_at ?? operation?.requestedAt), updatedAt: item ? updatedAt(item) : null,
     waitReason: item?.wait_reason ?? null, already: operation?.already, previousKept: item?.previous_kept };
   if (operation?.phase === 'sending' || operation?.phase === 'rejected') return { ...base, phase: operation.phase, errorKey: operation.errorKey };
+  if (operation?.phase === 'applied' || operation?.phase === 'failed') return { ...base, canCheckStatus: false, phase: operation.phase, errorKey: operation.errorKey };
+  if (item?.status === 'applied' || item?.status === 'failed') return { ...base, canCheckStatus: false, phase: item.status, errorKey: item.status === 'failed' ? credentialErrorKey(item.error_code) : undefined };
   if (trackingLost || operation?.phase === 'uncertain') return { ...base, phase: 'uncertain', errorKey: 'dev.progress.trackingLost' };
   if (item) {
-    if (item.status === 'applied' || item.status === 'failed') return { ...base, phase: item.status, errorKey: item.status === 'failed' ? credentialErrorKey(item.error_code) : undefined };
     // Contract 8676b3b derives "applying" from received_at. It is NOT execution telemetry.
     const phase = validDate(item.received_at) ? 'received' : item.wait_reason === 'device_offline' || online === false ? 'offline' : 'pending';
     return { ...base, phase, waitReason: item.wait_reason ?? (online === false ? 'device_offline' : null) };

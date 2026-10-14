@@ -53,3 +53,16 @@ describe('rotation presentation contract 8676b3b', () => {
     expect(credentialErrorKey('SECRET')).toBe('dev.progress.rotationErrorUnknown');
   });
 });
+
+describe('PE-439 Check Status evidence and terminal persistence',()=>{
+  for(const status of ['pending','applied','failed'] as const) it(`limits Check Status for ${status}`,()=>{
+    expect(credentialProgress('wifi',[op({status})],null,true,false)?.canCheckStatus).toBe(status==='pending');
+  });
+  it('sending and lost RPC responses do not pretend to be confirmed pending',()=>{
+    for(const phase of ['sending','uncertain','rejected'] as const) expect(credentialProgress('wifi',[],{kind:'wifi',phase,commandId:null},true,false)?.canCheckStatus).toBe(false);
+  });
+  it('terminal evidence survives a failed refresh and a stale pending snapshot',()=>{
+    expect(credentialProgress('wifi',[op()],null,true,true)).toMatchObject({phase:'applied',canCheckStatus:false});
+    expect(credentialProgress('wifi',[op({status:'pending'})],{...pending,phase:'applied'},true,false)).toMatchObject({phase:'applied',canCheckStatus:false});
+  });
+});
