@@ -62,7 +62,9 @@ export function projectSheetRef(v: unknown): DeviceSheetRef {
     status: str(r.status), can_manage: r.can_manage === true, is_staff: r.is_staff === true };
 }
 export async function resolveDeviceSheet(id: string, signal?: AbortSignal): Promise<DeviceSheetRef> {
-  return projectSheetRef(await rpc('ps_device_sheet_resolve', { p_id: id }, signal));
+  const ref = projectSheetRef(await rpc('ps_device_sheet_resolve', { p_id: id }, signal));
+  if (ref.print_server_id !== id && ref.inventory_device_id !== id) throw new PortalError('accessDenied');
+  return ref;
 }
 export const deviceName = (d: Pick<VenueDevice, 'label' | 'hostname' | 'serial' | 'id'>) => d.label?.trim() || d.hostname?.trim() || d.serial?.trim() || d.id;
 export const adminSheetHref = (id: string) => `/admin/print-servers/devices/${encodeURIComponent(id)}`;

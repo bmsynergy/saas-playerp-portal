@@ -69,6 +69,7 @@ const safeReasons: Record<string, string> = {
 export function CredentialProgress({ operation, compact = false, onRetry, reconcileHref, onReconcile }: Props) {
   const { t, locale } = useLocale();
   const waiting = waitingPhases.has(operation.phase);
+  const canCheckStatus = operation.canCheckStatus && operation.phase !== 'applied' && operation.phase !== 'failed';
   const isCredentialError = !!operation.errorKey && credentialErrors.has(operation.errorKey.replace(/^dev\.error\./, ''));
   const formatDate = (value: string | null) => {
     if (!value) return t('notProvided');
@@ -112,8 +113,8 @@ export function CredentialProgress({ operation, compact = false, onRetry, reconc
       <div><dt>{t('dev.progress.requestedAt')}</dt><dd>{formatDate(operation.requestedAt)}</dd></div>
       <div><dt>{t('dev.progress.updatedAt')}</dt><dd>{formatDate(operation.updatedAt)}</dd></div>
     </dl>
-    {((operation.canCheckStatus && onRetry) || (isCredentialError && reconcileHref)) && <div className="credential-progress-actions">
-      {operation.canCheckStatus && onRetry && <button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15} aria-hidden="true"/>{t('dev.progress.checkStatus')}</button>}
+    {((canCheckStatus && onRetry) || (isCredentialError && reconcileHref)) && <div className="credential-progress-actions">
+      {canCheckStatus && onRetry && <button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15} aria-hidden="true"/>{t('dev.progress.checkStatus')}</button>}
       {isCredentialError && reconcileHref && <a className="button button-secondary" href={reconcileHref} onClick={onReconcile}>{t('dev.progress.reconcileLink')}</a>}
     </div>}
   </section>;

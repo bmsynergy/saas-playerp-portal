@@ -5,12 +5,13 @@ import { useAuth } from '../hooks/useAuth';
 import { getAdminDeviceDetail, updateAdminDevice, adminDeviceErrorKey, type AdminDeviceDetail } from '../lib/psAdminDevice';
 import { useLocale } from '../locales';
 import { FirmwareUpdateAction } from './FirmwareUpdateAction';
+import { InventoryDeviceIdentity } from './InventoryDeviceIdentity';
 
-type Props = { deviceId: string; onChanged?: () => Promise<unknown> };
+type Props = { deviceId: string; onChanged?: () => Promise<unknown>; showIdentity?: boolean };
 type Confirmation = { editionId: string; version: string; installed: string; ring: string };
 type Candidate = NonNullable<AdminDeviceDetail['update']['candidate']>;
 
-export function DeviceAdminSummary({ deviceId, onChanged }: Props) {
+export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }: Props) {
   const { t } = useLocale();
   const { session } = useAuth();
   const [confirm, setConfirm] = useState<Confirmation | null>(null);
@@ -63,6 +64,7 @@ export function DeviceAdminSummary({ deviceId, onChanged }: Props) {
   return <section className="staff-panel admin-device-summary" aria-labelledby={`admin-device-${deviceId}`} data-testid="admin-device-summary">
     <div className="section-heading"><div><p className="eyebrow">{t('adminDevice.firmwareEyebrow')}</p><h3 id={`admin-device-${deviceId}`}>{t('adminDevice.firmwareTitle')}</h3></div><button type="button" className="button button-secondary" onClick={() => void detail.refetch()} disabled={detail.isFetching}><RefreshCw size={15} aria-hidden="true"/>{t('refresh')}</button></div>
     {detail.isPending ? <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p> : detail.isError ? <p role="alert" className="form-error">{t(adminDeviceErrorKey(detail.error))}</p> : update ? <>
+      {showIdentity && detail.data && <InventoryDeviceIdentity device={detail.data.device}/>}
       <div className="admin-device-firmware-grid">
         <div><small>{t('adminDevice.currentFirmware')}</small><strong>{update.current_version ?? t('dash.unknownVersion')}</strong></div>
         <div><small>{t('firmware.adminCandidate')}</small><strong>{update.candidate?.version ?? t('adminDevice.noStable')}</strong>{update.candidate && <small>{ringLabel(update.candidate.ring)} · {candidateReason(update.candidate)}</small>}</div>

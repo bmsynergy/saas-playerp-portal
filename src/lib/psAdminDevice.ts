@@ -77,7 +77,9 @@ export async function getDeviceModels(signal?: AbortSignal): Promise<DeviceModel
   return projectDeviceModels(await rpc('ps_admin_device_models', {}, signal));
 }
 export async function getAdminDeviceDetail(id: string, signal?: AbortSignal): Promise<AdminDeviceDetail> {
-  return projectAdminDeviceDetail(await rpc('ps_admin_device_detail', { p_device_id: id }, signal));
+  const detail = projectAdminDeviceDetail(await rpc('ps_admin_device_detail', { p_device_id: id }, signal));
+  if (detail.device.id !== id) throw new PortalError('accessDenied');
+  return detail;
 }
 export async function createAdminDevice(input: NewAdminDevice): Promise<AdminDeviceCreated> {
   const data = await rpc('ps_admin_device_create', { p_model: input.model, p_arch: input.arch, p_notes: null, p_label: input.label.trim() || null, p_venue_id: input.venue_id || null });
@@ -109,7 +111,7 @@ export async function updateAdminDevice(id: string, editionId: string, expectedI
 
 export type DeviceModelCatalog = { models: DeviceModel[]; default: { model: string; label: string; arch: string } | null };
 export type ManageAction = { allowed: boolean; reason: string | null };
-export type AdminDeviceManage = AdminDeviceDetail & { actions: Record<'assign' | 'move' | 'unassign' | 'delete', ManageAction> };
+export type AdminDeviceManage = AdminDeviceDetail & { actions: Record<'assign' | 'move' | 'unassign' | 'delete' | 'retire', ManageAction> };
 export type AdminVenueOption = { id: string; name: string; slug: string | null; city: string | null; state: string | null; is_active: boolean; assigned_device: { id: string; serial: string } | null };
 
 export function projectDeviceModelCatalog(value: unknown): DeviceModelCatalog {
@@ -125,18 +127,24 @@ export async function getDeviceModelCatalog(signal?: AbortSignal): Promise<Devic
 }
 export function projectAdminDeviceManage(value: unknown): AdminDeviceManage {
   const data = checked(value), detail = projectAdminDeviceDetail(value), actions = obj(data.actions);
-  const action = (key: 'assign' | 'move' | 'unassign' | 'delete'): ManageAction => {
+  const action = (key: 'assign' | 'move' | 'unassign' | 'delete' | 'retire'): ManageAction => {
+    // Older DEV contracts do not authorize retirement. Never infer that permission
+    // from stock status, deletion eligibility or the unassign flag.
+    if (key === 'retire' && actions.retire == null) return { allowed: false, reason: 'contract_unavailable' };
     const raw = obj(actions[key]);
     const reason = str(raw.reason);
     // Do not render unstructured backend reasons or relax the detail deletion guard.
     const safeReason = reason && /^[a-z][a-z0-9_]{0,63}$/.test(reason) ? reason : reason ? 'other' : null;
-    const allowed = raw.allowed === true && !reason && (key !== 'delete' || (detail.delete.allowed && raw.confirm_with === 'serial'));
+    const allowed = raw.allowed === true && !reason && !detail.device.legacy && detail.device.status !== 'retired'
+      && (key !== 'delete' || (detail.delete.allowed && raw.confirm_with === 'serial'));
     return { allowed, reason: safeReason };
   };
-  return { ...detail, actions: { assign: action('assign'), move: action('move'), unassign: action('unassign'), delete: action('delete') } };
+  return { ...detail, actions: { assign: action('assign'), move: action('move'), unassign: action('unassign'), delete: action('delete'), retire: action('retire') } };
 }
 export async function getAdminDeviceManage(id: string, signal?: AbortSignal): Promise<AdminDeviceManage> {
-  return projectAdminDeviceManage(await rpc('ps_admin_device_manage', { p_device_id: id }, signal));
+  const detail = projectAdminDeviceManage(await rpc('ps_admin_device_manage', { p_device_id: id }, signal));
+  if (detail.device.id !== id) throw new PortalError('accessDenied');
+  return detail;
 }
 export async function moveAdminDevice(id: string, venueId: string): Promise<{ code: string; expires_at: string | null; replaces: boolean }> {
   const data = await rpc('ps_admin_device_move', { p_device_id: id, p_venue_id: venueId });

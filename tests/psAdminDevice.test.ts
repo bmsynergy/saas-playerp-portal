@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), getSession: vi.fn() }));
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc: mocks.rpc, auth: { getSession: mocks.getSession } } }));
-import { adminDeviceErrorKey, createAdminDevice, deleteAdminDevice, getAdminDeviceDetail, projectAdminDeviceDetail, projectDeviceModels, projectDeviceModelCatalog, projectAdminDeviceManage, projectAdminVenues, moveAdminDevice, searchAdminVenues, updateAdminDevice } from '../src/lib/psAdminDevice';
+import { adminDeviceErrorKey, createAdminDevice, deleteAdminDevice, getAdminDeviceDetail, getAdminDeviceManage, projectAdminDeviceDetail, projectDeviceModels, projectDeviceModelCatalog, projectAdminDeviceManage, projectAdminVenues, moveAdminDevice, searchAdminVenues, updateAdminDevice } from '../src/lib/psAdminDevice';
+import { assignDevice, revokeDevice } from '../src/lib/psDevice';
 const fixture = () => ({ ok: true, device: { id: 'device', serial: 'PS-12345678', hostname: 'ps', model: 'rpi4-2gb', arch: 'arm64', status: 'stock', legacy: false, venue_id: null },
   update: { current_version: '0.3.1', latest_stable: { edition_id: 'stable', version: '0.3.2', model: 'rpi4-2gb', arch: 'arm64' }, candidate: { edition_id: 'stable', version: '0.3.2', model: 'rpi4-2gb', arch: 'arm64', ring: 'general', general_eligible: true, eligibility_reason: 'general', admitted: true, admitted_ring: 'general' }, effective_ring: 'general', can_update: true, update_available: true, reason: null, active_update: null }, delete: { allowed: true, blockers: [] as string[] } });
 beforeEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
@@ -61,6 +62,32 @@ describe('PE-435 catalogue and Manage contracts', () => {
     expect(() => projectDeviceModelCatalog({ ...data, models: [model('second', false, true)] })).toThrow();
   });
   const manageable = () => ({ ...fixture(), actions: { assign: { allowed: true, reason: null }, move: { allowed: false, reason: 'device_not_assigned' }, unassign: { allowed: false, reason: 'device_not_assigned' }, delete: { allowed: true, confirm_with: 'serial' } } });
+  it('requires explicit retirement permission, fails closed on old/legacy/retired contracts', () => {
+    const f = manageable();
+    expect(projectAdminDeviceManage(f).actions.retire).toEqual({ allowed: false, reason: 'contract_unavailable' });
+    const actions = { ...f.actions, retire: { allowed: true, reason: null } };
+    expect(projectAdminDeviceManage({ ...f, actions }).actions.retire.allowed).toBe(true);
+    for (const device of [{ ...f.device, legacy: true }, { ...f.device, status: 'retired' }]) {
+      expect(Object.values(projectAdminDeviceManage({ ...f, device, actions }).actions).every(a => !a.allowed)).toBe(true);
+    }
+    expect(projectAdminDeviceManage({ ...f, actions: { ...actions, retire: { allowed: true, reason: 'active_operation' } } }).actions.retire.allowed).toBe(false);
+  });
+  it('rejects detail and manage responses belonging to a different device', async () => {
+    mocks.rpc.mockResolvedValue({ data: manageable() });
+    await expect(getAdminDeviceDetail('different')).rejects.toMatchObject({ code: 'accessDenied' });
+    await expect(getAdminDeviceManage('different')).rejects.toMatchObject({ code: 'accessDenied' });
+  });
+  it('adds without a replacement id, unassigns and retires with the existing revoke reasons', async () => {
+    mocks.rpc.mockResolvedValue({ data: { ok: true, enrollment_code: 'synthetic', expires_at: null } });
+    await assignDevice('second-device', 'venue');
+    await revokeDevice('second-device', false);
+    await revokeDevice('stock-device', true);
+    expect(mocks.rpc.mock.calls).toEqual([
+      ['ps_admin_device_assign', { p_device_id: 'second-device', p_venue_id: 'venue' }],
+      ['ps_admin_device_revoke', { p_device_id: 'second-device', p_reason: 'portal_admin' }],
+      ['ps_admin_device_revoke', { p_device_id: 'stock-device', p_reason: 'retired' }],
+    ]);
+  });
   it('requires both server action permission and deletion guards, and serial confirmation support', () => {
     const data = manageable();
     expect(projectAdminDeviceManage(data).actions.delete.allowed).toBe(true);
