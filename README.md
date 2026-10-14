@@ -25,7 +25,7 @@ npm run build
 npm test
 ```
 
-`dist/` is the publication artifact. Public browser configuration is pinned to DEV in `src/lib/config.ts`; no environment override or service-role key is accepted. COREdevA builds a clean committed copy and publishes via `coredeva-publish playerp.dev <SHA>`; no manual service commands are needed.
+`dist/` is the publication artifact. The default build preserves DEV configuration and its existing publication process. For the separate PROD build, required public configuration and Tom's production lane, see [Production build](docs/production-build.md). Service-role keys are never accepted. `coredeva-publish playerp.dev <SHA>` is exclusively the DEV lane, not the production portal.
 
 ## Venue Print Servers (PE-333)
 

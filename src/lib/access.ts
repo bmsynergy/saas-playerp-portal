@@ -1,3 +1,4 @@
+import { AUXILIARY_STORAGE_PREFIX } from './config';
 import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
@@ -32,7 +33,7 @@ export function displayName(user: { email?: string }, profile?: { first_name?: u
     .map(part => part.trim()).join(' ');
   return name || user.email?.trim() || 'PlayERP';
 }
-const key = (id: string) => `playerp.portal.scope.${id}`;
+const key = (id: string) => `${AUXILIARY_STORAGE_PREFIX}scope.${id}`;
 export function preferredScope(id: string): Scope | null {
   try { const value=sessionStorage.getItem(key(id)); return value==='owner'||value==='admin'?value:null; } catch { return null; }
 }
@@ -40,5 +41,5 @@ export function chooseScope(id: string, scope: Scope) {
   try { sessionStorage.setItem(key(id),scope); } catch { /* route remains usable */ }
 }
 export function clearScopes() {
-  try { for (const k of Object.keys(sessionStorage)) if (k.startsWith('playerp.portal.scope.')) sessionStorage.removeItem(k); } catch { /* storage unavailable */ }
+  try { for (const k of Object.keys(sessionStorage)) if (k.startsWith(`${AUXILIARY_STORAGE_PREFIX}scope.`)) sessionStorage.removeItem(k); } catch { /* storage unavailable */ }
 }
