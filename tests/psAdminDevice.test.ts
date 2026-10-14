@@ -63,6 +63,8 @@ describe('PE-435 catalogue and Manage contracts', () => {
   const manageable = () => ({ ...fixture(), actions: { assign: { allowed: true, reason: null }, move: { allowed: false, reason: 'device_not_assigned' }, unassign: { allowed: false, reason: 'device_not_assigned' }, delete: { allowed: true, confirm_with: 'serial' } } });
   it('requires both server action permission and deletion guards, and serial confirmation support', () => {
     const data = manageable();
+    expect(projectAdminDeviceManage(data).actions.delete.allowed).toBe(false);
+    data.device.status = 'retired';
     expect(projectAdminDeviceManage(data).actions.delete.allowed).toBe(true);
     expect(projectAdminDeviceManage({ ...data, delete: { allowed: true, blockers: ['active_operation'] } }).actions.delete.allowed).toBe(false);
     expect(projectAdminDeviceManage({ ...data, device: { ...data.device, venue_id: 'assigned' } }).actions.delete.allowed).toBe(false);
@@ -84,5 +86,29 @@ describe('PE-435 catalogue and Manage contracts', () => {
     mocks.rpc.mockResolvedValue({ data: response });
     await searchAdminVenues(' Ponce ', 'venue');
     expect(mocks.rpc).toHaveBeenCalledWith('ps_admin_venue_search', { p_query: 'Ponce', p_limit: 20, p_include_venue_id: 'venue' });
+  });
+});
+
+
+describe('PE-447 Retired deletion and separate retirement', () => {
+  it('requires Retired even when an old server response claims stock or an unknown status can be deleted', () => {
+    for (const status of ['stock', 'assigned', 'unknown']) expect(projectAdminDeviceDetail({ ...fixture(), device: { ...fixture().device, status } }).delete.allowed).toBe(false);
+    const retired = { ...fixture(), device: { ...fixture().device, status: 'retired' } };
+    expect(projectAdminDeviceDetail(retired).delete.allowed).toBe(true);
+    for (const blocker of ['legacy_device', 'device_assigned', 'active_enrollment', 'active_deployment', 'active_operation', 'pending_credential_change']) {
+      expect(projectAdminDeviceDetail({ ...retired, delete: { allowed: true, blockers: [blocker] } }).delete.allowed).toBe(false);
+    }
+  });
+  it('only enables the existing retirement contract with its explicit serial confirmation and revoke reason', () => {
+    const data = { ...fixture(), actions: { assign: { allowed: true }, move: { allowed: false }, unassign: { allowed: false }, delete: { allowed: false }, retire: { allowed: true, confirm_with: 'serial', revoke_reason: 'retired' } } };
+    expect(projectAdminDeviceManage(data).actions.retire.allowed).toBe(true);
+    expect(projectAdminDeviceManage({ ...data, actions: { ...data.actions, retire: { allowed: true } } }).actions.retire.allowed).toBe(false);
+    expect(projectAdminDeviceManage({ ...data, device: { ...data.device, status: 'retired' } }).actions.retire.allowed).toBe(false);
+  });
+  it('keeps the refusal blockers and next step without exposing arbitrary server messages', async () => {
+    mocks.rpc.mockResolvedValue({ data: { ok: false, error: 'delete_blocked', blockers: ['device_assigned', 'unsafe raw text'], messages: ['secret'], next_step: 'unassign' } });
+    const err = await deleteAdminDevice('device', 'PS-12345678').catch(error => error);
+    expect(err).toMatchObject({ key: 'adminDevice.error.delete_blocked', blockers: ['device_assigned'], nextStep: 'unassign' });
+    expect(JSON.stringify(err)).not.toContain('secret');
   });
 });

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock3, FilterX, Printer, Search, Server, X } from 'lucide-react';
+import { ArrowRight, Clock3, Printer, Search, Server, X } from 'lucide-react';
 import { EMPTY_FLEET_FILTER, FLEET_PRINTERS, FLEET_SIGNALS, FLEET_STATES, NO_VERSION, filterFleet, filterVenueServers, fleetState, fleetVersions, isFiltered, relativeTime, venueServerRows, type FleetFilter, type FleetRow } from '../lib/printFleet';
 import { useLocale } from '../locales';
 import { PrintServersTabs } from './PrintFirmwaresPage';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import { AdminDateFilters } from '../components/AdminListFilters';
+import { ClearFiltersButton } from '../components/ClearFiltersButton';
 import { matchesUtcDay } from '../lib/adminLists';
 
 export const fleetStateClass = { online: 'server-online', offline: 'server-offline', pending: 'server-pending', none: 'server-noSignal' } as const;
@@ -50,7 +51,7 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
         <select data-testid="fleet-filter-state" aria-label={t('ps.filter.state')} value={filter.state} onChange={event => set('state', event.target.value as FleetFilter['state'])}><option value="">{t('ps.filter.anyState')}</option>{FLEET_STATES.filter(item => !isVenue || item === 'online' || item === 'offline').map(item => <option key={item} value={item}>{t(`ps.state.${item}`)}</option>)}</select>
         <select data-testid="fleet-filter-printers" aria-label={t('ps.filter.printers')} value={filter.printers} onChange={event => set('printers', event.target.value as FleetFilter['printers'])}><option value="">{t('ps.filter.anyPrinters')}</option>{FLEET_PRINTERS.map(item => <option key={item} value={item}>{t(`ps.filter.printers.${item}`)}</option>)}</select>
         <AdminDateFilters id="fleet" label={t('list.lastContact')} from={dateFilter.from} to={dateFilter.to} onChange={(key, value) => { setDateFilter(current => ({ ...current, [key]: value })); pagination.reset(); }}/>
-        <button type="button" className="staff-action-link" data-testid="fleet-filter-clear" disabled={!isFiltered(filter) && !dateFilter.from && !dateFilter.to} onClick={() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }}><FilterX size={14}/>{t('ps.filter.clear')}</button>
+        <ClearFiltersButton testId="fleet-filter-clear" disabled={!isFiltered(filter) && !dateFilter.from && !dateFilter.to} onClick={() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }}/>
       </div>
       {filtered.length === 0 ? <div className="staff-empty" data-testid="fleet-empty"><Server size={27}/><strong>{t(isVenue ? (scopedRows.length ? 'ps.venueNoMatches' : 'ps.venueEmpty') : (scopedRows.length ? 'ps.noMatches' : 'ps.emptyFleet'))}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t(isVenue ? 'ps.col.device' : 'ps.col.venue')}</th><th>{t('ps.col.state')}</th><th>{t('version')}</th><th>{t('lastSignal')}</th><th>{t('ps.col.printers')}</th><th>{t('ps.col.queue')}</th>{(!isVenue || detailHref) && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{visible.map(row => {
         const state = fleetState(row); const server = row.print_server;

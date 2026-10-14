@@ -13,6 +13,7 @@ import { bindPrintServer, createEnrollment, getInventory, getPanelState, printSe
 import { adminSheetHref, deviceName, getVenueDevices, ownerSheetHref, resolveDeviceSheet, type VenueDevice } from './lib/psVenueDevices';
 import { VenuePrintServersPage } from './pages/VenuePrintServersPage';
 import { PrintServersListPage } from './pages/PrintServersListPage';
+import { getPsVenueOverview } from './lib/psVenueOverview';
 import { DeviceAdminSummary } from './components/DeviceAdminSummary';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
@@ -328,16 +329,16 @@ function PrintDevicesData() {
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.isError||venues.isError)return <StateView kind="error" onRetry={()=>{void data.refetch();void venues.refetch();}}/>;
-  if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={()=>data.refetch()}/>;
+  if(data.data&&venues.data)return <PrintDevicesPage devices={data.data} venues={venues.data} onChanged={async()=>{ await Promise.all([data.refetch(), queryClient.invalidateQueries({queryKey:['ps-venue-overview']}), queryClient.invalidateQueries({queryKey:['ps-inventory']}), queryClient.invalidateQueries({queryKey:['ps-sheet-resolve']})]); }}/>;
   return <StateView kind="loading"/>;
 }
-// PE-443: one row per Print Server, from the same inventory read as the dashboard.
+// PE-447: venue aggregates share the backend inventory connection and attention rules.
 function PrintServersListData() {
   const {session,expire}=useAuth();
-  const data=useQuery({queryKey:['ps-inventory',session?.user.id],queryFn:({signal})=>getInventory(signal),refetchInterval:30_000});
+  const data=useQuery({queryKey:['ps-venue-overview',session?.user.id],queryFn:({signal})=>getPsVenueOverview(signal),refetchInterval:30_000});
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data)return <PrintServersListPage inventory={data.data}/>;
+  if(data.data)return <PrintServersListPage overview={data.data}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }

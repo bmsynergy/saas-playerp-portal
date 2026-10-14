@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useLocale } from '../locales';
+import { ClearFiltersButton } from './ClearFiltersButton';
 import { EMPTY_LIST_FILTERS, type ListFilterState } from '../lib/adminLists';
 export { EMPTY_LIST_FILTERS, matchesUtcDay, matchesText } from '../lib/adminLists';
 export type { ListFilterState } from '../lib/adminLists';
@@ -28,7 +29,7 @@ export function AdminListFilters({ id, filters, set, clear, statuses, dateLabel,
     {statuses && <label><span>{statusLabel ?? t('state')}</span><select value={filters.status} onChange={event => set('status', event.target.value)} data-testid={`${id}-status`}><option value="">{t('list.allStates')}</option>{statuses.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>}
     {afterStatus}
     {dateLabel && <><label><span>{fromLabel ?? `${dateLabel}: ${t('list.fromUtc')}`}</span><input type="date" value={filters.from} onChange={event => set('from', event.target.value)} aria-invalid={invalid} data-testid={`${id}-from`}/></label><label><span>{toLabel ?? `${dateLabel}: ${t('list.toUtc')}`}</span><input type="date" value={filters.to} onChange={event => set('to', event.target.value)} aria-invalid={invalid} data-testid={`${id}-to`}/></label></>}
-    <button type="button" className="button button-secondary admin-list-clear" disabled={clearDisabled ?? !Object.values(filters).some(Boolean)} onClick={clear}>{t('ps.filter.clear')}</button>
+    <ClearFiltersButton className="admin-list-clear" disabled={clearDisabled ?? !Object.values(filters).some(Boolean)} onClick={clear}/>
     {invalid && <p className="admin-list-date-error" role="alert">{t('list.dateOrder')}</p>}
   </div>;
 }

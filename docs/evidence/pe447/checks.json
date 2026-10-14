@@ -1,0 +1,25 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "method": "Real UI with intercepted synthetic DEV contracts; no live mutations or live authentication claims",
+  "checks": [
+    {
+      "width": 390,
+      "venues": "2 venues + separate stock/retired card, keyboard expansion, device details, canonical links, filters, EN/ES",
+      "controlsMeasured": 56,
+      "controlHeight": 44,
+      "clearFilters": "shared light icon/text, disabled with no filters, full resets including dates/version/assignment",
+      "delete": "assigned/stock/blocked absent; Retire preserves record; exact serial required; eligible Retired removed; late refusal preserves record and closes delete gate",
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "venues": "2 venues + separate stock/retired card, keyboard expansion, device details, canonical links, filters, EN/ES",
+      "controlsMeasured": 56,
+      "controlHeight": 44,
+      "clearFilters": "shared light icon/text, disabled with no filters, full resets including dates/version/assignment",
+      "delete": "assigned/stock/blocked absent; Retire preserves record; exact serial required; eligible Retired removed; late refusal preserves record and closes delete gate",
+      "noOverflow": true
+    }
+  ],
+  "errors": []
+}

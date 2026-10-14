@@ -5,8 +5,6 @@ vi.mock('../src/lib/supabase', () => ({ supabase: { rpc } }));
 import { bindPrintServer, getPanelState, printServerApi, requestScan, SelectionRequiredError } from '../src/lib/printServerApi';
 import { getDeviceSheet, rotateWifi } from '../src/lib/psDevice';
 import { getVenueDevices, resolveDeviceSheet } from '../src/lib/psVenueDevices';
-import { filterPsList, EMPTY_PS_LIST_FILTER, UNASSIGNED } from '../src/pages/PrintServersListPage';
-import { projectInventory } from '../src/lib/printInventory';
 import { en } from '../src/locales/en';
 import { es } from '../src/locales/es';
 
@@ -64,17 +62,6 @@ describe('PE-443 multi Print Server per venue', () => {
     expect(rpc).toHaveBeenLastCalledWith('ps_device_sheet_resolve', { p_id: 'inv-2' });
     answer({ ok: false, error: 'forbidden' });
     await expect(resolveDeviceSheet(ps)).rejects.toBeTruthy();
-  });
-
-  it('filters the global list per device (serial, venue, unassigned)', () => {
-    const item = (id: string, extra: Record<string, unknown>) => ({ id, device_id: null, label: null, hostname: null, assignment: 'assigned', venue_id: venue, venue_name: 'Centro', last_venue_name: null,
-      connection: 'online', last_seen_at: null, last_report_at: null, firmware_version: null, firmware_known: false, error_count: 0, warning_count: 0, printers_total: 0, pending_jobs: 0, last_issue_at: null, issues: [], ...extra });
-    const inv = projectInventory({ contract_version: 1, generated_at: '2026-10-14T00:00:00Z', online_window_seconds: 120, items: [
-      item('a', { serial: 'PS-AAAA1111', label: 'Barra' }), item('b', { serial: 'PS-BBBB2222', label: 'Cocina' }),
-      item('c', { serial: 'PS-CCCC3333', assignment: 'unassigned', connection: 'unassigned', venue_id: null, venue_name: null }) ] });
-    expect(filterPsList(inv.items, { ...EMPTY_PS_LIST_FILTER, query: 'bbbb' }).map(i => i.id)).toEqual(['b']);
-    expect(filterPsList(inv.items, { ...EMPTY_PS_LIST_FILTER, venue: UNASSIGNED }).map(i => i.id)).toEqual(['c']);
-    expect(filterPsList(inv.items, { ...EMPTY_PS_LIST_FILTER, venue }).map(i => i.id)).toEqual(['a', 'b']);
   });
 
   it('has every new message in both languages', () => {

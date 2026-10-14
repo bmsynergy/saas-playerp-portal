@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Archive, Trash2 } from 'lucide-react';
 import { assignDevice, revokeDevice, type InventoryDevice } from '../lib/psDevice';
-import { adminDeviceErrorKey, deleteAdminDevice, getAdminDeviceManage, moveAdminDevice, type AdminVenueOption, type AdminDeviceManage } from '../lib/psAdminDevice';
+import { AdminDeviceError, adminDeviceErrorKey, deleteAdminDevice, getAdminDeviceManage, moveAdminDevice, type AdminVenueOption, type AdminDeviceManage } from '../lib/psAdminDevice';
 import { psErrorKey } from '../lib/printServerApi';
 import { useLocale } from '../locales';
 import { PortalDialog } from './PortalDialog';
@@ -15,7 +15,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [mode, setMode] = useState<'manage' | 'unassign' | 'delete'>('manage');
+  const [mode, setMode] = useState<'manage' | 'unassign' | 'retire' | 'delete'>('manage');
   const [typedSerial, setTypedSerial] = useState('');
   const [venue, setVenue] = useState<AdminVenueOption | null>(null);
   useEffect(() => {
@@ -56,19 +56,42 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
     catch (err) { setError(t(psErrorKey(err))); }
     finally { setBusy(false); }
   }
+  async function retire() {
+    if (!detail?.actions.retire.allowed || typedSerial !== detail.device.serial || busy) return;
+    setBusy(true); setError('');
+    try {
+      await revokeDevice(device.id, true);
+      onResult({ ok: true, text: t('inv.retired') }); onClose();
+      try { await onChanged(); } catch { onResult({ ok: false, text: `${t('inv.retired')} ${t('fw.refreshFailed')}` }); }
+    } catch (err) { setError(t(psErrorKey(err))); }
+    finally { setBusy(false); }
+  }
   async function remove() {
     if (!detail?.actions.delete.allowed || typedSerial !== detail.device.serial || busy) return;
     setBusy(true); setError('');
-    try { await deleteAdminDevice(device.id, typedSerial); onResult({ok:true,text:t('adminDevice.deleted').replace('{serial}',device.serial)}); onClose(); await onChanged(); }
-    catch (err) { setError(t(adminDeviceErrorKey(err))); }
+    try {
+      await deleteAdminDevice(device.id, typedSerial);
+      const text = t('adminDevice.deleted').replace('{serial}', device.serial);
+      onResult({ ok: true, text }); onClose();
+      try { await onChanged(); } catch { onResult({ ok: false, text: `${text} ${t('fw.refreshFailed')}` }); }
+    } catch (err) {
+      setError([t(adminDeviceErrorKey(err)), ...(err instanceof AdminDeviceError ? err.blockers.map(reason) : [])].join(' '));
+      if (err instanceof AdminDeviceError && err.key === 'adminDevice.error.delete_blocked') {
+        // A new operation may have appeared since opening the dialog. Close the
+        // destructive gate immediately; refresh to explain the authoritative state.
+        setTypedSerial(''); setMode('manage');
+        setDetail(current => current ? { ...current, actions: { ...current.actions, delete: { allowed: false, reason: 'delete_blocked' } }, delete: { allowed: false, blockers: err.blockers } } : null);
+        try { setDetail(await getAdminDeviceManage(device.id)); } catch { /* retain the closed gate and refusal */ }
+      }
+    }
     finally { setBusy(false); }
   }
-  const title = mode === 'delete' ? t('adminDevice.deleteTitle').replace('{serial}',device.serial) : mode === 'unassign' ? t('inv.revoke') : t('inv.manage');
+  const title = mode === 'delete' ? t('adminDevice.deleteTitle').replace('{serial}',device.serial) : mode === 'retire' ? t('inv.retireTitle').replace('{serial}', device.serial) : mode === 'unassign' ? t('inv.revoke') : t('inv.manage');
   return <PortalDialog title={title} titleId="admin-device-manage-title" testId="admin-device-manage-dialog" alert={mode !== 'manage'} onClose={onClose} dismissible={!busy} actions={mode === 'manage' ? <>
     <button type="button" className="button button-primary" data-testid="inv-manage-assign" disabled={!canAssign} onClick={() => void assign()}>{t(currentId ? 'inv.reassign' : 'inv.assign')}</button>
     <button type="button" className="button button-secondary" disabled={busy} onClick={onClose}>{t('staff.cancel')}</button>
   </> : <>
-    <button type="button" className="button button-primary ps-danger-solid" disabled={busy || loading || (mode === 'delete' ? !detail?.actions.delete.allowed || typedSerial !== device.serial : !detail?.actions.unassign.allowed)} onClick={() => void (mode === 'delete' ? remove() : unassign())}>{t(mode === 'delete' ? 'adminDevice.delete' : 'inv.revoke')}</button>
+    <button type="button" className="button button-primary ps-danger-solid" data-testid="inv-manage-confirm" disabled={busy || loading || (mode === 'delete' || mode === 'retire' ? !detail?.actions[mode].allowed || typedSerial !== detail?.device.serial : !detail?.actions.unassign.allowed)} onClick={() => void (mode === 'delete' ? remove() : mode === 'retire' ? retire() : unassign())}>{t(mode === 'delete' ? 'adminDevice.delete' : mode === 'retire' ? 'inv.retire' : 'inv.revoke')}</button>
     <button type="button" className="button button-secondary" disabled={busy} onClick={() => { setMode('manage'); setTypedSerial(''); setError(''); }}>{t('adminDevice.back')}</button>
   </>}>
     {loading ? <p role="status">{t('dev.loading')}</p> : detail && <>
@@ -80,8 +103,11 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
           {(detail.actions.unassign.allowed || currentId) && <button type="button" className="button button-secondary ps-danger" disabled={busy || !detail.actions.unassign.allowed} onClick={() => { setError(''); setMode('unassign'); }}>{t('inv.revoke')}</button>}
           {currentId && !detail.actions.unassign.allowed && <small>{reason(detail.actions.unassign.reason)}</small>}
         </div>
-        {detail.actions.delete.allowed && <section className="inv-manage-danger"><h3>{t('inv.dangerZone')}</h3><button type="button" className="button button-secondary ps-danger" disabled={busy} onClick={() => { setError(''); setMode('delete'); }}><Trash2 size={15}/>{t('inv.deletePrintServer')}</button></section>}
-      </> : mode === 'unassign' ? <p>{t('inv.revokeConfirm').replace('{serial}',device.serial)}</p> : <><p>{t('adminDevice.deleteWarning')}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}',device.serial)}</span><input autoComplete="off" value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}
+        <p className="owner-section-lead">{t('adminDevice.retireBeforeDelete')}</p>
+        {detail.actions.retire.allowed && <button type="button" className="button button-secondary ps-danger" data-testid="inv-manage-retire" disabled={busy} onClick={() => { setError(''); setTypedSerial(''); setMode('retire'); }}><Archive size={15}/>{t('inv.retire')}</button>}
+        {!detail.actions.delete.allowed && detail.delete.blockers.length > 0 && <ul className="owner-section-lead" data-testid="inv-delete-blockers">{detail.delete.blockers.map(code => <li key={code}>{reason(code)}</li>)}</ul>}
+        {detail.actions.delete.allowed && <section className="inv-manage-danger"><h3>{t('inv.dangerZone')}</h3><button type="button" className="button button-secondary ps-danger" disabled={busy} data-testid="inv-manage-delete" onClick={() => { setError(''); setTypedSerial(''); setMode('delete'); }}><Trash2 size={15}/>{t('inv.deletePrintServer')}</button></section>}
+      </> : mode === 'unassign' ? <p>{t('inv.revokeConfirm').replace('{serial}',device.serial)}</p> : <><p>{t(mode === 'retire' ? 'inv.retireWarning' : 'adminDevice.deleteWarning')}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}',device.serial)}</span><input data-testid="inv-confirm-serial" autoComplete="off" spellCheck={false} value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}
     </>}
     {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{error}</p>}
   </PortalDialog>;

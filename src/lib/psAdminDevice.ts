@@ -20,7 +20,7 @@ const str = (v: unknown): string | null => typeof v === 'string' && v.trim() ? v
 const required = (v: unknown): string => str(v) ?? bad();
 const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable','update_changed','edition_not_candidate','confirmation_required','metadata_missing','no_general_update','ring_not_allowed'];
 export class AdminDeviceError extends Error {
-  constructor(public key: string) { super(key); }
+  constructor(public key: string, public blockers: string[] = [], public nextStep: 'unassign' | 'retire' | null = null) { super(key); }
 }
 export function adminDeviceErrorKey(error: unknown): string {
   return error instanceof AdminDeviceError ? error.key : errorCode(error);
@@ -29,6 +29,10 @@ function checked(value: unknown): Raw {
   const data = obj(value);
   if (data.ok === false) {
     const code = typeof data.error === 'string' ? data.error : '';
+    if (code === 'delete_blocked') {
+      const blockers = Array.isArray(data.blockers) ? data.blockers.filter((value): value is string => typeof value === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(value)) : [];
+      throw new AdminDeviceError('adminDevice.error.delete_blocked', blockers, data.next_step === 'unassign' || data.next_step === 'retire' ? data.next_step : null);
+    }
     if (['update_changed', 'edition_not_candidate', 'confirmation_required'].includes(code)) throw new AdminDeviceError('adminDevice.updateChanged');
     if (['metadata_missing', 'no_general_update', 'ring_not_allowed'].includes(code)) throw new AdminDeviceError(`adminDevice.reason.${code}`);
     throw new AdminDeviceError(`adminDevice.error.${errors.includes(code) ? code : 'other'}`);
@@ -71,7 +75,7 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
     update_available: u.update_available && u.can_update === true && admitted && !active && !reason,
     reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
       progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null },
-    delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status !== 'assigned' && !device.legacy, blockers } };
+    delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status === 'retired' && !device.legacy, blockers } };
 }
 export async function getDeviceModels(signal?: AbortSignal): Promise<DeviceModel[]> {
   return projectDeviceModels(await rpc('ps_admin_device_models', {}, signal));
@@ -109,7 +113,7 @@ export async function updateAdminDevice(id: string, editionId: string, expectedI
 
 export type DeviceModelCatalog = { models: DeviceModel[]; default: { model: string; label: string; arch: string } | null };
 export type ManageAction = { allowed: boolean; reason: string | null };
-export type AdminDeviceManage = AdminDeviceDetail & { actions: Record<'assign' | 'move' | 'unassign' | 'delete', ManageAction> };
+export type AdminDeviceManage = AdminDeviceDetail & { actions: Record<'assign' | 'move' | 'unassign' | 'retire' | 'delete', ManageAction> };
 export type AdminVenueOption = { id: string; name: string; slug: string | null; city: string | null; state: string | null; is_active: boolean; assigned_device: { id: string; serial: string } | null };
 
 export function projectDeviceModelCatalog(value: unknown): DeviceModelCatalog {
@@ -125,15 +129,17 @@ export async function getDeviceModelCatalog(signal?: AbortSignal): Promise<Devic
 }
 export function projectAdminDeviceManage(value: unknown): AdminDeviceManage {
   const data = checked(value), detail = projectAdminDeviceDetail(value), actions = obj(data.actions);
-  const action = (key: 'assign' | 'move' | 'unassign' | 'delete'): ManageAction => {
+  const action = (key: 'assign' | 'move' | 'unassign' | 'retire' | 'delete'): ManageAction => {
+    if (key === 'retire' && actions.retire == null) return { allowed: false, reason: null };
     const raw = obj(actions[key]);
     const reason = str(raw.reason);
     // Do not render unstructured backend reasons or relax the detail deletion guard.
     const safeReason = reason && /^[a-z][a-z0-9_]{0,63}$/.test(reason) ? reason : reason ? 'other' : null;
-    const allowed = raw.allowed === true && !reason && (key !== 'delete' || (detail.delete.allowed && raw.confirm_with === 'serial'));
+    const allowed = raw.allowed === true && !reason && (key !== 'delete' || (detail.delete.allowed && raw.confirm_with === 'serial'))
+      && (key !== 'retire' || (raw.confirm_with === 'serial' && raw.revoke_reason === 'retired' && detail.device.status !== 'retired' && !detail.device.legacy));
     return { allowed, reason: safeReason };
   };
-  return { ...detail, actions: { assign: action('assign'), move: action('move'), unassign: action('unassign'), delete: action('delete') } };
+  return { ...detail, actions: { assign: action('assign'), move: action('move'), unassign: action('unassign'), retire: action('retire'), delete: action('delete') } };
 }
 export async function getAdminDeviceManage(id: string, signal?: AbortSignal): Promise<AdminDeviceManage> {
   return projectAdminDeviceManage(await rpc('ps_admin_device_manage', { p_device_id: id }, signal));

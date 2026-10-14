@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Clock3, FilterX, RefreshCw, Search, Server, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Clock3, RefreshCw, Search, Server, X } from 'lucide-react';
 import { ASSIGNED_VENUE, EMPTY_INVENTORY_FILTER, UNKNOWN_VERSION, UNASSIGNED_VENUE, filterInventory, inventoryVersions, summarizeInventory, type Inventory, type InventoryFilter, type InventoryItem } from '../lib/printInventory';
 import { useLocale } from '../locales';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
 import { AdminDateFilters } from '../components/AdminListFilters';
+import { ClearFiltersButton } from '../components/ClearFiltersButton';
 import { matchesUtcDay } from '../lib/adminLists';
 import '../print-dashboard.css';
 import { PrintServersTabs } from './PrintFirmwaresPage';
@@ -71,7 +72,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
         <label><span>{t('dash.state')}</span><select value={filter.state} onChange={event => set('state', event.target.value)} data-testid="inventory-filter-state"><option value="">{t('ps.filter.anyState')}</option>{['online', 'offline', 'unknown', 'unassigned', 'errors', 'warnings'].map(state => <option key={state} value={state}>{t(`dash.${state}`)}</option>)}</select></label>
         <label><span>{t('dash.version')}</span><select value={filter.version} onChange={event => set('version', event.target.value)} data-testid="inventory-filter-version"><option value="">{t('ps.filter.allVersions')}</option>{versions.map(version => <option key={version ?? UNKNOWN_VERSION} value={version ?? UNKNOWN_VERSION}>{version ?? t('dash.unknownVersion')}</option>)}</select></label>
         <AdminDateFilters id="dashboard" label={t('list.lastContact')} from={dateFilter.from} to={dateFilter.to} onChange={(key, value) => { setDateFilter(current => ({ ...current, [key]: value })); pagination.reset(); }}/>
-        <button className="print-dashboard-clear" type="button" disabled={!changed} onClick={() => { setFilter(EMPTY_INVENTORY_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }} data-testid="dashboard-filter-clear"><FilterX size={15}/>{t('ps.filter.clear')}</button>
+        <ClearFiltersButton testId="dashboard-filter-clear" disabled={!changed} onClick={() => { setFilter(EMPTY_INVENTORY_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }}/>
       </div>
     </section>
 
