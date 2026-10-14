@@ -6,7 +6,7 @@ import { StateView } from '../components/StateView';
 import { VenueDetailsPanel } from './VenueSections';
 
 import type { OwnerSection } from '../hooks/useOwnerNavigation';
-type Props = { venues: OwnerVenue[]; selectedId: string; section: OwnerSection; onSelect: (id: string) => void; users?: ReactNode; printServers?: ReactNode };
+type Props = { venues: OwnerVenue[]; selectedId: string; section: OwnerSection; onSelect: (id: string) => void; users?: ReactNode; printServers?: ReactNode; integrations?: ReactNode };
 
 function VenueStatus({ venue }: { venue: OwnerVenue }) {
   const { t } = useLocale();
@@ -15,7 +15,7 @@ function VenueStatus({ venue }: { venue: OwnerVenue }) {
   </span>;
 }
 
-export function OwnerPage({ venues, selectedId, section, onSelect, users, printServers }: Props) {
+export function OwnerPage({ venues, selectedId, section, onSelect, users, printServers, integrations }: Props) {
   const { t } = useLocale();
   const selected = venues.find((venue) => venue.id === selectedId);
 
@@ -30,7 +30,7 @@ export function OwnerPage({ venues, selectedId, section, onSelect, users, printS
           <VenueStatus venue={venue}/><ArrowRight className="owner-card-arrow" size={18} aria-hidden="true"/>
         </button>)}
       </div>}
-    </section> : !selected ? <StateView kind="empty" message="emptyDirectory" /> : section === 'users' ? users ?? <StateView kind="empty" message="emptyBody" /> : section === 'print-servers' ? printServers ?? <StateView kind="empty" message="emptyBody" /> : section === 'details' ? <VenueDetailsPanel venue={selected} scope="owner" /> : <section className="owner-venue-card" data-testid="owner-dashboard" aria-labelledby="owner-dashboard-title">
+    </section> : !selected ? <StateView kind="empty" message="emptyDirectory" /> : section === 'users' ? users ?? <StateView kind="empty" message="emptyBody" /> : section === 'print-servers' ? printServers ?? <StateView kind="empty" message="emptyBody" /> : section === 'integrations' ? integrations ?? <StateView kind="empty" message="emptyBody" /> : section === 'details' ? <VenueDetailsPanel venue={selected} scope="owner" /> : <section className="owner-venue-card" data-testid="owner-dashboard" aria-labelledby="owner-dashboard-title">
       <div className="owner-venue-top"><div><p className="eyebrow">{t('ownerDashboard')}</p><h2 id="owner-dashboard-title">{selected.name}</h2><p className="owner-section-lead">{t('ownerDashboardLead')}</p></div><VenueStatus venue={selected}/></div>
       <div className="owner-dashboard-facts"><div><span>{t('city')}</span><strong>{[selected.city, selected.state].filter(Boolean).join(', ') || t('notProvided')}</strong></div><div><span>{t('address')}</span><strong>{selected.address || t('notProvided')}</strong></div></div>
     </section>}

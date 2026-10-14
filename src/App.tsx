@@ -44,6 +44,9 @@ import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
 import { OAuthConsentPage } from './pages/OAuthConsentPage';
 import { consentRequestId, consentPath } from './lib/oauthConsent';
+import { getMcpAdminOverview, getMcpIntegration, mcpErrorKey, setMcpTenant, setMcpVenue } from './lib/mcp';
+import { AdminMcpPage } from './pages/AdminMcpPage';
+import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
@@ -116,9 +119,10 @@ function OwnerRoute() {
   if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
   const selected=detail.data?.find(venue=>venue.id===selectedId);
   if(!selected)return <StateView kind="denied"/>;
-  if(section==='users'&&selected.is_owner!==true)return <StateView kind="denied"/>;
+  if((section==='users'||section==='integrations')&&selected.is_owner!==true)return <StateView kind="denied"/>;
   return <OwnerPage key={selectedId} venues={venues.map(venue=>venue.id===selectedId?selected:venue)} selectedId={selectedId} section={section} onSelect={onSelect}
     users={section==='users'&&selected.is_owner===true?<OwnerUsersData key={selectedId} venueId={selectedId}/>:undefined}
+    integrations={section==='integrations'&&selected.is_owner===true?<McpIntegrationData key={selectedId} venueId={selectedId}/>:undefined}
     printServers={section==='print-servers'?(device?<DeviceSheetData key={`${selectedId}:${device}`} id={device} scope="owner" expectedVenueId={selectedId}/>:<VenueDevicesData key={selectedId} venue={selected} scope="owner"/>):undefined}/>;
 }
 // Members of the owner's venue: one request at a time, localized errors, and a fresh
@@ -158,6 +162,47 @@ function OwnerUsersData({venueId}:{venueId:string}) {
       result=>result.changed===false?'identity.noChange':Number(result.notify_failed)>0?'ownerUsers.ownerNoticeFailed':operation==='remove'?'ownerUsers.ownerRemoved':'ownerUsers.ownerUpdated')}
     onAction={(action:OwnerUserAction,person:OwnerUser,value)=>run({action,user_id:person.user_id,...(action==='set_role'?{role:value}:{portal_access:value})},
       result=>result.changed===false?'identity.noChange':action==='set_role'?'identity.roleUpdated':value===true?'ownerUsers.portalGranted':'ownerUsers.portalRemoved')}/>;
+}
+// PE-458: Integrations / AI-MCP of one venue (owners only; mcp_integracion_estado answers 42501 otherwise).
+function McpIntegrationData({venueId}:{venueId:string}) {
+  const {session,expire}=useAuth();
+  const data=useQuery({queryKey:['mcp-integration',session?.user.id,venueId],queryFn:({signal})=>getMcpIntegration(venueId,signal),refetchInterval:60_000});
+  useEffect(()=>{
+    if(data.error&&mcpErrorKey(data.error)==='sessionExpired')void expire();
+    if(data.error&&mcpErrorKey(data.error)==='accessDenied')void queryClient.invalidateQueries({queryKey:['access']});
+  },[data.error,expire]);
+  if(data.error&&mcpErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <IntegrationsMcpSection data={data.data}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
+}
+// PE-458: /admin/mcp, platform Admin only (the same gate as Staff); the RPCs answer 42501 to anyone else.
+function McpAdminRoute() {
+  const access=useAccess();
+  return access.data?.can_manage_staff ? <McpAdminData/> : <StateView kind="denied"/>;
+}
+function McpAdminData() {
+  const {session,expire}=useAuth();
+  const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null); const [notice,setNotice]=useState<string|null>(null);
+  const data=useQuery({queryKey:['mcp-admin',session?.user.id],queryFn:({signal})=>getMcpAdminOverview(signal),refetchInterval:30_000});
+  useEffect(()=>{if(data.error&&mcpErrorKey(data.error)==='sessionExpired')void expire();},[data.error,expire]);
+  const run=async(call:()=>Promise<unknown>,done:string)=>{
+    if(busy)return;
+    setBusy(true);setError(null);setNotice(null);
+    try { const out=await call() as {cambiado?:boolean}|null; setNotice(out?.cambiado===false?'identity.noChange':done); await data.refetch(); }
+    catch(e) {
+      const code=mcpErrorKey(e);setError(code);
+      if(code==='sessionExpired')await expire();
+      if(code==='accessDenied')await queryClient.invalidateQueries({queryKey:['access']});
+      throw e;
+    } finally {setBusy(false);}
+  };
+  if(data.isError&&mcpErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
+  if(data.data)return <AdminMcpPage data={data.data} busy={busy} error={error} notice={notice}
+    onTenant={(id,on,reason)=>run(()=>setMcpTenant(id,on,reason),on?'mcp.notice.tenantOn':'mcp.notice.tenantOff')}
+    onVenue={(id,on,reason)=>run(()=>setMcpVenue(id,on,reason),on?'mcp.notice.venueOn':'mcp.notice.venueOff')}/>;
+  if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
+  return <StateView kind="loading"/>;
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();
@@ -512,6 +557,7 @@ export default function App() {
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
+    <Route path="/admin/mcp" element={<Scope scope="admin"><McpAdminRoute/></Scope>}/>
     {/* PE-328: the global user list is retired; venue users live in each venue's Users tab. */}
     <Route path="/admin/users" element={<Navigate to="/admin/tenants" replace/>}/>
     <Route path="/admin/users/:id" element={<Navigate to="/admin/tenants" replace/>}/>

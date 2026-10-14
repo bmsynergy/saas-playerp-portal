@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import type { OwnerVenue } from '../lib/types';
 
-export type OwnerSection = 'dashboard' | 'details' | 'users' | 'print-servers';
+export type OwnerSection = 'dashboard' | 'details' | 'users' | 'print-servers' | 'integrations';
 
 // The URL records context, never grants access. Each selection must still belong
 // to the current access response; a fresh multi-venue entry always opens Overview.
@@ -11,7 +11,7 @@ export function useOwnerNavigation(venues: OwnerVenue[]) {
   const selectedId = requested ?? (venues.length === 1 ? venues[0].id : '');
   const known = venues.some(venue => venue.id === selectedId);
   const requestedSection = params.get('section');
-  const section: OwnerSection = requestedSection === 'details' || requestedSection === 'users' || requestedSection === 'print-servers' ? requestedSection : 'dashboard';
+  const section: OwnerSection = requestedSection === 'details' || requestedSection === 'users' || requestedSection === 'print-servers' || requestedSection === 'integrations' ? requestedSection : 'dashboard';
   // PE-443: a device sheet inside the Print Servers section (stable device id; still checked by the backend).
   const device = section === 'print-servers' ? params.get('device') ?? '' : '';
   const onSelect = (id: string) => {

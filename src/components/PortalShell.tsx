@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, Bot, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UsersRound } from 'lucide-react';
 import { useLocale } from '../locales';
 import type { OwnerVenue } from '../lib/types';
 import type { OwnerSection } from '../hooks/useOwnerNavigation';
@@ -94,7 +94,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
   const areaTitle = scope === 'admin' ? t('staffArea') : t('ownerArea');
   const initial = (displayName || email).charAt(0).toUpperCase() || 'P';
   const nav = !navigationAllowed ? [] : scope === 'admin'
-    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
+    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/mcp', label: t('mcp.nav'), icon: Bot, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
     : [{ to: '/', label: t('yourVenues'), icon: Building2, end: true }];
   const ownerVenue = ownerContext?.venues.find(venue => venue.id === ownerContext.selectedId);
   const ownerHasMany = (ownerContext?.venues.length ?? 0) > 1;
@@ -103,6 +103,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
     { section: 'details' as const, label: t('venueDetails'), icon: Building2 },
     ...(ownerContext?.canManageUsers ? [{ section: 'users' as const, label: t('identity.tab'), icon: UsersRound }] : []),
     { section: 'print-servers' as const, label: t('ps.nav'), icon: Printer },
+    ...(ownerContext?.canManageUsers ? [{ section: 'integrations' as const, label: t('mcp.integrationsNav'), icon: Bot }] : []),
   ] : [];
   const path = location.pathname;
   const crumbs: Crumb[] = !navigationAllowed ? [{ label: path === '/auth/password' ? t('passwordTitle') : path === '/auth/invitation' ? t('staff.invitationTitle') : path === '/auth/forgot' ? t('forgotTitle') : path === '/auth/complete' ? t('loadingTitle') : t('account') }] : (() => {
@@ -121,7 +122,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
       { label: t('ps.nav'), to: venuePrint[2] && canManageStaff ? `${venuePrint[1]}/print-servers` : undefined },
       ...(venuePrint[2] ? [{ label: t('ps.detailEyebrow') }] : [])];
     if (path.startsWith('/admin/tenants/')) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails') }];
-    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav') };
+    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav'), '/admin/mcp': t('mcp.nav') };
     return [root, { label: sectionLabels[path] ?? t('notFoundTitle') }];
   })();
   const context = crumbs[crumbs.length - 1].label;
@@ -139,7 +140,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
           {ownerVenue && <>
             <div className="owner-sidebar-venue" title={ownerVenue.name}><Building2 size={18} aria-hidden="true"/><span>{ownerVenue.name}</span></div>
             {ownerHasMany && <label className="owner-sidebar-select"><span className="sr-only">{t('selectVenue')}</span><select data-testid="owner-venue-select" aria-label={t('selectVenue')} value={ownerVenue.id} onChange={event => { ownerContext.onSelect(event.target.value); setNavOpen(false); }}>{ownerContext.venues.map(venue => <option key={venue.id} value={venue.id}>{venue.name}</option>)}</select><ChevronDown size={16} aria-hidden="true"/></label>}
-            {ownerSectionItems.map(({ section, label, icon: Icon }) => <button key={section} type="button" data-testid={section === 'dashboard' ? 'owner-nav-dashboard' : section === 'details' ? 'owner-nav-details' : section === 'users' ? 'venue-users-tab' : 'venue-print-servers-tab'} className={`nav-link ${ownerContext.section === section ? 'active' : ''}`} aria-current={ownerContext.section === section ? 'page' : undefined} title={collapsed ? label : undefined} onClick={() => { ownerContext.onSection(section); setNavOpen(false); }}><Icon size={19} strokeWidth={1.9}/><span>{label}</span><ArrowRight className="nav-arrow" size={16}/></button>)}
+            {ownerSectionItems.map(({ section, label, icon: Icon }) => <button key={section} type="button" data-testid={section === 'dashboard' ? 'owner-nav-dashboard' : section === 'details' ? 'owner-nav-details' : section === 'users' ? 'venue-users-tab' : section === 'integrations' ? 'owner-nav-integrations' : 'venue-print-servers-tab'} className={`nav-link ${ownerContext.section === section ? 'active' : ''}`} aria-current={ownerContext.section === section ? 'page' : undefined} title={collapsed ? label : undefined} onClick={() => { ownerContext.onSection(section); setNavOpen(false); }}><Icon size={19} strokeWidth={1.9}/><span>{label}</span><ArrowRight className="nav-arrow" size={16}/></button>)}
           </>}
         </> : nav.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} aria-label={label} title={collapsed ? label : undefined} onClick={() => setNavOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><Icon size={19} strokeWidth={1.9}/><span>{label}</span><ArrowRight className="nav-arrow" size={16}/></NavLink>)}
       </nav></>}

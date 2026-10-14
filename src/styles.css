@@ -458,3 +458,17 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .ps-unassigned-card .staff-action-link{justify-self:start}
 .ps-unassigned-note{margin:0;color:var(--muted);font-size:.72rem;line-height:1.5}
 @media(max-width:600px){.ps-venue-card summary,.ps-unassigned-card{padding:15px}.ps-venue-details{padding:0 14px 8px}.ps-venue-count{margin-left:auto}.ps-venue-chevron{order:2}.ps-venue-state-summary{order:3}}
+/* PE-458 — MCP Analytics: /admin/mcp and Integrations / AI-MCP */
+.mcp-legend-list{margin:0;padding-left:20px;display:grid;gap:7px;font-size:.84rem;line-height:1.5;color:var(--ink)}
+.mcp-tenant-row td{background:var(--canvas);border-top:2px solid var(--line)}
+.mcp-venue-cell strong{display:inline-flex;align-items:center;gap:6px;padding-left:18px}
+.mcp-venue-cell small{padding-left:18px}
+.mcp-changed{display:block;margin-top:5px;font-size:.7rem;color:var(--muted,#6b7280)}
+.mcp-muted{font-size:.76rem;color:var(--muted,#6b7280)}
+.mcp-badge{white-space:nowrap}
+.mcp-endpoint{display:block;word-break:break-all;margin:4px 0 8px}
+.mcp-copy{margin-top:4px}
+.mcp-steps{margin:0;padding-left:22px;display:grid;gap:8px;font-size:.86rem;line-height:1.5}
+.mcp-clients{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+.mcp-clients li{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:9px 13px;background:var(--surface)}
+.mcp-clients small{font-size:.7rem;color:var(--muted,#6b7280)}
