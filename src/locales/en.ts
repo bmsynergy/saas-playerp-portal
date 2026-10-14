@@ -1089,7 +1089,7 @@ export const en = {
   'dev.error.invalid_body': "The certificate could not be read.",
   'inv.tab': "Inventory",
   'inv.title': "Print Server inventory",
-  'inv.lead': "Units with serial and hostname issued by the platform. Assigning issues a one-use activation code.",
+  'inv.lead': "Units with serial and hostname issued by the platform. Prepare issues the initial code (first registration only); assigning to a venue never asks for a code.",
   'inv.eyebrow': "Platform inventory",
   'inv.listTitle': "Units",
   'inv.create': "Add Print Server",

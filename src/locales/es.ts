@@ -1091,7 +1091,7 @@ export const es: Record<keyof typeof en, string> = {
   'dev.error.invalid_body': "No se pudo leer el certificado.",
   'inv.tab': "Inventario",
   'inv.title': "Inventario de Print Servers",
-  'inv.lead': "Aparatos con serie y hostname que emite la plataforma. Asignar emite un código de activación de un solo uso.",
+  'inv.lead': "Aparatos con serie y hostname que emite la plataforma. Preparar emite el código inicial (solo para el primer registro); asignar a un venue no pide ningún código.",
   'inv.eyebrow': "Inventario de la plataforma",
   'inv.listTitle': "Aparatos",
   'inv.create': "Add Print Server",
