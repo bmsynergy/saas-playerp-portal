@@ -71,7 +71,7 @@ async function verifyDisabled(page){
   if(!await b.isVisible())continue;
   await b.hover({force:true});
   const style=await b.evaluate(el=>{const s=getComputedStyle(el);return {color:s.color,bg:s.backgroundColor,cursor:s.cursor,animation:s.animationName,disabled:el.matches(':disabled'),ancestorOpacity:(()=>{let n=el,opacity=1;while(n){opacity*=Number(getComputedStyle(n).opacity);n=n.parentElement;}return opacity;})()};});
-  assert.ok(style.disabled);assert.equal(style.ancestorOpacity,1);assert.equal(style.cursor,'not-allowed');assert.equal(style.animation,'none');
+  assert.ok(style.disabled);assert.equal(style.ancestorOpacity,1);assert.equal(style.cursor,'default');assert.equal(style.animation,'none');
   assert.ok((luminance(style.bg)+.05)/(luminance(style.color)+.05)>=4.5,JSON.stringify(style));
  }
 }
