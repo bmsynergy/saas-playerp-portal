@@ -47,6 +47,8 @@ const errorKeys: Record<string, string> = {
   availability_changed: 'fw.lifecycle.error.availabilityChanged', edition_retired: 'fw.lifecycle.error.retired',
   ring_disabled: 'fw.lifecycle.error.ringDisabled', canary_not_confirmed: 'ota.error.canaryNotConfirmed',
   edition_lab_only: 'fw.lifecycle.error.labOnly', edition_not_signed: 'fw.lifecycle.error.notSigned',
+  lab_build: 'fw.lifecycle.reason.lab_build', revision_not_general: 'fw.lifecycle.reason.revision_not_general',
+  release_not_ready: 'fw.lifecycle.reason.release_not_ready',
   installed: 'fw.error.deleteInstalled', deployment_in_progress: 'fw.error.deleteInProgress',
   not_found: 'fw.error.deleteNotFound', bad_id: 'fw.error.deleteInvalid',
 };

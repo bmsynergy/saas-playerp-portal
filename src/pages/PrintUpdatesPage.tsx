@@ -9,7 +9,7 @@ import { useOtaPage } from '../lib/useOtaPage';
 import { eventDetail, eventPhase, auditFacts } from '../lib/otaPresentation';
 import { AlertTriangle, Check, ChevronDown, Copy, Plus, RefreshCw, Rocket, Save, ShieldCheck, Users, X } from 'lucide-react';
 import { createGroup, deployEdition, getTargetEvents, RINGS, setGroupMembers, statusClass, type OtaDevice, type OtaOverview, type OtaTarget, type OtaPageKind, type Ring } from '../lib/ota';
-import { firmwareEditionLink, firmwareRingAvailable } from '../lib/firmwareLifecycle';
+import { firmwareEditionLink, firmwareRingAvailable, type FirmwareLifecycle, type FirmwareRing } from '../lib/firmwareLifecycle';
 import { psErrorKey } from '../lib/printServerApi';
 import { useLocale } from '../locales';
 import { PrintServersTabs } from './PrintFirmwaresPage';
@@ -27,6 +27,13 @@ const lifecycleReason = (t: (key: string) => string, reason: string | null) => {
   const key = `fw.lifecycle.reason.${reason}`;
   const translated = t(key);
   return translated === key ? t('fw.lifecycle.reason.generic') : translated;
+};
+const ringAvailabilityReason = (t: (key: string) => string, lifecycle: FirmwareLifecycle | null | undefined, ring: FirmwareRing) => {
+  if (!lifecycle) return t('fw.lifecycle.unavailable');
+  if (firmwareRingAvailable(lifecycle, ring)) return t('fw.lifecycle.available');
+  if (lifecycle.retired_at) return t('fw.lifecycle.reason.edition_retired');
+  if (!lifecycle.rings[ring].enabled) return t('fw.lifecycle.reason.ring_disabled');
+  return lifecycleReason(t, lifecycle.rings[ring].reason) ?? t('ota.lifecycle.unavailable');
 };
 
 function useLabels() {
@@ -280,7 +287,7 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
               : <span className="server-status server-pending"><span className="badge-dot"/>{t('ota.unsigned')}</span>}
             {r.lifecycle?.retired_at && <span className="server-status server-revoked">{t('fw.lifecycle.retired')}</span>}
             {r.lifecycle?.canary_confirmed_at && <span className="server-status server-online" data-testid={`ota-canary-${r.id}`} title={l.date(r.lifecycle.canary_confirmed_at)}><Check size={13}/>{t('ota.canaryConfirmed')}</span>}
-          </span>{r.lifecycle ? <span className="ota-badges ota-lifecycle-rings">{RINGS.map(ring => <span key={ring} className={`server-status ${firmwareRingAvailable(r.lifecycle, ring) ? 'server-online' : r.lifecycle?.rings[ring].enabled ? 'server-pending' : 'server-offline'}`} title={lifecycleReason(t, r.lifecycle?.rings[ring].reason ?? null) ?? undefined} data-testid={`ota-ring-${r.id}-${ring}`} data-available={firmwareRingAvailable(r.lifecycle, ring)}>{l.ring(ring)}: {firmwareRingAvailable(r.lifecycle, ring) ? t('fw.lifecycle.available') : r.lifecycle?.rings[ring].enabled ? t('fw.lifecycle.blocked') : t('fw.lifecycle.disabled')}</span>)}</span> : <small className="ps-sub">{t('fw.lifecycle.unavailable')}</small>}</td>
+          </span>{r.lifecycle ? <span className="ota-badges ota-lifecycle-rings">{RINGS.map(ring => <span key={ring} className={`server-status ${firmwareRingAvailable(r.lifecycle, ring) ? 'server-online' : r.lifecycle?.rings[ring].enabled ? 'server-pending' : 'server-offline'}`} title={ringAvailabilityReason(t, r.lifecycle, ring)} data-testid={`ota-ring-${r.id}-${ring}`} data-available={firmwareRingAvailable(r.lifecycle, ring)}>{l.ring(ring)}: {firmwareRingAvailable(r.lifecycle, ring) ? t('fw.lifecycle.available') : r.lifecycle?.retired_at ? t('fw.lifecycle.retired') : r.lifecycle?.rings[ring].enabled ? t('fw.lifecycle.blocked') : t('fw.lifecycle.disabled')}</span>)}</span> : <small className="ps-sub">{t('fw.lifecycle.unavailable')}</small>}</td>
           <td data-label={t('staff.actions')}><Link className="button button-secondary" to={firmwareEditionLink(r.lifecycle?.edition_id ?? r.edition_id,r.id)} data-testid={`ota-manage-firmware-${r.id}`}>{t('fw.lifecycle.manageInFirmwares')}</Link></td>
         </tr>)}
       </tbody></table></div>}
@@ -313,7 +320,7 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
           ? <label className="field"><span>{t('ota.group')}</span><select value={deploy.group} disabled={busy} data-testid="ota-deploy-group" onChange={e => setDeploy(d => ({ ...d, group: e.target.value }))}><option value="">{t('ota.chooseGroup')}</option>{data.groups.map(g => <option key={g.id} value={g.id}>{g.name} · {l.ring(g.ring)} · {g.members.length}</option>)}</select></label>
           : <label className="field"><span>{t('ota.ring')}</span><select value={deploy.ring} disabled={busy} data-testid="ota-deploy-ring" onChange={e => setDeploy(d => ({ ...d, ring: e.target.value as Ring }))}>{RINGS.map(r => <option key={r} value={r}>{l.ring(r)}</option>)}</select></label>}
         {deploy.mode === 'devices' && <div className="ota-deploy-devices"><DeviceChecklist devices={data.devices} picked={deploy.devices} toggle={toggleDevice} busy={busy} prefix="ota-deploy-device"/></div>}
-        {ringBlocked && <p className="form-error ota-wide" data-testid="ota-ring-blocked"><AlertTriangle size={16}/>{lifecycleReason(t, edition?.lifecycle?.rings[deployRing!].reason ?? null) ?? t('ota.lifecycle.unavailable')} <Link to={firmwareEditionLink(edition?.lifecycle?.edition_id ?? null, edition?.id)}>{t('fw.lifecycle.manageInFirmwares')}</Link></p>}
+        {ringBlocked && <p className="form-error ota-wide" data-testid="ota-ring-blocked"><AlertTriangle size={16}/>{ringAvailabilityReason(t, edition?.lifecycle, deployRing!)} <Link to={firmwareEditionLink(edition?.lifecycle?.edition_id ?? null, edition?.id)}>{t('fw.lifecycle.manageInFirmwares')}</Link></p>}
         <div className="fw-actions"><button type="submit" className="button button-primary" disabled={!canDeploy} data-testid="ota-deploy-submit"><Rocket size={16}/>{t('ota.deploy')}</button></div>
       </form>
     </section>

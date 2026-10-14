@@ -1,9 +1,9 @@
-# Revisión de Gaby — PE-442.5, 14-oct-2026
+# Revisión independiente PE-442.7 — misma sesión, solo lectura
 
-Revisión independiente de solo lectura en esta misma sesión, contra el diff de portal, el contrato propuesto y las pruebas. No verificó backend vivo ni autorización OTA física.
+Gaby revisó el consumidor lifecycle original `b169fb0..7c579f6`, los ajustes al contrato final y la integración de la dependencia PE441 `7f26647`. Alcance: firma/confirmación, gates, disponibilidad compartida, OWNER/ADMIN, caché, historial, enlaces por edición, cantidades y conservación de Eliminar PE416.
 
-- Hallazgo: Firmwares seguía montando datos cacheados tras fallar el refresco. Corrección: `PrintFirmwaresData` devuelve error antes de montar acciones con datos antiguos. El recorrido fixture simula 503 y exige ausencia de controles lifecycle.
-- Hallazgo: bloqueo de retirada por operación en curso usaba mensaje de Eliminar. Corrección: la mutación de disponibilidad usa el motivo lifecycle; el mapa PE416 se conserva. El recorrido fixture comprueba texto específico EN/ES.
-- Nota posterior: un fallo de inventario podía bloquear la pantalla aunque firmware se leyera bien. Corrección: eliminar la dependencia y prop sin uso; el agregado instalado viene de `ps_firmware_list`.
+Resultado: **sin defectos verificables**. Firmwares envía los datos mostrados y consume `available`; Updates elimina la firma, filtra por anillo y enlaza por ID de edición, incluido historial. El servidor revalida disponibilidad y gates.
 
-Gaby contrastó las correcciones y confirmó el cierre de ambos hallazgos y de la nota posterior. El principal verificó build y recorrido fixture; la aceptación de gates, permisos, transición, auditoría e historia persistida del servidor queda pendiente de Tom, y la publicación no está autorizada operativamente hasta que se cumpla esa dependencia explícita del encargo.
+Uma contrastó una observación sobre `complete:false`: ese indicador expresa integridad del catálogo, no revoca permisos válidos de una edición. Se muestra aviso de lista incompleta; una mutación continúa exigiendo lifecycle válido y autorización/revalidación servidor. No se consideró defecto.
+
+Límites explícitos: Gaby no ejecutó llamadas directas DEV; la evidencia servidor procede de Tom (backend cb94ecd). La revisión no acredita instalación física. Gaby volvió a comprobar y cerró sin hallazgos los cambios menores posteriores: textos EN/ES de incompatibilidad/Canary y tooltip disponible; pruebas de cliente HTTP/RPC y recorrido de una misma edición entre selector e historial.

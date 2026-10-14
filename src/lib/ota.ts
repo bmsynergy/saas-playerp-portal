@@ -111,7 +111,9 @@ const fnErrors: Record<string, string> = {
   confirmation_required: 'fw.lifecycle.error.confirmationRequired', release_changed: 'fw.lifecycle.error.releaseChanged',
   availability_changed: 'fw.lifecycle.error.availabilityChanged', edition_retired: 'fw.lifecycle.error.retired',
   ring_disabled: 'fw.lifecycle.error.ringDisabled', edition_lab_only: 'fw.lifecycle.error.labOnly',
-  edition_not_signed: 'fw.lifecycle.error.notSigned',
+  edition_not_signed: 'fw.lifecycle.error.notSigned', incompatible_device: 'fw.lifecycle.error.incompatible',
+  release_not_ready: 'fw.lifecycle.reason.release_not_ready', lab_build: 'fw.lifecycle.reason.lab_build',
+  revision_not_general: 'fw.lifecycle.reason.revision_not_general',
 };
 async function action(name: string, params: Record<string, unknown>): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();

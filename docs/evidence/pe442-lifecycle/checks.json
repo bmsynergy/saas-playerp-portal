@@ -1,5 +1,5 @@
 {
-  "kind": "Isolated proposed-contract browser fixtures. Not backend acceptance and not physical OTA.",
+  "kind": "Isolated final-contract browser fixtures. Not backend acceptance and not physical OTA.",
   "checks": [
     {
       "width": 390,

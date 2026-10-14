@@ -4,13 +4,13 @@ import { firmwareEditionLink, firmwareRingAvailable, projectFirmwareLifecycle } 
 const signed = () => ({
   contract_version: 1, edition_id: 'fixture-edition', edition_status: 'signed',
   signed_by: 'fixture-actor', signed_by_email: 'fixture@example.invalid', signed_at: '2026-10-14T00:00:00Z', key_id: 'fixture-public-key',
-  canary_confirmed_at: null, lab_only: false, configuration: 'explicit', revision: 1,
+  canary_confirmed_at: null, lab_only: false, configuration: 'explicit', revision: 1, open_targets: 0,
   retired_at: null, retired_by: null, can_sign: false, sign_block_reason: null,
   can_manage: true, can_retire: true, retire_block_reason: null,
   rings: {
-    lab: { enabled: false, eligible: true, reason: null },
-    canary: { enabled: true, eligible: true, reason: null },
-    general: { enabled: false, eligible: false, reason: 'canary_not_confirmed' },
+    lab: { enabled: false, eligible: true, available: false, reason: null },
+    canary: { enabled: true, eligible: true, available: true, reason: null },
+    general: { enabled: false, eligible: false, available: false, reason: 'canary_not_confirmed' },
   },
 });
 
@@ -22,7 +22,11 @@ describe('PE442 server availability consumption (client projection only)', () =>
     expect(firmwareRingAvailable(value, 'canary')).toBe(true);
     expect(firmwareRingAvailable(value, 'general')).toBe(false);
     expect(firmwareRingAvailable(projectFirmwareLifecycle({ ...raw, canary_confirmed_at: '2026-10-14T00:00:00Z' }), 'general')).toBe(false);
-    raw.rings.canary.eligible = false;
+    raw.rings.canary.available = false;
+    expect(firmwareRingAvailable(projectFirmwareLifecycle(raw), 'canary')).toBe(false);
+  });
+  it('honors the server availability even when the visible gate and configuration allow it', () => {
+    const raw = signed(); raw.rings.canary.available = false;
     expect(firmwareRingAvailable(projectFirmwareLifecycle(raw), 'canary')).toBe(false);
   });
   it('removes retired editions from all new selections while retaining identity and signature fields', () => {
@@ -32,8 +36,9 @@ describe('PE442 server availability consumption (client projection only)', () =>
     expect(firmwareRingAvailable(value, 'canary')).toBe(false);
   });
   it.each([undefined, null, {}, { ...signed(), contract_version: 2 }, { ...signed(), revision: -1 },
-    { ...signed(), can_manage: 'true' }, { ...signed(), rings: { lab: { enabled: true, eligible: true, reason: null } } },
-    { ...signed(), key_id: null }, { ...signed(), retired_at: false }])('fails closed for missing or malformed metadata %#', value => {
+    { ...signed(), can_manage: 'true' }, { ...signed(), rings: { lab: { enabled: true, eligible: true, available: true, reason: null } } },
+    { ...signed(), key_id: null }, { ...signed(), retired_at: false }, { ...signed(), open_targets: -1 }, { ...signed(), open_targets: undefined },
+    { ...signed(), rings: { ...signed().rings, canary: { enabled: true, eligible: true, reason: null } } }])('fails closed for missing or malformed metadata %#', value => {
     expect(projectFirmwareLifecycle(value)).toBeNull();
     expect(firmwareRingAvailable(projectFirmwareLifecycle(value), 'general')).toBe(false);
   });
