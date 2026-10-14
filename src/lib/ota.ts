@@ -5,6 +5,7 @@ import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { PortalError } from './errors';
 import { PsError } from './printServerApi';
+import { projectFirmwareLifecycle, type FirmwareLifecycle, type FirmwareConfirmation } from './firmwareLifecycle';
 
 // OTA of the Print Server app (PE-385). Platform Admin only for the overview, signing and
 // deployments; owners only read ps_panel_ota for their venue. Every answer is rebuilt field by
@@ -15,6 +16,7 @@ export type OtaKey = { key_id: string; public_key_b64: string | null; active: bo
 export type OtaRelease = {
   id: string; version: string; revision: string | null; model: string; arch: string; filename: string; sha256: string | null; size_bytes: number | null;
   created_at: string | null; edition_id: string | null; edition_status: 'preparing' | 'signed' | null; signed_at: string | null; key_id: string | null; canary_confirmed_at: string | null;
+  lifecycle: FirmwareLifecycle | null;
 };
 export type OtaGroup = { id: string; name: string; ring: Ring; created_at: string | null; members: string[] };
 export type OtaTarget = {
@@ -70,7 +72,7 @@ export function projectOverview(v: unknown, inventory: Pick<InventoryDevice, 'pr
       return { id: r.id, version: String(r.version ?? ''), revision: str(r.revision), model: String(r.model ?? ''), arch: String(r.arch ?? ''), filename: String(r.filename ?? ''),
         sha256: str(r.sha256), size_bytes: num(r.size_bytes), created_at: str(r.created_at), edition_id: str(r.edition_id),
         edition_status: r.edition_status === 'signed' || r.edition_status === 'preparing' ? r.edition_status : null,
-        signed_at: str(r.signed_at), key_id: str(r.key_id), canary_confirmed_at: str(r.canary_confirmed_at) };
+        signed_at: str(r.signed_at), key_id: str(r.key_id), canary_confirmed_at: str(r.canary_confirmed_at), lifecycle: projectFirmwareLifecycle(r.lifecycle) };
     }),
     groups: list(d.groups).map(item => {
       const g = obj(item) ?? bad();
@@ -105,6 +107,10 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
 const groupErrors: Record<string, string> = { invalid_ring: 'ota.error.invalidRing', invalid_name: 'ota.error.invalidName', duplicate_name: 'ota.error.duplicateName' };
 const fnErrors: Record<string, string> = {
   canary_not_confirmed: 'ota.error.canaryNotConfirmed', ring_requires_group: 'ota.error.ringRequiresGroup', already_signed: 'ota.error.alreadySigned', forbidden: 'accessDenied',
+  confirmation_required: 'fw.lifecycle.error.confirmationRequired', release_changed: 'fw.lifecycle.error.releaseChanged',
+  availability_changed: 'fw.lifecycle.error.availabilityChanged', edition_retired: 'fw.lifecycle.error.retired',
+  ring_disabled: 'fw.lifecycle.error.ringDisabled', edition_lab_only: 'fw.lifecycle.error.labOnly',
+  edition_not_signed: 'fw.lifecycle.error.notSigned',
 };
 async function action(name: string, params: Record<string, unknown>): Promise<Raw> {
   const data = obj(await rpc(name, params)) ?? bad();
@@ -151,8 +157,8 @@ async function call(body: Raw): Promise<Raw> {
   }
   return data;
 }
-export async function signEdition(releaseId: string): Promise<{ version: string | null; key_id: string | null }> {
-  const data = await call({ action: 'sign', release_id: releaseId });
+export async function signEdition(releaseId: string, confirmation: FirmwareConfirmation): Promise<{ version: string | null; key_id: string | null }> {
+  const data = await call({ action: 'sign', release_id: releaseId, confirmation });
   return { version: str(data.version), key_id: str(data.key_id) };
 }
 export type DeployTarget = { group_id: string } | { ring: Ring; print_server_ids: string[] };

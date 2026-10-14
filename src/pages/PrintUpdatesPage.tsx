@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
 import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
-import { EMPTY_LIST_FILTERS, matchesText, matchesUtcDay } from '../lib/adminLists';
+import { matchesText, matchesUtcDay } from '../lib/adminLists';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useOtaPage } from '../lib/useOtaPage';
 import { eventDetail, eventPhase, auditFacts } from '../lib/otaPresentation';
-import { AlertTriangle, Check, ChevronDown, Copy, PenLine, Plus, RefreshCw, Rocket, Save, ShieldCheck, Users, X } from 'lucide-react';
-import { createGroup, deployEdition, getTargetEvents, RINGS, setGroupMembers, signEdition, statusClass, type OtaDevice, type OtaOverview, type OtaRelease, type OtaTarget, type OtaPageKind, type Ring } from '../lib/ota';
+import { AlertTriangle, Check, ChevronDown, Copy, Plus, RefreshCw, Rocket, Save, ShieldCheck, Users, X } from 'lucide-react';
+import { createGroup, deployEdition, getTargetEvents, RINGS, setGroupMembers, statusClass, type OtaDevice, type OtaOverview, type OtaTarget, type OtaPageKind, type Ring } from '../lib/ota';
+import { firmwareEditionLink, firmwareRingAvailable } from '../lib/firmwareLifecycle';
 import { psErrorKey } from '../lib/printServerApi';
 import { useLocale } from '../locales';
-import { PortalDialog } from '../components/PortalDialog';
 import { PrintServersTabs } from './PrintFirmwaresPage';
 
 // PE-385: OTA of the Print Server app. Platform Admin only (route gate + every RPC and the
@@ -21,6 +22,12 @@ type Result = { ok: boolean; text: string };
 const MODELS: Record<string, string> = { 'rpi4-2gb': 'Raspberry Pi 4 2GB' };
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [k, v]) => out.split(`{${k}}`).join(String(v)), text);
 const keyShort = (key: string | null) => key ? `${key.slice(0, 4)}…` : '—';
+const lifecycleReason = (t: (key: string) => string, reason: string | null) => {
+  if (!reason) return null;
+  const key = `fw.lifecycle.reason.${reason}`;
+  const translated = t(key);
+  return translated === key ? t('fw.lifecycle.reason.generic') : translated;
+};
 
 function useLabels() {
   const { t, locale } = useLocale();
@@ -118,7 +125,7 @@ function TargetRow({ target, device }: { target: OtaTarget; device?: OtaDevice }
       <td data-label={t('inv.venue')}>{device?.venue_name ?? target.venue_name ?? t('inv.unassigned')}</td>
       <td data-label={t('ps.hostname')}><span className="fw-cell"><strong>{host ?? t('notProvided')}</strong>{device?.serial && <small className="ps-sub ps-mono">{device.serial}</small>}</span></td>
       <td data-label={t('ota.installed')}>{target.installed_version ?? device?.installed_version ?? t('notProvided')}</td>
-      <td data-label={t('ota.desired')}>{target.desired_version ?? t('notProvided')}</td>
+      <td data-label={t('ota.desired')}>{target.edition_id ? <Link className="staff-action-link" to={firmwareEditionLink(target.edition_id)} data-testid={`ota-target-firmware-${target.id}`}>{target.desired_version ?? t('fw.lifecycle.openEdition')}</Link> : target.desired_version ?? t('notProvided')}</td>
       <td data-label={t('state')}><StatusBadge status={target.status} testId={`ota-status-${target.id}`}/></td>
       <td data-label={t('ota.phase')}><span className="fw-cell">{l.phase(target.phase)}<small className="ps-sub">{l.date(target.updated_at??target.issued_at)}</small></span></td>
       <td data-label={t('list.generalProgress')}><Progress value={target.progress}/></td>
@@ -146,7 +153,7 @@ function Deployment({item}:{item:import('../lib/ota').OtaDeploymentItem}) {
   const completed = item.target_by_status.committed ?? 0;
   const progress = item.target_count ? Math.round(completed / item.target_count * 100) : 0;
   return <details open={open} className="ota-deployment" data-testid={`ota-deployment-${item.id}`} onToggle={e=>setOpen(e.currentTarget.open)}>
-    <summary><span className="fw-cell"><strong>{item.version??l.t('notProvided')} · {l.ring(item.ring)}{item.group_name?` · ${item.group_name}`:''}</strong><small className="ps-sub">{l.date(item.created_at)} · {fill(l.t('ota.targetsCount'),{n:item.target_count})}</small><span className="ota-deployment-stats"><span className="ota-deployment-count">{l.t('adminDevice.completedCount').replace('{done}', String(completed)).replace('{total}', String(item.target_count))} · {progress}%</span>{Object.entries(item.target_by_status).filter(([,n])=>n>0).map(([status,n])=><span key={status} className="ota-deployment-count">{l.status(status)}: {n}</span>)}</span></span><ChevronDown size={18}/></summary>
+    <summary><span className="fw-cell"><strong>{item.version??l.t('notProvided')} · {l.ring(item.ring)}{item.group_name?` · ${item.group_name}`:''}</strong><small className="ps-sub">{l.date(item.created_at)} · {fill(l.t('ota.targetsCount'),{n:item.target_count})}</small><span className="ota-deployment-stats"><span className="ota-deployment-count">{l.t('adminDevice.completedCount').replace('{done}', String(completed)).replace('{total}', String(item.target_count))} · {progress}%</span>{Object.entries(item.target_by_status).filter(([,n])=>n>0).map(([status,n])=><span key={status} className="ota-deployment-count">{l.status(status)}: {n}</span>)}</span>{item.edition_id && <Link className="staff-action-link" to={firmwareEditionLink(item.edition_id)} onClick={event=>event.stopPropagation()} data-testid={`ota-deployment-firmware-${item.id}`}>{l.t('fw.lifecycle.openEdition')}</Link>}</span><ChevronDown size={18}/></summary>
     {open&&<DeploymentTargets deploymentId={item.id}/>}
   </details>;
 }
@@ -215,19 +222,17 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
   const l = useLabels(); const { t } = l;
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const [signing, setSigning] = useState<OtaRelease | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [groupForm, setGroupForm] = useState<{ name: string; ring: Ring }>({ name: '', ring: 'lab' });
   const [editing, setEditing] = useState<string | null>(null);
-  const signed = data.releases.filter(r => r.edition_status === 'signed' && r.edition_id);
+  const signed = data.releases.filter(r => r.lifecycle?.edition_status === 'signed' && r.lifecycle.edition_id);
   const [deploy, setDeploy] = useState<{ edition: string; mode: 'group' | 'devices'; group: string; ring: Ring; devices: Set<string> }>({ edition: '', mode: 'group', group: '', ring: 'lab', devices: new Set() });
-  const releases=useLocalList(data.releases,(r,f)=>matchesText(f.query,r.version,r.revision,r.model,r.arch)&&(!f.status||(r.edition_status??'none')===f.status)&&matchesUtcDay(r.created_at,f.from,f.to));
+  const releases=useLocalList(data.releases,(r,f)=>matchesText(f.query,r.version,r.revision,r.model,r.arch)&&(!f.status||(r.lifecycle?.retired_at?'retired':r.lifecycle?.edition_status??r.edition_status??'none')===f.status)&&matchesUtcDay(r.created_at,f.from,f.to));
   const groups=useLocalList(data.groups,(g,f)=>matchesText(f.query,g.name,g.ring)&&(!f.status||g.ring===f.status)&&matchesUtcDay(g.created_at,f.from,f.to));
-  const activeKey = data.keys.find(k => k.active) ?? null;
-  const edition = signed.find(r => r.edition_id === deploy.edition) ?? null;
+  const edition = signed.find(r => r.lifecycle?.edition_id === deploy.edition) ?? null;
   const deployRing: Ring | null = deploy.mode === 'group' ? data.groups.find(g => g.id === deploy.group)?.ring ?? null : deploy.ring;
-  const generalBlocked = deployRing === 'general' && !!edition && !edition.canary_confirmed_at;
-  const canDeploy = !busy && !!edition && (deploy.mode === 'group' ? !!deploy.group : deploy.devices.size > 0);
+  const ringBlocked = !!edition && !!deployRing && !firmwareRingAvailable(edition.lifecycle, deployRing);
+  const canDeploy = !busy && !!edition && !!deployRing && firmwareRingAvailable(edition.lifecycle, deployRing) && (deploy.mode === 'group' ? !!deploy.group : deploy.devices.size > 0);
 
   async function run(fn: () => Promise<string>) {
     if (busy) return;
@@ -247,10 +252,10 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
   }
   function submitDeploy(event: FormEvent) {
     event.preventDefault();
-    if (!canDeploy || !edition?.edition_id) return;
+    if (!canDeploy || !edition?.lifecycle?.edition_id) return;
     const to = deploy.mode === 'group' ? { group_id: deploy.group } : { ring: deploy.ring, print_server_ids: [...deploy.devices] };
     if (!window.confirm(fill(t('ota.deployConfirm'), { version: edition.version }))) return;
-    void run(async () => { const out = await deployEdition(edition.edition_id!, to); setDeploy(d => ({ ...d, devices: new Set() })); return fill(t('ota.deployed'), { version: edition.version, n: out.targets }); });
+    void run(async () => { const out = await deployEdition(edition.lifecycle!.edition_id!, to); setDeploy(d => ({ ...d, devices: new Set() })); return fill(t('ota.deployed'), { version: edition.version, n: out.targets }); });
   }
   const toggleDevice = (id: string) => setDeploy(d => { const n = new Set(d.devices); if (n.has(id)) n.delete(id); else n.add(id); return { ...d, devices: n }; });
 
@@ -261,21 +266,22 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
 
     <section className="servers-panel" aria-labelledby="ota-editions-title">
       <div className="section-heading"><div><p className="eyebrow">{t('ota.editionsEyebrow')}</p><h2 id="ota-editions-title">{t('ota.editionsTitle')}</h2></div><button type="button" className="button button-secondary" onClick={() => void onRefresh()} disabled={refreshing}><RefreshCw size={15}/>{t('refresh')}</button></div>
-      <p className="owner-section-lead ota-lead">{activeKey ? fill(t('ota.activeKey'), { key: keyShort(activeKey.key_id) }) : t('ota.noKey')}</p>
-      <AdminListFilters id="editions" {...releases.list} dateLabel={t('list.created')} statuses={['signed','preparing','none'].map(value=>({value,label:t(value==='none'?'ota.unsigned':value==='signed'?'ota.editionSigned':`ota.${value}`)}))}/>
+      <p className="owner-section-lead ota-lead">{t('ota.lifecycle.catalogLead')}</p>
+      <AdminListFilters id="editions" {...releases.list} dateLabel={t('list.created')} statuses={['signed','retired','preparing','none'].map(value=>({value,label:t(value==='retired'?'fw.lifecycle.retired':value==='none'?'ota.unsigned':value==='signed'?'ota.editionSigned':`ota.${value}`)}))}/>
       {releases.pagination.total === 0 ? <div className="inline-empty">{t(data.releases.length?'list.noMatches':'ota.noReleases')}</div> : <div className="table-scroll"><table className="servers-table fw-table"><thead><tr><th scope="col">{t('fw.col.version')}</th><th scope="col">{t('fw.col.model')}</th><th scope="col">SHA-256</th><th scope="col">{t('ota.size')}</th><th scope="col">{t('ota.edition')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
-        {releases.items.map(r => <tr key={r.id} data-testid={`ota-release-${r.id}`} data-edition={r.edition_status ?? 'none'}>
+        {releases.items.map(r => <tr key={r.id} data-testid={`ota-release-${r.id}`} data-edition={r.lifecycle?.retired_at ? 'retired' : r.lifecycle?.edition_status ?? r.edition_status ?? 'none'}>
           <td data-label={t('fw.col.version')}><span className="fw-cell"><strong>{r.version}</strong>{r.revision && <small className="ps-sub">{t('fw.revision')} {r.revision}</small>}</span></td>
           <td data-label={t('fw.col.model')}>{MODELS[r.model] ?? r.model} · {r.arch}</td>
           <td data-label="SHA-256">{r.sha256 ? <span className="ota-sha"><code className="ps-mono" title={r.sha256}>{r.sha256.slice(0, 12)}…</code><button type="button" className="staff-action-link" aria-label={t('inv.copy')} onClick={() => void copy(r.id, r.sha256!)}>{copied === r.id ? <Check size={14}/> : <Copy size={14}/>}</button></span> : t('notProvided')}</td>
           <td data-label={t('ota.size')}>{r.size_bytes === null ? t('notProvided') : `${(r.size_bytes / 1048576).toFixed(1)} MB`}</td>
           <td data-label={t('ota.edition')}><span className="ota-badges">
-            {r.edition_status === 'signed' ? <span className="server-status server-online" data-testid={`ota-signed-${r.id}`} title={r.signed_at ? l.date(r.signed_at) : undefined}><ShieldCheck size={13}/>{fill(t('ota.signedBadge'), { key: keyShort(r.key_id) })}</span>
-              : r.edition_status === 'preparing' ? <span className="server-status server-pending"><span className="badge-dot"/>{t('ota.preparing')}</span>
+            {(r.lifecycle?.edition_status ?? r.edition_status) === 'signed' ? <span className="server-status server-online" data-testid={`ota-signed-${r.id}`} title={(r.lifecycle?.signed_at ?? r.signed_at) ? l.date(r.lifecycle?.signed_at ?? r.signed_at) : undefined}><ShieldCheck size={13}/>{fill(t('ota.signedBadge'), { key: keyShort(r.lifecycle?.key_id ?? r.key_id) })}</span>
+              : (r.lifecycle?.edition_status ?? r.edition_status) === 'preparing' ? <span className="server-status server-pending"><span className="badge-dot"/>{t('ota.preparing')}</span>
               : <span className="server-status server-pending"><span className="badge-dot"/>{t('ota.unsigned')}</span>}
-            {r.canary_confirmed_at && <span className="server-status server-online" data-testid={`ota-canary-${r.id}`} title={l.date(r.canary_confirmed_at)}><Check size={13}/>{t('ota.canaryConfirmed')}</span>}
-          </span></td>
-          <td data-label={t('staff.actions')}>{!r.edition_status && <button type="button" className="button button-secondary" disabled={busy || !activeKey} data-testid={`ota-sign-${r.id}`} onClick={() => setSigning(r)}><PenLine size={15}/>{t('ota.sign')}</button>}</td>
+            {r.lifecycle?.retired_at && <span className="server-status server-revoked">{t('fw.lifecycle.retired')}</span>}
+            {r.lifecycle?.canary_confirmed_at && <span className="server-status server-online" data-testid={`ota-canary-${r.id}`} title={l.date(r.lifecycle.canary_confirmed_at)}><Check size={13}/>{t('ota.canaryConfirmed')}</span>}
+          </span>{r.lifecycle ? <span className="ota-badges ota-lifecycle-rings">{RINGS.map(ring => <span key={ring} className={`server-status ${firmwareRingAvailable(r.lifecycle, ring) ? 'server-online' : r.lifecycle?.rings[ring].enabled ? 'server-pending' : 'server-offline'}`} title={lifecycleReason(t, r.lifecycle?.rings[ring].reason ?? null) ?? undefined} data-testid={`ota-ring-${r.id}-${ring}`} data-available={firmwareRingAvailable(r.lifecycle, ring)}>{l.ring(ring)}: {firmwareRingAvailable(r.lifecycle, ring) ? t('fw.lifecycle.available') : r.lifecycle?.rings[ring].enabled ? t('fw.lifecycle.blocked') : t('fw.lifecycle.disabled')}</span>)}</span> : <small className="ps-sub">{t('fw.lifecycle.unavailable')}</small>}</td>
+          <td data-label={t('staff.actions')}><Link className="button button-secondary" to={firmwareEditionLink(r.lifecycle?.edition_id ?? r.edition_id,r.id)} data-testid={`ota-manage-firmware-${r.id}`}>{t('fw.lifecycle.manageInFirmwares')}</Link></td>
         </tr>)}
       </tbody></table></div>}
       <PrintListPagination id="editions" pagination={releases.pagination}/>
@@ -301,13 +307,13 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
       <div className="section-heading"><div><p className="eyebrow">{t('ota.deployEyebrow')}</p><h2 id="ota-deploy-title">{t('ota.deployTitle')}</h2></div><span className="section-icon"><Rocket size={20}/></span></div>
       <p className="owner-section-lead fw-notice"><AlertTriangle size={15}/>{t('ota.deployRule')}</p>
       <form className="fw-form ota-deploy-form" onSubmit={submitDeploy} data-testid="ota-deploy-form">
-        <label className="field"><span>{t('ota.edition')}</span><select value={deploy.edition} disabled={busy} data-testid="ota-deploy-edition" onChange={e => setDeploy(d => ({ ...d, edition: e.target.value }))}><option value="">{t('ota.chooseEdition')}</option>{signed.map(r => <option key={r.edition_id!} value={r.edition_id!}>{r.version}{r.revision ? ` (${r.revision})` : ''} · {r.arch}{r.canary_confirmed_at ? ` · ${t('ota.canaryConfirmed')}` : ''}</option>)}</select></label>
+        <label className="field"><span>{t('ota.edition')}</span><select value={deploy.edition} disabled={busy} data-testid="ota-deploy-edition" onChange={e => setDeploy(d => ({ ...d, edition: e.target.value }))}><option value="">{t('ota.chooseEdition')}</option>{signed.filter(r => !!deployRing && firmwareRingAvailable(r.lifecycle,deployRing)).map(r => <option key={r.lifecycle!.edition_id!} value={r.lifecycle!.edition_id!}>{r.version}{r.revision ? ` (${r.revision})` : ''} · {r.arch}</option>)}</select></label>
         <label className="field"><span>{t('ota.target')}</span><select value={deploy.mode} disabled={busy} data-testid="ota-deploy-mode" onChange={e => setDeploy(d => ({ ...d, mode: e.target.value as 'group' | 'devices' }))}><option value="group">{t('ota.targetGroup')}</option><option value="devices">{t('ota.targetDevices')}</option></select></label>
         {deploy.mode === 'group'
           ? <label className="field"><span>{t('ota.group')}</span><select value={deploy.group} disabled={busy} data-testid="ota-deploy-group" onChange={e => setDeploy(d => ({ ...d, group: e.target.value }))}><option value="">{t('ota.chooseGroup')}</option>{data.groups.map(g => <option key={g.id} value={g.id}>{g.name} · {l.ring(g.ring)} · {g.members.length}</option>)}</select></label>
           : <label className="field"><span>{t('ota.ring')}</span><select value={deploy.ring} disabled={busy} data-testid="ota-deploy-ring" onChange={e => setDeploy(d => ({ ...d, ring: e.target.value as Ring }))}>{RINGS.map(r => <option key={r} value={r}>{l.ring(r)}</option>)}</select></label>}
         {deploy.mode === 'devices' && <div className="ota-deploy-devices"><DeviceChecklist devices={data.devices} picked={deploy.devices} toggle={toggleDevice} busy={busy} prefix="ota-deploy-device"/></div>}
-        {generalBlocked && <p className="form-error ota-wide" data-testid="ota-general-blocked"><AlertTriangle size={16}/>{t('ota.error.canaryNotConfirmed')}</p>}
+        {ringBlocked && <p className="form-error ota-wide" data-testid="ota-ring-blocked"><AlertTriangle size={16}/>{lifecycleReason(t, edition?.lifecycle?.rings[deployRing!].reason ?? null) ?? t('ota.lifecycle.unavailable')} <Link to={firmwareEditionLink(edition?.lifecycle?.edition_id ?? null, edition?.id)}>{t('fw.lifecycle.manageInFirmwares')}</Link></p>}
         <div className="fw-actions"><button type="submit" className="button button-primary" disabled={!canDeploy} data-testid="ota-deploy-submit"><Rocket size={16}/>{t('ota.deploy')}</button></div>
       </form>
     </section>
@@ -315,11 +321,5 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
     <Deployments/>
     <Audit/>
 
-    {signing && <PortalDialog title={t('ota.sign')} titleId="ota-sign-title" descriptionId="ota-sign-body" testId="ota-sign-dialog" alert onClose={() => setSigning(null)} dismissible={!busy} actions={<>
-        <button type="button" className="button button-primary" data-testid="ota-sign-accept" disabled={busy} onClick={() => { const r = signing; void run(async () => { const out = await signEdition(r.id); setSigning(null); return fill(t('ota.signedOk'), { version: out.version ?? r.version, key: keyShort(out.key_id) }); }).then(() => setSigning(null)); }}><Check size={15}/>{t(busy ? 'ps.working' : 'staff.confirm')}</button>
-        <button type="button" className="button button-secondary" disabled={busy} onClick={() => setSigning(null)}><X size={15}/>{t('staff.cancel')}</button>
-      </>}>
-      <p id="ota-sign-body">{fill(t('ota.signConfirm'), { version: signing.version, key: keyShort(activeKey?.key_id ?? null) })}</p>
-    </PortalDialog>}
   </div>;
 }

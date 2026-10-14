@@ -292,13 +292,21 @@ function PrintDashboardData() {
 function PrintFirmwaresData() {
   const {session,expire}=useAuth();
   const data=useQuery({queryKey:['ps-firmwares',session?.user.id],queryFn:({signal})=>getFirmwares(signal),refetchInterval:60_000});
-  const inventory=useQuery({queryKey:['ps-inventory',session?.user.id],queryFn:({signal})=>getInventory(signal),refetchInterval:30_000});
-  const error=data.error??inventory.error;
+  const error=data.error;
   useEffect(()=>{if(error&&psErrorKey(error)==='sessionExpired') void expire();},[error,expire]);
-  const refresh=async()=>{await Promise.all([data.refetch({throwOnError:true}),inventory.refetch({throwOnError:true})]);};
+  const refresh=async()=>{await Promise.all([
+    data.refetch({throwOnError:true}),
+    queryClient.invalidateQueries({queryKey:['ps-ota',session?.user.id]}),
+    queryClient.invalidateQueries({queryKey:['ps-ota-page',session?.user.id]}),
+    queryClient.invalidateQueries({queryKey:['ps-admin-device',session?.user.id]}),
+    queryClient.invalidateQueries({queryKey:['ps-device',session?.user.id]}),
+    queryClient.invalidateQueries({queryKey:['ps-panel-ota',session?.user.id]}),
+  ]);};
   if(error&&psErrorKey(error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data&&inventory.data)return <PrintFirmwaresPage data={data.data} inventory={inventory.data} refreshing={data.isFetching||inventory.isFetching} onRefresh={refresh}/>;
+  // A failed lifecycle refresh invalidates the displayed authorization snapshot. Do not
+  // expose new mutations from cached eligibility; the backend must still revalidate writes.
   if(error)return <StateView kind="error" onRetry={()=>{void refresh().catch(()=>{});}}/>;
+  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={refresh}/>;
   return <StateView kind="loading"/>;
 }
 // OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.

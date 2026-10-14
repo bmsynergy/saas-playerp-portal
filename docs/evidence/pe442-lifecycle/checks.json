@@ -1,0 +1,59 @@
+{
+  "kind": "Isolated proposed-contract browser fixtures. Not backend acceptance and not physical OTA.",
+  "checks": [
+    {
+      "width": 390,
+      "lang": "en",
+      "signature": "confirmation snapshot, changed-release rejection, simulated success, no automatic ring enablement",
+      "general": "disabled with pending canary explanation",
+      "availability": "enable Canary, reflect selector, retire, exclude selector, retain exact history link",
+      "counts": "28 total, pagination 25/3, retirement filter, 4 fleet devices instead of duplicated revision counts",
+      "hash": "local/server mismatch visible",
+      "links": "exact retired and off-page edition; conflicting release query cannot substitute edition",
+      "layout": "no page overflow",
+      "failures": "blocked retirement uses lifecycle message; failed refetch removes cached mutation controls",
+      "network": "all Supabase requests intercepted; no deploy request"
+    },
+    {
+      "width": 390,
+      "lang": "es",
+      "signature": "confirmation snapshot, changed-release rejection, simulated success, no automatic ring enablement",
+      "general": "disabled with pending canary explanation",
+      "availability": "enable Canary, reflect selector, retire, exclude selector, retain exact history link",
+      "counts": "28 total, pagination 25/3, retirement filter, 4 fleet devices instead of duplicated revision counts",
+      "hash": "local/server mismatch visible",
+      "links": "exact retired and off-page edition; conflicting release query cannot substitute edition",
+      "layout": "no page overflow",
+      "failures": "blocked retirement uses lifecycle message; failed refetch removes cached mutation controls",
+      "network": "all Supabase requests intercepted; no deploy request"
+    },
+    {
+      "width": 1440,
+      "lang": "en",
+      "signature": "confirmation snapshot, changed-release rejection, simulated success, no automatic ring enablement",
+      "general": "disabled with pending canary explanation",
+      "availability": "enable Canary, reflect selector, retire, exclude selector, retain exact history link",
+      "counts": "28 total, pagination 25/3, retirement filter, 4 fleet devices instead of duplicated revision counts",
+      "hash": "local/server mismatch visible",
+      "links": "exact retired and off-page edition; conflicting release query cannot substitute edition",
+      "layout": "no page overflow",
+      "failures": "blocked retirement uses lifecycle message; failed refetch removes cached mutation controls",
+      "network": "all Supabase requests intercepted; no deploy request"
+    },
+    {
+      "width": 1440,
+      "lang": "es",
+      "signature": "confirmation snapshot, changed-release rejection, simulated success, no automatic ring enablement",
+      "general": "disabled with pending canary explanation",
+      "availability": "enable Canary, reflect selector, retire, exclude selector, retain exact history link",
+      "counts": "28 total, pagination 25/3, retirement filter, 4 fleet devices instead of duplicated revision counts",
+      "hash": "local/server mismatch visible",
+      "links": "exact retired and off-page edition; conflicting release query cannot substitute edition",
+      "layout": "no page overflow",
+      "failures": "blocked retirement uses lifecycle message; failed refetch removes cached mutation controls",
+      "network": "all Supabase requests intercepted; no deploy request"
+    }
+  ],
+  "errors": [],
+  "physicalDeployRequests": 0
+}
