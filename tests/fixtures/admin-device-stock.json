@@ -1,0 +1,173 @@
+{
+  "ok": true,
+  "sheet_version": 1,
+  "device_id": "33333333-3333-4333-8333-333333333332",
+  "device": {
+    "id": "33333333-3333-4333-8333-333333333332",
+    "serial": "PS-AAAAAAA2",
+    "hostname": "playerp-ps-aaaaaaa2",
+    "model": "rpi4-2gb",
+    "model_label": "Raspberry Pi 4",
+    "arch": "arm64",
+    "label": "Fixture 2",
+    "status": "stock",
+    "legacy": false,
+    "created_at": "2026-01-03T10:00:00Z",
+    "updated_at": "2026-01-03T10:00:00Z"
+  },
+  "link": {
+    "state": "none",
+    "print_server_id": null,
+    "venue_id": null,
+    "venue_name": null,
+    "reason": "device_not_assigned"
+  },
+  "firmware": {
+    "last_reported_version": "0.3.21",
+    "reported_by_print_server_id": "66666666-6666-4666-8666-666666666662",
+    "last_seen_at": "2026-01-03T10:00:00Z",
+    "is_current": false,
+    "reason": null,
+    "update": {}
+  },
+  "credentials": {
+    "wifi": {
+      "ssid": "PlayERP-Setup-AAAAAAA2",
+      "psk": "0123456782",
+      "applied_at": "2026-01-03T10:00:00Z",
+      "method": "ack"
+    },
+    "wifi_reason": null,
+    "admin_code": {
+      "code": "STOCK-CONFIRMED-CODE",
+      "applied_at": "2026-01-03T10:00:00Z",
+      "method": "ack"
+    },
+    "admin_code_reason": null,
+    "pending_change": true,
+    "pending_psk": "MUST-NOT-PROJECT"
+  },
+  "label": {
+    "ready": true,
+    "missing": [],
+    "label": {
+      "device_id": "33333333-3333-4333-8333-333333333332",
+      "serial": "PS-AAAAAAA2",
+      "ssid": "PlayERP-Setup-AAAAAAA2",
+      "psk": "0123456782",
+      "wifi_applied_at": "2026-01-03T10:00:00Z"
+    }
+  },
+  "printers": {
+    "items": [],
+    "reason": "device_not_assigned"
+  },
+  "scans": {
+    "items": [
+      {
+        "command_id": "historic-scan",
+        "print_server_id": "66666666-6666-4666-8666-666666666662",
+        "venue_id": "22222222-2222-4222-8222-222222222222",
+        "status": "completed",
+        "requested_at": "2026-01-03T10:00:00Z",
+        "completed_at": "2026-01-03T10:00:00Z",
+        "error_code": null,
+        "printers_found": 2
+      }
+    ],
+    "reason": null
+  },
+  "jobs": {
+    "total": 7,
+    "by_status": {
+      "completed": 7
+    },
+    "recent": [
+      {
+        "id": "historic-job",
+        "status": "completed",
+        "source_type": "receipt",
+        "printer_id": "historic-printer",
+        "venue_id": "22222222-2222-4222-8222-222222222222",
+        "print_server_id": "66666666-6666-4666-8666-666666666662",
+        "attempts": 1,
+        "created_at": "2026-01-03T10:00:00Z",
+        "completed_at": "2026-01-03T10:00:00Z"
+      }
+    ],
+    "reason": null
+  },
+  "cert": {
+    "status": "expired",
+    "reason": null,
+    "print_server_id": "66666666-6666-4666-8666-666666666662",
+    "is_current": false,
+    "hostname": "playerp-ps-aaaaaaa2",
+    "not_before": "2026-01-03T10:00:00Z",
+    "not_after": "2026-01-03T10:00:00Z",
+    "der_sha256": "historic-cert-hash",
+    "updated_at": "2026-01-03T10:00:00Z"
+  },
+  "operations": [
+    {
+      "command_id": "historic-wifi",
+      "print_server_id": "66666666-6666-4666-8666-666666666662",
+      "venue_id": "22222222-2222-4222-8222-222222222222",
+      "command_type": "wifi_rotate",
+      "status": "applied",
+      "raw_status": "applied",
+      "requested_at": "2026-01-03T10:00:00Z",
+      "received_at": "2026-01-03T10:00:00Z",
+      "completed_at": "2026-01-03T10:00:00Z",
+      "error_code": null,
+      "params": {
+        "psk": "MUST-NOT-PROJECT"
+      }
+    }
+  ],
+  "ota": [
+    {
+      "target_id": "historic-update",
+      "print_server_id": "66666666-6666-4666-8666-666666666662",
+      "from_version": "0.3.20",
+      "desired_version": "0.3.21",
+      "installed_version": "0.3.21",
+      "status": "completed",
+      "phase": "completed",
+      "issued_at": "2026-01-03T10:00:00Z",
+      "updated_at": "2026-01-03T10:00:00Z",
+      "error_code": null
+    }
+  ],
+  "assignments": [
+    {
+      "print_server_id": "66666666-6666-4666-8666-666666666662",
+      "venue_id": "22222222-2222-4222-8222-222222222222",
+      "venue_name": "Historical Park",
+      "label": "Old PS",
+      "status": "revoked",
+      "created_at": "2026-01-03T10:00:00Z",
+      "enrolled_at": "2026-01-03T10:00:00Z",
+      "revoked_at": "2026-01-03T10:00:00Z",
+      "revoked_reason": "portal_admin",
+      "software_version": "0.3.21",
+      "last_seen_at": "2026-01-03T10:00:00Z",
+      "replaces_print_server_id": null
+    }
+  ],
+  "audit": [
+    {
+      "id": "audit-stock",
+      "action": "device_revoke",
+      "created_at": "2026-01-03T10:00:00Z",
+      "actor_user_id": "staff-fixture",
+      "venue_id": "22222222-2222-4222-8222-222222222222",
+      "venue_name": "Historical Park",
+      "reason": "portal_admin",
+      "status": "stock",
+      "ok": true,
+      "error": null,
+      "print_server_id": "66666666-6666-4666-8666-666666666662"
+    }
+  ]
+}

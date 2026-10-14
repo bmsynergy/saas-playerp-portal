@@ -2,7 +2,8 @@
 // No authorization claim about the live database; no persistent fixtures or device operations.
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
+const stockFixture=JSON.parse(await readFile(new URL('./fixtures/admin-device-stock.json',import.meta.url),'utf8'));
 const origin = process.env.PS_TEST_ORIGIN ?? 'http://127.0.0.1:18799';
 const out = process.env.PS_TEST_EVIDENCE ?? 'docs/evidence/inventory-assignment';
 await mkdir(out, { recursive: true });
@@ -16,11 +17,11 @@ const session = { access_token: `${enc({alg:'HS256'})}.${enc({sub:uid,exp,aud:'a
 const venue = { id: venueId, name:'Fixture Park', slug:'fixture', is_active:true };
 const device = i => ({ id:`33333333-3333-4333-8333-33333333333${i}`, serial:`PS-AAAAAAA${i}`, hostname:`playerp-ps-aaaaaaa${i}`, label:`Fixture ${i}`, model:'rpi4-2gb', arch:'arm64', legacy:false,
   status:i<2?'assigned':'stock', venue_id:i<2?venueId:null, venue_name:i<2?venue.name:null, print_server_id:i<2?`44444444-4444-4444-8444-44444444444${i}`:null, software_version:'0.3.21', created_at:stamp });
-const report = { origin, safety:'Intercepted fixtures only; no real mutations. Stock history/retire backend contract and DEV publication pending.', checks:[], errors:[] };
+const report = { origin, portalSha:process.env.PS_TEST_SHA??'local', backendSha:'cb0dbe09c7eeb12dd587164b9ebf2d5cf75d19ce', safety:'Intercepted fixtures only; no real mutations or physical operations.', checks:[], errors:[] };
 async function setup(width, owner=false) {
   const ctx = await browser.newContext({ viewport:{width,height:844} });
   await ctx.addInitScript(session => { localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(session)); localStorage.setItem('playerp.locale','en'); },session);
-  const s = { devices:[device(0),device(1),device(2)], calls:[], retiredPermission:true, terminal:true, denied:false, ssid:'applied', rotations:[], mutateError:false };
+  const s = { devices:[device(0),device(1),device(2)], calls:[], retiredPermission:true, terminal:true, denied:false, ssid:'applied', rotations:[], mutateError:false, stockEmpty:false, stockMismatch:false, stockDelay:0 };
   const psFor = d => ({id:d.print_server_id,label:d.label,hostname:d.hostname,device_id:d.id,status:'active',software_version:d.software_version,online:true,last_seen_at:stamp});
   const detail = d => ({ok:true,device:d,actions:{assign:{allowed:!d.venue_id,reason:null},move:{allowed:!!d.venue_id,reason:null},unassign:{allowed:!!d.venue_id,reason:null},delete:{allowed:true,confirm_with:'serial'},...(s.retiredPermission?{retire:{allowed:d.status!=='retired'&&!d.legacy,reason:d.status==='retired'?'device_retired':null}}:{})},
     update:{current_version:d.software_version,latest_stable:null,candidate:null,effective_ring:null,can_update:false,update_available:false,reason:'device_not_active',active_update:null},delete:{allowed:false,blockers:['device_assigned']}});
@@ -41,6 +42,15 @@ async function setup(width, owner=false) {
     if(name==='ps_admin_legacy_credentials_context')return send({code:'42501'},403);
     if(name==='ps_admin_wifi_ssid_adopt')return send({ok:true,state:'applied',already:true,canonical_ssid:'PlayERP-Setup-ABCDEFGH',current_ssid:'PlayERP-Setup-ABCDEFGH'});
     if(name==='portal_ps_inventory')return send({contract_version:1,generated_at:stamp,online_window_seconds:180,items:s.devices.map(d=>({id:d.print_server_id??d.id,device_id:d.id,serial:d.serial,label:d.label,hostname:d.hostname,assignment:d.venue_id?'assigned':'unassigned',venue_id:d.venue_id,venue_name:d.venue_name,last_venue_name:null,connection:d.venue_id?'online':'unassigned',last_seen_at:stamp,last_report_at:stamp,firmware_version:d.software_version,firmware_known:true,error_count:0,warning_count:0,printers_total:0,pending_jobs:0,last_issue_at:null,issues:[]}))});
+    if(name==='ps_admin_device_sheet') {
+      if(s.stockDelay)await new Promise(resolve=>setTimeout(resolve,s.stockDelay));
+      if(owner||s.denied)return send({code:'42501'},403);
+      assert.equal(args.p_device_id,device(2).id);
+      const f=structuredClone(stockFixture);
+      if(s.stockMismatch)f.device.id=device(0).id;
+      if(s.stockEmpty){f.credentials={wifi:null,wifi_reason:'wifi_not_confirmed',admin_code:null,admin_code_reason:'admin_code_not_confirmed',pending_change:false};f.label={ready:false,missing:['wifi_not_confirmed'],label:null};f.scans={items:[],reason:'no_scans_recorded'};f.jobs={total:0,by_status:{},recent:[],reason:'no_jobs_recorded'};f.cert={status:'none',reason:'no_cert_reported'};f.operations=[];f.ota=[];f.assignments=[];f.audit=[];}
+      return send(f);
+    }
     if(name==='ps_admin_device_detail'||name==='ps_admin_device_manage')return owner?send({code:'42501'},403):send(detail(s.devices.find(d=>d.id===args.p_device_id)));
     if(name==='ps_admin_venue_search') {
       const venues=Array.from({length:20},(_,i)=>({id:i===0?venueId:`55555555-5555-4555-8555-${String(i).padStart(12,'0')}`,name:i===0?venue.name:`Park ${String(i).padStart(2,'0')}`,slug:`park-${i}`,city:'Ponce',state:'PR',is_active:true,assigned_device:i===0?{id:device(0).id,serial:device(0).serial}:null}));
@@ -117,7 +127,32 @@ try {
     await trigger.click();await expect(dialog.getByRole('button',{name:'Retire',exact:true})).toBeDisabled();await page.keyboard.press('Escape');await expect(trigger).toBeFocused();
     s.devices[2]=device(2);s.retiredPermission=false;await page.reload();await trigger.click();await expect(dialog.getByRole('button',{name:'Retire',exact:true})).toBeDisabled();await page.keyboard.press('Escape');
     await page.getByTestId(`inv-open-${device(2).serial}`).click();await expect(page).toHaveURL(origin+href(device(2),false));await expect(page.getByTestId('inventory-device-identity')).toContainText(device(2).serial);await noOverflow(page);
-    await page.screenshot({path:`${out}/stock-identity-${width}.png`});
+    const stock=page.getByTestId('inventory-device-sheet');
+    await expect(stock).toContainText('Historical Park');
+    await expect(page.getByTestId('stock-sheet-jobs')).toContainText('7');
+    await expect(page.getByTestId('stock-sheet-scans')).toContainText('completed');
+    await expect(page.getByTestId('stock-sheet-operations')).toContainText('wifi_rotate');
+    await expect(page.getByTestId('stock-sheet-ota')).toContainText('0.3.21');
+    await expect(page.getByTestId('stock-sheet-audit')).toContainText('device_revoke');
+    await expect(stock).not.toContainText('0123456782');await expect(stock).not.toContainText('STOCK-CONFIRMED-CODE');await expect(stock).not.toContainText('MUST-NOT-PROJECT');
+    await expect(stock.getByRole('button',{name:'Print label',exact:true})).toHaveCount(1);
+    await expect(stock.getByRole('button',{name:'Check status',exact:true})).toHaveCount(0);
+    const reveals=stock.getByRole('button',{name:'Show confirmed value',exact:true});
+    await reveals.first().click();await expect(stock).toContainText('0123456782');
+    await stock.getByRole('button',{name:'Hide confirmed value',exact:true}).click();
+    await stock.getByRole('button',{name:'Preview',exact:true}).click();await expect(stock.locator('.dev-label-preview img')).toBeVisible();
+    await noOverflow(page);await page.screenshot({path:`${out}/stock-identity-${width}.png`,fullPage:true});
+    s.stockEmpty=true;await page.reload();await expect(stock).toContainText('No jobs have been recorded.');await expect(stock).toContainText('No scans have been recorded.');await expect(stock).toContainText('No certificate has been reported.');
+    await expect(stock.getByRole('button',{name:'Print label',exact:true})).toHaveCount(0);
+    s.stockMismatch=true;await page.reload();await expect(page.locator('.state-denied')).toBeVisible();await expect(stock).toHaveCount(0);
+    s.stockMismatch=false;s.stockEmpty=false;await page.reload();await expect(stock).toBeVisible();
+    await stock.getByRole('button',{name:'Show confirmed value',exact:true}).first().click();await expect(stock).toContainText('0123456782');
+    s.stockDelay=1200;s.denied=true;
+    await page.evaluate(()=>window.dispatchEvent(new Event('visibilitychange')));
+    await expect(stock).toHaveCount(0);await expect(page.locator('body')).not.toContainText('0123456782');
+    await expect(page.locator('.state-denied')).toBeVisible();
+
+
     report.checks.push({width,criterion:1,modal:'portal, collision, scroll, keyboard, confirmation and focus return pass',geometry});
     report.checks.push({width,criterion:2,fixtureOnly:true,firstTwoPreserved:true,stockAndRetired:true,payloads:s.calls.filter(c=>['ps_admin_device_assign','ps_admin_device_move','ps_admin_device_revoke'].includes(c.name))});
     await ctx.close();
@@ -137,7 +172,8 @@ try {
       const progress=page.getByTestId(`dev-rotation-dialog-status-${kind}`);
       await expect(progress.getByRole('button',{name:'Check status',exact:true})).toBeVisible();
       s.rotations=s.rotations.map(o=>({...o,status:'applied',completed_at:stamp}));
-      await progress.getByRole('button',{name:'Check status',exact:true}).click();
+      // Polling may already remove the button after the fixture turns applied.
+      await progress.evaluate(el=>el.querySelector('button')?.click());
       await expect(progress).toHaveAttribute('data-phase','applied');await expect(progress.getByRole('button')).toHaveCount(0);
       await expect(progress.locator('.credential-progress-dates')).toContainText('2026');await page.getByTestId('dev-dialog-close').click();s.rotations=[];
     }
@@ -151,9 +187,9 @@ try {
     s.terminal=false;s.ssid='pending';await page.reload();await expect(page.getByRole('button',{name:'Check status',exact:true})).toHaveCount(2);
     await page.getByTestId('ps-device-panel').screenshot({path:`${out}/${owner?'owner':'admin'}-pending-${width}.png`});
     s.denied=true;await page.reload();await expect(page.locator('.state-denied')).toBeVisible();await expect(page.getByTestId('dev-serial')).toHaveCount(0);await expect(page.getByTestId('dev-psk')).toHaveCount(0);
-    if(owner) {await page.goto(origin+href(device(2),true));await expect(page.locator('.state-denied')).toBeVisible();await expect(page.getByTestId('inventory-device-identity')).toHaveCount(0);assert.equal(s.calls.filter(c=>c.name==='ps_admin_device_detail').length,0);}
-    report.checks.push({role:owner?'owner':'admin',width,criterion:3,assignedSheets:'two distinct PS URLs and identities, explicit per-PS RPCs',deniedFixture:'no credentials after denial; stock forbidden to owner',stockHistory:'pending backend contract'});
-    report.checks.push({role:owner?'owner':'admin',width,criterion:4,localOnly:true,terminal:'one print action, text-only green notice, no Check status',dialogs:'wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status',pending:'two Check status controls retained',layout:'no overflow, no QR beside credentials'});
+    if(owner) {await page.goto(origin+href(device(2),true));await expect(page.locator('.state-denied')).toBeVisible();await expect(page.getByTestId('inventory-device-identity')).toHaveCount(0);assert.equal(s.calls.filter(c=>['ps_admin_device_detail','ps_admin_device_sheet'].includes(c.name)).length,0);}
+    report.checks.push({role:owner?'owner':'admin',width,criterion:3,assignedSheets:'two distinct PS URLs and identities, explicit per-PS RPCs',deniedFixture:'no credentials after denial; stock forbidden to owner',stockHistory:'staff stock history and denied/empty/mismatched responses verified at both widths'});
+    report.checks.push({role:owner?'owner':'admin',width,criterion:4,publishedBuild:origin.startsWith('https:'),terminal:'one print action, text-only green notice, no Check status',dialogs:'wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status',pending:'two Check status controls retained',layout:'no overflow, no QR beside credentials'});
     await ctx.close();
   }
   assert.deepEqual(report.errors,[]);

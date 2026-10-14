@@ -1,74 +1,51 @@
-# Inventario PS — dependencia mínima pendiente (solo DEV)
+# Inventario PS — integración DEV completada
 
-Work `2e7261c4-d567-403f-ad91-e6a4389674fb`, run `62a11f29-0b15-4303-84bb-65155f482f94`.
+El traspaso pendiente del work `2e7261c4-d567-403f-ad91-e6a4389674fb` quedó resuelto
+por Tom en PE-444.4. Este portal integra su contrato de ficha stock y retiro.
 
-**No publicar aún.** La consulta de lectura a Supabase DEV fue rechazada con
-`MCP tool call requires approval, but approval policy is never`. No se aplicó SQL,
-no se hicieron mutaciones reales ni se llamó al publicador. El motor debe tramitar
-el ajuste de backend y reanudar la integración del portal.
+## Dependencia funcional (sin modificar estados del motor)
 
-## Dependencia existente
+- PE-443.3, work `c032bb44-01e5-40c9-86d7-487f59c97c26`: asignación aditiva,
+  movimiento por aparato y resolver autorizado; backend `6c9eb8428592816b2edd22d09df14ae74b6867f1`.
+- PE-444.4: backend `3ec814acf400f1db7077984fa6ad9c583e5b23ae`, DTO revisado
+  `cb0dbe09c7eeb12dd587164b9ebf2d5cf75d19ce`. Migración
+  `_migrations/20261014080000_pe444_ps_retiro_y_ficha_stock.sql` aplicada en DEV
+  por Tom según su entrega; prueba registrada 15/15, incluida denegación al antiguo owner.
+  En esta reanudación se verificaron esos commits en el remoto y se leyó el DTO;
+  no se ejecutaron migraciones ni mutaciones sobre la base o dispositivos.
 
-PE-443.3, work `c032bb44-01e5-40c9-86d7-487f59c97c26`: backend
-`6c9eb8428592816b2edd22d09df14ae74b6867f1`, portal base
-`59dc7a2e4bf50134843e3ff2dd697a889720a88b`.
-Entrega leída con `coredeva-leer PE-443.3`; declara contratos multips aplicados
-en DEV. Esto es evidencia previa, no se altera manualmente el estado del trabajo.
+## Portal
 
-## Lo que necesita Tom en backend
+- Asignación: identidad inmutable, buscador en portal, scroll, teclado y retorno
+  de foco. Confirmaciones identifican aparato/local y consecuencias.
+- Assign omite `p_print_server_id`; move usa la RPC atómica. Desvincular llama
+  revoke con `portal_admin`; retirar llama revoke con `retired`, únicamente con
+  `actions.retire.allowed` del servidor. Retiro lógico en lugar de borrado físico;
+  la RPC de borrado del backend se conserva, pero el modal no la llama.
+- Stock: `ps_device_sheet_resolve` autoriza la ruta canónica; solo staff admin
+  solicita `ps_admin_device_sheet(p_device_id)`. Proyección cerrada valida IDs y
+  credenciales confirmadas; query por usuario/aparato, sin persistencia, oculta
+  el contenido mientras revalida o ante denegación. Historial disponible y
+  razones reales de ausencia, sin inventar venue ni operaciones posibles.
+- Credenciales ocultas inicialmente, etiqueta confirmada y validada, QR solo en
+  etiqueta. Vista previa/descarga/impresión reutilizan el generador existente.
+- Rotaciones/SSID/enrollment terminales sin Check Status; pendientes conservan
+  seguimiento, fechas e historial. Aviso verde de etiqueta solo texto.
 
-Solo `_migrations`, DTO/RPC de detalle/manage por `device_id` y guardas de las
-acciones existentes. Versionar en GitHub y aplicar exclusivamente a
-`supabase:fzwzmwstxlsxdzdmphyq` antes de publicar el portal.
+## Verificación focalizada
 
-1. `ps_admin_device_manage`: agregar `actions.retire: {allowed:boolean, reason:string|null}`
-   explícito, denegado para legacy/retired y conforme a las guardas reales. El portal
-   ya acepta esta forma; si falta, deniega con `contract_unavailable`. No derivar
-   permiso de `delete.allowed`, de `unassign.allowed` ni de `status === stock`.
-2. `ps_admin_device_revoke`: impedir que un aparato retired vuelva a stock por
-   una segunda revocación; mantener `portal_admin` para desvincular y `retired`
-   para retiro lógico. Conservar identidad/serial, trabajos, credenciales auditables
-   e historial; no cambiar ni borrar `ps_admin_device_delete`. Declarar qué pendientes
-   cancela. Respetar autorización en servidor antes de cualquier efecto.
-3. Ampliar la lectura staff de stock por `device_id` para los datos e historial
-   existentes aunque ya no tenga venue. La respuesta actual de
-   `ps_admin_device_detail` aporta identidad/firmware pero no historial ni datos de
-   los PS desvinculados. Acordar/proporcionar DTO explícito para credenciales
-   confirmadas (nunca valores pendientes), label, impresoras, scans, trabajos,
-   certificado e historial de asignaciones/operaciones disponibles. Para cada
-   ausencia o imposibilidad, indicar razón real y permisos; no inventar venue,
-   estado vacío o pérdida de datos. El portal no ha inventado ese contrato.
-4. Verificar lectura autorizada staff y rechazo del antiguo owner tanto por el ID
-   de inventario como por el ID del antiguo PS; asignación aditiva, cambio de venue
-   y retiro conservan aislamiento por aparato. Solo pruebas focalizadas sin mutar
-   dispositivos reales ni crear fixtures persistentes.
+`npm test`, `npm run build`, `node tests/inventory-assignment.mjs`.
+El navegador intercepta TODAS las APIs externas: admin/owner a 390/1440,
+stock con historial/vacíos/denegación, dos aparatos por venue con URLs distintas,
+selector/confirmaciones/payloads, terminales/pendientes y diálogos.
+No demuestra operación física ni reproduce autorización real de la base:
+esta última corresponde a la evidencia de backend de Tom.
 
-## Portal preparado
+Gaby revisó diff completo y la integración de stock en la sesión de reanudación.
+Su hallazgo sobre datos visibles durante revalidación se corrigió y confirmó;
+no quedaron hallazgos verificables abiertos.
 
-- Asignación con identidad compacta, buscador en portal, scroll, teclado, retorno
-  de foco, confirmaciones de asignación/movimiento/desvinculación/retiro.
-- `assign` no envía `p_print_server_id`; `move` es una sola llamada atómica;
-  desvincular/retirar usa `revoke` con motivos existentes, sin borrado físico.
-- Enlace canónico por PS o inventario; un ID de inventario con PS activo abre su
-  ficha completa; stock sin vínculo solo para staff y con identidad visible.
-- Aviso verde de etiqueta solo texto; impresión única en Preview/Download/Print.
-  Seguimiento terminal protegido en el componente compartido de ficha/diálogo.
-- Guardas de respuesta: detalle, manage y resolver rechazan IDs ajenos.
-
-La ficha stock sigue **incompleta**: identidad y firmware disponibles; el resto
-espera el DTO anterior. Este es también el hallazgo abierto de Gaby.
-
-## Retomar y comprobar
-
-Integrar DTO autorizado de stock con Lily, comprobar historial disponible y vacíos
-reales, revisar Gaby, ejecutar `npm test`, `npm run build` y
-`node tests/inventory-assignment.mjs`. El script actual intercepta todos los RPC;
-demuestra comportamiento del cliente, no autorización real del backend. Sus
-capturas/checks están en `docs/evidence/inventory-assignment/`.
-
-Tras verificar backend versionado y aplicado DEV, subir el portal y ejecutar
-`coredeva-publish playerp.dev <SHA>`. Ese mecanismo debe revalidar el registro
-del destino exacto `playerp.dev`, URL `https://playerp.dev.bmore.app`.
-Repetir los escenarios sobre el build publicado con `PS_TEST_ORIGIN` apuntando
-a esa URL; conservar interceptación total y asociar resultado al SHA publicado.
-No tocar PROD, POS/Lovable, fábrica, firmware, colas ni permisos generales.
+Publicación solo mediante `coredeva-publish playerp.dev <SHA>` y verificación
+posterior con `PS_TEST_ORIGIN=https://playerp.dev.bmore.app`; el SHA y resultado
+publicados quedan en la entrega del work de reanudación. Ningún cambio PROD,
+POS/Lovable, fábrica, firmware, colas ni permisos generales.
