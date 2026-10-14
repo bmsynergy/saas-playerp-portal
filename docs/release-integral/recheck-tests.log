@@ -1,0 +1,43 @@
+
+> saas-playerp-portal@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/ddceb173-ed1f-4265-9b57-49660853cd56/portal
+
+ ✓ tests/psAdminDevice.test.ts (17 tests) 22ms
+ ✓ tests/printServerApi.test.ts (15 tests) 21ms
+ ✓ tests/printFleet.test.ts (14 tests) 26ms
+ ✓ tests/access.test.ts (16 tests) 12ms
+ ✓ tests/venueUsers.test.ts (8 tests) 20ms
+ ✓ tests/pe441FirmwareRoles.test.ts (19 tests) 17ms
+ ✓ tests/legacyEvidence.test.ts (32 tests) 19ms
+ ✓ tests/psCredentialOperation.test.ts (14 tests) 8ms
+ ✓ tests/pe443MultiPs.test.ts (6 tests) 12ms
+ ✓ tests/firmwareEligibility.test.ts (13 tests) 16ms
+ ✓ tests/environment.test.ts (6 tests) 34ms
+ ✓ tests/ownerUsers.test.ts (6 tests) 21ms
+ ✓ tests/printInventory.test.ts (5 tests) 16ms
+ ✓ tests/psVenueOverview.test.ts (4 tests) 12ms
+ ✓ tests/psLabel.test.ts (5 tests) 7ms
+ ✓ tests/psAdminCode.test.ts (24 tests) 14ms
+ ✓ tests/firmwareLifecycle.test.ts (17 tests) 6ms
+ ✓ tests/invitation.test.ts (9 tests) 12ms
+ ✓ tests/adminLists.test.ts (5 tests) 9ms
+ ✓ tests/oauthConsent.test.ts (5 tests) 7ms
+ ✓ tests/firmwareLifecycleApi.test.ts (11 tests) 13ms
+ ✓ tests/psSsidAdoption.test.ts (4 tests) 6ms
+ ✓ tests/psRotationStatus.test.ts (4 tests) 8ms
+ ✓ tests/firmwareDelete.test.ts (9 tests) 16ms
+ ✓ tests/psRecoveryLabel.test.ts (7 tests) 7ms
+ ✓ tests/psEnroll.test.ts (3 tests) 5ms
+ ✓ tests/psAdminDeviceSheet.test.ts (4 tests) 13ms
+ ✓ tests/core.test.ts (7 tests) 68ms
+ ✓ tests/otaDeviceModels.test.ts (4 tests) 6ms
+ ✓ tests/otaEvents.test.ts (2 tests) 6ms
+
+ Test Files  30 passed (30)
+      Tests  295 passed (295)
+   Start at  13:13:19
+   Duration  9.30s (transform 1.01s, setup 0ms, collect 2.26s, tests 459ms, environment 6ms, prepare 2.08s)
+
