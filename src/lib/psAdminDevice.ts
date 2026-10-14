@@ -1,4 +1,4 @@
-import { firmwareBlockReason } from './firmwareEligibility';
+import { compareAdminFirmware, firmwareBlockReason, firmwareRing, projectFirmwareCandidate, type FirmwareCandidate, type FirmwareRing } from './firmwareEligibility';
 import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { errorCode, PortalError } from './errors';
@@ -7,6 +7,7 @@ export type DeviceModel = { model: string; label: string; archs: string[]; defau
 export type AdminDeviceDetail = {
   device: { id: string; serial: string; hostname: string; model: string; arch: string; label: string | null; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null };
   update: { current_version: string | null; latest_stable: { edition_id: string; version: string; model: string; arch: string } | null;
+    candidate: FirmwareCandidate | null; newest_signed: FirmwareCandidate | null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
     update_available: boolean; reason: string | null; active_update: { deployment_id: string; status: string; stage: string | null; progress: number | null } | null };
   delete: { allowed: boolean; blockers: string[] };
 };
@@ -17,7 +18,7 @@ const bad = (): never => { throw new PortalError('genericError'); };
 const obj = (v: unknown): Raw => v && typeof v === 'object' && !Array.isArray(v) ? v as Raw : bad();
 const str = (v: unknown): string | null => typeof v === 'string' && v.trim() ? v : null;
 const required = (v: unknown): string => str(v) ?? bad();
-const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable'];
+const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable','update_changed','edition_not_candidate','confirmation_required','metadata_missing','no_general_update','ring_not_allowed'];
 export class AdminDeviceError extends Error {
   constructor(public key: string) { super(key); }
 }
@@ -26,7 +27,12 @@ export function adminDeviceErrorKey(error: unknown): string {
 }
 function checked(value: unknown): Raw {
   const data = obj(value);
-  if (data.ok === false) throw new AdminDeviceError(`adminDevice.error.${typeof data.error === 'string' && errors.includes(data.error) ? data.error : 'other'}`);
+  if (data.ok === false) {
+    const code = typeof data.error === 'string' ? data.error : '';
+    if (['update_changed', 'edition_not_candidate', 'confirmation_required'].includes(code)) throw new AdminDeviceError('adminDevice.updateChanged');
+    if (['metadata_missing', 'no_general_update', 'ring_not_allowed'].includes(code)) throw new AdminDeviceError(`adminDevice.reason.${code}`);
+    throw new AdminDeviceError(`adminDevice.error.${errors.includes(code) ? code : 'other'}`);
+  }
   if (data.ok !== true) return bad();
   return data;
 }
@@ -56,9 +62,13 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
   const device = { id: required(d.id), serial: required(d.serial), hostname: required(d.hostname), model: required(d.model), arch: required(d.arch),
     label: str(d.label), status: required(d.status), legacy: d.legacy === true, venue_id: str(d.venue_id), venue_name: str(d.venue_name) };
   const blockers = deletion.blockers.map(required);
-  const reason = firmwareBlockReason(str(u.current_version), latest, device.model, device.arch, u.update_available === true, str(u.reason)) ?? (active ? 'update_in_progress' : null);
+  const candidate = projectFirmwareCandidate(u.candidate), effective_ring = firmwareRing(u.effective_ring);
+  const admitted = !!candidate && candidate.admitted && !!effective_ring && candidate.admitted_ring === effective_ring;
+  const reason = firmwareBlockReason(str(u.current_version), candidate, device.model, device.arch, u.update_available === true && u.can_update === true && admitted, str(u.reason), compareAdminFirmware) ?? (active ? 'update_in_progress' : null);
   return { device, update: { current_version: str(u.current_version), latest_stable: latest,
-    update_available: u.update_available && !!latest && !active && !reason,
+    candidate, newest_signed: projectFirmwareCandidate(u.newest_signed), effective_ring,
+    can_update: u.can_update === true && admitted && !active && !reason, newer_signed_unpromoted: u.newer_signed_unpromoted === true,
+    update_available: u.update_available && u.can_update === true && admitted && !active && !reason,
     reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
       progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null },
     delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status !== 'assigned' && !device.legacy, blockers } };
@@ -83,12 +93,12 @@ export async function updateAdminDevice(id: string, editionId: string, expectedI
   const token = session.session?.access_token;
   if (!token) throw new PortalError('sessionExpired');
   const fresh = await getAdminDeviceDetail(id);
-  if (fresh.device.id !== id || !fresh.update.update_available || fresh.update.latest_stable?.edition_id !== editionId || (expectedInstalled !== undefined && fresh.update.current_version !== expectedInstalled)) throw new AdminDeviceError('adminDevice.updateChanged');
+  if (fresh.device.id !== id || !fresh.update.update_available || fresh.update.candidate?.edition_id !== editionId || !expectedInstalled || fresh.update.current_version !== expectedInstalled) throw new AdminDeviceError('adminDevice.updateChanged');
   let response: Response;
   try {
     response = await fetch(`${SUPABASE_URL}/functions/v1/ps-ota-admin`, { method: 'POST',
       headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_PUBLIC_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update_device', device_id: id, edition_id: editionId }) });
+      body: JSON.stringify({ action: 'update_device', device_id: id, edition_id: editionId, expected_installed_version: expectedInstalled }) });
   } catch { throw new PortalError('networkError'); }
   if (response.status === 401) throw new PortalError('sessionExpired');
   if (response.status === 403) throw new PortalError('accessDenied');

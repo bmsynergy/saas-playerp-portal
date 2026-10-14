@@ -328,7 +328,28 @@
       "cursor": "default",
       "disabled": true,
       "animation": "none",
-      "children": [],
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
       "contrast": 6.242983408343889
     },
     {
@@ -389,7 +410,28 @@
       "cursor": "default",
       "disabled": true,
       "animation": "none",
-      "children": [],
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
       "contrast": 6.242983408343889
     },
     {
@@ -422,7 +464,28 @@
       "cursor": "default",
       "disabled": true,
       "animation": "none",
-      "children": [],
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
       "contrast": 6.242983408343889
     },
     {
@@ -483,7 +546,28 @@
       "cursor": "default",
       "disabled": true,
       "animation": "none",
-      "children": [],
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
       "contrast": 6.242983408343889
     },
     {

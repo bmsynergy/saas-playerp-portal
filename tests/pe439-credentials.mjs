@@ -70,8 +70,9 @@ try {
   await expect(psk).not.toContainText(wifi.psk);await expect(admin).not.toContainText(wifi.admin_code);
   const before=await positions(page);
   assert.ok(before[0].y<before[1].y);
-  if(width===390)assert.ok(before[1].y<before[2].y&&before[2].y<before[3].y);
-  else {assert.ok(before[0].x<before[2].x);assert.ok(Math.abs(before[0].y-before[2].y)<2);}
+  assert.ok(before[1].x<before[2].x);assert.ok(Math.abs(before[1].y-before[2].y)<2);
+  assert.ok(before[3].y>before[1].y && before[3].y>before[2].y);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await psk.getByRole('button').first().click();await expect(psk).toContainText(wifi.psk);
   await admin.getByRole('button').first().click();await expect(admin).toContainText('ABCD2-34567');
   assert.deepEqual(await positions(page),before);await expect(page.getByTestId('dev-qr')).toHaveCount(0);
@@ -115,7 +116,7 @@ try {
  // Timers: pending/offline -> received -> applied/failed; dates/history survive reload.
  for(const terminal of ['applied','failed']) {
   const {ctx,page,state}=await setup(1440,'en');state.sheet.rotations=[operation('pending',{wait_reason:'device_offline'})];state.sheet.ps_online=false;
-  await page.reload();await page.clock.install();const progress=page.getByTestId('dev-rotation-status-wifi');
+  await page.clock.install();await page.reload();const progress=page.getByTestId('dev-rotation-status-wifi');
   await expect(progress).toHaveAttribute('data-phase','offline');await expect(progress.getByRole('button',{name:'Check status',exact:false})).toBeVisible();
   let reads=state.reads,labelReads=state.labelReads;await tick(page);assert.ok(state.reads>reads&&state.labelReads>labelReads);
   state.sheet.rotations=[operation('pending',{received_at:received,wait_reason:'applying'})];state.sheet.ps_online=true;await tick(page);
@@ -136,13 +137,16 @@ try {
   if(kind==='certificate')state.sheet.cert_operations=[operation('pending',{kind:'cert_renew'})];
   if(kind==='enrollment'){state.sheet.device.legacy=false;state.sheet.enroll_credentials={state:'pending',wifi:'pending',admin_code:'pending'};}
   if(kind==='network-error')state.readError=true;
-  await page.reload();await page.clock.install();
+  await page.clock.install();await page.reload();
+  // Wait for the response state before measuring periodic reads; navigation alone races hydration.
+  if(kind==='network-error')await expect(page.getByTestId('ps-device-panel').locator('.inline-empty:not([role])')).toBeVisible();
+  else await expect(page.getByTestId('dev-serial')).toHaveText(device.serial);
   if(kind==='uncertain'){
    state.mode='lost';await page.getByTestId('dev-rotate-code').click();await page.getByTestId('dev-confirm-accept').click();
    const status=page.getByTestId('dev-rotation-dialog-status-admin_code');await expect(status).toHaveAttribute('data-phase','uncertain');await expect(status.getByRole('button')).toHaveCount(0);
   }
   await settle(page);const before=state.reads;await tick(page);
-  assert.equal(state.reads>before,kind!=='network-error');
+  assert.equal(state.reads>before,kind!=='network-error',`${kind}: expected polling=${kind!=='network-error'}, reads ${before} -> ${state.reads}`);
   checks.push(`${kind}: ${kind==='network-error'?'no periodic query from error alone':'pending recovery query continues'} PASS`);await ctx.close();
  }
  assert.deepEqual(errors,[]);await writeFile(`${out}/results.json`,JSON.stringify({synthetic:true,externalRequestsIntercepted:true,checks,queryCounts},null,2));

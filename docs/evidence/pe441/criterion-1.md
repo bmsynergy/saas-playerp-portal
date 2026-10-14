@@ -1,14 +1,14 @@
-# Criterio 1 — paridad visual local
+# PE-441.5 — comprobación conjunta de credenciales
 
-Datos sintéticos, sin llamadas a servicios externos y sin secretos reales. Ficha compartida `PrintServerDevicePanel`, con `CredentialProgress` para estados.
+Prueba: `PS_TEST_EVIDENCE=docs/evidence/pe441/credentials node tests/pe439-credentials.mjs`.
 
-| Ámbito | 390 px | 1440 px |
+Capturas de la ficha compartida `PrintServerDevicePanel`, con credenciales ocultas y datos sintéticos, ninguna petición a aparatos reales:
+
+| Vista | 390 px | 1440 px |
 |---|---|---|
-| OWNER | [Captura](styles/owner-390-credentials.png) | [Captura](styles/owner-1440-credentials.png) |
-| ADMIN | [Captura](styles/admin-390-credentials.png) | [Captura](styles/admin-1440-credentials.png) |
+| OWNER | [Captura](credentials/owner-390-hidden.png) | [Captura](credentials/owner-1440-hidden.png) |
+| ADMIN | [Captura](credentials/admin-390-hidden.png) | [Captura](credentials/admin-1440-hidden.png) |
 
-Capturas con claves ocultas, SSID visible y operación Applied sin Check Status. A 390 se apilan los campos en orden lógico; a 1440 contraseña izquierda, código derecha y confirmaciones bajo código. Recorte de página completa sin desplazar la ficha bajo la cabecera fija.
+SSID visible fila completa; contraseña izquierda y código actual oculto 5-5 a la derecha incluso en móvil; confirmaciones debajo. Mostrar/copiar conserva geometría; formato legacy exacto, incluidos guiones y 64 caracteres. QR solo en etiqueta. Applied no tiene Check Status. [Resultado conjunto](credentials/results.json), más estados Applied OWNER/ADMIN a ambos tamaños en [estilos](styles/results.json).
 
-[Resultado automatizado de mostrar/ocultar/copiar, legacy y QR](credentials/results.json): cuatro combinaciones OWNER/ADMIN × 390/1440 pasan; formato actual 5-5, formatos actuales equivalentes y legacy con guiones arbitrarios conservados, sin cambio de distribución al revelar. QR validado solo en preview/PNG de etiqueta, nunca lateral ni incluyendo código administrativo. Estados terminales dejan de consultar durante 120 s simulados; historial/fechas conservados.
-
-La prueba de estilos también comprueba Applied sin botón en los cuatro escenarios. La autorización de API y publicación no se deducen de estas capturas: siguen pendientes.
+Estas capturas verifican la UI local final con toda la red externa interceptada. No afirman publicación ni autorización API viva.
