@@ -112,8 +112,8 @@ export function CredentialProgress({ operation, compact = false, onRetry, reconc
       <div><dt>{t('dev.progress.requestedAt')}</dt><dd>{formatDate(operation.requestedAt)}</dd></div>
       <div><dt>{t('dev.progress.updatedAt')}</dt><dd>{formatDate(operation.updatedAt)}</dd></div>
     </dl>
-    {(onRetry || (isCredentialError && reconcileHref)) && <div className="credential-progress-actions">
-      {onRetry && <button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15} aria-hidden="true"/>{t('dev.progress.checkStatus')}</button>}
+    {((operation.canCheckStatus && onRetry) || (isCredentialError && reconcileHref)) && <div className="credential-progress-actions">
+      {operation.canCheckStatus && onRetry && <button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15} aria-hidden="true"/>{t('dev.progress.checkStatus')}</button>}
       {isCredentialError && reconcileHref && <a className="button button-secondary" href={reconcileHref} onClick={onReconcile}>{t('dev.progress.reconcileLink')}</a>}
     </div>}
   </section>;

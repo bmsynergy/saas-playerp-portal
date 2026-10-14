@@ -1,0 +1,77 @@
+{
+  "synthetic": true,
+  "externalRequestsIntercepted": true,
+  "checks": [
+    {
+      "scope": "owner",
+      "width": 390,
+      "installed": "0.3.19",
+      "unpromoted": "0.3.21",
+      "confirmation": true,
+      "semanticDisabledDuringRequest": true,
+      "cursor": "default",
+      "separateLoadingStatus": true,
+      "externalWrites": 0,
+      "interceptedPayload": {
+        "action": "update_owned_device",
+        "venue_id": "22222222-2222-4222-8222-222222222222",
+        "device_id": "fixture-device",
+        "edition_id": "general-edition",
+        "expected_installed_version": "0.3.19"
+      }
+    },
+    {
+      "scope": "owner",
+      "width": 1440,
+      "installed": "0.3.19",
+      "unpromoted": "0.3.21",
+      "confirmation": true,
+      "semanticDisabledDuringRequest": true,
+      "cursor": "default",
+      "separateLoadingStatus": true,
+      "externalWrites": 0,
+      "interceptedPayload": {
+        "action": "update_owned_device",
+        "venue_id": "22222222-2222-4222-8222-222222222222",
+        "device_id": "fixture-device",
+        "edition_id": "general-edition",
+        "expected_installed_version": "0.3.19"
+      }
+    },
+    {
+      "scope": "admin",
+      "width": 390,
+      "installed": "0.3.19",
+      "unpromoted": "0.3.21",
+      "confirmation": true,
+      "semanticDisabledDuringRequest": true,
+      "cursor": "default",
+      "separateLoadingStatus": true,
+      "externalWrites": 0,
+      "interceptedPayload": {
+        "action": "update_device",
+        "device_id": "fixture-device",
+        "edition_id": "canary-edition",
+        "expected_installed_version": "0.3.19"
+      }
+    },
+    {
+      "scope": "admin",
+      "width": 1440,
+      "installed": "0.3.19",
+      "unpromoted": "0.3.21",
+      "confirmation": true,
+      "semanticDisabledDuringRequest": true,
+      "cursor": "default",
+      "separateLoadingStatus": true,
+      "externalWrites": 0,
+      "interceptedPayload": {
+        "action": "update_device",
+        "device_id": "fixture-device",
+        "edition_id": "canary-edition",
+        "expected_installed_version": "0.3.19"
+      }
+    }
+  ],
+  "errors": []
+}

@@ -8,7 +8,7 @@ import { PsError } from './printServerApi';
 import { projectFirmwareLifecycle, type FirmwareLifecycle, type FirmwareConfirmation } from './firmwareLifecycle';
 
 // OTA of the Print Server app (PE-385). Platform Admin only for the overview, signing and
-// deployments; owners only read ps_panel_ota for their venue. Every answer is rebuilt field by
+// deployments; owners use a separate venue-scoped General-only action. Every answer is rebuilt field by
 // field: unknown keys are never copied into state or the query cache.
 export type Ring = 'lab' | 'canary' | 'general';
 export const RINGS: Ring[] = ['lab', 'canary', 'general'];
@@ -36,7 +36,7 @@ export type OtaDeployment = {
 export type OtaAudit = { at: string | null; action: string; target_type: string | null; target_id: string | null; metadata: string | null; actor_email: string | null };
 export type OtaOverview = { server_time: string | null; keys: OtaKey[]; releases: OtaRelease[]; groups: OtaGroup[]; devices: OtaDevice[]; deployments: OtaDeployment[]; audit: OtaAudit[] };
 export type OtaEvent = { id: string; phase: string | null; status: string | null; progress: number | null; error_code: string | null; error_detail: string | null; detail: string | null; created_at: string | null };
-export type PanelOta = { model: string | null; arch: string | null; latest_stable: StableFirmware | null; availability: 'available' | 'unavailable' | 'unknown'; reason: string | null; can_update: false; print_server_id: string; hostname: string | null; installed_version: string | null; desired_version: string | null; status: string; phase: string | null; progress: number | null; updated_at: string | null };
+export type PanelOta = { model: string | null; arch: string | null; latest_stable: StableFirmware | null; availability: 'available' | 'unavailable' | 'unknown'; reason: string | null; can_update: boolean; device_id: string | null; newer_signed_unpromoted: boolean; print_server_id: string; hostname: string | null; installed_version: string | null; desired_version: string | null; status: string; phase: string | null; progress: number | null; updated_at: string | null };
 
 type Raw = Record<string, unknown>;
 const bad = (): never => { throw new PortalError('genericError'); };
@@ -106,6 +106,7 @@ async function rpc(name: string, params: Record<string, unknown> = {}, signal?: 
 }
 const groupErrors: Record<string, string> = { invalid_ring: 'ota.error.invalidRing', invalid_name: 'ota.error.invalidName', duplicate_name: 'ota.error.duplicateName' };
 const fnErrors: Record<string, string> = {
+  update_changed: 'adminDevice.updateChanged', edition_not_general: 'adminDevice.updateChanged', no_general_update: 'adminDevice.reason.no_general_update', up_to_date: 'adminDevice.reason.up_to_date', update_in_progress: 'adminDevice.reason.update_in_progress', metadata_missing: 'adminDevice.reason.metadata_missing',
   canary_not_confirmed: 'ota.error.canaryNotConfirmed', ring_requires_group: 'ota.error.ringRequiresGroup', already_signed: 'ota.error.alreadySigned', forbidden: 'accessDenied',
   confirmation_required: 'fw.lifecycle.error.confirmationRequired', release_changed: 'fw.lifecycle.error.releaseChanged',
   availability_changed: 'fw.lifecycle.error.availabilityChanged', edition_retired: 'fw.lifecycle.error.retired',
@@ -179,10 +180,17 @@ export async function getPanelOta(venueId: string, signal?: AbortSignal): Promis
       ? { edition_id: str(latest.edition_id)!, version: str(latest.version)!, model: str(latest.model)!, arch: str(latest.arch)! } : null;
     const reason = u ? firmwareBlockReason(str(p.installed_version), stable, model, arch, u.update_available === true, str(u.reason)) : 'metadata_missing';
     const compatible = stable && stable.model === model && stable.arch === arch ? stable : null;
-    return { model, arch, latest_stable: compatible, availability: !u || reason === 'metadata_missing' || reason === 'incompatible' ? 'unknown' : reason === 'no_stable_release' ? 'unavailable' : 'available', reason, can_update: false,
+    return { model, arch, latest_stable: compatible, availability: !u || reason === 'metadata_missing' || reason === 'incompatible' ? 'unknown' : reason === 'no_stable_release' ? 'unavailable' : 'available', reason, can_update: u?.can_update === true && !reason && !!compatible && !!str(u?.device_id), device_id: str(u?.device_id), newer_signed_unpromoted: u?.newer_signed_unpromoted === true,
       print_server_id: String(p.print_server_id ?? ''), hostname: str(p.hostname), installed_version: str(p.installed_version), desired_version: str(p.desired_version),
       status: slug(p.status) ?? 'none', phase: slug(p.phase), progress: pct(p.progress), updated_at: str(p.updated_at) };
   });
+}
+
+// Re-read the exact venue/device before confirmation; the server repeats all checks atomically.
+export async function updateOwnedDevice(venueId: string, deviceId: string, editionId: string, expectedInstalled: string): Promise<void> {
+  const fresh = (await getPanelOta(venueId)).find(p => p.device_id === deviceId);
+  if (!fresh?.can_update || fresh.latest_stable?.edition_id !== editionId || !expectedInstalled || fresh.installed_version !== expectedInstalled) throw new PsError('adminDevice.updateChanged');
+  await call({action: 'update_owned_device', venue_id: venueId, device_id: deviceId, edition_id: editionId, expected_installed_version: expectedInstalled});
 }
 
 // A target is "Restored" when the device rolled back to its previous version on its own.

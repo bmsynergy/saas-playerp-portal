@@ -61,7 +61,7 @@ function ReconcileForm({ kind, ctx, date, onDone }: { kind: LegacyKind; ctx: Leg
   const appliedAt = kind === 'wifi' ? ctx.wifi_applied_at : ctx.admin_code_applied_at;
   const evidenceStatus = caEvidenceStatus(fingerprint, ctx.ca_cert_der_sha256);
   const fingerprintOk = evidenceStatus === 'valid';
-  const valueOk = kind === 'wifi' ? validRecoveryWifi(ssid, psk) : validAdminCode(code.trim().toUpperCase());
+  const valueOk = kind === 'wifi' ? validRecoveryWifi(ssid, psk) : validAdminCode(code);
   const identityOk = !!ctx.venue_id && !!ctx.device_id && !!ctx.serial && !!ctx.print_server_id && !!ctx.ca_cert_der_sha256 && ctx.legacy && ctx.print_server_status === 'active';
   const disabled = confirmed || !identityOk;
   const id = `legacy-${kind}`;
@@ -69,7 +69,7 @@ function ReconcileForm({ kind, ctx, date, onDone }: { kind: LegacyKind; ctx: Leg
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (disabled || busy || !fingerprintOk || !valueOk || !checked) return;
-    const values = kind === 'wifi' ? { ssid, psk } : { admin_code: code.trim().toUpperCase() };
+    const values = kind === 'wifi' ? { ssid, psk } : { admin_code: code };
     setBusy(true); setResult(null);
     // Inputs are cleared right away; the value only lives in this request.
     setSsid(''); setPsk(''); setCode(''); setChecked(false); setFingerprint('');
@@ -92,7 +92,7 @@ function ReconcileForm({ kind, ctx, date, onDone }: { kind: LegacyKind; ctx: Leg
       {kind === 'wifi' ? <>
         <label className="field"><span>{t('dev.ssid')}</span><input type="text" value={ssid} onChange={e => setSsid(e.target.value)} data-testid={`${id}-ssid`} autoComplete="off" spellCheck={false} maxLength={32}/></label>
         <label className="field"><span>{t('legacy.wifi.psk')}</span><input type="password" value={psk} onChange={e => setPsk(e.target.value.trim())} data-testid={`${id}-psk`} autoComplete="new-password" inputMode="numeric" maxLength={10}/></label>
-      </> : <label className="field"><span>{t('dev.adminCode')}</span><input type="password" value={code} onChange={e => setCode(e.target.value.trim())} data-testid={`${id}-code`} autoComplete="new-password" maxLength={10}/></label>}
+      </> : <label className="field"><span>{t('dev.adminCode')}</span><input type="password" value={code} onChange={e => setCode(e.target.value)} data-testid={`${id}-code`} autoComplete="new-password" maxLength={64}/></label>}
       <label className="field"><span>{t('legacy.fingerprintPrompt')}</span><input type="text" value={fingerprint} onChange={e => setFingerprint(e.target.value)} data-testid={`${id}-fingerprint`} className="ps-mono" autoComplete="off" spellCheck={false} maxLength={200} placeholder="ab12cd34ef56" aria-describedby={`${id}-fingerprint-help`}/></label>
       <p id={`${id}-fingerprint-help`} className="ps-cert-small">{t('legacy.fingerprintHelp')}</p>
       {fingerprint && !fingerprintOk && <p className="ps-cert-small legacy-mismatch" role="alert" data-testid={`${id}-fingerprint-${evidenceStatus}`}>{t(evidenceStatus === 'mismatch' ? 'legacy.fingerprintMismatch' : evidenceStatus === 'format' ? 'legacy.fingerprintFormat' : 'legacy.error.device_not_linked')}</p>}

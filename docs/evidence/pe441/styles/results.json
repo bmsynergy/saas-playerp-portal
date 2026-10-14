@@ -1,0 +1,645 @@
+{
+  "synthetic": true,
+  "externalRequestsIntercepted": true,
+  "checks": [
+    {
+      "scope": "admin",
+      "width": 390,
+      "spacing": {
+        "gap": "10px",
+        "pixels": 10,
+        "explanation": "No compatible signed stable firmware is available.",
+        "outside": true
+      },
+      "appliedButtons": 0
+    },
+    {
+      "scope": "admin",
+      "width": 1440,
+      "spacing": {
+        "gap": "10px",
+        "pixels": 10,
+        "explanation": "No compatible signed stable firmware is available.",
+        "outside": true
+      },
+      "appliedButtons": 0
+    },
+    {
+      "scope": "owner",
+      "width": 390,
+      "spacing": {
+        "gap": "10px",
+        "pixels": 10,
+        "explanation": "No compatible signed stable firmware is available.",
+        "outside": true
+      },
+      "appliedButtons": 0
+    },
+    {
+      "scope": "owner",
+      "width": 1440,
+      "spacing": {
+        "gap": "10px",
+        "pixels": 10,
+        "explanation": "No compatible signed stable firmware is available.",
+        "outside": true
+      },
+      "appliedButtons": 0
+    }
+  ],
+  "styles": [
+    {
+      "scope": "admin-390",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "admin-390",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "admin-390",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-390",
+      "text": "Sign out",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-390",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-390",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-390",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "admin-1440",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "admin-1440",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "admin-1440",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-1440",
+      "text": "Sign out",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-1440",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-1440",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-admin-1440",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-390",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-390",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-390",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-390",
+      "text": "Sign out",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-390",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-390",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-390",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-1440",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-1440",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "owner-1440",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-1440",
+      "text": "Sign out",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-1440",
+      "text": "Update",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-1440",
+      "text": "Previous",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "popover-css-probe-owner-1440",
+      "text": "Next",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "password-390",
+      "text": "Save new password",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    },
+    {
+      "scope": "password-1440",
+      "text": "Save new password",
+      "color": "rgb(71, 84, 103)",
+      "background": "rgb(227, 232, 239)",
+      "cursor": "default",
+      "disabled": true,
+      "animation": "none",
+      "children": [
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        },
+        {
+          "cursor": "default",
+          "animation": "none"
+        }
+      ],
+      "contrast": 6.242983408343889
+    }
+  ],
+  "errors": []
+}
