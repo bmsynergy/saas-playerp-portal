@@ -14,7 +14,8 @@ import { adminSheetHref, deviceName, getVenueDevices, ownerSheetHref, resolveDev
 import { VenuePrintServersPage } from './pages/VenuePrintServersPage';
 import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
-import { DeviceAdminSummary } from './components/DeviceAdminSummary';
+import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
+import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
@@ -423,16 +424,25 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   // The URL never grants access: an owner sheet must belong to the selected venue.
   if(expectedVenueId&&r.venue_id!==expectedVenueId)return <StateView kind="denied"/>;
   const back=r.venue_id?{href:venueListHref(scope,r.venue_id),label:t('psm.backToVenue')}:{href:'/admin/print-servers/list',label:t('psm.backToList')};
-  if(r.kind==='inventory'||!r.print_server_id||!r.venue_id) return <div className="page-stack staff-page" data-testid="ps-inventory-sheet">
+  if((!r.print_server_id||!r.venue_id)&&(scope!=='admin'||!r.is_staff))return <StateView kind="denied"/>;
+  if(!r.print_server_id||!r.venue_id) return r.inventory_device_id
+    ? <InventoryDeviceSheetData key={r.inventory_device_id} deviceId={r.inventory_device_id} back={back}/>
+    : <StateView kind="notFound"/>;
+  return <PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/>;
+}
+function InventoryDeviceSheetData({deviceId,back}:{deviceId:string;back:{href:string;label:string}}) {
+  const {session}=useAuth(); const {t}=useLocale();
+  const sheet=useQuery({queryKey:['ps-admin-device-sheet',session?.user.id,deviceId],
+    queryFn:({signal})=>getAdminDeviceSheet(deviceId,signal),retry:false,gcTime:0,staleTime:0});
+  usePsFailure(sheet.error);
+  // Never retain an old credential view after a denied refresh.
+  if(sheet.isError)return <StateView kind={psErrorKey(sheet.error)==='accessDenied'?'denied':'error'} onRetry={()=>void sheet.refetch()}/>;
+  if(!sheet.data||sheet.isFetching)return <StateView kind="loading"/>;
+  return <div className="page-stack staff-page" data-testid="ps-inventory-sheet">
     <Link className="back-link" to={back.href}>{back.label}</Link>
     <div className="page-heading detail-heading"><div><p className="eyebrow">{t('psm.sheetEyebrow')}</p><h1>{t('printServer')}</h1><p>{t('psm.inventoryLead')}</p></div></div>
-    <section className="detail-panel"><div className="detail-grid">
-      <div className="detail-item"><div><span className="detail-item-label">{t('psm.linkedVenue')}</span><strong>{r.venue_name||t('psm.unassigned')}</strong></div></div>
-      <div className="detail-item"><div><span className="detail-item-label">{t('state')}</span><strong>{r.status||t('notProvided')}</strong></div></div>
-    </div></section>
-    {scope==='admin'&&r.is_staff&&r.inventory_device_id&&<section className="detail-panel"><DeviceAdminSummary deviceId={r.inventory_device_id}/></section>}
+    <InventoryDeviceSheet key={deviceId} sheet={sheet.data}/>
   </div>;
-  return <PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/>;
 }
 function PrintServerSheetData({printServerId,venueId,venueName,scope,back,canManage}:{printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean}) {
   const {session}=useAuth();

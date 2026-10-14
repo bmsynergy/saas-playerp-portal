@@ -64,6 +64,11 @@ describe('PE-443 multi Print Server per venue', () => {
     await expect(resolveDeviceSheet(ps)).rejects.toBeTruthy();
   });
 
+  it('rejects a sheet resolver response for a different inventory device or Print Server', async () => {
+    answer({ ok: true, kind: 'print_server', print_server_id: 'another-ps', inventory_device_id: 'another-device', venue_id: venue, is_staff: true });
+    await expect(resolveDeviceSheet(ps)).rejects.toMatchObject({ code: 'accessDenied' });
+  });
+
   it('has every new message in both languages', () => {
     for (const key of Object.keys(en).filter(k => k.startsWith('psm.') || k.startsWith('ps.error.selection'))) expect(es[key as keyof typeof en]).toBeTruthy();
   });

@@ -317,23 +317,26 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Manrope,sans-serif;letter-spacing:-
 .venue-combobox-control:focus-within{outline:2px solid var(--blue);outline-offset:2px}
 .venue-combobox-control input{flex:1;min-width:0;width:100%;height:100%;padding:0;border:0;background:transparent;box-shadow:none;outline:0;color:var(--ink)}
 .venue-combobox-control button{border:0;background:transparent;color:var(--muted);display:grid;place-items:center;padding:5px;cursor:pointer}
-.venue-combobox-options{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:10;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow);padding:4px}
+.venue-combobox-options{position:fixed;z-index:90;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 18px 42px rgba(2,25,63,.25);padding:4px}
 .venue-combobox-options button{display:grid;gap:3px;width:100%;text-align:left;border:0;border-radius:7px;background:transparent;padding:8px 10px;color:var(--ink);cursor:pointer}
 .venue-combobox-options button:hover,.venue-combobox-options button.active{background:var(--blue-soft)}
 .venue-combobox-options button strong{font-size:.8rem}
 .venue-combobox-options button small{font-size:.7rem;color:var(--muted)}
 .venue-combobox-options p{padding:8px 10px;color:var(--muted);font-size:.76rem}
-.inv-manage-summary{display:grid;gap:0;margin:0}.inv-manage-summary>div{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:8px 0}
-.inv-manage-summary{border:1px solid var(--line);border-radius:10px;padding:4px 13px}
+.inv-manage-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;margin:0;border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+.inv-manage-summary>div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:5px 0;min-width:0}
 .inv-manage-summary>div:last-child{border-bottom:0}
-.inv-manage-secondary{display:grid;justify-items:start;gap:6px;margin-top:4px}
+.inv-manage-summary dt{color:var(--muted);font-size:.73rem}.inv-manage-summary dd{margin:0;font-size:.77rem;font-weight:700;text-align:right;overflow-wrap:anywhere}
+.inv-manage-venue{margin-top:5px}.inv-manage-venue .venue-combobox-control{height:var(--portal-control-height)}.inv-manage-venue .venue-combobox-control input{height:100%;min-height:0}
+.inv-manage-secondary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-top:4px}
 .inv-manage-secondary small{color:var(--muted)}
+.inventory-device-identity{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;margin:12px 0}.inventory-device-identity>div{display:grid;gap:3px;min-width:0}.inventory-device-identity dt{color:var(--muted);font-size:.72rem}.inventory-device-identity dd{margin:0;font-weight:700;overflow-wrap:anywhere}
 .inv-manage-danger{border-top:1px solid var(--danger-line);padding-top:15px;margin-top:4px;display:grid;justify-items:start;gap:9px}
 .inv-manage-danger h3{margin:0;color:var(--danger);font-size:.79rem}
 @media(max-width:700px){.inv-filter-bar .admin-list-filters label{flex-basis:calc(50% - 12px)}.inv-filter-bar .admin-list-filters label:first-child{flex-basis:100%}}
 @media(max-width:450px){.inv-filter-bar .admin-list-filters label{flex-basis:100%}.inv-filter-bar .admin-list-clear{width:100%}.inv-filter-bar .directory-count{margin-left:0}.inv-actions{flex-wrap:wrap;justify-content:stretch}.inv-actions .button{width:100%}}
 
-@media(max-width:450px){.inv-manage-summary>div{display:grid;gap:4px}.inv-manage-summary dd{text-align:left}}
+@media(max-width:450px){.inv-manage-summary,.inventory-device-identity{grid-template-columns:minmax(0,1fr)}.inv-manage-summary>div{padding:4px 0}.inv-manage-summary dd{text-align:right}.venue-combobox-options{box-shadow:0 10px 28px rgba(2,25,63,.28)}}
 
 /* Keep inventory actions and serial readable in the compact admin table. */
 .inv-inventory-table td:first-child{min-width:92px}

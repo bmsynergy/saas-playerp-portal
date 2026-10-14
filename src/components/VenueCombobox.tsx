@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { searchAdminVenues, type AdminVenueOption, adminDeviceErrorKey } from '../lib/psAdminDevice';
 import { useLocale } from '../locales';
 
@@ -15,8 +16,32 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [placement, setPlacement] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number } | null>(null);
   const request = useRef(0);
   const options: (AdminVenueOption | null)[] = [null, ...items];
+  useEffect(() => {
+    if (open) listRef.current?.querySelector<HTMLElement>(`[id="${id}-option-${active}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [open, active, items.length, id]);
+  useEffect(() => {
+    if (!open) { setPlacement(null); return; }
+    const update = () => {
+      const anchor = rootRef.current?.getBoundingClientRect();
+      if (!anchor) return;
+      const footer = rootRef.current?.closest('.ps-dialog')?.querySelector('.ps-dialog-actions')?.getBoundingClientRect();
+      const bottomBoundary = Math.min(window.innerHeight - 8, footer?.top ?? window.innerHeight - 8);
+      const below = bottomBoundary - anchor.bottom - 6;
+      const above = anchor.top - 8;
+      const upwards = below < 150 && above > below;
+      const maxHeight = Math.max(80, Math.min(300, (upwards ? above : below) - 6));
+      const left = Math.max(8, Math.min(anchor.left, window.innerWidth - anchor.width - 8));
+      setPlacement({ top: upwards ? undefined : anchor.bottom + 6, bottom: upwards ? window.innerHeight - anchor.top + 6 : undefined, left, width: Math.min(anchor.width, window.innerWidth - 16), maxHeight });
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true); };
+  }, [open, items.length]);
   useEffect(() => {
     if (!open || disabled) return;
     const current = ++request.current;
@@ -32,12 +57,12 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
   }, [open, query, includeVenueId, value?.id, disabled, t]);
   useEffect(() => {
     if (!open) return;
-    const outside = (event: PointerEvent) => { if (!rootRef.current?.contains(event.target as Node)) { setOpen(false); setQuery(''); } };
+    const outside = (event: PointerEvent) => { if (!rootRef.current?.contains(event.target as Node) && !listRef.current?.contains(event.target as Node)) { setOpen(false); setQuery(''); } };
     document.addEventListener('pointerdown', outside);
     return () => document.removeEventListener('pointerdown', outside);
   }, [open]);
   function choose(venue: AdminVenueOption | null) {
-    onChange(venue); setQuery(''); setOpen(false); setActive(0);
+    onChange(venue); setQuery(''); setOpen(false); setActive(0); inputRef.current?.focus();
   }
   return <div ref={rootRef} className="venue-combobox">
     <div className="venue-combobox-control">
@@ -47,11 +72,12 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
         if (e.key === 'ArrowUp' && open) { e.preventDefault(); setActive(i => Math.max(0, i - 1)); }
         if (e.key === 'Enter' && open && options[active] !== undefined) { e.preventDefault(); choose(options[active]); }
         if (e.key === 'Escape' && open) { e.preventDefault(); e.stopPropagation(); setOpen(false); setQuery(''); }
+        if (e.key === 'Tab' && open) { setOpen(false); setQuery(''); }
       }}/>
       <button type="button" tabIndex={-1} disabled={disabled} aria-label={t('inv.chooseVenue')} onClick={() => { setOpen(v => !v); inputRef.current?.focus(); }}><ChevronDown size={16}/></button>
     </div>
-    {open && <div className="venue-combobox-options" id={`${id}-options`} role="listbox" aria-label={t('inv.chooseVenue')}>
-      {options.map((venue, index) => <button type="button" role="option" aria-selected={venue?.id === value?.id} id={`${id}-option-${index}`} key={venue?.id ?? 'none'} className={index === active ? 'active' : ''} onMouseDown={e => e.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(venue)}>
+    {open && placement && createPortal(<div ref={listRef} className="venue-combobox-options" style={placement} id={`${id}-options`} role="listbox" aria-label={t('inv.chooseVenue')}>
+      {options.map((venue, index) => <button type="button" tabIndex={-1} role="option" aria-selected={venue?.id === value?.id} id={`${id}-option-${index}`} key={venue?.id ?? 'none'} className={index === active ? 'active' : ''} onMouseDown={e => e.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(venue)}>
         <strong>{venue?.name ?? t('inv.unassigned')}</strong>
         {venue && <small>{[venue.slug, venue.city, venue.state].filter(Boolean).join(' · ')}</small>}
         {venue?.assigned_device && <small>{t('inv.venueHasDevice').replace('{serial}', venue.assigned_device.serial)}</small>}
@@ -59,6 +85,6 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
       {loading && <p role="status">{t('dev.loading')}</p>}
       {error && <p role="alert" className="form-error">{error}</p>}
       {!loading && !error && !items.length && query && <p>{t('inv.noVenues')}</p>}
-    </div>}
+    </div>, document.body)}
   </div>;
 }

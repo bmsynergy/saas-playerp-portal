@@ -1,0 +1,40 @@
+
+> saas-playerp-portal@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/62a11f29-0b15-4303-84bb-65155f482f94/portal
+
+ ✓ tests/printFleet.test.ts (14 tests) 86ms
+ ✓ tests/ownerUsers.test.ts (6 tests) 51ms
+ ✓ tests/printInventory.test.ts (5 tests) 38ms
+ ✓ tests/venueUsers.test.ts (8 tests) 25ms
+ ✓ tests/pe443MultiPs.test.ts (7 tests) 20ms
+ ✓ tests/psAdminCode.test.ts (24 tests) 83ms
+ ✓ tests/core.test.ts (7 tests) 141ms
+ ✓ tests/psAdminDevice.test.ts (14 tests) 89ms
+ ✓ tests/printServerApi.test.ts (15 tests) 60ms
+ ✓ tests/access.test.ts (16 tests) 31ms
+ ✓ tests/pe441FirmwareRoles.test.ts (19 tests) 51ms
+ ✓ tests/legacyEvidence.test.ts (32 tests) 41ms
+ ✓ tests/adminLists.test.ts (5 tests) 18ms
+ ✓ tests/firmwareEligibility.test.ts (13 tests) 60ms
+ ✓ tests/firmwareDelete.test.ts (9 tests) 25ms
+ ✓ tests/psLabel.test.ts (5 tests) 21ms
+ ✓ tests/firmwareLifecycleApi.test.ts (11 tests) 25ms
+ ✓ tests/invitation.test.ts (9 tests) 20ms
+ ✓ tests/psSsidAdoption.test.ts (4 tests) 23ms
+ ✓ tests/psCredentialOperation.test.ts (14 tests) 11ms
+ ✓ tests/oauthConsent.test.ts (5 tests) 22ms
+ ✓ tests/firmwareLifecycle.test.ts (17 tests) 11ms
+ ✓ tests/psRotationStatus.test.ts (4 tests) 14ms
+ ✓ tests/psRecoveryLabel.test.ts (7 tests) 6ms
+ ✓ tests/otaEvents.test.ts (2 tests) 16ms
+ ✓ tests/psEnroll.test.ts (3 tests) 47ms
+ ✓ tests/otaDeviceModels.test.ts (4 tests) 19ms
+
+ Test Files  27 passed (27)
+      Tests  279 passed (279)
+   Start at  02:40:04
+   Duration  24.46s (transform 2.24s, setup 0ms, collect 5.65s, tests 1.05s, environment 13ms, prepare 6.25s)
+

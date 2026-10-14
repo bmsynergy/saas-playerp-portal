@@ -133,7 +133,6 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
     <p className="ps-cert-small">{t('dev.label.reprintHint')} {t('dev.label.printHint')}</p>
     {replacementReady && <div className="dev-label-replacement" role="status" data-testid="dev-label-replacement-ready">
       <p>{t('dev.label.replaceReady')}</p>
-      <button type="button" className="button button-primary" data-testid="dev-label-print-replacement" disabled={busy} onClick={() => void act('print')}><Printer size={15}/>{t('dev.label.printReplace')}</button>
     </div>}
     <div className="staff-actions dev-label-actions">
       <button type="button" className="button button-secondary" data-testid="dev-label-preview-action" disabled={!ready || busy} onClick={() => void act('preview')}><Eye size={15}/>{t('dev.label.preview')}</button>

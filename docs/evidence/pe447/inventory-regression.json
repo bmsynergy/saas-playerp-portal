@@ -1,0 +1,197 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "portalSha": "local",
+  "backendSha": "cb0dbe09c7eeb12dd587164b9ebf2d5cf75d19ce",
+  "safety": "Intercepted fixtures only; no real mutations or physical operations.",
+  "checks": [
+    {
+      "width": 390,
+      "criterion": 1,
+      "modal": "portal, collision, scroll, keyboard, confirmation and focus return pass",
+      "geometry": {
+        "portal": true,
+        "top": 436.765625,
+        "bottom": 619.625,
+        "footerTop": 625.625,
+        "footerBottom": 694.625,
+        "height": 844,
+        "scroll": true
+      }
+    },
+    {
+      "width": 390,
+      "criterion": 2,
+      "fixtureOnly": true,
+      "firstTwoPreserved": true,
+      "stockAndRetired": true,
+      "payloads": [
+        {
+          "name": "ps_admin_device_assign",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "22222222-2222-4222-8222-222222222222"
+          }
+        },
+        {
+          "name": "ps_admin_device_move",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "55555555-5555-4555-8555-000000000019"
+          }
+        },
+        {
+          "name": "ps_admin_device_move",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "55555555-5555-4555-8555-000000000019"
+          }
+        },
+        {
+          "name": "ps_admin_device_revoke",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_reason": "portal_admin"
+          }
+        },
+        {
+          "name": "ps_admin_device_revoke",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_reason": "retired"
+          }
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "criterion": 1,
+      "modal": "portal, collision, scroll, keyboard, confirmation and focus return pass",
+      "geometry": {
+        "portal": true,
+        "top": 421.4375,
+        "bottom": 587.953125,
+        "footerTop": 593.953125,
+        "footerBottom": 670.953125,
+        "height": 844,
+        "scroll": true
+      }
+    },
+    {
+      "width": 1440,
+      "criterion": 2,
+      "fixtureOnly": true,
+      "firstTwoPreserved": true,
+      "stockAndRetired": true,
+      "payloads": [
+        {
+          "name": "ps_admin_device_assign",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "22222222-2222-4222-8222-222222222222"
+          }
+        },
+        {
+          "name": "ps_admin_device_move",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "55555555-5555-4555-8555-000000000019"
+          }
+        },
+        {
+          "name": "ps_admin_device_move",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_venue_id": "55555555-5555-4555-8555-000000000019"
+          }
+        },
+        {
+          "name": "ps_admin_device_revoke",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_reason": "portal_admin"
+          }
+        },
+        {
+          "name": "ps_admin_device_revoke",
+          "args": {
+            "p_device_id": "33333333-3333-4333-8333-333333333332",
+            "p_reason": "retired"
+          }
+        }
+      ]
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "criterion": 3,
+      "assignedSheets": "two distinct PS URLs and identities, explicit per-PS RPCs",
+      "deniedFixture": "no credentials after denial; stock forbidden to owner",
+      "stockHistory": "staff stock history and denied/empty/mismatched responses verified at both widths"
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "criterion": 4,
+      "publishedBuild": false,
+      "terminal": "one print action, text-only green notice, no Check status",
+      "dialogs": "wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status",
+      "pending": "two Check status controls retained",
+      "layout": "no overflow, no QR beside credentials"
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "criterion": 3,
+      "assignedSheets": "two distinct PS URLs and identities, explicit per-PS RPCs",
+      "deniedFixture": "no credentials after denial; stock forbidden to owner",
+      "stockHistory": "staff stock history and denied/empty/mismatched responses verified at both widths"
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "criterion": 4,
+      "publishedBuild": false,
+      "terminal": "one print action, text-only green notice, no Check status",
+      "dialogs": "wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status",
+      "pending": "two Check status controls retained",
+      "layout": "no overflow, no QR beside credentials"
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "criterion": 3,
+      "assignedSheets": "two distinct PS URLs and identities, explicit per-PS RPCs",
+      "deniedFixture": "no credentials after denial; stock forbidden to owner",
+      "stockHistory": "staff stock history and denied/empty/mismatched responses verified at both widths"
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "criterion": 4,
+      "publishedBuild": false,
+      "terminal": "one print action, text-only green notice, no Check status",
+      "dialogs": "wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status",
+      "pending": "two Check status controls retained",
+      "layout": "no overflow, no QR beside credentials"
+    },
+    {
+      "role": "owner",
+      "width": 1440,
+      "criterion": 3,
+      "assignedSheets": "two distinct PS URLs and identities, explicit per-PS RPCs",
+      "deniedFixture": "no credentials after denial; stock forbidden to owner",
+      "stockHistory": "staff stock history and denied/empty/mismatched responses verified at both widths"
+    },
+    {
+      "role": "owner",
+      "width": 1440,
+      "criterion": 4,
+      "publishedBuild": false,
+      "terminal": "one print action, text-only green notice, no Check status",
+      "dialogs": "wifi/admin-code pending to applied: Check status removed, dates retained; admin SSID already applied: no Check status",
+      "pending": "two Check status controls retained",
+      "layout": "no overflow, no QR beside credentials"
+    }
+  ],
+  "errors": []
+}
