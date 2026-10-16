@@ -1,0 +1,48 @@
+{
+  "environment": "LOCAL SYNTHETIC API; NOT DEV",
+  "checks": [
+    "Search submits all four filters; starts page one; pagination retains applied filters despite unsaved draft.",
+    "Keyboard focus stays visible with 1–2px outline across directory controls.",
+    "Administrative confirmation explicit at server-provided USD 0.00; payload never supplies actor identity. OFF owner switches masked and disabled.",
+    "Owner and admin share one connection panel, exact same copied endpoint; four loaded logos with Beny attribution; owner AI navigation and mobile width."
+  ],
+  "screenshots": [
+    "admin.png",
+    "owner.png"
+  ],
+  "passed": true,
+  "requests": [
+    {
+      "p_search": "",
+      "p_owner_search": "",
+      "p_status": "all",
+      "p_tenant": null,
+      "p_page": 1,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "",
+      "p_owner_search": "",
+      "p_status": "all",
+      "p_tenant": null,
+      "p_page": 2,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "Harbor",
+      "p_owner_search": "owner@example.invalid",
+      "p_status": "inactive",
+      "p_tenant": "00000000-0000-4000-8000-000000000001",
+      "p_page": 1,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "Harbor",
+      "p_owner_search": "owner@example.invalid",
+      "p_status": "inactive",
+      "p_tenant": "00000000-0000-4000-8000-000000000001",
+      "p_page": 2,
+      "p_page_size": 25
+    }
+  ]
+}

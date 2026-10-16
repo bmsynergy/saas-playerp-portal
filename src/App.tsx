@@ -205,13 +205,13 @@ function McpAdminRoute() {
 }
 function McpAdminData() {
   const {session,expire}=useAuth();
-  const [filters,setFilters]=useState<McpFilters>({search:'',status:'all',tenant:null,page:1,page_size:25});
+  const [filters,setFilters]=useState<McpFilters>({search:'',owner_search:'',status:'all',tenant:null,page:1,page_size:25});
   const [tenantSearch,setTenantSearch]=useState('');
   const data=useQuery({queryKey:['mcp-directory',session?.user.id,filters],queryFn:({signal})=>getMcpVenues(filters,signal)});
   const tenants=useQuery({queryKey:['mcp-tenants',session?.user.id,tenantSearch],queryFn:({signal})=>getMcpTenants(tenantSearch,signal)});
   useEffect(()=>{if([data.error,tenants.error].some(e=>e&&mcpErrorKey(e)==='sessionExpired'))void expire();},[data.error,tenants.error,expire]);
   if(data.error&&mcpErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  return <AdminMcpPage filters={filters} onFilters={setFilters} list={data.data} loading={data.isPending}
+  return <AdminMcpPage filters={filters} onFilters={setFilters} list={data.data} loading={data.isFetching}
     error={data.error?mcpErrorKey(data.error):tenants.error?mcpErrorKey(tenants.error):null}
     tenants={tenants.data??[]} tenantSearch={tenantSearch} onTenantSearch={setTenantSearch}
     onRetry={()=>{void data.refetch();void tenants.refetch();}}/>;

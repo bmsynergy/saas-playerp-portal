@@ -4,6 +4,7 @@ import { useBlocker } from 'react-router-dom';
 import { useLocale } from '../locales';
 import { mcpErrorKey, type McpEditorProps, type McpSave, type McpVenueDetail } from '../lib/mcp';
 import { PortalDialog } from './PortalDialog';
+import { McpConnectionInfo } from './McpConnectionInfo';
 import { McpEffectiveBadge } from '../pages/AdminMcpPage';
 
 type Draft = { habilitado: boolean; owners: Record<string, boolean> };
@@ -138,6 +139,7 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
   };
   const pendingOwner = needsAcceptance && !base.capabilities.can_accept;
   const firstActivation = base.primera_activacion_en === null && draft.habilitado;
+  const administrativeAcceptance = base.capabilities.acceptance_mode === 'administrative';
   return <div className="mcp-editor" data-testid="mcp-venue-editor">
     <div className="mcp-editor-title"><div><h3>{base.nombre}</h3><p className="mcp-muted">{t('mcp.editorLead')}</p></div><span className={`status-badge ${base.habilitado ? 'status-active' : 'status-inactive'}`}><span className="badge-dot" />{t(base.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</span></div>
     <div className="mcp-editor-grid">
@@ -145,7 +147,7 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
         <label className="mcp-switch-row"><span><strong>{t('mcp.venueSwitch')}</strong><small>{t('mcp.venueSwitchHelp')}</small></span><input type="checkbox" role="switch" checked={draft.habilitado} disabled={!base.capabilities.can_manage || busyNow} onChange={e => changeVenue(e.target.checked)} aria-label={t('mcp.venueSwitch')} /></label>
       </section>
       <section className="mcp-editor-card" aria-labelledby="mcp-access-title"><h4 id="mcp-access-title">{t('mcp.subscriptionTitle')}</h4><p className="mcp-muted">{t('mcp.subscriptionHelp')}</p>
-        <dl className="mcp-facts"><div><dt>{t('mcp.currentConfig')}</dt><dd>{t(base.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</dd></div><div><dt>{t('mcp.monthlyRate')}</dt><dd>{price} / {t('mcp.month')}</dd></div><div><dt>{t('mcp.rateVersion')}</dt><dd>{base.rate.version}</dd></div><div><dt>{t('mcp.acceptance')}</dt><dd>{t(base.acceptance.current ? 'mcp.accepted' : 'mcp.pendingAcceptance')}</dd></div></dl>
+        <dl className="mcp-facts"><div><dt>{t('mcp.currentConfig')}</dt><dd>{t(base.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</dd></div><div><dt>{t('mcp.monthlyRate')}</dt><dd>{price} / {t('mcp.month')}</dd></div><div><dt>{t('mcp.rateVersion')}</dt><dd>{base.rate.version}</dd></div><div><dt>{t('mcp.acceptance')}</dt><dd>{t(base.acceptance.current ? 'mcp.accepted' : 'mcp.pendingAcceptance')}{base.acceptance.current && base.acceptance.mode === 'administrative' && <small className="mcp-acceptance-mode">{t('mcp.acceptedAdministratively')}</small>}</dd></div></dl>
         {pendingOwner && <div className="staff-notice" role="status">{t('mcp.ownerMustAccept')}</div>}
         {base.acceptance.accepted_at && <p className="mcp-muted">{t('mcp.acceptedAt').replace('{date}', new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium' }).format(new Date(base.acceptance.accepted_at)))}</p>}
       </section>
@@ -153,7 +155,7 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
         <h4 id="mcp-owners-title" className="mcp-owner-heading"><Users size={17} aria-hidden="true" />{t('mcp.owners')}<span className="count-pill">{base.owners.length}</span></h4>
         {!draft.habilitado && <p className="mcp-muted" role="status">{t('mcp.ownersPaused')}</p>}
         {firstActivation && <p className="mcp-muted" role="status">{t('mcp.firstActivationOwners')}</p>}
-        {base.owners.length === 0 ? <p className="inline-empty">{t('mcp.noOwners')}</p> : <ul className="mcp-owner-list">{base.owners.map(owner => <li key={owner.owner_user_id}><label className="mcp-switch-row"><span><strong>{owner.nombre || owner.email}</strong><small>{owner.email}</small></span><input type="checkbox" role="switch" checked={draft.habilitado && (firstActivation || (draft.owners[owner.owner_user_id] ?? owner.habilitado))} disabled={!draft.habilitado || firstActivation || !base.capabilities.can_manage || busyNow} onChange={e => change({ ...draft, owners: { ...draft.owners, [owner.owner_user_id]: e.target.checked } })} aria-label={t('mcp.ownerSwitch').replace('{name}', owner.nombre || owner.email)} /></label><McpEffectiveBadge efectivo={owner.efectivo} motivo={owner.motivo} /></li>)}</ul>}
+        {base.owners.length === 0 ? <p className="inline-empty">{t('mcp.noOwners')}</p> : <ul className="mcp-owner-list">{base.owners.map(owner => <li key={owner.owner_user_id}><label className="mcp-switch-row"><span><strong>{owner.nombre || owner.email}</strong><small>{owner.email}</small></span><input type="checkbox" role="switch" checked={draft.habilitado && (firstActivation || (draft.owners[owner.owner_user_id] ?? owner.habilitado))} disabled={!draft.habilitado || firstActivation || !base.capabilities.can_manage || busyNow} onChange={e => change({ ...draft, owners: { ...draft.owners, [owner.owner_user_id]: e.target.checked } })} aria-label={t('mcp.ownerSwitch').replace('{name}', owner.nombre || owner.email)} /></label><McpEffectiveBadge efectivo={draft.habilitado && owner.efectivo} motivo={draft.habilitado ? owner.motivo : 'sede_desactivada'} /></li>)}</ul>}
       </section>
     </div>
     {remoteChanged && <div className="form-error" role="alert"><AlertTriangle size={18} /><span>{t('mcp.conflict')}</span><button className="button button-secondary" type="button" onClick={() => void reload()}>{t('mcp.reload')}</button></div>}
@@ -161,10 +163,11 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
     {saved && <div className="staff-notice" role="status"><Check size={18} />{t('mcp.saved')}</div>}
     {switchesDirty && <p className="mcp-muted" role="status">{t('mcp.unsaved')}</p>}
     {base.capabilities.can_manage && <div className="mcp-editor-actions"><button type="button" className="button button-secondary" disabled={(!switchesDirty && !remoteChanged) || busyNow} onClick={cancel}>{t('mcp.cancel')}</button><button type="button" className="button button-primary" disabled={!canSave || remoteChanged} onClick={requestSave}><Save size={16} />{busyNow ? t('mcp.saving') : t(reconfirmation && !switchesDirty ? 'mcp.reconfirmRate' : 'mcp.save')}</button></div>}
-    {dialog && <PortalDialog title={t('mcp.monthlyDialogTitle')} titleId="mcp-monthly-title" descriptionId="mcp-monthly-description" testId="mcp-monthly-dialog" onClose={() => { if (!busyNow) setDialog(false); }} dismissible={!busyNow}
+    <McpConnectionInfo endpoint={base.endpoint} entorno={base.entorno} />
+    {dialog && <PortalDialog title={t(administrativeAcceptance ? 'mcp.administrativeDialogTitle' : 'mcp.monthlyDialogTitle')} titleId="mcp-monthly-title" descriptionId="mcp-monthly-description" testId="mcp-monthly-dialog" onClose={() => { if (!busyNow) setDialog(false); }} dismissible={!busyNow}
       actions={<><button type="button" className="button button-secondary" disabled={busyNow} onClick={() => setDialog(false)}>{t('mcp.cancel')}</button><button type="button" className="button button-primary" disabled={!checked || busyNow || remoteChanged} onClick={() => void submit(true)}>{busyNow ? t('mcp.saving') : t('mcp.confirmSave')}</button></>}>
-      <p id="mcp-monthly-description">{t('mcp.monthlyTerms').replace('{venue}', base.nombre).replace('{price}', price).replace('{version}', String(base.rate.version))}</p>
-      <label className="mcp-consent-check"><input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} disabled={busyNow} />{t('mcp.expressAccept')}</label>
+      <p id="mcp-monthly-description">{t(administrativeAcceptance ? 'mcp.administrativeTerms' : 'mcp.monthlyTerms').replace('{venue}', base.nombre).replace('{price}', price).replace('{version}', String(base.rate.version))}</p>
+      <label className="mcp-consent-check"><input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} disabled={busyNow} />{t(administrativeAcceptance ? 'mcp.administrativeConfirm' : 'mcp.expressAccept')}</label>
       {remoteChanged && <div className="form-error" role="alert"><span>{t('mcp.conflict')}</span><button type="button" className="button button-secondary" disabled={busyNow} onClick={() => void reload()}>{t('mcp.reload')}</button></div>}
       {(localError || error) && <div className="form-error" role="alert">{t(localError || error || '')}</div>}
     </PortalDialog>}

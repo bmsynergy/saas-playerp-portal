@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const rpc = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc } }));
-import { getMcpVenue, mcpErrorKey } from '../src/lib/mcp';
+import { getMcpVenue, getMcpVenues, mcpErrorKey } from '../src/lib/mcp';
 import { destination, safeNext } from '../src/lib/access';
 import type { PortalAccess } from '../src/lib/types';
 
@@ -23,6 +23,23 @@ describe('PE-464 shared venue contract', () => {
     await expect(getMcpVenue(venue)).rejects.toThrow('accessDenied');
     rpc.mockReturnValue(ok({...detail,endpoint:'javascript:alert(1)'}));
     expect((await getMcpVenue(venue)).endpoint).toBeNull();
+  });
+  it('retains server-derived administrative confirmation mode', async () => {
+    rpc.mockReturnValue(ok({...detail,capabilities:{can_manage:true,can_accept:true,acceptance_mode:'administrative'}}));
+    expect((await getMcpVenue(venue)).capabilities.acceptance_mode).toBe('administrative');
+  });
+  it('submits all applied filters and pagination to the same RPC', async () => {
+    rpc.mockReturnValue(ok({rows:[],total:0,page:1,page_size:25}));
+    await getMcpVenues({search:'Harbor',owner_search:'owner@example.invalid',tenant:venue,status:'inactive',page:1,page_size:25});
+    expect(rpc).toHaveBeenCalledWith('mcp_admin_venues',{p_search:'Harbor',p_owner_search:'owner@example.invalid',p_tenant:venue,p_status:'inactive',p_page:1,p_page_size:25});
+  });
+  it('does not display or copy URL credentials, query tokens or fragments', async () => {
+    for (const endpoint of ['https://user:secret@example.invalid/mcp','https://example.invalid/mcp?token=secret','https://example.invalid/mcp#secret']) {
+      rpc.mockReturnValue(ok({...detail,endpoint}));
+      expect((await getMcpVenue(venue)).endpoint).toBeNull();
+    }
+    rpc.mockReturnValue(ok({...detail,endpoint:'https://example.invalid/mcp'}));
+    expect((await getMcpVenue(venue)).endpoint).toBe('https://example.invalid/mcp');
   });
   it('rejects an absent or invalid first-activation marker rather than enabling all owners again', async () => {
     for (const marker of [undefined, false, 'invalid']) {
