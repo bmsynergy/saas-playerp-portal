@@ -34,8 +34,8 @@ try{
  await p.getByRole('heading',{name:'WI170P1 Venue',level:1}).waitFor();assert.equal(await p.getByTestId('mcp-venue-editor').count(),1);
  report.navigation.push({from:'/admin/mcp',to:new URL(p.url()).pathname,normalHeader:true,activeTab:'MCP',editors:1});
  await p.locator('.detail-tabs a').first().click();await p.getByTestId('venue-mcp-tab').click();await p.getByTestId('mcp-venue-editor').waitFor();report.navigation.push({from:'venue normal navigation',to:new URL(p.url()).pathname,editors:1});
- const order=await p.locator('.mcp-editor-card h4').allTextContents();assert.equal(order.length,3);assert(order[1].includes('subscription'));assert(order[2].includes('Owners'));
- const positions=await p.locator('.mcp-editor-card').evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect().top));assert(positions[0]<positions[1]&&positions[1]<positions[2]);
+ const order=await p.locator('.mcp-editor-card h4').allTextContents();assert.equal(order.length,3);assert.equal(await p.locator('.mcp-editor-card').first().getByRole('switch',{name:'Venue MCP',exact:true}).count(),1);assert(order[1].includes('subscription'));assert(order[2].includes('Owners'));
+ const positions=await p.locator('.mcp-editor-card').evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect().top));assert(positions[0]<positions[1]&&positions[1]<positions[2]);const saveBox=await p.getByRole('button',{name:'Save',exact:true}).boundingBox();assert(saveBox.y>positions[2]);
  const before=await rpc(staff,'mcp_venue_detail',{p_venue_id:w});await masked(p,before.owners.length);
  let saves=0;p.on('request',r=>{if(r.url().endsWith('/rpc/mcp_venue_save'))saves++;});
  await p.getByRole('switch',{name:'Venue MCP',exact:true}).check();assert.equal(saves,0);await p.getByRole('button',{name:'Cancel',exact:true}).click();assert.equal(saves,0);await masked(p,before.owners.length);
