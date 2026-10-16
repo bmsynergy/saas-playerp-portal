@@ -89,6 +89,17 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
   }, [dirty, busyNow]);
 
   const change = (next: Draft) => { setDraft(next); setSaved(false); setLocalError(null); operation.current = null; };
+  const changeVenue = (enabled: boolean) => {
+    if (!enabled && !base.habilitado && base.primera_activacion_en === null) {
+      // An unsaved first activation must not replace the stored preferences.
+      change(fromData(base));
+    } else if (enabled && !draft.habilitado && base.primera_activacion_en === null) {
+      // The first accepted activation grants the current owner census together.
+      change({ habilitado: true, owners: Object.fromEntries(base.owners.map(owner => [owner.owner_user_id, true])) });
+    } else {
+      change({ ...draft, habilitado: enabled });
+    }
+  };
   const cancel = () => { setDraft(fromData(base)); setLocalError(null); setSaved(false); setDialog(false); setChecked(false); operation.current = null; };
   const reload = async () => {
     if (dirty && !window.confirm(t('mcp.discardConfirm'))) return;
@@ -105,7 +116,7 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
     const payload: Omit<McpSave, 'operation_id'> = {
       venue_id: base.venue_id, expected_revision: base.revision, rate_version: base.rate.version,
       habilitado: draft.habilitado,
-      owners: base.owners.map(owner => ({ owner_user_id: owner.owner_user_id, habilitado: draft.owners[owner.owner_user_id] ?? owner.habilitado })),
+      owners: base.owners.map(owner => ({ owner_user_id: owner.owner_user_id, habilitado: draft.habilitado && base.primera_activacion_en === null ? true : draft.owners[owner.owner_user_id] ?? owner.habilitado })),
       accept_monthly: accept,
     };
     const key = JSON.stringify(payload);
@@ -126,18 +137,23 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
     else void submit(false);
   };
   const pendingOwner = needsAcceptance && !base.capabilities.can_accept;
+  const firstActivation = base.primera_activacion_en === null && draft.habilitado;
   return <div className="mcp-editor" data-testid="mcp-venue-editor">
     <div className="mcp-editor-title"><div><h3>{base.nombre}</h3><p className="mcp-muted">{t('mcp.editorLead')}</p></div><span className={`status-badge ${base.habilitado ? 'status-active' : 'status-inactive'}`}><span className="badge-dot" />{t(base.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</span></div>
     <div className="mcp-editor-grid">
       <section className="mcp-editor-card" aria-labelledby="mcp-config-title"><h4 id="mcp-config-title">{t('mcp.configuration')}</h4>
-        <label className="mcp-switch-row"><span><strong>{t('mcp.venueSwitch')}</strong><small>{t('mcp.venueSwitchHelp')}</small></span><input type="checkbox" role="switch" checked={draft.habilitado} disabled={!base.capabilities.can_manage || busyNow} onChange={e => change({ ...draft, habilitado: e.target.checked })} aria-label={t('mcp.venueSwitch')} /></label>
-        <div className="mcp-owner-heading"><Users size={17} aria-hidden="true" /><strong>{t('mcp.owners')}</strong><span className="count-pill">{base.owners.length}</span></div>
-        {base.owners.length === 0 ? <p className="inline-empty">{t('mcp.noOwners')}</p> : <ul className="mcp-owner-list">{base.owners.map(owner => <li key={owner.owner_user_id}><label className="mcp-switch-row"><span><strong>{owner.nombre || owner.email}</strong><small>{owner.email}</small></span><input type="checkbox" role="switch" checked={draft.owners[owner.owner_user_id] ?? owner.habilitado} disabled={!base.capabilities.can_manage || busyNow} onChange={e => change({ ...draft, owners: { ...draft.owners, [owner.owner_user_id]: e.target.checked } })} aria-label={t('mcp.ownerSwitch').replace('{name}', owner.nombre || owner.email)} /></label><McpEffectiveBadge efectivo={owner.efectivo} motivo={owner.motivo} /></li>)}</ul>}
+        <label className="mcp-switch-row"><span><strong>{t('mcp.venueSwitch')}</strong><small>{t('mcp.venueSwitchHelp')}</small></span><input type="checkbox" role="switch" checked={draft.habilitado} disabled={!base.capabilities.can_manage || busyNow} onChange={e => changeVenue(e.target.checked)} aria-label={t('mcp.venueSwitch')} /></label>
       </section>
-      <section className="mcp-editor-card" aria-labelledby="mcp-access-title"><h4 id="mcp-access-title">{t('mcp.effectiveTitle')}</h4><p className="mcp-muted">{t('mcp.effectiveHelp')}</p>
+      <section className="mcp-editor-card" aria-labelledby="mcp-access-title"><h4 id="mcp-access-title">{t('mcp.subscriptionTitle')}</h4><p className="mcp-muted">{t('mcp.subscriptionHelp')}</p>
         <dl className="mcp-facts"><div><dt>{t('mcp.currentConfig')}</dt><dd>{t(base.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</dd></div><div><dt>{t('mcp.monthlyRate')}</dt><dd>{price} / {t('mcp.month')}</dd></div><div><dt>{t('mcp.rateVersion')}</dt><dd>{base.rate.version}</dd></div><div><dt>{t('mcp.acceptance')}</dt><dd>{t(base.acceptance.current ? 'mcp.accepted' : 'mcp.pendingAcceptance')}</dd></div></dl>
         {pendingOwner && <div className="staff-notice" role="status">{t('mcp.ownerMustAccept')}</div>}
         {base.acceptance.accepted_at && <p className="mcp-muted">{t('mcp.acceptedAt').replace('{date}', new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium' }).format(new Date(base.acceptance.accepted_at)))}</p>}
+      </section>
+      <section className="mcp-editor-card" aria-labelledby="mcp-owners-title">
+        <h4 id="mcp-owners-title" className="mcp-owner-heading"><Users size={17} aria-hidden="true" />{t('mcp.owners')}<span className="count-pill">{base.owners.length}</span></h4>
+        {!draft.habilitado && <p className="mcp-muted" role="status">{t('mcp.ownersPaused')}</p>}
+        {firstActivation && <p className="mcp-muted" role="status">{t('mcp.firstActivationOwners')}</p>}
+        {base.owners.length === 0 ? <p className="inline-empty">{t('mcp.noOwners')}</p> : <ul className="mcp-owner-list">{base.owners.map(owner => <li key={owner.owner_user_id}><label className="mcp-switch-row"><span><strong>{owner.nombre || owner.email}</strong><small>{owner.email}</small></span><input type="checkbox" role="switch" checked={draft.habilitado && (firstActivation || (draft.owners[owner.owner_user_id] ?? owner.habilitado))} disabled={!draft.habilitado || firstActivation || !base.capabilities.can_manage || busyNow} onChange={e => change({ ...draft, owners: { ...draft.owners, [owner.owner_user_id]: e.target.checked } })} aria-label={t('mcp.ownerSwitch').replace('{name}', owner.nombre || owner.email)} /></label><McpEffectiveBadge efectivo={owner.efectivo} motivo={owner.motivo} /></li>)}</ul>}
       </section>
     </div>
     {remoteChanged && <div className="form-error" role="alert"><AlertTriangle size={18} /><span>{t('mcp.conflict')}</span><button className="button button-secondary" type="button" onClick={() => void reload()}>{t('mcp.reload')}</button></div>}

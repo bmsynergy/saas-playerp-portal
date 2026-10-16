@@ -204,21 +204,17 @@ function McpAdminRoute() {
   return access.data?.can_manage_staff ? <McpAdminData/> : <StateView kind="denied"/>;
 }
 function McpAdminData() {
-  const {session,expire}=useAuth(); const {t}=useLocale();
+  const {session,expire}=useAuth();
   const [filters,setFilters]=useState<McpFilters>({search:'',status:'all',tenant:null,page:1,page_size:25});
   const [tenantSearch,setTenantSearch]=useState('');
-  const [selectedId,setSelectedId]=useState<string|null>(null);
-  const [dirty,setDirty]=useState(false);
   const data=useQuery({queryKey:['mcp-directory',session?.user.id,filters],queryFn:({signal})=>getMcpVenues(filters,signal)});
   const tenants=useQuery({queryKey:['mcp-tenants',session?.user.id,tenantSearch],queryFn:({signal})=>getMcpTenants(tenantSearch,signal)});
   useEffect(()=>{if([data.error,tenants.error].some(e=>e&&mcpErrorKey(e)==='sessionExpired'))void expire();},[data.error,tenants.error,expire]);
-  const select=(id:string|null)=>{if(id===selectedId)return;if(dirty&&!window.confirm(t('mcp.discardConfirm')))return;setDirty(false);setSelectedId(id);};
   if(data.error&&mcpErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   return <AdminMcpPage filters={filters} onFilters={setFilters} list={data.data} loading={data.isPending}
     error={data.error?mcpErrorKey(data.error):tenants.error?mcpErrorKey(tenants.error):null}
     tenants={tenants.data??[]} tenantSearch={tenantSearch} onTenantSearch={setTenantSearch}
-    selectedId={selectedId} onSelect={select} onRetry={()=>{void data.refetch();void tenants.refetch();}}
-    detail={selectedId?<McpIntegrationData key={selectedId} venueId={selectedId} admin onDirtyChange={setDirty}/>:null}/>;
+    onRetry={()=>{void data.refetch();void tenants.refetch();}}/>;
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();
@@ -234,9 +230,9 @@ function DirectoryData({home=false}:{home?:boolean}) {
 }
 function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   const access=useAccess(); const {id=''}=useParams();
-  if (!access.data?.can_view_tenants) return <StateView kind="denied"/>;
+  if (!(tab==='mcp'?access.data?.can_manage_staff:access.data?.can_view_tenants)) return <StateView kind="denied"/>;
   // Venue Users and Print Servers retain the existing platform Admin gate.
-  const canManageUsers=access.data.can_manage_staff;
+  const canManageUsers=access.data!.can_manage_staff;
   if (tab!=='overview'&&!canManageUsers) return <StateView kind="denied"/>;
   if(!UUID.test(id))return <StateView kind="notFound"/>;
   return <DetailData id={id} tab={tab} canManageUsers={canManageUsers}/>;
@@ -247,6 +243,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
+    mcp={canManageUsers?<McpIntegrationData key={id} venueId={id} admin/>:undefined}
     printServers={canManageUsers?(tab==='print-server-detail'?<VenueRedirect key={id} venueId={id}/>:<VenueDevicesData key={id} venue={data.data.venue} scope="admin"/>):undefined}/>;
 }
 function InvitationRoute() {
@@ -596,6 +593,7 @@ export default function App() {
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
     <Route path="/admin/tenants/:id/print-servers" element={<Scope scope="admin"><DetailRoute tab="print-servers"/></Scope>}/>
     <Route path="/admin/tenants/:id/print-servers/detail" element={<Scope scope="admin"><DetailRoute tab="print-server-detail"/></Scope>}/>
+    <Route path="/admin/tenants/:id/mcp" element={<Scope scope="admin"><DetailRoute tab="mcp"/></Scope>}/>
     <Route path="/admin/tenants/:id/users" element={<Scope scope="admin"><DetailRoute tab="users"/></Scope>}/>
     <Route path="*" element={<OutsideState kind="notFound"/>}/>
   </Routes></AuthenticatedLayout>;

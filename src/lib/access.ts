@@ -1,7 +1,7 @@
 import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
-  return value && (/^\/oauth\/consent\?request_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) || /^\/(?:\?venue=[a-f0-9-]+(?:&section=(?:details|users|print-servers|integrations))?)?$/.test(value) || /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/list|\/tenants\/[a-f0-9-]+\/(?:users|print-servers(?:\/detail)?))?$/.test(value)) ? value : null;
+  return value && (/^\/oauth\/consent\?request_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) || /^\/(?:\?venue=[a-f0-9-]+(?:&section=(?:details|users|print-servers|integrations))?)?$/.test(value) || /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/list|\/tenants\/[a-f0-9-]+\/(?:users|mcp|print-servers(?:\/detail)?))?$/.test(value)) ? value : null;
 }
 // A requested URL never grants a scope. Staff starts in administration even if
 // login was reached through /. Only the account menu selects the owner scope.
@@ -12,7 +12,7 @@ export function destination(access: PortalAccess, next: string | null = null): s
   if (access.is_platform_staff) {
     if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
     // Tenants: Admin and Operations. Venue Users/Print Servers, staff and the fleet: Admin only.
-    return (safe.startsWith('/admin/tenants') && !safe.endsWith('/users') && !safe.includes('/print-servers') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
+    return (safe.startsWith('/admin/tenants') && !safe.endsWith('/users') && !safe.endsWith('/mcp') && !safe.includes('/print-servers') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
   }
   if (access.owner_venues.length) return safe && !safe.startsWith('/admin') ? safe : '/';
   return null;

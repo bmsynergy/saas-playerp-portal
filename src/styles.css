@@ -511,13 +511,13 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .mcp-filters .field-control{display:flex;align-items:center;gap:8px}
 .mcp-filters input,.mcp-filters select,.mcp-tenant-filter>select{width:100%;min-height:40px}
 .mcp-tenant-filter{display:grid;gap:6px}
-.mcp-selected-row td{background:var(--canvas)}
+.mcp-venue-link{display:inline-flex;align-items:center;gap:6px;font-weight:700}
 .mcp-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;color:var(--muted);font-size:.85rem}
 .mcp-pagination>div{display:flex;align-items:center;gap:10px}
 .mcp-editor{display:grid;gap:16px}
 .mcp-editor-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .mcp-editor-title h3{margin:0 0 4px}
-.mcp-editor-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:16px}
+.mcp-editor-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .mcp-editor-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface)}
 .mcp-editor-card h4{margin:0 0 12px}
 .mcp-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px 0;cursor:pointer}
@@ -530,7 +530,7 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .mcp-switch-row input[type=checkbox]:checked::after{transform:translateX(18px)}
 .mcp-switch-row input[type=checkbox]:focus-visible{outline:3px solid #7db9ff;outline-offset:3px}
 .mcp-switch-row input[type=checkbox]:disabled{opacity:.55;cursor:not-allowed}
-.mcp-owner-heading{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+.mcp-owner-heading{display:flex;align-items:center;gap:8px}
 .mcp-owner-list{list-style:none;padding:0;margin:4px 0 0}
 .mcp-owner-list li{border-top:1px solid var(--line);padding:4px 0 10px}
 .mcp-owner-list .mcp-badge{white-space:normal}
@@ -541,5 +541,5 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .mcp-editor-actions{display:flex;justify-content:flex-end;gap:10px}
 .mcp-consent-check{display:flex;align-items:flex-start;gap:10px;line-height:1.5;cursor:pointer}
 .mcp-consent-check input{margin-top:4px;flex:none}
-@media(max-width:850px){.mcp-filters{grid-template-columns:1fr 1fr}.mcp-tenant-filter{grid-column:1/-1}.mcp-editor-grid{grid-template-columns:1fr}}
+@media(max-width:850px){.mcp-filters{grid-template-columns:1fr 1fr}.mcp-tenant-filter{grid-column:1/-1}}
 @media(max-width:560px){.owner-integrations > .owner-venue-card:not(:nth-child(2)){padding:18px}.mcp-filters{grid-template-columns:1fr}.mcp-tenant-filter{grid-column:auto}.mcp-pagination{align-items:flex-start;flex-direction:column}.mcp-editor-title{flex-direction:column}.mcp-editor-card{padding:12px}.mcp-facts>div{display:block}.mcp-facts dd{text-align:left;margin-top:3px}}

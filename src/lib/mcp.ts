@@ -10,7 +10,7 @@ export type McpTenantOption = { owner_user_id: string; email: string; nombre: st
 export type McpOwner = { owner_user_id: string; email: string; nombre: string | null; habilitado: boolean; efectivo: boolean; motivo: McpReason };
 export type McpRate = { version: number; amount: string; currency: string; interval: 'month' };
 export type McpVenueDetail = {
-  venue_id: string; nombre: string; revision: number; habilitado: boolean; owners: McpOwner[];
+  venue_id: string; nombre: string; revision: number; habilitado: boolean; primera_activacion_en: string | null; owners: McpOwner[];
   rate: McpRate; acceptance: { current: boolean; accepted_at: string | null; actor_user_id: string | null };
   capabilities: { can_manage: boolean; can_accept: boolean };
   endpoint: string | null; entorno: string | null; clientes: { nombre: string; comprobado_en: string | null }[];
@@ -36,6 +36,7 @@ export async function getMcpVenue(venueId: string, signal?: AbortSignal) {
 function detail(data: McpVenueDetail, venueId: string): McpVenueDetail {
   if (data.venue_id !== venueId) throw new PortalError('accessDenied');
   if (!Number.isSafeInteger(data.revision) || !Number.isSafeInteger(data.rate?.version)
+    || !(data.primera_activacion_en === null || (typeof data.primera_activacion_en === 'string' && Number.isFinite(Date.parse(data.primera_activacion_en))))
     || !Array.isArray(data.owners) || !data.acceptance || !data.capabilities) throw new PortalError('genericError');
   return { ...data, habilitado: data.habilitado === true,
     acceptance: { ...data.acceptance, current: data.acceptance.current === true },
