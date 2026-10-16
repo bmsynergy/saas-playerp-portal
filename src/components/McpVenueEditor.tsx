@@ -38,7 +38,9 @@ export function McpVenueEditor({ data, busy, error, onSave, onReload, onDirtyCha
   const dirty = switchesDirty || dialog;
   const busyNow = busy || saving;
   const blocker = useBlocker(dirty || busyNow);
-  const needsAcceptance = draft.habilitado && !base.acceptance.current;
+  const onlyRestricting = switchesDirty && !(draft.habilitado && !base.habilitado)
+    && base.owners.every(owner => !draft.owners[owner.owner_user_id] || owner.habilitado);
+  const needsAcceptance = draft.habilitado && !base.acceptance.current && !onlyRestricting;
   const reconfirmation = base.habilitado && needsAcceptance && base.capabilities.can_accept;
   const canSave = base.capabilities.can_manage && (switchesDirty || reconfirmation) && !busyNow && (!needsAcceptance || base.capabilities.can_accept);
   const price = useMemo(() => {
