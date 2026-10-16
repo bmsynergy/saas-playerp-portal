@@ -26,7 +26,7 @@ describe('PE-464 shared venue contract', () => {
   });
   it('maps authorization and configuration/rate conflicts without server text',()=>{
     expect(mcpErrorKey({code:'42501',message:'private'})).toBe('accessDenied');
-    expect(mcpErrorKey({code:'40001',message:'private'})).toBe('mcp.error.conflict');
+    expect(mcpErrorKey({code:'PT409',message:'private'})).toBe('mcp.error.conflict');
   });
   it('keeps the new routes in the login allow-list without granting scope', () => {
     const admin: PortalAccess = { is_platform_staff: true, can_manage_staff: true, can_view_tenants: true, platform_role: 'super_admin', owner_venues: [] };

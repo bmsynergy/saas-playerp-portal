@@ -26,7 +26,7 @@ await ctx.route('https://fzwzmwstxlsxdzdmphyq.supabase.co/**',async route=>{
  if(path.endsWith('/mcp_venue_detail'))return send(state);
  if(path.endsWith('/mcp_venue_save')){
   saves.push(body.p_input);
-  if(stale){state={...state,owners:state.owners.map(o=>({...o,efectivo:false,motivo:'aceptacion_pendiente'})),rate:{...state.rate,version:2,amount:'4.00'},acceptance:{...state.acceptance,current:false}};return send({code:'40001',message:'mcp_rate_conflict'},409);}
+  if(stale){state={...state,owners:state.owners.map(o=>({...o,efectivo:false,motivo:'aceptacion_pendiente'})),rate:{...state.rate,version:2,amount:'4.00'},acceptance:{...state.acceptance,current:false}};return send({code:'PT409',message:'mcp_rate_conflict'},409);}
   state={...state,revision:state.revision+1,habilitado:body.p_input.habilitado,owners:state.owners.map(o=>({...o,habilitado:body.p_input.owners.find(x=>x.owner_user_id===o.owner_user_id).habilitado,efectivo:body.p_input.habilitado,motivo:body.p_input.habilitado?'habilitado':'sede_desactivada'})),acceptance:body.p_input.accept_monthly?{current:true,accepted_at:new Date().toISOString(),actor_user_id:uid}:state.acceptance};return send(state);
  }
  return send({code:'42501',message:'fixture unknown'},403);

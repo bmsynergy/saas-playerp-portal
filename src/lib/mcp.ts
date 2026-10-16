@@ -51,7 +51,7 @@ export async function saveMcpVenue(input: McpSave) {
 export function mcpErrorKey(error: unknown): string {
   const e = error as { code?: string; message?: string } | null;
   if (e?.code === '42501') return 'accessDenied';
-  if (e?.code === '40001') return 'mcp.error.conflict';
+  if (e?.code === 'PT409') return 'mcp.error.conflict';
   if (e?.message?.includes('mcp_acceptance_required')) return 'mcp.error.acceptanceRequired';
   if (e?.message?.includes('mcp_idempotency')) return 'mcp.error.idempotency';
   return errorCode(error);
