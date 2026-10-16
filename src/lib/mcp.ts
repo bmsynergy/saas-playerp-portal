@@ -5,8 +5,7 @@ import { PortalError, errorCode } from './errors';
 export type McpReason = 'habilitado' | 'tenant_desactivado' | 'sede_desactivada' | 'owner_desactivado' | 'owner_no_autorizado' | 'aceptacion_pendiente' | 'fuera_del_piloto' | 'piloto_inactivo' | 'servicio_inactivo';
 export type McpVenueRow = { venue_id: string; nombre: string; habilitado: boolean; owners: number };
 export type McpVenueList = { rows: McpVenueRow[]; total: number; page: number; page_size: number };
-export type McpFilters = { search: string; owner_search: string; status: 'all' | 'active' | 'inactive'; tenant: string | null; page: number; page_size: number };
-export type McpTenantOption = { owner_user_id: string; email: string; nombre: string | null };
+export type McpFilters = { search: string; owner_search: string; status: 'all' | 'active' | 'inactive'; page: number; page_size: number };
 export type McpOwner = { owner_user_id: string; email: string; nombre: string | null; habilitado: boolean; efectivo: boolean; motivo: McpReason };
 export type McpRate = { version: number; amount: string; currency: string; interval: 'month' };
 export type McpVenueDetail = {
@@ -25,10 +24,7 @@ async function rpc<T>(name: string, params: Record<string, unknown>, signal?: Ab
   return data as T;
 }
 export function getMcpVenues(filters: McpFilters, signal?: AbortSignal) {
-  return rpc<McpVenueList>('mcp_admin_venues', { p_search: filters.search, p_owner_search: filters.owner_search, p_status: filters.status, p_tenant: filters.tenant, p_page: filters.page, p_page_size: filters.page_size }, signal);
-}
-export function getMcpTenants(search: string, signal?: AbortSignal) {
-  return rpc<McpTenantOption[]>('mcp_admin_tenants', { p_search: search }, signal);
+  return rpc<McpVenueList>('mcp_admin_venues', { p_search: filters.search, p_owner_search: filters.owner_search, p_status: filters.status, p_tenant: null, p_page: filters.page, p_page_size: filters.page_size }, signal);
 }
 export async function getMcpVenue(venueId: string, signal?: AbortSignal) {
   return detail(await rpc<McpVenueDetail>('mcp_venue_detail', { p_venue_id: venueId }, signal), venueId);

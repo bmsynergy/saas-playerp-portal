@@ -1,0 +1,77 @@
+{
+  "environment": "LOCAL SYNTHETIC API; NOT DEV",
+  "checks": [
+    "No account selectors or options queries. Search submits all three filters; starts page one; pagination retains applied filters despite unsaved draft.",
+    "Keyboard focus stays visible with 1–2px outline across directory controls.",
+    "Administrative confirmation explicit at server-provided USD 0.00; payload never supplies actor identity. OFF owner switches masked and disabled.",
+    "Owner and admin share one connection panel, exact same copied endpoint; four loaded logos with Beny attribution; owner AI navigation and mobile width."
+  ],
+  "screenshots": [
+    "status-focus.png",
+    "directory.png",
+    "directory-mobile.png",
+    "admin.png",
+    "owner.png"
+  ],
+  "focus": [
+    {
+      "tag": "INPUT",
+      "width": "2px",
+      "style": "solid",
+      "color": "rgb(83, 98, 122)"
+    },
+    {
+      "tag": "INPUT",
+      "width": "2px",
+      "style": "solid",
+      "color": "rgb(83, 98, 122)"
+    },
+    {
+      "tag": "SELECT",
+      "width": "2px",
+      "style": "solid",
+      "color": "rgb(83, 98, 122)"
+    },
+    {
+      "tag": "BUTTON",
+      "width": "2px",
+      "style": "solid",
+      "color": "rgb(83, 98, 122)"
+    }
+  ],
+  "passed": true,
+  "requests": [
+    {
+      "p_search": "",
+      "p_owner_search": "",
+      "p_status": "all",
+      "p_tenant": null,
+      "p_page": 1,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "",
+      "p_owner_search": "",
+      "p_status": "all",
+      "p_tenant": null,
+      "p_page": 2,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "Harbor",
+      "p_owner_search": "owner@example.invalid",
+      "p_status": "inactive",
+      "p_tenant": null,
+      "p_page": 1,
+      "p_page_size": 25
+    },
+    {
+      "p_search": "Harbor",
+      "p_owner_search": "owner@example.invalid",
+      "p_status": "inactive",
+      "p_tenant": null,
+      "p_page": 2,
+      "p_page_size": 25
+    }
+  ]
+}

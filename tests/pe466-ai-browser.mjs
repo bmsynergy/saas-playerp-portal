@@ -10,7 +10,7 @@ const exp=Math.floor(Date.now()/1000)+3600,enc=o=>Buffer.from(JSON.stringify(o))
 const session={access_token:`${enc({alg:'HS256'})}.${enc({sub:uid,exp,aud:'authenticated',role:'authenticated'})}.fixture`,refresh_token:'fixture',expires_in:3600,expires_at:exp,token_type:'bearer',user};
 const venue={id:v,name:'Harbor',slug:'harbor',is_owner:true,is_active:true};
 let state={venue_id:v,nombre:'Harbor',revision:1,primera_activacion_en:null,habilitado:false,owners:[{owner_user_id:uid,email:user.email,nombre:'Owner One',habilitado:false,efectivo:false,motivo:'sede_desactivada'}],rate:{version:1,amount:'0.00',currency:'USD',interval:'month'},acceptance:{current:false,accepted_at:null,actor_user_id:null},capabilities:{can_manage:true,can_accept:true,acceptance_mode:'administrative'},endpoint:'https://mcp.dev.example.invalid/mcp',entorno:'dev',clientes:[]};
-let saves=[],requests=[],admin=true,operations=false,mcpDetails=0,stale=false,errors=[];
+let saves=[],requests=[],admin=true,operations=false,mcpDetails=0,stale=false,errors=[],accountQueries=0;
 const ctx=await browser.newContext({viewport:{width:1280,height:960},locale:'en'});
 await ctx.addInitScript(s=>localStorage.setItem('playerp.portal.dev.auth',JSON.stringify(s)),session);
 await ctx.route('https://fzwzmwstxlsxdzdmphyq.supabase.co/**',async route=>{
@@ -23,7 +23,7 @@ await ctx.route('https://fzwzmwstxlsxdzdmphyq.supabase.co/**',async route=>{
  if(path.endsWith('/portal_tenant_detail'))return send({venue,print_servers:[]});
  if(path.endsWith('/portal_owner_venues'))return send([venue]);
  if(path.endsWith('/mcp_admin_venues')){requests.push(body);return send({rows:[{venue_id:v,nombre:'Harbor',habilitado:state.habilitado,owners:1}],total:26,page:body.p_page,page_size:body.p_page_size});}
- if(path.endsWith('/mcp_admin_tenants'))return send([{owner_user_id:uid,email:user.email,nombre:'Owner One'}]);
+ if(path.endsWith('/mcp_admin_tenants')){accountQueries++;return send([]);}
  if(path.endsWith('/mcp_venue_detail')){mcpDetails++;return send(state);}
  if(path.endsWith('/mcp_venue_save')){
   saves.push(body.p_input);
@@ -34,36 +34,46 @@ await ctx.route('https://fzwzmwstxlsxdzdmphyq.supabase.co/**',async route=>{
 });
 const page=await ctx.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));const pass=s=>console.log('PASS '+s);
 // PE-466.3 focused UI contract checks. All API calls below are intercepted fixtures, NOT DEV evidence.
-const report={environment:'LOCAL SYNTHETIC API; NOT DEV',checks:[],screenshots:[]};
+const report={environment:'LOCAL SYNTHETIC API; NOT DEV',checks:[],screenshots:[],focus:[]};
 try{
  await ctx.grantPermissions(['clipboard-read','clipboard-write']);
  await page.goto(origin+'/admin/mcp');
+ await page.getByTestId('admin-mcp').waitFor();
+ assert.equal(await page.getByRole('search').getByRole('combobox').count(),1);
+ assert.equal(await page.getByRole('search').getByRole('textbox').count(),2);
+ assert.equal(await page.locator('#mcp-tenant-select,#mcp-tenant-search').count(),0);
  await page.getByRole('button',{name:'Next page'}).click();
  await page.getByText('Page 2 of 2',{exact:true}).waitFor();
  const before=requests.length;
  await page.getByLabel('Search venue',{exact:true}).fill('Harbor');
  await page.getByRole('combobox',{name:/MCP status/}).selectOption('inactive');
  await page.getByLabel('Search owner',{exact:true}).fill('owner@example.invalid');
- await page.locator('#mcp-tenant-search').fill('owner@example.invalid');
- await page.locator('#mcp-tenant-select').selectOption(uid);
  assert.equal(requests.length,before,'editing any filter must not apply it');
  await page.getByRole('button',{name:'Search',exact:true}).click();
  await page.getByText('Page 1 of 2',{exact:true}).waitFor();
- assert.deepEqual(requests.at(-1),{p_search:'Harbor',p_owner_search:'owner@example.invalid',p_tenant:uid,p_status:'inactive',p_page:1,p_page_size:25});
+ assert.deepEqual(requests.at(-1),{p_search:'Harbor',p_owner_search:'owner@example.invalid',p_tenant:null,p_status:'inactive',p_page:1,p_page_size:25});
  await page.getByLabel('Search venue',{exact:true}).fill('Unapplied');
  await page.getByRole('button',{name:'Next page'}).click();
  await page.getByText('Page 2 of 2',{exact:true}).waitFor();
  assert.equal(requests.at(-1).p_search,'Harbor','pagination must use applied search');
  assert.equal(requests.at(-1).p_owner_search,'owner@example.invalid');
- report.checks.push('Search submits all four filters; starts page one; pagination retains applied filters despite unsaved draft.');
+ assert.equal(accountQueries,0,'no owner/account options census');
+ report.checks.push('No account selectors or options queries. Search submits all three filters; starts page one; pagination retains applied filters despite unsaved draft.');
  // Keyboard traversal records a visible, discrete focus treatment on each filter control.
  await page.getByLabel('Search venue',{exact:true}).focus();
- for(let i=0;i<5;i++){
+ for(let i=0;i<4;i++){
   const focus=await page.evaluate(()=>{const el=document.activeElement,s=getComputedStyle(el);return {tag:el.tagName,width:s.outlineWidth,style:s.outlineStyle,color:s.outlineColor};});
+  report.focus.push(focus);
+  if(focus.tag==='SELECT'){await page.screenshot({path:new URL('status-focus.png',out).pathname});report.screenshots.push('status-focus.png');}
   assert.notEqual(focus.style,'none',JSON.stringify(focus));assert(parseFloat(focus.width)>=1&&parseFloat(focus.width)<=2,JSON.stringify(focus));
   await page.keyboard.press('Tab');
  }
  report.checks.push('Keyboard focus stays visible with 1–2px outline across directory controls.');
+ await page.screenshot({path:new URL('directory.png',out).pathname,fullPage:true});report.screenshots.push('directory.png');
+ await page.setViewportSize({width:390,height:844});
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.screenshot({path:new URL('directory-mobile.png',out).pathname,fullPage:true});report.screenshots.push('directory-mobile.png');
+ await page.setViewportSize({width:1280,height:960});
  await page.getByRole('link',{name:'View details'}).click();
  await page.getByTestId('mcp-venue-editor').waitFor();
  assert.equal(await page.getByTestId('mcp-endpoint').count(),1);

@@ -510,8 +510,10 @@ button:disabled *,button[aria-disabled="true"] *,.button[aria-disabled="true"] *
 .mcp-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end;margin:16px 0}
 .mcp-filters .field{margin:0}.mcp-filter-submit{justify-self:start;min-width:120px}.mcp-connection-info .section-heading{margin-bottom:8px}.mcp-connection-info h4{margin:0}.mcp-connection-info h5{font-size:.86rem;margin:18px 0 10px}.mcp-connection-endpoint{display:grid;justify-items:start;gap:6px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--canvas);font-size:.78rem}.mcp-connection-endpoint .mcp-endpoint{max-width:100%;margin:0;font-size:.8rem}.mcp-acceptance-mode{display:block;font-size:.72rem;color:var(--muted);font-weight:500}.mcp-clients li img{display:block;flex:none;object-fit:contain}
 .mcp-filters .field-control{display:flex;align-items:center;gap:8px}
-.mcp-filters input,.mcp-filters select,.mcp-tenant-filter>select{width:100%;min-height:40px}
-.mcp-tenant-filter{display:grid;gap:6px}
+.mcp-filters .field-control input{width:100%;height:100%;min-height:0;background:transparent}
+.mcp-filters select{width:100%;height:var(--portal-control-height);min-height:var(--portal-control-height)}
+.mcp-filters .native-select-wrap select{background:var(--surface);box-shadow:none}
+.mcp-filters .native-select-wrap select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .mcp-venue-link{display:inline-flex;align-items:center;gap:6px;font-weight:700}
 .mcp-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;color:var(--muted);font-size:.85rem}
 .mcp-pagination>div{display:flex;align-items:center;gap:10px}

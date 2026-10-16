@@ -30,8 +30,8 @@ describe('PE-464 shared venue contract', () => {
   });
   it('submits all applied filters and pagination to the same RPC', async () => {
     rpc.mockReturnValue(ok({rows:[],total:0,page:1,page_size:25}));
-    await getMcpVenues({search:'Harbor',owner_search:'owner@example.invalid',tenant:venue,status:'inactive',page:1,page_size:25});
-    expect(rpc).toHaveBeenCalledWith('mcp_admin_venues',{p_search:'Harbor',p_owner_search:'owner@example.invalid',p_tenant:venue,p_status:'inactive',p_page:1,p_page_size:25});
+    await getMcpVenues({search:'Harbor',owner_search:'owner@example.invalid',status:'inactive',page:1,page_size:25});
+    expect(rpc).toHaveBeenCalledWith('mcp_admin_venues',{p_search:'Harbor',p_owner_search:'owner@example.invalid',p_tenant:null,p_status:'inactive',p_page:1,p_page_size:25});
   });
   it('does not display or copy URL credentials, query tokens or fragments', async () => {
     for (const endpoint of ['https://user:secret@example.invalid/mcp','https://example.invalid/mcp?token=secret','https://example.invalid/mcp#secret']) {

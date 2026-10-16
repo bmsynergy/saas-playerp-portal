@@ -1,13 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Building2, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Bot, Building2, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useLocale } from '../locales';
-import type { McpFilters, McpTenantOption, McpVenueList } from '../lib/mcp';
+import type { McpFilters, McpVenueList } from '../lib/mcp';
 
 export type AdminMcpPageProps = {
   filters: McpFilters; onFilters: (filters: McpFilters) => void;
   list: McpVenueList | undefined; loading: boolean; error: string | null;
-  tenants: McpTenantOption[]; tenantSearch: string; onTenantSearch: (search: string) => void;
   onRetry: () => void;
 };
 
@@ -18,9 +17,9 @@ export function McpEffectiveBadge({ efectivo, motivo }: { efectivo: boolean; mot
   </span>;
 }
 
-export function AdminMcpPage({ filters, onFilters, list, loading, error, tenants, tenantSearch, onTenantSearch, onRetry }: AdminMcpPageProps) {
+export function AdminMcpPage({ filters, onFilters, list, loading, error, onRetry }: AdminMcpPageProps) {
   const { t } = useLocale();
-  const [draft, setDraft] = useState(() => ({ search: filters.search, owner_search: filters.owner_search, status: filters.status, tenant: filters.tenant }));
+  const [draft, setDraft] = useState(() => ({ search: filters.search, owner_search: filters.owner_search, status: filters.status }));
   const pages = Math.max(1, Math.ceil((list?.total ?? 0) / filters.page_size));
   const apply = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onFilters({ ...filters, ...draft, page: 1 }); };
   const start = list && list.total ? (list.page - 1) * list.page_size + 1 : 0;
@@ -32,8 +31,7 @@ export function AdminMcpPage({ filters, onFilters, list, loading, error, tenants
       <form className="mcp-filters" role="search" onSubmit={apply}>
         <label className="field"><span>{t('mcp.searchVenue')}</span><div className="field-control mcp-search"><Search size={17} aria-hidden="true" /><input value={draft.search} onChange={e => setDraft(current => ({ ...current, search: e.target.value }))} placeholder={t('mcp.searchVenuePlaceholder')} /></div></label>
         <label className="field"><span>{t('mcp.searchOwner')}</span><div className="field-control mcp-search"><Search size={17} aria-hidden="true" /><input value={draft.owner_search} onChange={e => setDraft(current => ({ ...current, owner_search: e.target.value }))} placeholder={t('mcp.searchOwnerPlaceholder')} /></div></label>
-        <label className="field"><span>{t('mcp.statusFilter')}</span><div className="field-control"><select value={draft.status} onChange={e => setDraft(current => ({ ...current, status: e.target.value as McpFilters['status'] }))}><option value="all">{t('mcp.filterAll')}</option><option value="active">{t('mcp.filterActive')}</option><option value="inactive">{t('mcp.filterInactive')}</option></select></div></label>
-        <div className="mcp-tenant-filter"><label className="field" htmlFor="mcp-tenant-search"><span>{t('mcp.tenantFilter')}</span><div className="field-control"><input id="mcp-tenant-search" value={tenantSearch} onChange={e => onTenantSearch(e.target.value)} placeholder={t('mcp.searchTenant')} /></div></label><label className="mcp-sr-only" htmlFor="mcp-tenant-select">{t('mcp.tenantFilter')}</label><select id="mcp-tenant-select" value={draft.tenant ?? ''} onChange={e => setDraft(current => ({ ...current, tenant: e.target.value || null }))}><option value="">{t('mcp.allTenants')}</option>{draft.tenant && !tenants.some(tenant => tenant.owner_user_id === draft.tenant) && <option value={draft.tenant}>{t('mcp.selectedAccount')}</option>}{tenants.map(tenant => <option key={tenant.owner_user_id} value={tenant.owner_user_id}>{tenant.nombre || tenant.email} · {tenant.email}</option>)}</select></div>
+        <label className="field"><span>{t('mcp.statusFilter')}</span><span className="native-select-wrap"><select value={draft.status} onChange={e => setDraft(current => ({ ...current, status: e.target.value as McpFilters['status'] }))}><option value="all">{t('mcp.filterAll')}</option><option value="active">{t('mcp.filterActive')}</option><option value="inactive">{t('mcp.filterInactive')}</option></select><ChevronDown size={16} aria-hidden="true" /></span></label>
         <button className="button button-primary mcp-filter-submit" type="submit"><Search size={16} aria-hidden="true" />{t('mcp.searchButton')}</button>
       </form>
       {error && <div className="form-error" role="alert"><span>{t(error)}</span><button className="button button-secondary" type="button" onClick={onRetry}>{t('mcp.retry')}</button></div>}

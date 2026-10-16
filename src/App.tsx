@@ -46,7 +46,7 @@ import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
 import { OAuthConsentPage } from './pages/OAuthConsentPage';
 import { consentRequestId, consentPath } from './lib/oauthConsent';
-import { getMcpVenues, getMcpTenants, getMcpVenue, saveMcpVenue, mcpErrorKey, type McpFilters, type McpSave } from './lib/mcp';
+import { getMcpVenues, getMcpVenue, saveMcpVenue, mcpErrorKey, type McpFilters, type McpSave } from './lib/mcp';
 import { McpVenueEditor } from './components/McpVenueEditor';
 import { AdminMcpPage } from './pages/AdminMcpPage';
 import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
@@ -205,16 +205,13 @@ function McpAdminRoute() {
 }
 function McpAdminData() {
   const {session,expire}=useAuth();
-  const [filters,setFilters]=useState<McpFilters>({search:'',owner_search:'',status:'all',tenant:null,page:1,page_size:25});
-  const [tenantSearch,setTenantSearch]=useState('');
+  const [filters,setFilters]=useState<McpFilters>({search:'',owner_search:'',status:'all',page:1,page_size:25});
   const data=useQuery({queryKey:['mcp-directory',session?.user.id,filters],queryFn:({signal})=>getMcpVenues(filters,signal)});
-  const tenants=useQuery({queryKey:['mcp-tenants',session?.user.id,tenantSearch],queryFn:({signal})=>getMcpTenants(tenantSearch,signal)});
-  useEffect(()=>{if([data.error,tenants.error].some(e=>e&&mcpErrorKey(e)==='sessionExpired'))void expire();},[data.error,tenants.error,expire]);
+  useEffect(()=>{if(data.error&&mcpErrorKey(data.error)==='sessionExpired')void expire();},[data.error,expire]);
   if(data.error&&mcpErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   return <AdminMcpPage filters={filters} onFilters={setFilters} list={data.data} loading={data.isFetching}
-    error={data.error?mcpErrorKey(data.error):tenants.error?mcpErrorKey(tenants.error):null}
-    tenants={tenants.data??[]} tenantSearch={tenantSearch} onTenantSearch={setTenantSearch}
-    onRetry={()=>{void data.refetch();void tenants.refetch();}}/>;
+    error={data.error?mcpErrorKey(data.error):null}
+    onRetry={()=>{void data.refetch();}}/>;
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();
