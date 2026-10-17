@@ -580,3 +580,11 @@ input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .ps469-command { display: block; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; padding: .7rem; border-radius: .5rem; background: #182338; color: #f8fafc; }
 .ps-fleet-table tr[data-selected="true"] { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
 @media (max-width: 720px) { .ps469-header { flex-direction: column; } .ps469-statuses { justify-content: flex-start; } .ps469-overview { grid-template-columns: 1fr; } .ps469-sections { overflow-x: auto; flex-wrap: nowrap; padding-bottom: .8rem; } .ps469-sections a { flex: 0 0 auto; } }
+/* PE-473 admin OTA blocks on the Print Server sheet */
+.ota-block{border-top:1px solid var(--line);padding-top:16px;margin-top:16px;display:grid;gap:10px}
+.ota-block h4{font-size:.9rem;margin:0}.ota-block p{margin:0}
+.ota-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:0}.ota-facts dt{font-size:.68rem;color:var(--muted);font-weight:800}.ota-facts dd{margin:2px 0 0;overflow-wrap:anywhere}
+.ota-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.8rem}.ota-list li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ota-list li[data-met="true"] svg{color:var(--success)}.ota-list li[data-met="false"] svg,.ota-list li:not([data-met]) svg{color:var(--danger)}
+.ota-editions,.ota-channel-options{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;display:grid;gap:6px}.ota-editions legend,.ota-channel-options legend{font-size:.72rem;font-weight:800;padding:0 4px}
+.ota-radio{display:flex;align-items:flex-start;gap:8px;font-size:.8rem}.ota-radio input{margin-top:3px}.ota-reason{color:var(--muted)}
+.ota-other-editions summary{cursor:pointer;font-size:.76rem;color:var(--muted);font-weight:700;margin:4px 0}.ota-other-editions{display:grid;gap:6px}

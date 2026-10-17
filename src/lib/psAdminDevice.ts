@@ -3,13 +3,15 @@ import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { errorCode, PortalError } from './errors';
 import { linkAssign, projectPsLink, type PsAssignResult, type PsDeviceLink } from './psLink';
+import { projectAdminOtaExtras, type AdminOtaExtras } from './psOtaDevice';
 
 export type DeviceModel = { model: string; label: string; archs: string[]; default_arch: string; active: boolean; is_default: boolean };
 export type AdminDeviceDetail = {
   device: { id: string; serial: string; hostname: string; model: string; arch: string; label: string | null; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null };
   update: { current_version: string | null; latest_stable: { edition_id: string; version: string; model: string; arch: string } | null;
     candidate: FirmwareCandidate | null; newest_signed: FirmwareCandidate | null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
-    update_available: boolean; reason: string | null; active_update: { deployment_id: string; status: string; stage: string | null; progress: number | null } | null };
+    update_available: boolean; reason: string | null; active_update: { deployment_id: string; status: string; stage: string | null; progress: number | null } | null;
+    ota: AdminOtaExtras };
   delete: { allowed: boolean; blockers: string[] };
 };
 export type NewAdminDevice = { model: string; arch: string; label: string; venue_id: string | null };
@@ -19,7 +21,11 @@ const bad = (): never => { throw new PortalError('genericError'); };
 const obj = (v: unknown): Raw => v && typeof v === 'object' && !Array.isArray(v) ? v as Raw : bad();
 const str = (v: unknown): string | null => typeof v === 'string' && v.trim() ? v : null;
 const required = (v: unknown): string => str(v) ?? bad();
-const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable','update_changed','edition_not_candidate','confirmation_required','metadata_missing','no_general_update','ring_not_allowed'];
+const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable','update_changed','edition_not_candidate','confirmation_required','metadata_missing','no_general_update','ring_not_allowed',
+  // PE-473 set_channel / update_device / validate_device
+  'channel_changed','group_required','group_ring_mismatch','unknown_group','invalid_channel','edition_not_selectable',
+  'channel_not_canary','canary_ring_disabled','edition_lab_only','lab_build','edition_not_signed','edition_not_installed','already_confirmed','incompatible_device'];
+const editionReasons = ['not_newer','ring_disabled','edition_lab_only','lab_build','canary_not_confirmed','edition_not_signed','update_in_progress','device_not_active'];
 export class AdminDeviceError extends Error {
   constructor(public key: string, public blockers: string[] = [], public nextStep: 'unassign' | 'retire' | null = null) { super(key); }
 }
@@ -36,6 +42,7 @@ function checked(value: unknown): Raw {
     }
     if (['update_changed', 'edition_not_candidate', 'confirmation_required'].includes(code)) throw new AdminDeviceError('adminDevice.updateChanged');
     if (['metadata_missing', 'no_general_update', 'ring_not_allowed'].includes(code)) throw new AdminDeviceError(`adminDevice.reason.${code}`);
+    if (code === 'edition_not_selectable' && typeof data.reason === 'string' && editionReasons.includes(data.reason)) throw new AdminDeviceError(`otaDevice.edition.reason.${data.reason}`);
     throw new AdminDeviceError(`adminDevice.error.${errors.includes(code) ? code : 'other'}`);
   }
   if (data.ok !== true) return bad();
@@ -75,7 +82,8 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
     can_update: u.can_update === true && admitted && !active && !reason, newer_signed_unpromoted: u.newer_signed_unpromoted === true,
     update_available: u.update_available && u.can_update === true && admitted && !active && !reason,
     reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
-      progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null },
+      progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null,
+    ota: projectAdminOtaExtras(u) },
     delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status === 'retired' && !device.legacy, blockers } };
 }
 export async function getDeviceModels(signal?: AbortSignal): Promise<DeviceModel[]> {
@@ -96,23 +104,47 @@ export async function createAdminDevice(input: NewAdminDevice): Promise<AdminDev
 export async function deleteAdminDevice(id: string, serial: string): Promise<void> {
   await rpc('ps_admin_device_delete', { p_device_id: id, p_confirm_serial: serial });
 }
-export async function updateAdminDevice(id: string, editionId: string, expectedInstalled?: string | null): Promise<{ deployment_id: string }> {
+// All OTA admin actions go to the edge with the signed-in staff JWT; the server repeats every check.
+async function postOtaAdmin(body: Raw): Promise<Raw> {
   const { data: session } = await supabase.auth.getSession();
   const token = session.session?.access_token;
   if (!token) throw new PortalError('sessionExpired');
-  const fresh = await getAdminDeviceDetail(id);
-  if (fresh.device.id !== id || !fresh.update.update_available || fresh.update.candidate?.edition_id !== editionId || !expectedInstalled || fresh.update.current_version !== expectedInstalled) throw new AdminDeviceError('adminDevice.updateChanged');
   let response: Response;
   try {
     response = await fetch(`${SUPABASE_URL}/functions/v1/ps-ota-admin`, { method: 'POST',
       headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_PUBLIC_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update_device', device_id: id, edition_id: editionId, expected_installed_version: expectedInstalled }) });
+      body: JSON.stringify(body) });
   } catch { throw new PortalError('networkError'); }
   if (response.status === 401) throw new PortalError('sessionExpired');
   if (response.status === 403) throw new PortalError('accessDenied');
   const data = checked(await response.json().catch(() => null));
   if (!response.ok) throw new AdminDeviceError('adminDevice.error.other');
+  return data;
+}
+async function sessionOrThrow(): Promise<void> {
+  const { data: session } = await supabase.auth.getSession();
+  if (!session.session?.access_token) throw new PortalError('sessionExpired');
+}
+export async function updateAdminDevice(id: string, editionId: string, expectedInstalled?: string | null): Promise<{ deployment_id: string }> {
+  await sessionOrThrow();
+  const fresh = await getAdminDeviceDetail(id);
+  const editions = fresh.update.ota.editions;
+  // PE-473: with the editions contract any selectable edition may be chosen; otherwise only the candidate.
+  const allowed = editions ? editions.some(e => e.edition_id === editionId && e.selectable) && !fresh.update.active_update
+    : fresh.update.update_available && fresh.update.candidate?.edition_id === editionId;
+  if (fresh.device.id !== id || !allowed || !expectedInstalled || fresh.update.current_version !== expectedInstalled) throw new AdminDeviceError('adminDevice.updateChanged');
+  const data = await postOtaAdmin({ action: 'update_device', device_id: id, edition_id: editionId, expected_installed_version: expectedInstalled });
   return { deployment_id: required(data.deployment_id) };
+}
+// Changing the channel only moves the device between lab/canary groups; it never installs or deploys.
+export async function setAdminDeviceChannel(id: string, channel: 'lab' | 'canary' | 'general', groupId: string | null, expectedChannel: string): Promise<{ changed: boolean }> {
+  const data = await postOtaAdmin({ action: 'set_channel', device_id: id, channel, group_id: channel === 'general' ? null : groupId, expected_channel: expectedChannel });
+  return { changed: data.changed === true };
+}
+// Asks the device to prove (signature + health) that it runs this exact edition; nothing is downloaded or installed.
+export async function validateAdminDevice(id: string, editionId: string, expectedInstalled: string): Promise<{ target_id: string }> {
+  const data = await postOtaAdmin({ action: 'validate_device', device_id: id, edition_id: editionId, expected_installed_version: expectedInstalled });
+  return { target_id: required(data.target_id) };
 }
 
 export type DeviceModelCatalog = { models: DeviceModel[]; default: { model: string; label: string; arch: string } | null };
