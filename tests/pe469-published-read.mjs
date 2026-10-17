@@ -17,10 +17,10 @@ try{for(const width of [390,1440]){
  await ctx.route('**/rest/v1/rpc/*',route=>{const name=new URL(route.request().url()).pathname.split('/').pop();if(!allowed.includes(name)){report.blocked.push(name);return route.abort();}return route.continue();});
  await ctx.route('**/functions/v1/*',route=>{report.blocked.push(new URL(route.request().url()).pathname);return route.abort();});
  const page=await ctx.newPage();page.on('pageerror',e=>report.errors.push(e.message));
- await page.goto(origin+`/admin/tenants/${fixtures.fixtureVenue}/print-servers`);await expect(page.getByTestId('venue-print-servers')).toBeVisible();await page.screenshot({path:`${out}/c4-live-list-${width}.png`,fullPage:true});
+ await page.goto(origin+`/admin/tenants/${fixtures.fixtureVenue}/print-servers`);await expect(page.getByTestId('venue-print-servers')).toBeVisible();await page.waitForLoadState('networkidle');await page.screenshot({path:`${out}/c4-live-list-${width}.png`,fullPage:true});
  for(const r of fixtures.resolved.filter(r=>r.link.serial==='PS-PE462ASG'||r.link.state==='pendiente_preparacion')){
   await page.goto(origin+r.canonical_path+`?fromVenue=${fixtures.fixtureVenue}`);await expect(page.getByTestId('ps-device-sheet')).toHaveAttribute('data-device-id',r.device_id);await expect(page.locator('h1')).toHaveCount(1);await expect(page.getByTestId('ps-device-title')).toContainText(r.display_name);
-  await page.screenshot({path:`${out}/c4-live-${r.serial}-${width}.png`,fullPage:true});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.waitForLoadState('networkidle');await page.screenshot({path:`${out}/c4-live-${r.serial}-${width}.png`,fullPage:true});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await page.reload();await expect(page.getByTestId('ps-sheet-back')).toHaveAttribute('href',`/admin/tenants/${fixtures.fixtureVenue}/print-servers?selected=${r.device_id}`);report.views.push({width,device_id:r.device_id,path:r.canonical_path,uniqueHeading:true,refreshContext:true});
  }
  await ctx.close();

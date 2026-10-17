@@ -1,0 +1,58 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "simulated": "All backend and auth requests intercepted. No live writes, hardware or real device data.",
+  "checks": [
+    {
+      "width": 390,
+      "criterion": 1,
+      "passed": true,
+      "checks": "3 venue PS incl pending, foreign excluded; one h1; runtime canonical redirect; refresh/back selected; unlink forbidden/stale/success preserved preparation and siblings; credentials/printers scoped."
+    },
+    {
+      "width": 390,
+      "criterion": 4,
+      "passed": true,
+      "checks": "A online 0.3.21 pending requires .22; B offline .23 confirmed; no rings enabled."
+    },
+    {
+      "width": 1440,
+      "criterion": 1,
+      "passed": true,
+      "checks": "3 venue PS incl pending, foreign excluded; one h1; runtime canonical redirect; refresh/back selected; unlink forbidden/stale/success preserved preparation and siblings; credentials/printers scoped."
+    },
+    {
+      "width": 1440,
+      "criterion": 4,
+      "passed": true,
+      "checks": "A online 0.3.21 pending requires .22; B offline .23 confirmed; no rings enabled."
+    },
+    {
+      "criterion": 2,
+      "passed": true,
+      "checks": "Create → returned stock id; no prepare until clicked; copy/reissue explicit; name saved; expiry clears secret; refresh loses secret; no pse_ in URL/storage/request log."
+    },
+    {
+      "criterion": 2,
+      "passed": true,
+      "checks": "Actual login form roundtrip preserves stock ID and fromVenue"
+    },
+    {
+      "criterion": 1,
+      "passed": true,
+      "checks": "Late A credential response after navigation cannot replace B"
+    },
+    {
+      "criterion": 1,
+      "passed": true,
+      "checks": "Late unlink completion cannot navigate away from B"
+    },
+    {
+      "criterion": 1,
+      "passed": true,
+      "checks": "Owner has no unlink; foreign venue device denied"
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "pass": true
+}
