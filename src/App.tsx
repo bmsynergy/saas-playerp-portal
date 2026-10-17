@@ -24,7 +24,7 @@ import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
-import { getFirmwares } from './lib/firmware';
+import { PrintChannelsPage } from './pages/PrintChannelsPage';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
 import { getInventoryDevices } from './lib/psDevice';
 import { assignDevice } from './lib/psDevice';
@@ -333,10 +333,11 @@ function VenueUsersData({venueId}:{venueId:string}) {
 }
 // Print Server fleet: platform Admin only (the same gate as venue users and Staff).
 // The backend validates every RPC again and answers 42501 when it refuses.
-function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false,updates=false,device=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean;updates?:boolean;device?:boolean}) {
+function PrintServersRoute({detail=false,list=false,firmwares=false,channels=false,inventory=false,updates=false,device=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;channels?:boolean;inventory?:boolean;updates?:boolean;device?:boolean}) {
   const access=useAccess(); const {venueId='',id=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
-  if (firmwares) return <PrintFirmwaresData/>;
+  if (firmwares) return <PrintFirmwaresPage/>;
+  if (channels) return <PrintChannelsPage/>;
   if (inventory) return <PrintDevicesData/>;
   if (updates) return <PrintUpdatesData/>;
   if (device) return UUID.test(id) ? <DeviceSheetData key={id} id={id} scope="admin"/> : <StateView kind="notFound"/>;
@@ -353,27 +354,6 @@ function PrintDashboardData() {
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-// Firmware releases: platform Admin only; ps_firmware_list answers 42501 to anyone else.
-function PrintFirmwaresData() {
-  const {session,expire}=useAuth();
-  const data=useQuery({queryKey:['ps-firmwares',session?.user.id],queryFn:({signal})=>getFirmwares(signal),refetchInterval:60_000});
-  const error=data.error;
-  useEffect(()=>{if(error&&psErrorKey(error)==='sessionExpired') void expire();},[error,expire]);
-  const refresh=async()=>{await Promise.all([
-    data.refetch({throwOnError:true}),
-    queryClient.invalidateQueries({queryKey:['ps-ota',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-ota-page',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-admin-device',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-device',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-panel-ota',session?.user.id]}),
-  ]);};
-  if(error&&psErrorKey(error)==='accessDenied')return <StateView kind="denied"/>;
-  // A failed lifecycle refresh invalidates the displayed authorization snapshot. Do not
-  // expose new mutations from cached eligibility; the backend must still revalidate writes.
-  if(error)return <StateView kind="error" onRetry={()=>{void refresh().catch(()=>{});}}/>;
-  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={refresh}/>;
-  return <StateView kind="loading"/>;
-}
 // OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.
 function PrintUpdatesData() {
   const {session,expire}=useAuth();
@@ -381,7 +361,7 @@ function PrintUpdatesData() {
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
+  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={async()=>{await data.refetch({throwOnError:true});await queryClient.invalidateQueries({queryKey:['ps-ota-page']},{throwOnError:true});}}/>;
   return <StateView kind="loading"/>;
 }
 function PsRefreshWarning({onRetry}:{onRetry:()=>Promise<unknown>}) {
@@ -632,6 +612,7 @@ export default function App() {
     <Route path="/admin/print-servers/list" element={<Scope scope="admin"><PrintServersRoute list/></Scope>}/>
     <Route path="/admin/print-servers/inventory" element={<Scope scope="admin"><PrintServersRoute inventory/></Scope>}/>
     <Route path="/admin/print-servers/firmwares" element={<Scope scope="admin"><PrintServersRoute firmwares/></Scope>}/>
+    <Route path="/admin/print-servers/channels" element={<Scope scope="admin"><PrintServersRoute channels/></Scope>}/>
     <Route path="/admin/print-servers/updates" element={<Scope scope="admin"><PrintServersRoute updates/></Scope>}/>
     <Route path="/admin/print-servers/devices/:id" element={<Scope scope="admin"><PrintServersRoute device/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>

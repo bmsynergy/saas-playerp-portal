@@ -588,3 +588,39 @@ input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .ota-editions,.ota-channel-options{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;display:grid;gap:6px}.ota-editions legend,.ota-channel-options legend{font-size:.72rem;font-weight:800;padding:0 4px}
 .ota-radio{display:flex;align-items:flex-start;gap:8px;font-size:.8rem}.ota-radio input{margin-top:3px}.ota-reason{color:var(--muted)}
 .ota-other-editions summary{cursor:pointer;font-size:.76rem;color:var(--muted);font-weight:700;margin:4px 0}.ota-other-editions{display:grid;gap:6px}
+
+/* PE-474 paged firmware and channel controls */
+.pe474-title-button { font: inherit; text-align: left; }
+.pe474-firmware-detail { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border, #dce3ea); }
+.pe474-firmware-detail .fw-release-facts { margin: .75rem 0 1rem; }
+.pe474-channel-select select { min-width: 9.5rem; }
+.pe474-channels-table .staff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.ota-edition-picker { display: grid; gap: .45rem; max-height: 18rem; overflow: auto; padding: .4rem; }
+.ota-deploy-devices { grid-column: 1 / -1; min-width: 0; }
+.ota-deploy-devices .ota-checklist { max-height: 23rem; overflow: auto; }
+@media (max-width: 720px) {
+  .pe474-channels-table .staff-actions { justify-content: flex-start; }
+  .pe474-channel-select, .pe474-channel-select select { width: 100%; }
+  .pe474-firmware-detail .fw-release-facts { grid-template-columns: 1fr; }
+  .ota-edition-picker { max-height: 15rem; }
+}
+.pe474-updates-refresh { display:flex; justify-content:flex-end; }
+.pe474-deploy-errors { margin:.55rem 0 0; padding-left:1.15rem; overflow-wrap:anywhere; }
+.pe474-deploy-errors li + li { margin-top:.35rem; }
+.pe474-channels-table { min-width: 790px; }
+.pe474-channels-table :is(th,td):nth-child(4),
+.pe474-channels-table :is(th,td):nth-child(5) { min-width: 125px; }
+.pe474-channels-table .server-status { white-space: nowrap; flex: none; }
+@media (max-width: 700px) {
+  .pe474-channels-table { min-width: 0; }
+  .pe474-channels-table :is(th,td):nth-child(4),
+  .pe474-channels-table :is(th,td):nth-child(5) { min-width: 0; }
+  .pe474-channels-table td .server-status { max-width: 100%; }
+}
+@media (min-width: 701px) {
+  .pe474-channels-table { min-width: 1000px; }
+  .pe474-channels-table :is(th,td):first-child { min-width: 115px; white-space: nowrap; overflow-wrap: normal; }
+  .pe474-channels-table :is(th,td):nth-child(2) { min-width: 145px; }
+  .pe474-channels-table :is(th,td):nth-child(3) { min-width: 160px; }
+  .pe474-channels-table :is(th,td):nth-child(7) { min-width: 150px; }
+}

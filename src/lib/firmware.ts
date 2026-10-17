@@ -20,7 +20,7 @@ export class FirmwareError extends Error { constructor(public key: string, publi
 type Raw = Record<string, unknown>;
 const str = (v: unknown) => typeof v === 'string' && v !== '' ? v : null;
 const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? v : null;
-function release(v: Raw): FirmwareRelease {
+export function projectFirmwareRelease(v: Raw): FirmwareRelease {
   if (typeof v.id !== 'string' || typeof v.version !== 'string' || (v.status !== 'ready' && v.status !== 'rejected')) throw new PortalError('genericError');
   const validation = (v.validation && typeof v.validation === 'object' ? v.validation : {}) as Raw;
   return { id: v.id, version: v.version, revision: str(v.revision), model: String(v.model ?? ''), arch: String(v.arch ?? ''), notes: str(v.notes),
@@ -34,12 +34,13 @@ export async function getFirmwares(signal?: AbortSignal): Promise<FirmwareList> 
   const { data, error } = await supabase.rpc('ps_firmware_list').abortSignal(signal ?? new AbortController().signal);
   if (error) throw error;
   if (!data || !Array.isArray(data.releases) || !Array.isArray(data.installed)) throw new PortalError('genericError');
-  return { releases: data.releases.map(release), complete: data.complete === true && data.total === data.releases.length,
+  return { releases: data.releases.map(projectFirmwareRelease), complete: data.complete === true && data.total === data.releases.length,
     total: num(data.total),
     installed: data.installed.map((v: Raw) => ({ version: String(v.version ?? ''), print_servers: num(v.print_servers) ?? 0, uploaded: v.uploaded === true })) };
 }
 
 const errorKeys: Record<string, string> = {
+  canary_required: 'pe474.reason.canary_required', lab_required: 'pe474.reason.lab_required', already_enabled: 'pe474.reason.already_enabled', version_not_semver: 'pe474.reason.version_not_semver',
   invalid_version: 'fw.error.version', invalid_filename: 'fw.error.filename', invalid_size: 'fw.error.size', invalid_model: 'fw.error.model',
   invalid_arch: 'fw.error.arch', invalid_zip: 'fw.error.zip', duplicate: 'fw.error.duplicate', not_uploaded: 'fw.error.upload',
   unknown_upload: 'fw.error.upload', forbidden: 'accessDenied',
@@ -66,7 +67,7 @@ async function call(body: Raw): Promise<Raw> {
   if (response.status === 403) throw new PortalError('accessDenied');
   if (!response.ok || !data || data.ok !== true) {
     const code = typeof data?.error === 'string' ? data.error : '';
-    const r = data?.release && typeof data.release === 'object' ? release(data.release as Raw) : undefined;
+    const r = data?.release && typeof data.release === 'object' ? projectFirmwareRelease(data.release as Raw) : undefined;
     throw new FirmwareError(errorKeys[code] ?? 'genericError', r);
   }
   return data;
@@ -88,7 +89,7 @@ export async function uploadFirmware(input: FirmwareUpload, onStage?: (stage: 'u
   if (error) throw new FirmwareError('fw.error.upload');
   onStage?.('verify');
   const done = await call({ action: 'finalize', id: begun.id });
-  return release(done.release as Raw);
+  return projectFirmwareRelease(done.release as Raw);
 }
 
 export async function firmwareDownloadUrl(id: string): Promise<string> {
@@ -114,4 +115,13 @@ export async function setFirmwareAvailability(editionId: string, enabledRings: F
   if (error) throw error;
   if (!data || data.ok !== true) throw new FirmwareError(data?.error === 'deployment_in_progress'
     ? 'fw.lifecycle.reason.deployment_in_progress' : errorKeys[String(data?.error)] ?? 'genericError');
+}
+
+export async function promoteFirmwareEdition(editionId: string, ring: FirmwareRing, expectedRevision: number): Promise<void> {
+  if (!editionId || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0) throw new FirmwareError('genericError');
+  const { data, error } = await supabase.rpc('ps_ota_edition_promote', {
+    p_edition_id: editionId, p_ring: ring, p_expected_revision: expectedRevision,
+  });
+  if (error) throw error;
+  if (!data || data.ok !== true) throw new FirmwareError(errorKeys[String(data?.error)] ?? 'genericError');
 }

@@ -1,4 +1,4 @@
-import { compareAdminFirmware, firmwareBlockReason, firmwareRing, projectFirmwareCandidate, type FirmwareCandidate, type FirmwareRing } from './firmwareEligibility';
+import { firmwareRing, type FirmwareRing } from './firmwareEligibility';
 import { supabase } from './supabase';
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from './config';
 import { errorCode, PortalError } from './errors';
@@ -9,7 +9,7 @@ export type DeviceModel = { model: string; label: string; archs: string[]; defau
 export type AdminDeviceDetail = {
   device: { id: string; serial: string; hostname: string; model: string; arch: string; label: string | null; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null };
   update: { current_version: string | null; latest_stable: { edition_id: string; version: string; model: string; arch: string } | null;
-    candidate: FirmwareCandidate | null; newest_signed: FirmwareCandidate | null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
+    candidate: {edition_id:string;version:string;signed_at:string|null;sha256_short:string|null} | null; newest_signed: null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
     update_available: boolean; reason: string | null; active_update: { deployment_id: string; status: string; stage: string | null; progress: number | null } | null;
     ota: AdminOtaExtras };
   delete: { allowed: boolean; blockers: string[] };
@@ -22,6 +22,7 @@ const obj = (v: unknown): Raw => v && typeof v === 'object' && !Array.isArray(v)
 const str = (v: unknown): string | null => typeof v === 'string' && v.trim() ? v : null;
 const required = (v: unknown): string => str(v) ?? bad();
 const errors = ['same_venue','legacy_device','device_retired','device_already_assigned','device_not_assigned','move_failed','unknown_model','arch_not_supported','unknown_venue','unknown_device','confirmation_mismatch','delete_blocked','no_stable_release','up_to_date','update_in_progress','device_not_active','edition_not_latest_stable','update_changed','edition_not_candidate','confirmation_required','metadata_missing','no_general_update','ring_not_allowed',
+  'newer_not_enabled','newer_incompatible','edition_not_installable','device_channel_not_enabled','not_newer','expected_channel_required','bad_expected_revision',
   // PE-473 set_channel / update_device / validate_device
   'channel_changed','group_required','group_ring_mismatch','unknown_group','invalid_channel','edition_not_selectable',
   'channel_not_canary','canary_ring_disabled','edition_lab_only','lab_build','edition_not_signed','edition_not_installed','already_confirmed','incompatible_device'];
@@ -74,16 +75,19 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
   const device = { id: required(d.id), serial: required(d.serial), hostname: required(d.hostname), model: required(d.model), arch: required(d.arch),
     label: str(d.label), status: required(d.status), legacy: d.legacy === true, venue_id: str(d.venue_id), venue_name: str(d.venue_name) };
   const blockers = deletion.blockers.map(required);
-  const candidate = projectFirmwareCandidate(u.candidate), effective_ring = firmwareRing(u.effective_ring);
-  const admitted = !!candidate && candidate.admitted && !!effective_ring && candidate.admitted_ring === effective_ring;
-  const reason = firmwareBlockReason(str(u.current_version), candidate, device.model, device.arch, u.update_available === true && u.can_update === true && admitted, str(u.reason), compareAdminFirmware) ?? (active ? 'update_in_progress' : null);
+  const ota=projectAdminOtaExtras(u), effective_ring=firmwareRing(u.effective_ring), rawCandidate=u.candidate==null?null:obj(u.candidate);
+  const candidate=rawCandidate&&str(rawCandidate.edition_id)&&str(rawCandidate.version)&&str(rawCandidate.signed_at)
+    ? {edition_id:str(rawCandidate.edition_id)!,version:str(rawCandidate.version)!,signed_at:str(rawCandidate.signed_at),sha256_short:str(rawCandidate.sha256_short)}:null;
+  const metadataValid=!!ota.editions && !!effective_ring && !!ota.channel && ota.channel.ring===effective_ring;
+  const reason=str(u.reason)??(active?'update_in_progress':!metadataValid?'metadata_missing':null);
+  const canUpdate=metadataValid && u.can_update===true && u.update_available===true && !active && !reason && !!str(u.current_version) &&
+    !!candidate && ota.editions!.some(e=>e.edition_id===candidate.edition_id&&e.selectable);
   return { device, update: { current_version: str(u.current_version), latest_stable: latest,
-    candidate, newest_signed: projectFirmwareCandidate(u.newest_signed), effective_ring,
-    can_update: u.can_update === true && admitted && !active && !reason, newer_signed_unpromoted: u.newer_signed_unpromoted === true,
-    update_available: u.update_available && u.can_update === true && admitted && !active && !reason,
+    candidate, newest_signed:null, effective_ring, can_update:canUpdate, newer_signed_unpromoted:u.newer_signed_unpromoted===true,
+    update_available:canUpdate,
     reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
       progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null,
-    ota: projectAdminOtaExtras(u) },
+    ota },
     delete: { allowed: deletion.allowed && !blockers.length && !device.venue_id && !d.print_server_id && device.status === 'retired' && !device.legacy, blockers } };
 }
 export async function getDeviceModels(signal?: AbortSignal): Promise<DeviceModel[]> {
@@ -129,17 +133,23 @@ export async function updateAdminDevice(id: string, editionId: string, expectedI
   await sessionOrThrow();
   const fresh = await getAdminDeviceDetail(id);
   const editions = fresh.update.ota.editions;
-  // PE-473: with the editions contract any selectable edition may be chosen; otherwise only the candidate.
-  const allowed = editions ? editions.some(e => e.edition_id === editionId && e.selectable) && !fresh.update.active_update
-    : fresh.update.update_available && fresh.update.candidate?.edition_id === editionId;
+  // PE-474: only server-listed installable editions from a current v2 snapshot.
+  const allowed = fresh.update.can_update && !!editions?.some(e => e.edition_id === editionId && e.selectable) && !fresh.update.active_update;
   if (fresh.device.id !== id || !allowed || !expectedInstalled || fresh.update.current_version !== expectedInstalled) throw new AdminDeviceError('adminDevice.updateChanged');
   const data = await postOtaAdmin({ action: 'update_device', device_id: id, edition_id: editionId, expected_installed_version: expectedInstalled });
   return { deployment_id: required(data.deployment_id) };
 }
-// Changing the channel only moves the device between lab/canary groups; it never installs or deploys.
-export async function setAdminDeviceChannel(id: string, channel: 'lab' | 'canary' | 'general', groupId: string | null, expectedChannel: string): Promise<{ changed: boolean }> {
-  const data = await postOtaAdmin({ action: 'set_channel', device_id: id, channel, group_id: channel === 'general' ? null : groupId, expected_channel: expectedChannel });
-  return { changed: data.changed === true };
+// Channel changes use the displayed optimistic snapshot and never touch groups.
+export async function setAdminDeviceChannel(id:string,channel:FirmwareRing,expectedChannel:FirmwareRing,expectedRevision:number):Promise<{changed:boolean}> {
+  return changeChannel({device_id:id},channel,expectedChannel,expectedRevision);
+}
+export async function setPrintServerChannel(id:string,channel:FirmwareRing,expectedChannel:FirmwareRing,expectedRevision:number):Promise<{changed:boolean}> {
+  return changeChannel({print_server_id:id},channel,expectedChannel,expectedRevision);
+}
+async function changeChannel(identity:Raw,channel:FirmwareRing,expectedChannel:FirmwareRing,expectedRevision:number):Promise<{changed:boolean}> {
+  if (!firmwareRing(channel)||!firmwareRing(expectedChannel)||!Number.isSafeInteger(expectedRevision)||expectedRevision<0) throw new AdminDeviceError('adminDevice.error.channel_changed');
+  const data=await postOtaAdmin({action:'set_channel',...identity,channel,expected_channel:expectedChannel,expected_revision:expectedRevision});
+  return {changed:data.changed===true};
 }
 // Asks the device to prove (signature + health) that it runs this exact edition; nothing is downloaded or installed.
 export async function validateAdminDevice(id: string, editionId: string, expectedInstalled: string): Promise<{ target_id: string }> {

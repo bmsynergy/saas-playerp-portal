@@ -1,7 +1,5 @@
-// PE-473: admin-only OTA contract for one Print Server sheet — channel, selectable
-// editions, in-place Canary validation and the requirements for General.
-// Every block is optional: an older backend without these keys hides the block
-// instead of breaking the sheet. Owner views never import this module.
+// PE-474 admin-only channel and bounded installable editions projection.
+// Obsolete PE-473 validation/requirements are never projected or exposed.
 import { firmwareRing, type FirmwareRing } from './firmwareEligibility';
 
 type Raw = Record<string, unknown>;
@@ -13,12 +11,12 @@ const pct = (v: unknown): number | null => typeof v === 'number' && Number.isFin
 
 export type OtaGroupRef = { id: string; name: string };
 export type OtaChannel = {
-  ring: FirmwareRing; groups: (OtaGroupRef & { ring: FirmwareRing })[];
-  options: { ring: FirmwareRing; groups: OtaGroupRef[] }[];
-  can_change: boolean; blocked_reason: string | null;
+  ring: FirmwareRing; revision:number; source:string; updated_at:string|null;
+  deployment_groups: (OtaGroupRef & {ring:FirmwareRing})[];
+  href: '/admin/print-servers/channels'; can_change:boolean; blocked_reason:string|null;
 };
 export type OtaEdition = {
-  edition_id: string; version: string; sha256: string | null; signed_at: string | null; enabled_rings: FirmwareRing[];
+  edition_id: string; version: string; sha256: string | null; sha256_short: string | null; signed_at: string | null; enabled_rings: FirmwareRing[];
   lab_only: boolean; canary_confirmed_at: string | null; class_ring: FirmwareRing | null; installed: boolean;
   selectable: boolean; reason: string | null;
 };
@@ -35,7 +33,8 @@ export type GeneralRequirements = {
   edition: { edition_id: string; version: string } | null; eligible: boolean;
   items: { key: string; met: boolean; action: GeneralRequirementAction | null; href: string | null }[];
 };
-export type AdminOtaExtras = { channel: OtaChannel | null; editions: OtaEdition[] | null; canary: CanaryValidation | null; general: GeneralRequirements | null };
+export type NewerBlocked = {version:string;detail:string;channel:FirmwareRing|null;model:string|null;arch:string|null;enabled_rings:FirmwareRing[]};
+export type AdminOtaExtras = { editions_total:number; editions_limit:20; newer_blocked:NewerBlocked|null; channel: OtaChannel | null; editions: OtaEdition[] | null; canary: CanaryValidation | null; general: GeneralRequirements | null };
 
 const FIRMWARES_HREF = '/admin/print-servers/firmwares';
 const ACTIONS: GeneralRequirementAction[] = ['change_channel', 'install_updater', 'validate', 'open_firmwares'];
@@ -43,28 +42,27 @@ const STATUSES: CanaryStatus[] = ['not_needed', 'pending', 'in_progress', 'faile
 const SHA = /^[0-9a-f]{64}$/i;
 
 function projectChannel(v: unknown): OtaChannel | null {
-  const c = obj(v); const ring = firmwareRing(c?.ring);
-  if (!c || !ring || typeof c.can_change !== 'boolean') return null;
-  const group = (g: unknown): OtaGroupRef | null => { const o = obj(g); const id = str(o?.id), name = str(o?.name); return id && name ? { id, name } : null; };
-  const groups = list(c.groups).flatMap(g => { const ref = group(g), r = firmwareRing(obj(g)?.ring); return ref && r ? [{ ...ref, ring: r }] : []; });
-  const options = list(c.options).flatMap(o => { const r = firmwareRing(obj(o)?.ring); return r ? [{ ring: r, groups: list(obj(o)?.groups).map(group).filter((g): g is OtaGroupRef => !!g) }] : []; });
-  return { ring, groups, options, can_change: c.can_change && !code(c.blocked_reason), blocked_reason: code(c.blocked_reason) };
+  const c=obj(v), ring=firmwareRing(c?.ring);
+  if (!c || !ring || !Number.isSafeInteger(c.revision) || Number(c.revision)<0 || typeof c.can_change!=='boolean' ||
+    !['default','groups_init','admin'].includes(String(c.source)) || !(c.blocked_reason===null || code(c.blocked_reason)) || !Array.isArray(c.deployment_groups)) return null;
+  const deployment_groups=c.deployment_groups.flatMap(g=>{const r=obj(g),ring=firmwareRing(r?.ring);return r&&str(r.id)&&str(r.name)&&ring?[{id:str(r.id)!,name:str(r.name)!,ring}]:[];});
+  return {ring,revision:Number(c.revision),source:String(c.source),updated_at:str(c.updated_at),deployment_groups,
+    href:'/admin/print-servers/channels',can_change:c.can_change===true&&!c.blocked_reason,blocked_reason:code(c.blocked_reason)};
 }
-
 function projectEditions(v: unknown): OtaEdition[] | null {
-  if (!Array.isArray(v)) return null;
-  return v.flatMap(item => {
-    const e = obj(item); const edition_id = str(e?.edition_id), version = str(e?.version), raw = str(e?.sha256);
-    if (!e || !edition_id || !version) return [];
-    const sha256 = raw && SHA.test(raw) ? raw.toLowerCase() : null;
-    const reason = code(e.reason);
-    return [{ edition_id, version, sha256, signed_at: str(e.signed_at),
-      enabled_rings: list(e.enabled_rings).map(firmwareRing).filter((r): r is FirmwareRing => !!r),
-      lab_only: e.lab_only === true, canary_confirmed_at: str(e.canary_confirmed_at), class_ring: firmwareRing(e.class_ring),
-      installed: e.installed === true, selectable: e.selectable === true && !reason, reason }];
-  });
+  if (!Array.isArray(v) || v.length>20) return null;
+  const result:OtaEdition[]=[];
+  for (const item of v) {
+    const e=obj(item), sha=str(e?.sha256_short);
+    if (!e || !str(e.edition_id) || !str(e.version) || !str(e.signed_at) || !sha || !/^[0-9a-f]{12}$/i.test(sha) ||
+      typeof e.selectable!=='boolean' || !(e.reason===null || e.reason==='update_in_progress') ||
+      !Array.isArray(e.enabled_rings) || !e.enabled_rings.every(r=>firmwareRing(r)!==null)) return null;
+    result.push({edition_id:str(e.edition_id)!,version:str(e.version)!,signed_at:str(e.signed_at),sha256:sha,sha256_short:sha,
+      enabled_rings:e.enabled_rings as FirmwareRing[],canary_confirmed_at:str(e.canary_confirmed_at),
+      lab_only:false,class_ring:null,installed:false,selectable:e.selectable===true&&e.reason===null,reason:code(e.reason)});
+  }
+  return result;
 }
-
 function projectCanary(v: unknown): CanaryValidation | null {
   const c = obj(v); const status = STATUSES.find(s => s === c?.status);
   if (!c || !status) return null;
@@ -95,8 +93,12 @@ function projectGeneral(v: unknown): GeneralRequirements | null {
 }
 
 export function projectAdminOtaExtras(update: unknown): AdminOtaExtras {
-  const u = obj(update);
-  return { channel: projectChannel(u?.channel), editions: projectEditions(u?.editions), canary: projectCanary(u?.canary_validation), general: projectGeneral(u?.general_requirements) };
+  const u=obj(update), n=obj(u?.newer_blocked);
+  let editions=projectEditions(u?.editions);
+  if (!Number.isSafeInteger(u?.editions_total) || Number(u?.editions_total)<(editions?.length??0) || u?.editions_limit!==20) editions=null;
+  return {channel:projectChannel(u?.channel),editions,editions_total:Number.isSafeInteger(u?.editions_total)?Number(u?.editions_total):0,editions_limit:20,
+    newer_blocked:n&&str(n.version)&&code(n.detail)?{version:str(n.version)!,detail:code(n.detail)!,channel:firmwareRing(n.channel),model:str(n.model),arch:str(n.arch),enabled_rings:list(n.enabled_rings).filter((r):r is FirmwareRing=>firmwareRing(r)!==null)}:null,
+    canary:null,general:null};
 }
 
 export const shortId = (id: string) => id.slice(0, 8);
@@ -104,21 +106,11 @@ export const shortSha = (sha: string | null) => !sha ? '—' : sha.length > 12 ?
 
 // The headline must never collapse "installed but not validated in Canary" into "up to date".
 export type FirmwareHeadline = { key: string; version: string | null };
-export function firmwareHeadline(current: string | null, canary: CanaryValidation | null, reason: string | null): FirmwareHeadline | null {
-  if (canary?.edition && current && canary.edition.version === current) {
-    const key = { pending: 'otaDevice.headline.pending', in_progress: 'otaDevice.headline.in_progress', failed: 'otaDevice.headline.failed', confirmed: 'otaDevice.headline.confirmed', not_needed: null }[canary.status];
-    if (key) return { key, version: current };
-  }
-  if (reason === 'up_to_date' && current) return { key: 'otaDevice.headline.up_to_date', version: current };
-  return null;
+export function firmwareHeadline(current: string | null, _canary: CanaryValidation | null, reason: string | null): FirmwareHeadline | null {
+  return reason==='up_to_date'&&current?{key:'otaDevice.headline.up_to_date',version:current}:null;
 }
-// Replaces the "up to date" update reason while the installed edition is not Canary-validated.
-export function updateReasonKey(reason: string | null, canary: CanaryValidation | null): string | null {
-  if (!reason) return null;
-  if (reason === 'up_to_date' && canary && ['pending', 'in_progress', 'failed'].includes(canary.status)) return 'otaDevice.reason.up_to_date_unvalidated';
-  return `adminDevice.reason.${reason}`;
-}
-export const showValidateButton = (canary: CanaryValidation | null) => !!canary && (canary.status === 'pending' || canary.status === 'failed');
+export function updateReasonKey(reason:string|null,_canary:CanaryValidation|null):string|null {return reason?`adminDevice.reason.${reason}`:null;}
+export const showValidateButton = (_canary:CanaryValidation|null) => false;
 
 const KNOWN_EDITION_REASONS = ['not_newer', 'ring_disabled', 'edition_lab_only', 'lab_build', 'canary_not_confirmed', 'edition_not_signed', 'update_in_progress', 'device_not_active'];
 export function editionReasonKey(reason: string | null): { key: string; code: string | null } {
@@ -146,16 +138,12 @@ export function validationErrorKey(errorCode: string | null): { key: string; cod
 
 // The picker shows selectable editions and the installed one; the rest stay folded with their reason.
 export function splitEditions(editions: OtaEdition[]): { main: OtaEdition[]; other: OtaEdition[] } {
-  return { main: editions.filter(e => e.selectable || e.installed), other: editions.filter(e => !e.selectable && !e.installed) };
+  return { main: editions.filter(e => e.selectable), other: [] };
 }
 // Default choice: the newest selectable edition (the list arrives newest first).
 export function defaultEditionId(editions: OtaEdition[] | null): string | null {
   return editions?.find(e => e.selectable)?.edition_id ?? null;
 }
-export function channelSelectionValid(channel: OtaChannel, ring: FirmwareRing, groupId: string | null): boolean {
-  const option = channel.options.find(o => o.ring === ring);
-  if (!option) return false;
-  if (ring === 'general') return channel.ring !== 'general';
-  if (!groupId || !option.groups.some(g => g.id === groupId)) return false;
-  return !(channel.ring === ring && channel.groups.some(g => g.id === groupId));
+export function channelSelectionValid(channel:OtaChannel,ring:FirmwareRing):boolean {
+  return channel.can_change && ['lab','canary','general'].includes(ring) && ring!==channel.ring;
 }

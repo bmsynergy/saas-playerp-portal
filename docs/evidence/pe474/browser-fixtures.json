@@ -1,0 +1,642 @@
+{
+  "kind": "PE-474 isolated browser fixtures; all Supabase requests intercepted; no live writes or physical OTA",
+  "checks": [
+    {
+      "width": 1440,
+      "lang": "en",
+      "firmware": "v2 promotion to General without Canary ACK; immutable identity; legacy Lab offered; v1 metadata fails closed",
+      "channels": "server pagination and revision/channel confirmation; concurrent rejection; no group_id",
+      "updates": "server firmware and deployment pages; all-or-nothing rejection lists linked device and translated reason; catalogue read failure visible",
+      "layout": "no horizontal overflow"
+    },
+    {
+      "width": 390,
+      "lang": "es",
+      "firmware": "v2 promotion to General without Canary ACK; immutable identity; legacy Lab offered; v1 metadata fails closed",
+      "channels": "server pagination and revision/channel confirmation; concurrent rejection; no group_id",
+      "updates": "server firmware and deployment pages; all-or-nothing rejection lists linked device and translated reason; catalogue read failure visible",
+      "layout": "no horizontal overflow"
+    }
+  ],
+  "network": [
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "set_channel",
+        "print_server_id": "ps-0",
+        "channel": "canary",
+        "expected_channel": "lab",
+        "expected_revision": 7
+      }
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_admin_overview",
+      "args": {
+        "p_include_audit": false
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "deploy",
+        "edition_id": "fixture-edition-0",
+        "group_id": "fixture-group"
+      }
+    },
+    {
+      "name": "ps_ota_admin_overview",
+      "args": {
+        "p_include_audit": false
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "set_channel",
+        "print_server_id": "ps-0",
+        "channel": "canary",
+        "expected_channel": "lab",
+        "expected_revision": 7
+      }
+    },
+    {
+      "name": "ps_ota_channels_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_admin_overview",
+      "args": {
+        "p_include_audit": false
+      }
+    },
+    {
+      "name": "portal_access",
+      "args": {}
+    },
+    {
+      "name": "is_platform_staff",
+      "args": {}
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "deploy",
+        "edition_id": "fixture-edition-0",
+        "group_id": "fixture-group"
+      }
+    },
+    {
+      "name": "ps_ota_admin_overview",
+      "args": {
+        "p_include_audit": false
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    },
+    {
+      "name": "ps_ota_admin_deployments_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      }
+    },
+    {
+      "name": "ps_firmware_page",
+      "args": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      }
+    }
+  ],
+  "writes": [
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "set_channel",
+        "print_server_id": "ps-0",
+        "channel": "canary",
+        "expected_channel": "lab",
+        "expected_revision": 7
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "deploy",
+        "edition_id": "fixture-edition-0",
+        "group_id": "fixture-group"
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps_ota_edition_promote",
+      "args": {
+        "p_edition_id": "fixture-edition-0",
+        "p_ring": "general",
+        "p_expected_revision": 4
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "set_channel",
+        "print_server_id": "ps-0",
+        "channel": "canary",
+        "expected_channel": "lab",
+        "expected_revision": 7
+      }
+    },
+    {
+      "name": "ps-ota-admin",
+      "args": {
+        "action": "deploy",
+        "edition_id": "fixture-edition-0",
+        "group_id": "fixture-group"
+      }
+    }
+  ],
+  "unexpected": []
+}

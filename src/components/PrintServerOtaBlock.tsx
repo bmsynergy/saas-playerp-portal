@@ -18,10 +18,11 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
   const q = useQuery({ queryKey: ['ps-panel-ota', session?.user.id, venueId, printServerId], queryFn: async ({ signal }) => (await getPanelOta(venueId, signal, printServerId)).filter(item => !printServerId || item.print_server_id === printServerId), refetchInterval: 10_000 });
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : null; }, [locale]);
   const label = (prefix: string, v: string | null) => { if (!v) return null; const k = `${prefix}.${v}`; const out = t(k); return out === k ? v : out; };
-  const canOffer = (p: PanelOta) => !!(p.can_update && p.device_id && p.latest_stable?.edition_id && p.installed_version && !q.isFetching && !q.isError);
-  const matches = (p: PanelOta | undefined, c: Confirmation | null) => !!(p && c && canOffer(p) && p.print_server_id === c.printServerId && p.device_id === c.deviceId && p.latest_stable?.edition_id === c.editionId && p.latest_stable.version === c.version && p.installed_version === c.installed);
+  const canOffer = (p: PanelOta) => !!(p.can_update && p.device_id && p.candidate?.edition_id && p.installed_version && !q.isFetching && !q.isError);
+  const matches = (p: PanelOta | undefined, c: Confirmation | null) => !!(p && c && canOffer(p) && p.print_server_id === c.printServerId && p.device_id === c.deviceId && p.candidate?.edition_id === c.editionId && p.candidate.version === c.version && p.installed_version === c.installed);
   const reasonText = (reason: string | null) => {
     if (!reason) return t('firmware.ownerReadOnly');
+    if (reason === 'newer_not_enabled') return t('pe474.owner.newerNotEnabled');
     const key = `adminDevice.reason.${reason}`;
     return t(key) === key ? t('adminDevice.reason.metadata_missing') : t(key);
   };
@@ -31,10 +32,10 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
     setNotice('');
     const refreshed = await q.refetch();
     const fresh = refreshed.data?.find(item => item.print_server_id === p.print_server_id);
-    if (refreshed.isError || !fresh || !canOffer(fresh) || fresh.device_id !== p.device_id || fresh.installed_version !== p.installed_version || fresh.latest_stable?.edition_id !== p.latest_stable?.edition_id) {
+    if (refreshed.isError || !fresh || !canOffer(fresh) || fresh.device_id !== p.device_id || fresh.installed_version !== p.installed_version || fresh.candidate?.edition_id !== p.candidate?.edition_id) {
       setConfirm(null); setNotice(t('adminDevice.updateChanged')); return;
     }
-    setConfirm({ printServerId: fresh.print_server_id, deviceId: fresh.device_id!, editionId: fresh.latest_stable!.edition_id, version: fresh.latest_stable!.version, installed: fresh.installed_version! });
+    setConfirm({ printServerId: fresh.print_server_id, deviceId: fresh.device_id!, editionId: fresh.candidate!.edition_id, version: fresh.candidate!.version, installed: fresh.installed_version! });
   }
 
   async function submit() {
@@ -63,6 +64,7 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
         <div><dt>{t('ota.installed')}</dt><dd data-testid="ps-ota-installed">{p.installed_version ?? t('notProvided')}</dd></div>
         <div><dt>{t('adminDevice.latestStable')}</dt><dd data-testid="ps-ota-latest">{p.latest_stable?.version ?? t(p.availability === 'unavailable' ? 'adminDevice.noStable' : 'notProvided')}</dd></div>
         <div className="dev-wide"><dt>{t('firmware.compatibility')}</dt><dd>{p.model ?? t('notProvided')} · {p.arch ?? t('notProvided')} · {t('firmware.stableRing')}</dd></div>
+        {p.newer_signed_unpromoted && <div className="dev-wide"><dt>{t('ota.edition')}</dt><dd>{t('pe474.owner.newerNotEnabled')}</dd></div>}
         <div className="dev-wide"><dt>{t('adminDevice.update')}</dt><dd>
           <FirmwareUpdateAction testId="owner-device-update" disabled={!canOffer(p) || busy} onClick={() => void review(p)} reason={!canOffer(p) && !q.isFetching ? reasonText(p.reason) : null} loading={busy && confirm?.printServerId === p.print_server_id}/>
         </dd></div>

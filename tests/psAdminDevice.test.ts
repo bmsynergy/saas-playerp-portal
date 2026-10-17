@@ -1,10 +1,11 @@
+import {deviceUpdate} from './fixtures/pe474';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), getSession: vi.fn() }));
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc: mocks.rpc, auth: { getSession: mocks.getSession } } }));
 import { adminDeviceErrorKey, createAdminDevice, deleteAdminDevice, getAdminDeviceDetail, getAdminDeviceManage, projectAdminDeviceDetail, projectDeviceModels, projectDeviceModelCatalog, projectAdminDeviceManage, projectAdminVenues, moveAdminDevice, searchAdminVenues, updateAdminDevice } from '../src/lib/psAdminDevice';
 import { assignDevice, revokeDevice } from '../src/lib/psDevice';
 const fixture = () => ({ ok: true, device: { id: 'device', serial: 'PS-12345678', hostname: 'ps', model: 'rpi4-2gb', arch: 'arm64', status: 'stock', legacy: false, venue_id: null },
-  update: { current_version: '0.3.1', latest_stable: { edition_id: 'stable', version: '0.3.2', model: 'rpi4-2gb', arch: 'arm64' }, candidate: { edition_id: 'stable', version: '0.3.2', model: 'rpi4-2gb', arch: 'arm64', ring: 'general', general_eligible: true, eligibility_reason: 'general', admitted: true, admitted_ring: 'general' }, effective_ring: 'general', can_update: true, update_available: true, reason: null, active_update: null }, delete: { allowed: true, blockers: [] as string[] } });
+  update: deviceUpdate('0.3.2','0.3.1','stable'), delete: { allowed: true, blockers: [] as string[] } });
 beforeEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
 describe('PE-432 admin device contracts', () => {
   it('projects the model catalogue without a hardcoded hardware choice', () => {
@@ -14,7 +15,7 @@ describe('PE-432 admin device contracts', () => {
   it('does not expose credentials or offer incompatible or already active updates', () => {
     const f=fixture(); const result=projectAdminDeviceDetail({...f, wifi_psk:'secret', device:{...f.device,admin_code:'secret'}});
     expect(JSON.stringify(result)).not.toContain('secret'); expect(result.update.update_available).toBe(true);
-    f.update.candidate.arch='armhf'; expect(projectAdminDeviceDetail(f).update.update_available).toBe(false);
+    f.update.reason='newer_incompatible'; f.update.can_update=false; expect(projectAdminDeviceDetail(f).update.update_available).toBe(false);
     expect(projectAdminDeviceDetail({...fixture(),update:{...fixture().update,active_update:{deployment_id:'dep',status:'in_progress',phase:'verifying',progress:64}}}).update).toMatchObject({update_available:false,active_update:{stage:'verifying',progress:64}});
     expect(projectAdminDeviceDetail({...fixture(),update:{current_version:null,latest_stable:null,update_available:false,reason:'no_stable_release',active_update:null}}).update.latest_stable).toBeNull();
   });

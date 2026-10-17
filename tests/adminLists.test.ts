@@ -30,7 +30,7 @@ describe('PE-409 calendar filters and read contracts',()=>{
  });
  it('retains the original technical detail and errors with unknown phases',()=>{
   const detail={updater_version:'1.0.0',error:'health check failed'};
-  const e=projectOtaPage('events',{ok:true,total:1,items:[{id:123,phase:'Future Phase!',error_code:'health_failed',detail}],aggregates:{}}).items[0];
+  const e=projectOtaPage('events',{ok:true,total:1,limit:25,offset:0,items:[{id:123,phase:'Future Phase!',error_code:'health_failed',detail}],aggregates:{}}).items[0];
   expect(e.phase).toBe('Future Phase!');expect(e.error_code).toBe('health_failed');expect(JSON.parse(e.detail!)).toEqual(detail);
   expect(eventDetail(e.detail).human).toBe('health check failed');
   expect(eventDetail('{"updater_version":"1.0.0"}')).toEqual({human:null,technical:true});
