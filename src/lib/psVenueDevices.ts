@@ -39,9 +39,12 @@ async function rpc(name: string, params: Raw, signal?: AbortSignal): Promise<Raw
 export function projectVenueDevice(v: unknown): VenueDevice {
   const d = obj(v);
   if (!d || typeof d.id !== 'string' || !d.id) return bad();
-  return { id: d.id, print_server_id: str(d.print_server_id), inventory_device_id: str(d.inventory_device_id), serial: str(d.serial), label: str(d.label),
+  const link=projectPsLink(d.link);
+  const canonical=link?.device_id ?? str(d.inventory_device_id) ?? d.id;
+  if(link && d.inventory_device_id && link.device_id!==d.inventory_device_id)throw new PortalError('accessDenied');
+  return { id: canonical, print_server_id: str(d.print_server_id), inventory_device_id: str(d.inventory_device_id), serial: str(d.serial), label: str(d.label),
     hostname: str(d.hostname), status: str(d.status), online: d.online === true, software_version: str(d.software_version), last_seen_at: str(d.last_seen_at),
-    printers_total: count(d.printers_total), link: projectPsLink(d.link) ?? undefined };
+    printers_total: count(d.printers_total), link: link ?? undefined };
 }
 function unassignedPrinter(v: unknown): UnassignedPrinter {
   const p = obj(v);
@@ -51,7 +54,9 @@ function unassignedPrinter(v: unknown): UnassignedPrinter {
 export function projectVenueDevices(v: unknown, venueId: string): VenueDevices {
   const d = obj(v) ?? bad();
   if (d.venue_id !== venueId) throw new PortalError('accessDenied');
-  return { venue_id: venueId, can_manage: d.can_manage === true, devices: list(d.devices).map(projectVenueDevice), unassigned_printers: list(d.unassigned_printers).map(unassignedPrinter) };
+  const devices=list(d.devices).map(projectVenueDevice);
+  if(devices.some(device=>device.link&&device.link.venue_id!==venueId))throw new PortalError('accessDenied');
+  return { venue_id: venueId, can_manage: d.can_manage === true, devices, unassigned_printers: list(d.unassigned_printers).map(unassignedPrinter) };
 }
 export async function getVenueDevices(venueId: string, signal?: AbortSignal): Promise<VenueDevices> {
   return projectVenueDevices(await rpc('ps_panel_devices', { p_venue_id: venueId }, signal), venueId);

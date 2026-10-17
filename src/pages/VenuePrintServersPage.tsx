@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Check, Clock3, Printer, Server } from 'lucide-react';
 import { psErrorKey } from '../lib/printServerApi';
 import { deviceName, type VenueDevice, type VenueDevices } from '../lib/psVenueDevices';
@@ -19,12 +19,13 @@ type Props = {
 };
 
 export function deviceState(device: Pick<VenueDevice, 'print_server_id' | 'online' | 'status'>): keyof typeof fleetStateClass {
-  if (!device.print_server_id || (device.status && device.status !== 'active')) return 'pending';
+  if (!device.print_server_id) return 'pending';
   return device.online ? 'online' : 'offline';
 }
 
 export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignPrinter, extra }: Props) {
   const { t, locale } = useLocale();
+  const selectedId=new URLSearchParams(useLocation().search).get('selected');
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -53,10 +54,10 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
         // PE-462: identity from the link and facts as reported by the device ("Pending" when absent).
         const l = device.link; const lastSeen = l ? l.reported.last_seen_at : device.last_seen_at;
         const state = deviceState(device); const relative = relativeTime(lastSeen, now, locale);
-        return <tr key={device.id} data-testid={`venue-ps-row-${device.id}`} data-state={state} data-link-state={l?.state}>
+        return <tr key={device.id} data-testid={`venue-ps-row-${device.id}`} data-state={state} data-link-state={l?.state} data-selected={String(selectedId===(l?.device_id??device.inventory_device_id??device.id))}>
           <td data-label={t('psm.col.device')} className="staff-identity">{l ? <><strong>{l.display_name}</strong><small>{l.model_label ?? l.model} · {t('ps.hostname')}: {reportedOr(l.reported.hostname, t('psLink.pending'))}</small></> : <><strong>{deviceName(device)}</strong>{device.hostname && device.hostname !== deviceName(device) && <small>{device.hostname}</small>}</>}</td>
           <td data-label={t('psm.col.serial')}><span className="ps-mono">{l?.serial || device.serial || t('notProvided')}</span></td>
-          <td data-label={t('psm.col.connection')}>{l && <PsLinkStateBadge state={l.state}/>}{(!l || l.state === 'sincronizado') && <span className={`server-status ${fleetStateClass[state]}`}><span className="badge-dot"/>{state === 'pending' ? t('psm.status.pending') : t(`ps.state.${state}`)}</span>}</td>
+          <td data-label={t('psm.col.connection')}><div className="ps469-list-states">{l && <PsLinkStateBadge state={l.state}/>}<span className={`server-status ${fleetStateClass[state]}`}><span className="badge-dot"/>{state === 'pending' ? t('psm.status.pending') : t(`ps.state.${state}`)}</span></div></td>
           <td data-label={t('psm.col.firmware')}><span className="version-text">{l ? reportedOr(l.reported.firmware_version, t('psLink.pending')) : device.software_version || t('notProvided')}</span></td>
           <td data-label={t('lastSignal')}>{relative && lastSeen ? <span className="ps-signal"><span className="staff-date"><Clock3 size={14}/>{relative}</span><small className="ps-sub">{dateFormatter.format(new Date(lastSeen))}</small></span> : <span className="staff-self-note">{t(l ? 'psLink.pending' : 'ps.never')}</span>}</td>
           <td data-label={t('psm.col.printers')}><span className="staff-role"><Printer size={15}/>{device.printers_total}</span></td>

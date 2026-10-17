@@ -11,7 +11,10 @@ import { getOwnerUsers, ownerUsersRequest, type OwnerUser, type OwnerUserAction,
 import { OwnerUsersSection } from './pages/OwnerUsersSection';
 import { InvitationPage } from './pages/InvitationPage';
 import { bindPrintServer, createEnrollment, getInventory, getPanelState, printServerApi, psErrorKey, setPrinterPrintServer, withFailureHook, SelectionRequiredError } from './lib/printServerApi';
-import { adminSheetHref, deviceName, getVenueDevices, ownerSheetHref, resolveDeviceSheet, type VenueDevice } from './lib/psVenueDevices';
+import { adminSheetHref, deviceName, getVenueDevices, ownerSheetHref, type VenueDevice } from './lib/psVenueDevices';
+import { getResolvedDevice, unlinkDevice, type ResolvedDevice } from './lib/psResolvedDevice';
+import { psLinkErrorText } from './lib/psLink';
+import { PsLinkStateBadge } from './components/PsLinkStateBadge';
 import { VenuePrintServersPage } from './pages/VenuePrintServersPage';
 import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
@@ -24,10 +27,14 @@ import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
 import { getFirmwares } from './lib/firmware';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
 import { getInventoryDevices } from './lib/psDevice';
+import { assignDevice } from './lib/psDevice';
+import { VenueCombobox } from './components/VenueCombobox';
+import type { AdminVenueOption } from './lib/psAdminDevice';
 import { PrintUpdatesPage } from './pages/PrintUpdatesPage';
 import { getOtaOverview } from './lib/ota';
 import { Brand } from './components/Brand';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AlertTriangle, ArrowLeft, Unlink } from 'lucide-react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { useOwnDisplayName } from './hooks/useOwnProfile';
@@ -424,8 +431,8 @@ function useVenueDevices(venueId:string,scope:'owner'|'admin',enabled=true) {
   const {session}=useAuth();
   return useQuery({queryKey:['ps-venue-devices',scope,session?.user.id,venueId],queryFn:({signal})=>getVenueDevices(venueId,signal),refetchInterval:15_000,enabled:enabled&&!!venueId});
 }
-const venueListHref=(scope:'owner'|'admin',venueId:string)=>scope==='admin'?`/admin/tenants/${encodeURIComponent(venueId)}/print-servers`:`/?venue=${encodeURIComponent(venueId)}&section=print-servers`;
-const sheetHref=(scope:'owner'|'admin',venueId:string,id:string)=>scope==='admin'?adminSheetHref(id):ownerSheetHref(venueId,id);
+const venueListHref=(scope:'owner'|'admin',venueId:string,selected?:string)=>scope==='admin'?`/admin/tenants/${encodeURIComponent(venueId)}/print-servers${selected?`?selected=${encodeURIComponent(selected)}`:''}`:`/?venue=${encodeURIComponent(venueId)}&section=print-servers${selected?`&selected=${encodeURIComponent(selected)}`:''}`;
+const sheetHref=(scope:'owner'|'admin',venueId:string,id:string)=>scope==='admin'?`${adminSheetHref(id)}?fromVenue=${encodeURIComponent(venueId)}`:ownerSheetHref(venueId,id);
 // Old venue-scoped URL: exactly one device opens its sheet; otherwise the venue list (never "the first").
 function VenueRedirect({venueId}:{venueId:string}) {
   const data=useVenueDevices(venueId,'admin');
@@ -439,61 +446,110 @@ function VenueDevicesData({venue,scope,choose=false}:{venue:Pick<OwnerVenue,'id'
   const data=useVenueDevices(venue.id,scope);
   usePsFailure(data.error);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
-  if(data.data)return <VenuePrintServersPage data={data.data} choose={choose} hrefFor={(device:VenueDevice)=>sheetHref(scope,venue.id,device.id)}
-    extra={scope==='admin'&&data.data.can_manage?<AddPrintServer venueId={venue.id} venueName={venue.name} onDone={()=>invalidatePsViews(queryClient)}/>:undefined}
+  if(data.data)return <VenuePrintServersPage data={data.data} choose={choose} hrefFor={(device:VenueDevice)=>sheetHref(scope,venue.id,device.link?.device_id??device.inventory_device_id??device.id)}
+    extra={scope==='admin'&&data.data.can_manage?<AddPrintServer venueId={venue.id}/>:undefined}
     onAssignPrinter={async(printerId,printServerId)=>{await setPrinterPrintServer(printerId,printServerId);await invalidatePsViews(queryClient);}}/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-// Adds a NEW Print Server to the venue (enrollment without p_print_server_id: nobody is revoked).
-// The one-time code lives only in this component's state.
-function AddPrintServer({venueId,venueName,onDone}:{venueId:string;venueName:string;onDone:()=>Promise<unknown>}) {
+function AddPrintServer({venueId}:{venueId:string}) {
   const {t}=useLocale();
-  const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
-  const [code,setCode]=useState<{code:string;expires_at:string|null}|null>(null);
-  const submit=async()=>{
-    if(busy||code)return; setBusy(true); setError(null);
-    try { const out=await createEnrollment(venueId,''); setCode({code:out.enrollment_code,expires_at:out.expires_at}); try { await onDone(); } catch { setError(t('fw.refreshFailed')); } }
-    catch(e){setError(t(psErrorKey(e)));} finally {setBusy(false);}
-  };
-  return <div className="venue-ps-add" data-testid="venue-ps-add">
-    <div className="staff-actions ps-actions">
-      <button type="button" className="button button-primary" data-testid="venue-ps-add-submit" disabled={busy||!!code} onClick={()=>void submit()}>{t('psm.addPs')}</button>
-    </div>
-    {error&&<p className="form-error" role="alert">{error}</p>}
-    {code&&<PortalDialog title={t('ps.enrollment.title')} titleId="venue-ps-add-title" testId="enrollment-dialog" onClose={()=>setCode(null)} actions={<button type="button" className="button button-secondary" data-testid="enrollment-close" onClick={()=>setCode(null)}>{t('ps.enrollment.close')}</button>}>
-      <p className="ps-dialog-venue">{t('ps.confirm.venue')}: <strong>{venueName}</strong></p>
-      <p>{t('ps.enrollment.lead')}</p>
-      <code className="ps-code" data-testid="enrollment-code">{code.code}</code>
-      <p className="ps-dialog-warning">{t('ps.enrollment.once')}</p>
-    </PortalDialog>}
-  </div>;
+  return <div className="venue-ps-add" data-testid="venue-ps-add"><Link className="button button-primary" data-testid="venue-ps-add-submit" to={`/admin/print-servers/inventory?create=1&fromVenue=${encodeURIComponent(venueId)}`}>{t('psm.addPs')}</Link></div>;
 }
-// PE-443 device sheet by stable id (print_server_id, or inventory id when not active).
-// ps_device_sheet_resolve decides kind/venue/permission; every later call names this PS.
+// A device URL always resolves to its inventory identity before another read or action.
 function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'admin';expectedVenueId?:string}) {
-  const {session}=useAuth(); const {t}=useLocale();
-  const ref=useQuery({queryKey:['ps-sheet-resolve',scope,session?.user.id,id],queryFn:({signal})=>resolveDeviceSheet(id,signal),retry:false});
+  const {session}=useAuth(); const {t}=useLocale(); const navigate=useNavigate(); const location=useLocation();
+  const directory=useDirectory(scope==='admin');
+  const ref=useQuery({queryKey:['ps-device-resolve',session?.user.id,id],queryFn:({signal})=>getResolvedDevice(id,signal),retry:false,refetchInterval:15_000});
   usePsFailure(ref.error);
   if(ref.isError&&(!ref.data||['accessDenied','sessionExpired','ps.error.printServerNotFound'].includes(psErrorKey(ref.error))))return <StateView kind={psErrorKey(ref.error)==='accessDenied'?'denied':psErrorKey(ref.error)==='ps.error.printServerNotFound'?'notFound':'error'} onRetry={()=>void ref.refetch()}/>;
   if(!ref.data)return <StateView kind="loading"/>;
   const r=ref.data;
-  // The URL never grants access: an owner sheet must belong to the selected venue.
-  if(expectedVenueId&&r.venue_id!==expectedVenueId)return <StateView kind="denied"/>;
-  const back=r.venue_id?{href:venueListHref(scope,r.venue_id),label:t('psm.backToVenue')}:{href:'/admin/print-servers/list',label:t('psm.backToList')};
-  // PE-462: link/identity panel (badge, reported facts, friendly name, preparation) when the backend sends it.
+  if(expectedVenueId&&r.venue?.id!==expectedVenueId)return <StateView kind="denied"/>;
+  const params=new URLSearchParams(location.search);
+  const fromVenue=params.get('fromVenue');
+  // A return context is accepted only when the resolver confirms this exact venue.
+  const venueId=r.venue?.id;
+  if(scope==='admin'&&!venueId&&fromVenue&&directory.isPending)return <StateView kind="loading"/>;
+  const returnVenue=venueId??(scope==='admin'&&fromVenue&&directory.data?.some(item=>item.id===fromVenue)?fromVenue:null);
+  const returnVenueName=returnVenue?(r.venue?.id===returnVenue?r.venue.name:directory.data?.find(item=>item.id===returnVenue)?.name??t('printServers')):null;
+  const back=returnVenue?{href:venueListHref(scope,returnVenue,r.device_id),label:returnVenueName??t('printServers')}:{href:'/admin/print-servers/inventory',label:t('inv.title')};
+  if(id!==r.device_id){
+    const canonical=scope==='owner'&&venueId?ownerSheetHref(venueId,r.device_id):r.canonical_path;
+    return <Navigate to={canonical+(scope==='admin'&&returnVenue?`?fromVenue=${encodeURIComponent(returnVenue)}`:'')} replace/>;
+  }
   const staff=scope==='admin'&&r.is_staff;
-  const linkPanel=r.link?<>{ref.isError&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}<PsDeviceLinkPanel key={r.link.device_id} link={r.link} isStaff={staff} canEdit={staff||r.can_manage}
-    onChanged={()=>invalidatePsViews(queryClient)}/></>:null;
-  // Assigned but not yet synced: the venue's owner/manager sees the link, nothing else exists yet.
-  if(!r.print_server_id&&r.venue_id&&r.link&&!staff)return <div className="page-stack staff-page" data-testid="ps-link-sheet"><Link className="back-link" to={back.href}>{back.label}</Link>{linkPanel}</div>;
-  if((!r.print_server_id||!r.venue_id)&&!staff)return <StateView kind="denied"/>;
-  if(!r.print_server_id||!r.venue_id) return r.inventory_device_id
-    ? <>{linkPanel}<InventoryDeviceSheetData key={r.inventory_device_id} deviceId={r.inventory_device_id} back={back}/></>
-    : <StateView kind="notFound"/>;
-  return <>{linkPanel}<PrintServerSheetData key={r.print_server_id} printServerId={r.print_server_id} venueId={r.venue_id} venueName={r.venue_name??''} scope={scope} back={back} canManage={r.can_manage}/></>;
+  return <PsDeviceSheet key={r.device_id} device={r} staff={staff} scope={scope} back={back} stale={ref.isError}
+    onChanged={()=>invalidatePsViews(queryClient)} onCanonicalNavigate={path=>navigate(path,{replace:true})}/>;
 }
-function InventoryDeviceSheetData({deviceId,back}:{deviceId:string;back:{href:string;label:string}}) {
+function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavigate}:{device:ResolvedDevice;staff:boolean;scope:'owner'|'admin';back:{href:string;label:string};stale:boolean;onChanged:()=>Promise<unknown>;onCanonicalNavigate:(path:string)=>void}) {
+  const {t}=useLocale();
+  const [confirm,setConfirm]=useState<{deviceId:string;rev:number;venueName:string}|null>(null);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState('');
+  const [notice,setNotice]=useState('');
+  const alive=useRef(true);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+  const [assignVenue,setAssignVenue]=useState<AdminVenueOption|null>(null);
+  const venue=device.venue;
+  const runtime=device.runtime;
+  const sync=device.link.sync;
+  const ack=device.compat.capabilities.link_ack;
+  const unlinkAck=device.compat.capabilities.unlink_ack;
+  const unlinkAllowed=staff&&device.capabilities.unlink.allowed&&device.capabilities.unlink.expected_rev!==null&&!stale;
+  const available=ack.available.filter(item=>!item.retired).map(item=>`${item.version}${item.enabled_rings.length?` (${item.enabled_rings.join(', ')})`: ` (${t('ps469.noRing')})`}`).join(', ');
+  async function unlink(){
+    if(!confirm||busy||confirm.deviceId!==device.device_id)return;
+    setBusy(true);setError('');setNotice('');
+    try {
+      await unlinkDevice(confirm.deviceId,confirm.rev);
+      if(!alive.current){await onChanged();return;}
+      setConfirm(null);
+      setNotice(t('ps469.unlinked'));
+      onCanonicalNavigate(`${device.canonical_path}${venue?`?fromVenue=${encodeURIComponent(venue.id)}`:''}`);
+      await onChanged();
+    } catch(err) {
+      setConfirm(null);
+      setError(psLinkErrorText(err,t,t(errorCode(err)))+' '+t('ps469.reloadNext'));
+      await onChanged().catch(()=>undefined);
+    } finally {setBusy(false);}
+  }
+  async function assign(){
+    if(!assignVenue||!device.capabilities.assign.allowed||busy||device.venue)return;
+    setBusy(true);setError('');setNotice('');
+    try {await assignDevice(device.device_id,assignVenue.id);setNotice(t('ps469.assigned').replace('{venue}',assignVenue.name));await onChanged();}
+    catch(err){setError(psLinkErrorText(err,t,t(errorCode(err)))+' '+t('ps469.reloadNext'));await onChanged().catch(()=>undefined);}
+    finally {setBusy(false);}
+  }
+  return <div className="page-stack staff-page ps469-sheet" data-testid="ps-device-sheet" data-device-id={device.device_id}>
+    <nav className="ps469-breadcrumb" aria-label={t('ps469.breadcrumb')}><Link to={back.href} data-testid="ps-sheet-back"><ArrowLeft size={16}/>{back.label}</Link><span aria-hidden="true">/</span><span aria-current="page">{device.display_name}</span></nav>
+    <header className="page-heading detail-heading ps469-header"><div><p className="eyebrow">{t('printServer')}</p><h1 data-testid="ps-device-title">{device.display_name}</h1><p className="ps469-subtitle"><span className="ps-mono">{device.serial}</span><span aria-hidden="true">·</span>{venue?venue.name:t('inv.unassigned')}</p></div>
+      <div className="ps469-statuses"><span className={`server-status ${runtime?(runtime.online?'server-online':'server-offline'):'server-pending'}`} data-testid="ps-connection-state"><span className="badge-dot"/>{runtime?t(runtime.online?'ps.state.online':'ps.state.offline'):t('ps469.noRuntime')}</span><PsLinkStateBadge state={device.link.state}/></div>
+    </header>
+    {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
+    {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
+    {notice&&<p className="staff-notice" role="status">{notice}</p>}
+    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
+    <section id="ps469-overview" className="ps469-overview" aria-label={t('ps469.summary')}>
+      <div className="ps469-sync" data-testid="ps-link-sync"><strong>{sync?.confirmed?t(sync.scope==='unlinked'?'ps469.unlinkConfirmed':'ps469.syncConfirmed'):venue?t('ps469.syncPending'):t('ps469.stock')}</strong>
+        {venue&&!sync?.confirmed&&<p>{ack.supported===false?t('ps469.compatNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',ack.required_version):t('ps469.waitAck')}{available&&` ${t('ps469.available')}: ${available}.`}</p>}
+        {venue&&sync?.confirmed&&<p>{t('ps469.ackAt').replace('{rev}',String(sync.rev))}</p>}
+        {!venue&&<p>{device.link.prepared?t('ps469.preparedStock'):t('ps469.unpreparedStock')}</p>}
+        {!venue&&runtime&&sync&&!sync.confirmed&&<p>{unlinkAck.supported===false?t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version):t('ps469.waitAck')}</p>}
+      </div>
+      <section className="detail-panel ps469-compat" id={staff&&runtime&&venue?'ps469-compat':'ps469-firmware'} aria-labelledby="ps469-compat-title"><h2 id="ps469-compat-title">{t('ps469.compatibility')}</h2><dl className="dev-facts">{(!staff||!runtime||!venue)&&<div><dt>{t('ps469.installed')}</dt><dd className="ps-mono">{device.compat.installed_version??t('dash.unknownVersion')}</dd></div>}<div><dt>{t('ps469.requiredLinkAck')}</dt><dd className="ps-mono">{ack.required_version}</dd></div><div><dt>{t('ps469.requiredWeb')}</dt><dd className="ps-mono">{device.compat.capabilities.web_activation.required_version}</dd></div></dl><p className="ps-cert-small">{available?`${t('ps469.available')}: ${available}.`:t('ps469.noAvailable')}</p></section>
+      <PsDeviceLinkPanel key={device.device_id} link={device.link} isStaff={staff} canEdit={device.capabilities.set_label.allowed} compact preparationEntry={device.preparation_entry} installedVersion={device.compat.installed_version} onChanged={onChanged}/>
+      {!venue&&staff&&<section className="detail-panel ps469-assign"><h2>{t('ps469.assignTitle')}</h2><p>{t('ps469.assignLead')}</p><div className="ps469-assign-controls"><VenueCombobox value={assignVenue} onChange={setAssignVenue} disabled={busy||!device.capabilities.assign.allowed} testId="ps469-assign-venue"/><button type="button" className="button button-primary" data-testid="ps469-assign" disabled={!assignVenue||busy||!device.capabilities.assign.allowed} onClick={()=>void assign()}>{t('inv.assign')}</button></div></section>}
+      {venue&&staff&&<div className="detail-panel ps469-unlink"><h2>{t('ps469.unlinkTitle')}</h2><p>{t('ps469.unlinkLead')}</p><button type="button" className="button button-secondary ps-danger" data-testid="ps-unlink" disabled={!unlinkAllowed||busy} onClick={()=>setConfirm({deviceId:device.device_id,rev:device.capabilities.unlink.expected_rev!,venueName:venue.name})}><Unlink size={16}/>{t('ps469.unlink')}</button>
+        {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):t('ps469.unlinkForbidden')}</p>}
+        {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
+    </section>
+    {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id}/>:null}
+    {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage}/></div>}
+    {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}
+  </div>;
+}
+function InventoryDeviceSheetData({deviceId}:{deviceId:string}) {
   const {session}=useAuth(); const {t}=useLocale();
   const sheet=useQuery({queryKey:['ps-admin-device-sheet',session?.user.id,deviceId],
     queryFn:({signal})=>getAdminDeviceSheet(deviceId,signal),retry:false,gcTime:0,staleTime:0});
@@ -501,26 +557,19 @@ function InventoryDeviceSheetData({deviceId,back}:{deviceId:string;back:{href:st
   // Never retain an old credential view after a denied refresh.
   if(sheet.isError)return <StateView kind={psErrorKey(sheet.error)==='accessDenied'?'denied':'error'} onRetry={()=>void sheet.refetch()}/>;
   if(!sheet.data||sheet.isFetching)return <StateView kind="loading"/>;
-  return <div className="page-stack staff-page" data-testid="ps-inventory-sheet">
-    <Link className="back-link" to={back.href}>{back.label}</Link>
-    <div className="page-heading detail-heading"><div><p className="eyebrow">{t('psm.sheetEyebrow')}</p><h1>{t('printServer')}</h1><p>{t('psm.inventoryLead')}</p></div></div>
-    <InventoryDeviceSheet key={deviceId} sheet={sheet.data}/>
-  </div>;
+  return <div data-testid="ps-inventory-sheet"><InventoryDeviceSheet key={deviceId} sheet={sheet.data} compact/></div>;
 }
-function PrintServerSheetData({printServerId,venueId,venueName,scope,back,canManage}:{printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean}) {
-  const {session}=useAuth();
+function PrintServerSheetData({deviceId,printServerId,venueId,venueName,scope,back,canManage}:{deviceId:string;printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean}) {
+  const {session}=useAuth(); const {t}=useLocale();
   const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId,printServerId],
     queryFn:({signal})=>getPanelState(venueId,signal,scope,printServerId),refetchInterval:10_000});
-  const devices=useVenueDevices(venueId,scope,canManage);
   const api=useBoundApi(printServerId);
   usePsFailure(state.error);
-  if(state.error instanceof SelectionRequiredError)return <VenueDevicesData venue={{id:venueId,name:venueName}} scope={scope} choose/>;
+  if(state.error instanceof SelectionRequiredError)return <div className="staff-notice" role="alert"><span>{t('ps.error.selectionRequired')}</span><Link to={back.href}>{back.label}</Link></div>;
   if(state.error&&psErrorKey(state.error)==='accessDenied')return <StateView kind="denied"/>;
   if(state.error&&psErrorKey(state.error)==='sessionExpired')return <StateView kind="loading"/>;
-  const targets=(devices.data?.devices??[]).filter(d=>d.print_server_id&&d.print_server_id!==printServerId&&(!d.status||d.status==='active'))
-    .map(d=>({print_server_id:d.print_server_id!,name:`${deviceName(d)}${d.serial?` (${d.serial})`:''}`,label:d.label}));
   const refresh=()=>invalidatePsViews(queryClient);
-  if(state.data)return <PrintServerDetailPage scope={scope} embedded={false} printServerId={printServerId} backHref={back.href} backLabel={back.label} replaceTargets={targets}
+  if(state.data)return <PrintServerDetailPage scope={scope} embedded deviceId={deviceId} printServerId={printServerId} replaceTargets={[]}
     venue={{venue_id:venueId,venue_name:venueName,venue_slug:null,venue_is_active:null}}
     state={state.data} api={api} stale={state.isError} refresh={refresh}/>;
   if(state.isError)return <StateView kind="error" onRetry={()=>void state.refetch()}/>;

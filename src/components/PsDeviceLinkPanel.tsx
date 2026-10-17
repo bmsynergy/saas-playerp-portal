@@ -9,11 +9,11 @@ import { useLocale } from '../locales';
 import { PsLinkFacts } from './PsLinkStateBadge';
 import { PsDevicePreparation } from './PsDevicePreparation';
 
-type Props = { link: PsDeviceLink; isStaff: boolean; canEdit: boolean; onChanged: () => Promise<unknown> };
+type Props = { link: PsDeviceLink; isStaff: boolean; canEdit: boolean; onChanged: () => Promise<unknown>; compact?: boolean; preparationEntry?: { web: {url:string;required_version:string}; ssh:{command:string;required_version:string} }; installedVersion?: string | null };
 
 // PE-462: link/identity block of the device sheet (admin and owner). The friendly name is the
 // only editable field; serial and hostname are read-only.
-export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged }: Props) {
+export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact = false, preparationEntry, installedVersion }: Props) {
   const { t } = useLocale();
   const { session } = useAuth();
   const [name, setName] = useState(link.label ?? '');
@@ -37,17 +37,18 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged }: Props) 
     catch (error) { setResult({ ok: false, text: psLinkErrorText(error, t, t(errorCode(error))) }); }
     finally { setBusy(false); }
   }
-  return <section className="detail-panel ps-link-panel" aria-labelledby={`ps-link-${link.device_id}`} data-testid="ps-link-panel">
-    <div className="section-heading"><div><p className="eyebrow">{t('psm.sheetEyebrow')}</p><h2 id={`ps-link-${link.device_id}`}>{t('psLink.panelTitle')}</h2></div><span className="section-icon"><Link2 size={20}/></span></div>
-    <PsLinkFacts link={link}/>
-    {link.state === 'asignado_pendiente_sync' && <p className="ps-cert-small">{t('psLink.savedExplain')}</p>}
+  return <section className={`detail-panel ps-link-panel${showPrep?' ps-link-panel-preparing':''}`} aria-labelledby={`ps-link-${link.device_id}`} data-testid="ps-link-panel">
+    <div className="section-heading"><div><p className="eyebrow">{t('psm.sheetEyebrow')}</p><h2 id={`ps-link-${link.device_id}`}>{compact ? t('ps469.summary') : t('psLink.panelTitle')}</h2></div><span className="section-icon"><Link2 size={20}/></span></div>
+    {!compact && <PsLinkFacts link={link}/>}
+    {compact && <p className="ps-cert-small">{t('ps469.nameHelp')}</p>}
+    {link.state === 'asignado_pendiente_sync' && !compact && <p className="ps-cert-small">{t('psLink.savedExplain')}</p>}
     {editable && <div className="ps-link-name">
       <label className="field"><span>{t('psLink.nameLabel')}</span><input data-testid="ps-link-name" autoComplete="off" maxLength={200} value={name} disabled={busy} onChange={event => { setName(event.target.value); setResult(null); }}/></label>
       <button type="button" className="button button-primary" data-testid="ps-link-name-save" disabled={busy || !check.ok || unchanged} onClick={() => void save()}>{t('psLink.nameSave')}</button>
       <p className="ps-cert-small">{check.ok ? t('psLink.nameHint') : <span role="alert">{t(`psLink.nameInvalid.${check.reason}`)}</span>}</p>
     </div>}
     {result && <p className={`ps-result ${result.ok ? 'ps-result-ok' : 'ps-result-error'}`} role="status" data-testid="ps-link-name-result">{result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>}<span>{result.text}</span></p>}
-    {showPrep && <PsDevicePreparation link={link} canPrepare={isStaff && !!manage.data?.actions.prepare.allowed}
+    {showPrep && <PsDevicePreparation link={link} preparationEntry={preparationEntry} installedVersion={installedVersion} canPrepare={isStaff && !!manage.data?.actions.prepare.allowed}
       blockedReason={!isStaff ? t('psLink.prep.staffOnly') : manage.isPending ? t('dev.loading') : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/>}
   </section>;
 }

@@ -138,11 +138,13 @@ async function action(name: string, params: Raw): Promise<Raw> {
   return data;
 }
 // PE-443: printServerId selects ONE Print Server of the venue; reads never fall back to "the first".
-export async function getDeviceSheet(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<DeviceSheet> {
+export async function getDeviceSheet(venueId: string, signal?: AbortSignal, printServerId?: string | null, expectedDeviceId?: string): Promise<DeviceSheet> {
   const data = await rpc('ps_panel_device', { p_venue_id: venueId, ...withPs(printServerId) }, signal);
   const selection = selectionRequired(data);
   if (selection) throw selection;
-  return projectDeviceSheet(data);
+  const sheet=projectDeviceSheet(data);
+  if(expectedDeviceId&&sheet.device?.id!==expectedDeviceId)throw new PortalError('accessDenied');
+  return sheet;
 }
 export async function rotateWifi(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId, ...withPs(printServerId) }); }
 export async function rotateAdminCode(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId, ...withPs(printServerId) }); }

@@ -1,0 +1,21 @@
+{
+  "simulated": "Downloaded 0.3.23 package; radio/system/cloud mocked, HTTP proxied to 127.0.0.1:18798; no physical hotspot.",
+  "checks": [
+    {
+      "width": 390,
+      "field": true,
+      "authenticatedPost": true,
+      "waitingNetwork": true,
+      "cancel": true,
+      "storageNoSecret": true
+    },
+    {
+      "width": 1440,
+      "field": true,
+      "authenticatedPost": true,
+      "waitingNetwork": true,
+      "cancel": true,
+      "storageNoSecret": true
+    }
+  ]
+}

@@ -1,7 +1,29 @@
 import type { PlatformRole, PortalAccess } from './types';
 export type Scope = 'owner' | 'admin';
 export function safeNext(value: string | null): string | null {
-  return value && (/^\/oauth\/consent\?request_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) || /^\/(?:\?venue=[a-f0-9-]+(?:&section=(?:details|users|print-servers|integrations))?)?$/.test(value) || /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/list|\/tenants\/[a-f0-9-]+\/(?:users|mcp|print-servers(?:\/detail)?))?$/.test(value)) ? value : null;
+  if (!value || /[\\#\s]/.test(value) || !value.startsWith('/') || value.startsWith('//') || /%2f|%5c|%2e/i.test(value)) return null;
+  const [path, query = ''] = value.split('?');
+  if (value.split('?').length > 2 || path.includes('/../') || path.includes('/./')) return null;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  const params = new URLSearchParams(query);
+  if (new Set([...params.keys()]).size !== [...params.keys()].length) return null;
+  const only = (keys:string[]) => [...params.keys()].every(k => keys.includes(k));
+  const id = (key:string) => !params.has(key) || uuid.test(params.get(key)!);
+  if(path === '/oauth/consent') return only(['request_id']) && uuid.test(params.get('request_id') ?? '') ? value : null;
+  if(path === '/') {
+    if(!only(['venue','section','device','selected']) || !id('venue') || !id('device') || !id('selected'))return null;
+    if(params.has('section') && !params.has('venue'))return null;
+    if(params.has('section') && !['details','users','print-servers','integrations'].includes(params.get('section')!))return null;
+    if((params.has('device')||params.has('selected')) && (params.get('section')!=='print-servers'||!params.has('venue')))return null;
+    return value;
+  }
+  if(/^\/admin\/print-servers\/devices\/[0-9a-f-]+$/.test(path)) {
+    return uuid.test(path.split('/').at(-1)!) && only(['fromVenue']) && id('fromVenue') ? value : null;
+  }
+  if(path==='/admin/print-servers/inventory')return only(['fromVenue','selected','create'])&&id('fromVenue')&&id('selected')&&(!params.has('create')||params.get('create')==='1')?value:null;
+  if(/^\/admin\/tenants\/[0-9a-f-]+\/print-servers$/.test(path))return uuid.test(path.split('/')[3])&&only(['selected'])&&id('selected')?value:null;
+  if(query)return null;
+  return /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/(?:list|firmwares|updates)|\/tenants\/[a-f0-9-]+\/(?:users|mcp|print-servers(?:\/detail)?))?$/.test(path)?value:null;
 }
 // A requested URL never grants a scope. Staff starts in administration even if
 // login was reached through /. Only the account menu selects the owner scope.

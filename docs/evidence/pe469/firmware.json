@@ -1,0 +1,47 @@
+{
+  "readOnly": true,
+  "version": "0.3.23",
+  "sha256": "e0784589dd6c01bb089f91a4d8f220fb97c7aa6cd003069ad631551e6248b95c",
+  "bytes": 262018,
+  "release_id": "09f13d8b-f1d2-4ee1-9150-e48f3d9b2060",
+  "lifecycle": {
+    "rings": {
+      "lab": {
+        "reason": null,
+        "enabled": false,
+        "eligible": true,
+        "available": false
+      },
+      "canary": {
+        "reason": null,
+        "enabled": false,
+        "eligible": true,
+        "available": false
+      },
+      "general": {
+        "reason": "canary_not_confirmed",
+        "enabled": false,
+        "eligible": false,
+        "available": false
+      }
+    },
+    "key_id": "f93c273f49f8631c",
+    "can_sign": false,
+    "lab_only": false,
+    "revision": 0,
+    "signed_at": "2026-10-17T00:07:56.286541+00:00",
+    "signed_by": "6ed1139d-b810-4e77-ace9-555fbd7243d5",
+    "can_manage": true,
+    "can_retire": true,
+    "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+    "retired_at": null,
+    "retired_by": null,
+    "open_targets": 0,
+    "configuration": "explicit",
+    "edition_status": "signed",
+    "contract_version": 1,
+    "sign_block_reason": "already_signed",
+    "canary_confirmed_at": null,
+    "retire_block_reason": null
+  }
+}

@@ -13,6 +13,7 @@ export type PsDeviceLink = {
   state: PsLinkState; lifecycle: 'stock' | 'assigned' | 'retired'; legacy: boolean;
   prepared: boolean; print_server_id: string | null;
   rev: number | null; ack_rev: number | null; ack_at: string | null; changed_at: string | null;
+  sync?: {scope:'venue'|'unlinked';rev:number|null;ack_rev:number|null;ack_at:string|null;confirmed:boolean;requires_capability:'link_ack'|'unlink_ack'} | null;
   preparation: { state: PsPreparationState; code_expires_at: string | null; prepared_at: string | null };
   reported: { firmware_version: string | null; hostname: string | null; last_seen_at: string | null };
   onboarding: { missing: PsOnboardingMissing[]; next_step: PsOnboardingStep | null };
@@ -38,11 +39,15 @@ export function projectPsLink(value: unknown): PsDeviceLink | null {
   const p = obj(l.preparation) ?? {}, r = obj(l.reported) ?? {}, o = obj(l.onboarding) ?? {};
   const lifecycle = one(l.lifecycle, ['stock', 'assigned', 'retired'] as const) ?? (state === 'retirado' ? 'retired' : l.venue_id ? 'assigned' : 'stock');
   const serial = str(l.serial) ?? '', label = str(l.label);
+  const sync=obj(l.sync);
+  const confirmed=!!sync && sync.confirmed===true && num(sync.rev)!==null && (sync.scope==='unlinked'||num(sync.rev)===num(l.rev)) && num(sync.ack_rev)===num(sync.rev) && !!str(sync.ack_at) && ((sync.scope==='venue'&&!!str(l.venue_id))||(sync.scope==='unlinked'&&!str(l.venue_id)));
+  const effectiveState=state==='sincronizado'&&sync&&!confirmed?'asignado_pendiente_sync':state;
   return {
     device_id: l.device_id as string, serial, label, display_name: str(l.display_name) ?? label ?? serial, model: str(l.model) ?? '', model_label: str(l.model_label),
     venue_id: str(l.venue_id), venue_name: str(l.venue_name),
-    state, lifecycle, legacy: l.legacy === true, prepared: l.prepared === true, print_server_id: str(l.print_server_id),
+    state:effectiveState, lifecycle, legacy: l.legacy === true, prepared: l.prepared === true, print_server_id: str(l.print_server_id),
     rev: num(l.rev), ack_rev: num(l.ack_rev), ack_at: str(l.ack_at), changed_at: str(l.changed_at),
+    sync: sync ? {scope:sync.scope==='unlinked'?'unlinked':'venue',rev:num(sync.rev),ack_rev:num(sync.ack_rev),ack_at:str(sync.ack_at),confirmed,requires_capability:sync.requires_capability==='unlink_ack'?'unlink_ack':'link_ack'} : null,
     preparation: { state: one(p.state, PREPARATION) ?? (l.prepared === true ? 'prepared' : 'not_started'), code_expires_at: str(p.code_expires_at), prepared_at: str(p.prepared_at) },
     reported: { firmware_version: str(r.firmware_version), hostname: str(r.hostname), last_seen_at: str(r.last_seen_at) },
     onboarding: { missing: Array.isArray(o.missing) ? o.missing.filter((m): m is PsOnboardingMissing => (MISSING as readonly unknown[]).includes(m)) : [], next_step: one(o.next_step, STEPS) },
@@ -68,7 +73,7 @@ export function validatePsLabel(input: string): LabelCheck {
 }
 
 // ok:false answers of the link RPCs carry a clear Spanish message and a next step.
-export type PsLinkNextStep = 'move' | 'prepare' | 'unassign';
+export type PsLinkNextStep = string;
 export class PsLinkError extends Error {
   constructor(public code: string, public serverMessage: string | null, public nextStep: PsLinkNextStep | null) { super(code); }
 }
@@ -77,7 +82,7 @@ function checked(value: unknown): Raw {
   if (data.ok === false) {
     const code = typeof data.error === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(data.error) ? data.error : 'other';
     const message = typeof data.message === 'string' && data.message.trim() && data.message.length <= 500 ? data.message.trim() : null;
-    throw new PsLinkError(code, message, one(data.next_step, ['move', 'prepare', 'unassign'] as const));
+    throw new PsLinkError(code, message, str(data.next_step));
   }
   return data.ok === true ? data : bad();
 }
@@ -109,10 +114,14 @@ export function projectPrepareResult(value: unknown): PsPrepareResult {
     already_prepared: data.already_prepared === true, code_already_issued: data.code_already_issued === true, link: projectPsLink(data.link) };
 }
 export async function prepareDevice(deviceId: string, regenerate = false): Promise<PsPrepareResult> {
-  return projectPrepareResult(await rpc('ps_admin_device_prepare', { p_device_id: deviceId, p_regenerate: regenerate }));
+  const result=projectPrepareResult(await rpc('ps_admin_device_prepare', { p_device_id: deviceId, p_regenerate: regenerate }));
+  if(result.device_id!==deviceId||(result.link&&result.link.device_id!==deviceId))throw new PortalError('accessDenied');
+  return result;
 }
 export async function setDeviceLabel(deviceId: string, label: string | null): Promise<{ changed: boolean; label: string | null; link: PsDeviceLink | null }> {
   const data = await rpc('ps_device_set_label', { p_device_id: deviceId, p_label: label });
+  if(data.device_id!=null&&data.device_id!==deviceId)throw new PortalError('accessDenied');
+  if(data.link&&projectPsLink(data.link)?.device_id!==deviceId)throw new PortalError('accessDenied');
   return { changed: data.changed !== false, label: str(data.label), link: projectPsLink(data.link) };
 }
 export async function getDeviceLinkStatus(deviceId: string, signal?: AbortSignal): Promise<PsDeviceLink | null> {
@@ -125,5 +134,6 @@ export function psLinkErrorText(error: unknown, t: (key: string) => string, fall
   if (!(error instanceof PsLinkError)) return fallback;
   const key = `psLink.error.${error.code}`;
   const text = error.serverMessage ?? (t(key) !== key ? t(key) : t('psLink.error.other'));
-  return error.nextStep ? `${text} ${t(`psLink.next.${error.nextStep}`)}` : text;
+  const nextKey=error.nextStep?`psLink.next.${error.nextStep}`:'';
+  return nextKey&&t(nextKey)!==nextKey ? `${text} ${t(nextKey)}` : text;
 }

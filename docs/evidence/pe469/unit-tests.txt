@@ -1,0 +1,20 @@
+
+> saas-playerp-portal@0.1.0 test
+> vitest run --run tests/access.test.ts tests/psResolvedDevice.test.ts tests/psLink.test.ts tests/psInvalidation.test.ts tests/pe443MultiPs.test.ts tests/psAdminDeviceSheet.test.ts tests/psCredentialOperation.test.ts
+
+
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/b0707d58-75b7-4a0e-bdd4-a599fe5a7f6c/portal
+
+ ✓ tests/access.test.ts (17 tests) 23ms
+ ✓ tests/psLink.test.ts (13 tests) 17ms
+ ✓ tests/pe443MultiPs.test.ts (6 tests) 21ms
+ ✓ tests/psCredentialOperation.test.ts (14 tests) 8ms
+ ✓ tests/psResolvedDevice.test.ts (8 tests) 17ms
+ ✓ tests/psAdminDeviceSheet.test.ts (4 tests) 23ms
+ ✓ tests/psInvalidation.test.ts (1 test) 15ms
+
+ Test Files  7 passed (7)
+      Tests  63 passed (63)
+   Start at  00:27:24
+   Duration  5.80s (transform 1.23s, setup 0ms, collect 1.83s, tests 124ms, environment 3ms, prepare 1.47s)
+

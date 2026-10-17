@@ -52,7 +52,7 @@ describe('PE-443 multi Print Server per venue', () => {
       unassigned_printers: [{ id: 'pr-9', label: 'Terraza', mac_address: 'AA:BB:CC:DD:EE:01' }] });
     const list = await getVenueDevices(venue);
     expect(rpc).toHaveBeenLastCalledWith('ps_panel_devices', { p_venue_id: venue });
-    expect(list.devices.map(d => d.id)).toEqual([ps, 'inv-2']);
+    expect(list.devices.map(d => d.id)).toEqual(['inv-1', 'inv-2']); // PE-469 canonical inventory identity
     expect(JSON.stringify(list)).not.toContain('credential_hash');
     expect(list.unassigned_printers[0].label).toBe('Terraza');
     answer({ ok: true, venue_id: 'other', devices: [] });
