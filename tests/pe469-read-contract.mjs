@@ -1,0 +1,23 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const cfg=await readFile(new URL('../src/lib/config.ts',import.meta.url),'utf8');
+const key=cfg.match(/SUPABASE_PUBLIC_KEY\s*=\s*["']([^"']+)["']/)[1];
+const api='https://fzwzmwstxlsxdzdmphyq.supabase.co';assert(cfg.includes(api));
+const accounts=JSON.parse(await readFile('/home/coredev/.coredeva-private/pe321-portal-dev/cuentas.json','utf8'));
+const login=await fetch(`${api}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:accounts.staff_activo.email,password:accounts.staff_activo.password})});assert.equal(login.status,200);
+const session=await login.json();
+async function rpc(name,args={}){assert(['ps_panel_devices','ps_device_resolve','ps_firmware_list'].includes(name));const r=await fetch(`${api}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify(args)});assert.equal(r.status,200,name);return r.json();}
+const list=await rpc('ps_panel_devices',{p_venue_id:'f4430000-0000-4000-8000-0000000000f1'});
+const resolved=[];for(const d of list.devices??[])resolved.push(await rpc('ps_device_resolve',{p_id:d.id}));
+const fw=await rpc('ps_firmware_list');
+const out=new URL('../docs/evidence/pe469/',import.meta.url);await mkdir(out,{recursive:true});
+await writeFile(new URL('live-contract.json',out),JSON.stringify({readOnly:true,fixtureVenue:list.venue_id,resolved,firmware:JSON.stringify(fw).includes('0.3.23')},null,2));
+console.log(JSON.stringify({fixtureCount:resolved.length,ok:resolved.map(r=>r.ok),firmware023:JSON.stringify(fw).includes('0.3.23')}));
+const release=fw.releases.find(r=>r.version==='0.3.23');assert(release);
+const download=await fetch(`${api}/functions/v1/ps-firmware-admin`,{method:'POST',headers:{apikey:key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({action:'download',id:release.id})});assert.equal(download.status,200);
+const {url}=await download.json();const bytes=Buffer.from(await(await fetch(url)).arrayBuffer());
+const {createHash}=await import('node:crypto');const hash=createHash('sha256').update(bytes).digest('hex');assert.equal(hash,'e0784589dd6c01bb089f91a4d8f220fb97c7aa6cd003069ad631551e6248b95c');
+await mkdir(new URL('../../tmp/firmware/',import.meta.url),{recursive:true});await writeFile(new URL('../../tmp/firmware/playerp-ps-0.3.23.zip',import.meta.url),bytes);
+if(release.lifecycle)delete release.lifecycle.signed_by_email;
+await writeFile(new URL('firmware.json',out),JSON.stringify({readOnly:true,version:release.version,sha256:hash,bytes:bytes.length,release_id:release.id,lifecycle:release.lifecycle},null,2));
+console.log(JSON.stringify({packageSha:hash,bytes:bytes.length}));

@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { SUPABASE_URL } from './config';
 import { PortalError } from './errors';
 import { PsError, psErrorFromCode, selectionRequired, withPs } from './printServerApi';
+import { linkAssign, projectPsLink, type PsAssignResult, type PsDeviceLink } from './psLink';
 
 // Device sheet of a venue's Print Server (PE-384). Rebuilt field by field: technical tokens,
 // credential hashes and certificate bodies are never copied into state even if a backend
@@ -53,7 +54,9 @@ export function projectEnroll(v: unknown): EnrollCredentials | null {
 }
 export type InventoryDevice = { id: string; serial: string; hostname: string; model: string; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null;
   arch?: string | null; label?: string | null; model_label?: string | null;
-  print_server_id: string | null; software_version: string | null; last_seen_at: string | null; online: boolean; created_at: string | null };
+  print_server_id: string | null; software_version: string | null; last_seen_at: string | null; online: boolean; created_at: string | null;
+  // PE-462: absent with an older backend (callers fall back to status).
+  link?: PsDeviceLink };
 
 type Raw = Record<string, unknown>;
 const str = (v: unknown) => typeof v === 'string' && v !== '' ? v : null;
@@ -135,11 +138,13 @@ async function action(name: string, params: Raw): Promise<Raw> {
   return data;
 }
 // PE-443: printServerId selects ONE Print Server of the venue; reads never fall back to "the first".
-export async function getDeviceSheet(venueId: string, signal?: AbortSignal, printServerId?: string | null): Promise<DeviceSheet> {
+export async function getDeviceSheet(venueId: string, signal?: AbortSignal, printServerId?: string | null, expectedDeviceId?: string): Promise<DeviceSheet> {
   const data = await rpc('ps_panel_device', { p_venue_id: venueId, ...withPs(printServerId) }, signal);
   const selection = selectionRequired(data);
   if (selection) throw selection;
-  return projectDeviceSheet(data);
+  const sheet=projectDeviceSheet(data);
+  if(expectedDeviceId&&sheet.device?.id!==expectedDeviceId)throw new PortalError('accessDenied');
+  return sheet;
 }
 export async function rotateWifi(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_wifi', { p_venue_id: venueId, ...withPs(printServerId) }); }
 export async function rotateAdminCode(venueId: string, printServerId?: string | null) { return action('ps_panel_rotate_admin_code', { p_venue_id: venueId, ...withPs(printServerId) }); }
@@ -277,13 +282,13 @@ export async function getInventoryDevices(signal?: AbortSignal): Promise<Invento
     return { id: String(d.id), serial: String(d.serial ?? ''), hostname: String(d.hostname ?? ''), model: String(d.model ?? ''), status: String(d.status ?? ''), legacy: d.legacy === true,
       arch: str(d.arch), label: str(d.label), model_label: str(d.model_label),
       venue_id: str(d.venue_id), venue_name: str(d.venue_name), print_server_id: str(d.print_server_id), software_version: str(d.software_version),
-      last_seen_at: str(d.last_seen_at), online: d.online === true, created_at: str(d.created_at) };
+      last_seen_at: str(d.last_seen_at), online: d.online === true, created_at: str(d.created_at), link: projectPsLink(d.link) ?? undefined };
   });
 }
 export async function createDevice(model: string) { return action('ps_admin_device_create', { p_model: model, p_notes: null }); }
-export async function assignDevice(deviceId: string, venueId: string): Promise<{ code: string; expires_at: string | null; replaces: boolean }> {
-  const data = await action('ps_admin_device_assign', { p_device_id: deviceId, p_venue_id: venueId });
-  return typeof data.enrollment_code === 'string' ? { code: data.enrollment_code, expires_at: str(data.expires_at), replaces: !!data.replaces_device_id } : bad();
+// PE-462: assigning only saves the venue link; it never issues nor shows a code (see prepareDevice).
+export async function assignDevice(deviceId: string, venueId: string): Promise<PsAssignResult> {
+  return linkAssign('ps_admin_device_assign', deviceId, venueId);
 }
 export async function revokeDevice(deviceId: string, retire: boolean) { return action('ps_admin_device_revoke', { p_device_id: deviceId, p_reason: retire ? 'retired' : 'portal_admin' }); }
 

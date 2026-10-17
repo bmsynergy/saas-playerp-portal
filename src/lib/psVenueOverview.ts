@@ -1,11 +1,15 @@
 import { supabase } from './supabase';
 import { PortalError } from './errors';
+import { projectPsLink, type PsDeviceLink } from './psLink';
 
 export type PsVenueState = 'online' | 'offline' | 'unknown' | 'pending';
+// PE-462: a device assigned but not yet prepared/synced is listed with state 'pending'
+// and possibly without print_server_id; `id` is the stable row/sheet id in every case.
 export type PsVenueServer = {
-  print_server_id: string; inventory_device_id: string | null; serial: string | null;
+  id: string; print_server_id: string | null; inventory_device_id: string | null; serial: string | null;
   hostname: string | null; label: string | null; firmware_version: string | null;
   state: PsVenueState; attention: boolean; error_count: number; warning_count: number; last_seen_at: string | null;
+  link?: PsDeviceLink;
 };
 export type PsVenueGroup = {
   venue_id: string; venue_name: string; venue_slug: string | null; venue_is_active: boolean;
@@ -16,6 +20,7 @@ export type PsUnassignedDevice = {
   inventory_device_id: string; serial: string | null; hostname: string | null; label: string | null;
   model: string | null; status: 'stock' | 'retired'; last_venue_name: string | null;
   pending_venue_name: string | null; created_at: string | null;
+  link?: PsDeviceLink;
 };
 export type PsVenueOverview = {
   contract_version: 1; generated_at: string | null; online_window_seconds: number;
@@ -47,9 +52,12 @@ export function projectPsVenueOverview(value: unknown): PsVenueOverview {
         print_servers: list(venue.print_servers).map(value => {
           const device = obj(value);
           if (!['online', 'offline', 'unknown', 'pending'].includes(required(device.state))) return bad();
-          return { print_server_id: required(device.print_server_id), inventory_device_id: str(device.inventory_device_id), serial: str(device.serial),
+          const link = projectPsLink(device.link) ?? undefined;
+          const psId = device.state === 'pending' ? str(device.print_server_id) : required(device.print_server_id);
+          const inventoryId = str(device.inventory_device_id);
+          return { id: psId ?? inventoryId ?? link?.device_id ?? bad(), print_server_id: psId, inventory_device_id: inventoryId, serial: str(device.serial),
             hostname: str(device.hostname), label: str(device.label), firmware_version: str(device.firmware_version), state: device.state as PsVenueState,
-            attention: device.attention === true, error_count: count(device.error_count), warning_count: count(device.warning_count), last_seen_at: str(device.last_seen_at) };
+            attention: device.attention === true, error_count: count(device.error_count), warning_count: count(device.warning_count), last_seen_at: str(device.last_seen_at), link };
         }),
       };
     }),
@@ -57,7 +65,7 @@ export function projectPsVenueOverview(value: unknown): PsVenueOverview {
       const device = obj(value);
       if (device.status !== 'stock' && device.status !== 'retired') return bad();
       return { inventory_device_id: required(device.inventory_device_id), serial: str(device.serial), hostname: str(device.hostname), label: str(device.label),
-        model: str(device.model), status: device.status, last_venue_name: str(device.last_venue_name), pending_venue_name: str(device.pending_venue_name), created_at: str(device.created_at) };
+        model: str(device.model), status: device.status, last_venue_name: str(device.last_venue_name), pending_venue_name: str(device.pending_venue_name), created_at: str(device.created_at), link: projectPsLink(device.link) ?? undefined };
     }) },
   };
 }

@@ -22,7 +22,8 @@ describe('PE-447 venue overview', () => {
   it('keeps multiple devices, pending enrollments and retired/stock counts without leaking unknown fields', () => {
     const source = overviewFixture();
     const result = projectPsVenueOverview({ ...source, secret: 'hidden', venues: source.venues.map(venue => ({ ...venue, print_servers: venue.print_servers.map(server => ({ ...server, credential_hash: 'hidden' })) })) });
-    expect(result).toEqual(source);
+    // PE-462: every row carries its stable sheet id (the print_server_id when active).
+    expect(result).toEqual({ ...source, venues: source.venues.map(venue => ({ ...venue, print_servers: venue.print_servers.map(server => ({ ...server, id: server.print_server_id })) })) });
     expect(JSON.stringify(result)).not.toContain('hidden');
     expect(result.unassigned.devices[0].pending_venue_name).toBe('Park');
   });

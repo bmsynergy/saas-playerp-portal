@@ -7,9 +7,9 @@ export function useAccess(enabled = true) {
   const {pathname}=useLocation();
   return useQuery({queryKey:['access',session?.user.id,pathname], queryFn:({signal})=>getAccess(signal),enabled:enabled&&!!session&&!recovery&&!invitation,refetchInterval:60_000});
 }
-export function useDirectory() {
+export function useDirectory(enabled=true) {
   const {session} = useAuth();
-  return useQuery({queryKey:['directory',session?.user.id],queryFn:({signal})=>getDirectory(signal),refetchInterval:60_000});
+  return useQuery({queryKey:['directory',session?.user.id],enabled,queryFn:({signal})=>getDirectory(signal),refetchInterval:60_000});
 }
 export function useTenantDetail(id: string) {
   const {session} = useAuth();

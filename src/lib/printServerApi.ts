@@ -56,7 +56,7 @@ const codes: Record<string, string> = {
   forbidden: 'accessDenied', not_authorized: 'accessDenied', access_denied: 'accessDenied',
 };
 // Known backend slugs become localized keys; raw server text is never shown.
-export function psErrorKey(error: unknown): string { return error instanceof PsError ? error.key : errorCode(error); }
+export function psErrorKey(error: unknown): string { const code=(error as {code?:string}|null)?.code; return error instanceof PsError ? error.key : code==='unknown_device'?'ps.error.printServerNotFound':code&&codes[code]?codes[code]:errorCode(error); }
 export function psErrorFromCode(code: unknown): PsError | PortalError {
   const key = typeof code === 'string' ? codes[code] : undefined;
   return key ? new PsError(key) : new PortalError('genericError');

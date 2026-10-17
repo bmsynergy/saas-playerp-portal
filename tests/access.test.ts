@@ -106,3 +106,15 @@ it('preserves owner section deep links through login without granting ownership'
   }
   for(const path of [`/?venue=${owner.id}&section=billing`,`/?section=users`,`/?venue=${owner.id}&next=//evil.invalid`]) expect(safeNext(path)).toBeNull();
 });
+
+it('PE-465 MCP deep link uses can_manage_staff independently of can_view_tenants',()=>{
+  const path=`/admin/tenants/${owner.id}/mcp`;
+  expect(safeNext(path)).toBe(path);
+  expect(destination(access(true,[],true,false),path)).toBe(path);
+  expect(destination(access(true,[],false,true),path)).toBe('/admin');
+  expect(destination(access(true,[],false,false),path)).toBe('/admin');
+  expect(destination(access(false,[owner]),path)).toBe('/');
+  for(const invalid of [path+'/',path+'/extra',path+'?x=1',path+'/../users']) expect(safeNext(invalid)).toBeNull();
+  const ownerPath=`/?venue=${owner.id}&section=integrations`;
+  expect(destination(access(false,[owner]),ownerPath)).toBe(ownerPath);
+});

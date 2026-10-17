@@ -3,15 +3,19 @@ import { AlertTriangle, Trash2 } from 'lucide-react';
 import { assignDevice, revokeDevice, type InventoryDevice } from '../lib/psDevice';
 import { AdminDeviceError, deleteAdminDevice, adminDeviceErrorKey, getAdminDeviceManage, moveAdminDevice, type AdminVenueOption, type AdminDeviceManage } from '../lib/psAdminDevice';
 import { psErrorKey } from '../lib/printServerApi';
+import { psLinkErrorText, type PsAssignResult, type PsDeviceLink } from '../lib/psLink';
+import { PsLinkStateBadge } from './PsLinkStateBadge';
+import { PsDevicePreparation } from './PsDevicePreparation';
 import { useLocale } from '../locales';
 import { PortalDialog } from './PortalDialog';
 import { VenueCombobox } from './VenueCombobox';
 
-type Code = { serial: string; venue: string; code: string; expires_at: string | null; replaces: boolean };
-type Props = { device: InventoryDevice; onClose: () => void; onChanged: () => Promise<unknown>; onCode: (code: Code) => void; onResult: (result: { ok: boolean; text: string }) => void };
-type Mode = 'manage' | 'assign' | 'unassign' | 'retire' | 'delete';
+type Props = { device: InventoryDevice; onClose: () => void; onChanged: () => Promise<unknown>; onResult: (result: { ok: boolean; text: string }) => void };
+type Mode = 'manage' | 'assign' | 'unassign' | 'retire' | 'delete' | 'assigned';
 
-export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResult }: Props) {
+// PE-462: assigning only selects a venue and confirms; no code is shown or requested here.
+// Preparing the unit (the one-time code) is a separate, explicit step.
+export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Props) {
   const { t } = useLocale();
   const [detail, setDetail] = useState<AdminDeviceManage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,12 +24,16 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
   const [mode, setMode] = useState<Mode>('manage');
   const [typedSerial, setTypedSerial] = useState('');
   const [venue, setVenue] = useState<AdminVenueOption | null>(null);
+  const [link, setLink] = useState<PsDeviceLink | null>(device.link ?? null);
+  const [outcome, setOutcome] = useState<(PsAssignResult & { venue: string }) | null>(null);
+  useEffect(() => { setLink(device.link ?? null); setOutcome(null); }, [device.id]);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setDetail(null); setError(''); setMode('manage'); setTypedSerial('');
     void getAdminDeviceManage(device.id, controller.signal).then(value => {
       if (controller.signal.aborted) return;
       setDetail(value);
+      if (value.link) setLink(value.link);
       setVenue(value.device.venue_id ? { id: value.device.venue_id, name: value.device.venue_name ?? value.device.venue_id, slug: '', city: null, state: null, is_active: true, assigned_device: null } : null);
     }).catch(err => { if (!controller.signal.aborted) setError(t(adminDeviceErrorKey(err))); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -51,9 +59,11 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
     setBusy(true); setError('');
     try {
       const output = currentId ? await moveAdminDevice(device.id, venue.id) : await assignDevice(device.id, venue.id);
-      onCode({ serial: device.serial, venue: venue.name, ...output });
-      onClose(); await onChanged();
-    } catch (err) { setError(t(currentId ? adminDeviceErrorKey(err) : psErrorKey(err))); }
+      setOutcome({ ...output, venue: output.link?.venue_name ?? venue.name });
+      if (output.link) setLink(output.link);
+      setMode('assigned');
+      try { await onChanged(); } catch { setError(t('fw.refreshFailed')); }
+    } catch (err) { setError(psLinkErrorText(err, t, t(currentId ? adminDeviceErrorKey(err) : psErrorKey(err)))); }
     finally { setBusy(false); }
   }
   async function revoke(retire: boolean) {
@@ -87,8 +97,8 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
     }
     finally { setBusy(false); }
   }
-  const title = mode === 'delete' ? t('adminDevice.deleteTitle').replace('{serial}', device.serial) : mode === 'retire' ? t('inv.retireTitle').replace('{serial}', device.serial) : mode === 'unassign' ? t('inv.revoke') : mode === 'assign' ? t(currentId ? 'inv.reassign' : 'inv.assign') : t('inv.manage');
-  return <PortalDialog title={title} titleId="admin-device-manage-title" testId="admin-device-manage-dialog" alert={mode === 'unassign' || mode === 'retire' || mode === 'delete'} onClose={onClose} dismissible={!busy} actions={mode === 'manage' ? <>
+  const title = mode === 'assigned' ? t(outcome?.already_assigned ? 'psLink.alreadyTitle' : 'psLink.assignedTitle') : mode === 'delete' ? t('adminDevice.deleteTitle').replace('{serial}', device.serial) : mode === 'retire' ? t('inv.retireTitle').replace('{serial}', device.serial) : mode === 'unassign' ? t('inv.revoke') : mode === 'assign' ? t(currentId ? 'inv.reassign' : 'inv.assign') : t('inv.manage');
+  return <PortalDialog title={title} titleId="admin-device-manage-title" testId="admin-device-manage-dialog" alert={mode === 'unassign' || mode === 'retire' || mode === 'delete'} onClose={onClose} dismissible={!busy} actions={mode === 'assigned' ? <button type="button" className="button button-primary" data-testid="inv-assigned-close" onClick={onClose}>{t('dev.confirm.close')}</button> : mode === 'manage' ? <>
     <button type="button" className="button button-primary" data-testid="inv-manage-assign" disabled={!canAssign} onClick={() => review('assign')}>{t(currentId ? 'inv.reassign' : 'inv.assign')}</button>
     <button type="button" className="button button-secondary" disabled={busy} onClick={onClose}>{t('staff.cancel')}</button>
   </> : <>
@@ -97,9 +107,10 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
   </>}>
     {loading ? <p role="status">{t('dev.loading')}</p> : detail && <>
       {mode === 'manage' ? <>
-        <dl className="inv-manage-summary"><div><dt>{t('dev.serial')}</dt><dd>{detail.device.serial}</dd></div><div><dt>{t('ps.hostname')}</dt><dd>{detail.device.hostname}</dd></div><div><dt>{t('fw.model')}</dt><dd>{device.model_label ?? detail.device.model}</dd></div><div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${detail.device.status}`)}</dd></div><div><dt>{t('inv.venue')}</dt><dd>{currentVenue}</dd></div></dl>
+        <dl className="inv-manage-summary"><div><dt>{t('dev.serial')}</dt><dd>{detail.device.serial}</dd></div><div><dt>{t('ps.hostname')}</dt><dd>{detail.device.hostname}</dd></div><div><dt>{t('fw.model')}</dt><dd>{device.model_label ?? detail.device.model}</dd></div><div><dt>{t('state')}</dt><dd>{link ? <PsLinkStateBadge state={link.state}/> : t(`dev.deviceStatus.${detail.device.status}`)}</dd></div><div><dt>{t('inv.venue')}</dt><dd>{currentVenue}</dd></div></dl>
         <div className="field inv-manage-venue"><span>{t('inv.chooseVenue')}</span><VenueCombobox value={venue} onChange={setVenue} includeVenueId={currentId} disabled={busy || !action?.allowed} testId="inv-manage-venue"/></div>
         {action && !action.allowed && <p className="owner-section-lead">{reason(action.reason)}</p>}
+        {link?.state === 'pendiente_preparacion' && <PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/>}
         <div className="inv-manage-secondary">
           {(detail.actions.unassign.allowed || currentId) && <button type="button" className="button button-secondary ps-danger" disabled={!canUnassign} onClick={() => review('unassign')}>{t('inv.revoke')}</button>}
           {currentId && !detail.actions.unassign.allowed && <small>{reason(detail.actions.unassign.reason)}</small>}
@@ -109,7 +120,12 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onCode, onResul
         <p className="owner-section-lead">{t('adminDevice.retireBeforeDelete')}</p>
         {!detail.actions.delete.allowed && detail.delete.blockers.length > 0 && <ul className="owner-section-lead" data-testid="inv-delete-blockers">{detail.delete.blockers.map(code => <li key={code}>{reason(code)}</li>)}</ul>}
         {detail.actions.delete.allowed && <section className="inv-manage-danger"><h3>{t('inv.dangerZone')}</h3><button type="button" className="button button-secondary ps-danger" disabled={busy} data-testid="inv-manage-delete" onClick={() => { setError(''); setTypedSerial(''); setMode('delete'); }}><Trash2 size={15}/>{t('inv.deletePrintServer')}</button></section>}
-      </> : mode === 'assign' ? <p>{t(currentId ? 'inv.moveConfirm' : 'inv.assignConfirm').replaceAll('{serial}', device.serial).replaceAll('{from}', currentVenue).replaceAll('{venue}', venue?.name ?? '')}</p>
+      </> : mode === 'assigned' && outcome ? <div data-testid="inv-assigned">
+        <p role="status">{t(outcome.already_assigned ? 'psLink.alreadyAssigned' : 'psLink.assigned').replaceAll('{serial}', device.serial).replaceAll('{venue}', outcome.venue)}</p>
+        {outcome.link && <p><PsLinkStateBadge state={outcome.link.state} testId="inv-assigned-state"/></p>}
+        {(!outcome.link || outcome.link.state === 'asignado_pendiente_sync') && <p className="owner-section-lead">{t('psLink.savedExplain')}</p>}
+        {link?.state === 'pendiente_preparacion' && <><p className="owner-section-lead">{t('psLink.assignedNeedsPrep')}</p><PsDevicePreparation link={link} canPrepare={detail.actions.prepare.allowed} blockedReason={detail.actions.prepare.reason && detail.actions.prepare.reason !== 'contract_unavailable' ? reason(detail.actions.prepare.reason) : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/></>}
+      </div> : mode === 'assign' ? <p>{t(currentId ? 'inv.moveConfirm' : 'inv.assignConfirm').replaceAll('{serial}', device.serial).replaceAll('{from}', currentVenue).replaceAll('{venue}', venue?.name ?? '')}</p>
         : mode === 'unassign' ? <p>{t('inv.revokeConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p>
           : <><p>{t(mode === 'delete' ? 'adminDevice.deleteWarning' : 'inv.retireConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}', device.serial)}</span><input data-testid="inv-confirm-serial" autoComplete="off" spellCheck={false} value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}
     </>}

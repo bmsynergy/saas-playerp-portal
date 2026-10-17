@@ -4,12 +4,14 @@ import type { AdminDeviceSheet } from '../lib/psAdminDeviceSheet';
 import { generateLabelPng, labelFilename, printLabel, type LabelData } from '../lib/psLabel';
 import { useLocale } from '../locales';
 import { InventoryDeviceIdentity } from './InventoryDeviceIdentity';
+import { PsLinkStateBadge } from './PsLinkStateBadge';
+import { PS_LINK_STATES, type PsLinkState } from '../lib/psLink';
 import './InventoryDeviceSheet.css';
 
-type Props = { sheet: AdminDeviceSheet };
+type Props = { sheet: AdminDeviceSheet; compact?: boolean };
 type Item = { key: string; primary: string; secondary?: string | null; date?: string | null; facts?: (string | null | undefined)[] };
 
-export function InventoryDeviceSheet({ sheet }: Props) {
+export function InventoryDeviceSheet({ sheet, compact = false }: Props) {
   const { t, locale } = useLocale();
   const [showPsk, setShowPsk] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -40,7 +42,12 @@ export function InventoryDeviceSheet({ sheet }: Props) {
   const date = (value: string | null | undefined) => value && !Number.isNaN(Date.parse(value))
     ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
     : t('notProvided');
-  const reason = (value: string | null | undefined) => value ? t(`stockSheet.reason.${value}`) : t('stockSheet.empty');
+  const reason = (value: string | null | undefined) => {
+    if (!value) return t('stockSheet.empty');
+    const key = `stockSheet.reason.${value}`;
+    const translated = t(key);
+    return translated === key ? t('stockSheet.empty') : translated;
+  };
   const facts = (...values: (string | number | null | undefined)[]) => values.filter((value) => value !== null && value !== undefined && value !== '').map(String);
 
   async function labelAction(action: 'preview' | 'download' | 'print') {
@@ -83,20 +90,20 @@ export function InventoryDeviceSheet({ sheet }: Props) {
   }
 
   return <div className="stock-sheet" data-testid="inventory-device-sheet">
-    <header className="stock-sheet-header"><div><p className="stock-sheet-eyebrow">{t('psm.sheetEyebrow')}</p><h1>{t('stockSheet.title')}</h1><p>{t('stockSheet.historyLead')}</p></div></header>
+    {!compact && <><header className="stock-sheet-header"><div><p className="stock-sheet-eyebrow">{t('psm.sheetEyebrow')}</p><h1>{t('stockSheet.title')}</h1><p>{t('stockSheet.historyLead')}</p></div></header>
     <section className="stock-sheet-section" aria-label={t('psm.sheetEyebrow')}>
       <InventoryDeviceIdentity device={{ ...device, serial: device.serial || t('notProvided'), hostname: device.hostname || t('notProvided'), model: device.model || t('notProvided'), arch: device.arch || t('notProvided'), venue_id: sheet.link.venue_id, venue_name: sheet.link.venue_name }} />
-    </section>
+    </section></>}
     <div className="stock-sheet-grid">
-      <section className="stock-sheet-section" aria-labelledby="stock-link"><h2 id="stock-link">{t('stockSheet.link')}</h2>
-        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{sheet.link.state}</dd></div></dl>}
-      </section>
-      <section className="stock-sheet-section" aria-labelledby="stock-firmware"><h2 id="stock-firmware">{t('stockSheet.firmware')}</h2>
+      {!compact && <section className="stock-sheet-section" aria-labelledby="stock-link"><h2 id="stock-link">{t('stockSheet.link')}</h2>
+        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{(PS_LINK_STATES as readonly string[]).includes(sheet.link.state) ? <PsLinkStateBadge state={sheet.link.state as PsLinkState}/> : sheet.link.state}</dd></div></dl>}
+      </section>}
+      {!compact && <section className="stock-sheet-section" aria-labelledby="stock-firmware"><h2 id="stock-firmware">{t('stockSheet.firmware')}</h2>
         {sheet.firmware.last_reported_version ? <dl className="dev-facts"><div><dt>{t('stockSheet.lastReported')}</dt><dd className="ps-mono">{sheet.firmware.last_reported_version}</dd></div><div><dt>{t('stockSheet.lastSeen')}</dt><dd>{date(sheet.firmware.last_seen_at)}</dd></div></dl> : <p className="stock-sheet-empty">{reason(sheet.firmware.reason)}</p>}
         {!sheet.firmware.is_current && sheet.firmware.last_reported_version && <p className="stock-sheet-lead">{t('stockSheet.historical')}</p>}
-      </section>
+      </section>}
     </div>
-    <section className="stock-sheet-section" aria-labelledby="stock-credentials"><h2 id="stock-credentials">{t('stockSheet.credentials')}</h2>
+    <section className="stock-sheet-section" id="ps469-wifi" aria-labelledby="stock-credentials"><h2 id="stock-credentials">{t('stockSheet.credentials')}</h2>
       <dl className="dev-credential-grid">
         <div className="dev-credential-field dev-credential-full"><dt>{t('dev.ssid')}</dt><dd className="ps-mono dev-credential-value">{wifi?.ssid || reason(sheet.credentials.wifi_reason)}</dd></div>
         <div className="dev-credential-field"><dt>{t('dev.psk')}</dt><dd className="dev-secret">{wifi ? <><span className="ps-mono dev-credential-value" tabIndex={showPsk ? 0 : -1}>{showPsk ? wifi.psk : '••••••••••'}</span><button className="icon-button" type="button" aria-label={t(showPsk ? 'stockSheet.hide' : 'stockSheet.reveal')} aria-pressed={showPsk} onClick={() => setShowPsk(value => !value)}>{showPsk ? <EyeOff size={16}/> : <Eye size={16}/>}</button></> : reason(sheet.credentials.wifi_reason)}</dd></div>

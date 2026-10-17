@@ -1,0 +1,566 @@
+{
+  "readOnly": true,
+  "fixtureVenue": "f4430000-0000-4000-8000-0000000000f1",
+  "resolved": [
+    {
+      "ok": true,
+      "link": {
+        "rev": 10,
+        "sync": {
+          "rev": 10,
+          "scope": "venue",
+          "ack_at": null,
+          "ack_rev": null,
+          "confirmed": false,
+          "requires_capability": "link_ack"
+        },
+        "label": "PE462 fixture · asignado sin sincronizar",
+        "model": "rpi4-2gb",
+        "state": "asignado_pendiente_sync",
+        "ack_at": null,
+        "legacy": false,
+        "serial": "PS-PE462ASG",
+        "ack_rev": null,
+        "prepared": true,
+        "reported": {
+          "hostname": null,
+          "last_seen_at": null,
+          "firmware_version": null
+        },
+        "venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "device_id": "4a738466-52b2-4a38-a418-9ea8a46a2525",
+        "lifecycle": "assigned",
+        "changed_at": "2026-10-14T23:08:36.219549+00:00",
+        "onboarding": {
+          "missing": [
+            "device_sync"
+          ],
+          "next_step": "wait_sync"
+        },
+        "venue_name": "PE443 fixture · dos Print Servers",
+        "model_label": "Raspberry Pi 4 · 2 GB",
+        "preparation": {
+          "state": "prepared",
+          "prepared_at": "2026-10-14T22:45:50.209905+00:00",
+          "code_expires_at": null
+        },
+        "display_name": "PE462 fixture · asignado sin sincronizar",
+        "print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "label": "PE462 fixture · asignado sin sincronizar",
+      "model": "rpi4-2gb",
+      "venue": {
+        "id": "f4430000-0000-4000-8000-0000000000f1",
+        "name": "PE443 fixture · dos Print Servers"
+      },
+      "compat": {
+        "capabilities": {
+          "link_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.22",
+                "edition_id": "ae7786fe-be25-4c00-84a3-4f888c197d92",
+                "enabled_rings": []
+              },
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.22"
+          },
+          "unlink_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.23"
+          },
+          "web_activation": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.23"
+          }
+        },
+        "installed_version": null
+      },
+      "legacy": false,
+      "serial": "PS-PE462ASG",
+      "runtime": {
+        "online": false,
+        "status": "active",
+        "hostname": null,
+        "venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "last_seen_at": null,
+        "print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6",
+        "firmware_version": null
+      },
+      "is_staff": true,
+      "device_id": "4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "lifecycle": "assigned",
+      "can_manage": true,
+      "capabilities": {
+        "move": {
+          "allowed": true
+        },
+        "assign": {
+          "allowed": false
+        },
+        "revoke": {
+          "allowed": true,
+          "semantics": "revokes_credential_needs_new_preparation"
+        },
+        "unlink": {
+          "reason": null,
+          "allowed": true,
+          "removes": [
+            "venue_link",
+            "venue_access",
+            "pending_jobs",
+            "pending_attempts",
+            "printer_bindings",
+            "pending_scan_commands"
+          ],
+          "preserves": [
+            "credential",
+            "identity",
+            "certificates",
+            "preparation",
+            "history",
+            "audit",
+            "pending_credential_and_cert_commands",
+            "other_print_servers"
+          ],
+          "semantics": "unlink_keeps_preparation",
+          "device_ack": {
+            "capability": "unlink_ack",
+            "required_version": "0.3.23"
+          },
+          "expected_rev": 10
+        },
+        "prepare": {
+          "allowed": false
+        },
+        "set_label": {
+          "allowed": true
+        }
+      },
+      "display_name": "PE462 fixture · asignado sin sincronizar",
+      "requested_id": "3d906114-f0c3-496b-83ca-8465c97530b6",
+      "resolved_via": "runtime_id",
+      "canonical_path": "/admin/print-servers/devices/4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "preparation_entry": {
+        "ssh": {
+          "command": "cd /opt/playerp-ps/current && sudo /opt/playerp-ps/current/venv/bin/python cloud_admin.py",
+          "requires": [
+            "ssh_access",
+            "sudo",
+            "internet"
+          ],
+          "required_version": "0.3.13"
+        },
+        "web": {
+          "url": "http://10.77.0.1/",
+          "field": "activation_code",
+          "section": "activation",
+          "endpoint": "POST /api/activation",
+          "requires": [
+            "setup_hotspot",
+            "setup_admin_code",
+            "saved_wifi_with_internet"
+          ],
+          "required_version": "0.3.23"
+        }
+      },
+      "requested_runtime": {
+        "status": "active",
+        "is_current": true,
+        "print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      }
+    },
+    {
+      "ok": true,
+      "link": {
+        "rev": 1,
+        "sync": {
+          "rev": 1,
+          "scope": "venue",
+          "ack_at": null,
+          "ack_rev": null,
+          "confirmed": false,
+          "requires_capability": "link_ack"
+        },
+        "label": "PE443 fixture Cocina",
+        "model": "rpi4-2gb",
+        "state": "asignado_pendiente_sync",
+        "ack_at": null,
+        "legacy": false,
+        "serial": "PS-8WUDW6GQ",
+        "ack_rev": null,
+        "prepared": true,
+        "reported": {
+          "hostname": null,
+          "last_seen_at": "2026-10-14T02:12:15.146452+00:00",
+          "firmware_version": "0.3.5"
+        },
+        "venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "device_id": "395633e2-3b04-48b2-a006-13b3cf275f18",
+        "lifecycle": "assigned",
+        "changed_at": null,
+        "onboarding": {
+          "missing": [
+            "device_sync"
+          ],
+          "next_step": "wait_sync"
+        },
+        "venue_name": "PE443 fixture · dos Print Servers",
+        "model_label": "Raspberry Pi 4 · 2 GB",
+        "preparation": {
+          "state": "prepared",
+          "prepared_at": "2026-10-14T02:12:15.146452+00:00",
+          "code_expires_at": null
+        },
+        "display_name": "PE443 fixture Cocina",
+        "print_server_id": "63d5a601-3d16-427f-8248-2e050fedfda3"
+      },
+      "label": "PE443 fixture Cocina",
+      "model": "rpi4-2gb",
+      "venue": {
+        "id": "f4430000-0000-4000-8000-0000000000f1",
+        "name": "PE443 fixture · dos Print Servers"
+      },
+      "compat": {
+        "capabilities": {
+          "link_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.22",
+                "edition_id": "ae7786fe-be25-4c00-84a3-4f888c197d92",
+                "enabled_rings": []
+              },
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": false,
+            "required_version": "0.3.22"
+          },
+          "unlink_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": false,
+            "required_version": "0.3.23"
+          },
+          "web_activation": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": false,
+            "required_version": "0.3.23"
+          }
+        },
+        "installed_version": "0.3.5"
+      },
+      "legacy": false,
+      "serial": "PS-8WUDW6GQ",
+      "runtime": {
+        "online": false,
+        "status": "active",
+        "hostname": null,
+        "venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "last_seen_at": "2026-10-14T02:12:15.146452+00:00",
+        "print_server_id": "63d5a601-3d16-427f-8248-2e050fedfda3",
+        "firmware_version": "0.3.5"
+      },
+      "is_staff": true,
+      "device_id": "395633e2-3b04-48b2-a006-13b3cf275f18",
+      "lifecycle": "assigned",
+      "can_manage": true,
+      "capabilities": {
+        "move": {
+          "allowed": true
+        },
+        "assign": {
+          "allowed": false
+        },
+        "revoke": {
+          "allowed": true,
+          "semantics": "revokes_credential_needs_new_preparation"
+        },
+        "unlink": {
+          "reason": null,
+          "allowed": true,
+          "removes": [
+            "venue_link",
+            "venue_access",
+            "pending_jobs",
+            "pending_attempts",
+            "printer_bindings",
+            "pending_scan_commands"
+          ],
+          "preserves": [
+            "credential",
+            "identity",
+            "certificates",
+            "preparation",
+            "history",
+            "audit",
+            "pending_credential_and_cert_commands",
+            "other_print_servers"
+          ],
+          "semantics": "unlink_keeps_preparation",
+          "device_ack": {
+            "capability": "unlink_ack",
+            "required_version": "0.3.23"
+          },
+          "expected_rev": 1
+        },
+        "prepare": {
+          "allowed": false
+        },
+        "set_label": {
+          "allowed": true
+        }
+      },
+      "display_name": "PE443 fixture Cocina",
+      "requested_id": "63d5a601-3d16-427f-8248-2e050fedfda3",
+      "resolved_via": "runtime_id",
+      "canonical_path": "/admin/print-servers/devices/395633e2-3b04-48b2-a006-13b3cf275f18",
+      "preparation_entry": {
+        "ssh": {
+          "command": "cd /opt/playerp-ps/current && sudo /opt/playerp-ps/current/venv/bin/python cloud_admin.py",
+          "requires": [
+            "ssh_access",
+            "sudo",
+            "internet"
+          ],
+          "required_version": "0.3.13"
+        },
+        "web": {
+          "url": "http://10.77.0.1/",
+          "field": "activation_code",
+          "section": "activation",
+          "endpoint": "POST /api/activation",
+          "requires": [
+            "setup_hotspot",
+            "setup_admin_code",
+            "saved_wifi_with_internet"
+          ],
+          "required_version": "0.3.23"
+        }
+      },
+      "requested_runtime": {
+        "status": "active",
+        "is_current": true,
+        "print_server_id": "63d5a601-3d16-427f-8248-2e050fedfda3"
+      }
+    },
+    {
+      "ok": true,
+      "link": {
+        "rev": 2,
+        "sync": null,
+        "label": "PE462 fixture · nunca preparado",
+        "model": "rpi4-2gb",
+        "state": "pendiente_preparacion",
+        "ack_at": null,
+        "legacy": false,
+        "serial": "PS-PE462NVP",
+        "ack_rev": null,
+        "prepared": false,
+        "reported": {
+          "hostname": null,
+          "last_seen_at": null,
+          "firmware_version": null
+        },
+        "venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "device_id": "5834f864-0e21-4980-9837-273e872f7525",
+        "lifecycle": "assigned",
+        "changed_at": "2026-10-14T23:04:49.441278+00:00",
+        "onboarding": {
+          "missing": [
+            "prepare_code",
+            "device_enroll",
+            "device_sync"
+          ],
+          "next_step": "prepare"
+        },
+        "venue_name": "PE443 fixture · dos Print Servers",
+        "model_label": "Raspberry Pi 4 · 2 GB",
+        "preparation": {
+          "state": "not_started",
+          "prepared_at": null,
+          "code_expires_at": null
+        },
+        "display_name": "PE462 fixture · nunca preparado",
+        "print_server_id": null
+      },
+      "label": "PE462 fixture · nunca preparado",
+      "model": "rpi4-2gb",
+      "venue": {
+        "id": "f4430000-0000-4000-8000-0000000000f1",
+        "name": "PE443 fixture · dos Print Servers"
+      },
+      "compat": {
+        "capabilities": {
+          "link_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.22",
+                "edition_id": "ae7786fe-be25-4c00-84a3-4f888c197d92",
+                "enabled_rings": []
+              },
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.22"
+          },
+          "unlink_ack": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.23"
+          },
+          "web_activation": {
+            "available": [
+              {
+                "retired": false,
+                "version": "0.3.23",
+                "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190",
+                "enabled_rings": []
+              }
+            ],
+            "supported": null,
+            "required_version": "0.3.23"
+          }
+        },
+        "installed_version": null
+      },
+      "legacy": false,
+      "serial": "PS-PE462NVP",
+      "runtime": null,
+      "is_staff": true,
+      "device_id": "5834f864-0e21-4980-9837-273e872f7525",
+      "lifecycle": "assigned",
+      "can_manage": true,
+      "capabilities": {
+        "move": {
+          "allowed": true
+        },
+        "assign": {
+          "allowed": false
+        },
+        "revoke": {
+          "allowed": true,
+          "semantics": "revokes_credential_needs_new_preparation"
+        },
+        "unlink": {
+          "reason": null,
+          "allowed": true,
+          "removes": [
+            "venue_link",
+            "venue_access",
+            "pending_jobs",
+            "pending_attempts",
+            "printer_bindings",
+            "pending_scan_commands"
+          ],
+          "preserves": [
+            "credential",
+            "identity",
+            "certificates",
+            "preparation",
+            "history",
+            "audit",
+            "pending_credential_and_cert_commands",
+            "other_print_servers"
+          ],
+          "semantics": "unlink_keeps_preparation",
+          "device_ack": {
+            "capability": "unlink_ack",
+            "required_version": "0.3.23"
+          },
+          "expected_rev": 2
+        },
+        "prepare": {
+          "allowed": true
+        },
+        "set_label": {
+          "allowed": true
+        }
+      },
+      "display_name": "PE462 fixture · nunca preparado",
+      "requested_id": "5834f864-0e21-4980-9837-273e872f7525",
+      "resolved_via": "device_id",
+      "canonical_path": "/admin/print-servers/devices/5834f864-0e21-4980-9837-273e872f7525",
+      "preparation_entry": {
+        "ssh": {
+          "command": "cd /opt/playerp-ps/current && sudo /opt/playerp-ps/current/venv/bin/python cloud_admin.py",
+          "requires": [
+            "ssh_access",
+            "sudo",
+            "internet"
+          ],
+          "required_version": "0.3.13"
+        },
+        "web": {
+          "url": "http://10.77.0.1/",
+          "field": "activation_code",
+          "section": "activation",
+          "endpoint": "POST /api/activation",
+          "requires": [
+            "setup_hotspot",
+            "setup_admin_code",
+            "saved_wifi_with_internet"
+          ],
+          "required_version": "0.3.23"
+        }
+      },
+      "requested_runtime": null
+    }
+  ],
+  "firmware": true
+}

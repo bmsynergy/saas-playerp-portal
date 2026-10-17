@@ -1,0 +1,43 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "readOnly": true,
+  "fixtureVenue": "f4430000-0000-4000-8000-0000000000f1",
+  "views": [
+    {
+      "width": 390,
+      "device_id": "4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "path": "/admin/print-servers/devices/4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "uniqueHeading": true,
+      "refreshContext": true
+    },
+    {
+      "width": 390,
+      "device_id": "5834f864-0e21-4980-9837-273e872f7525",
+      "path": "/admin/print-servers/devices/5834f864-0e21-4980-9837-273e872f7525",
+      "uniqueHeading": true,
+      "refreshContext": true
+    },
+    {
+      "width": 1440,
+      "device_id": "4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "path": "/admin/print-servers/devices/4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "uniqueHeading": true,
+      "refreshContext": true
+    },
+    {
+      "width": 1440,
+      "device_id": "5834f864-0e21-4980-9837-273e872f7525",
+      "path": "/admin/print-servers/devices/5834f864-0e21-4980-9837-273e872f7525",
+      "uniqueHeading": true,
+      "refreshContext": true
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "htmlSha256": "b99636de95d1223e98a0c429905a548d5056b16c36cf75567d3a33c609f382d5",
+  "assets": [
+    "/assets/index-DDcOQMfL.js",
+    "/assets/index-DXaQn0Ae.css"
+  ],
+  "pass": true
+}

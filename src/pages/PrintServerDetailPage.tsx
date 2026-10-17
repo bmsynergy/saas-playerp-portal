@@ -20,7 +20,7 @@ type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is
 // PE-443: printServerId binds the sheet to ONE device of the venue (the api passed in is bound too).
 type ReplaceTarget = { print_server_id: string; name: string; label: string | null };
 type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin';
-  printServerId?: string | null; backHref?: string; backLabel?: string; replaceTargets?: ReplaceTarget[] };
+  printServerId?: string | null; deviceId?: string; backHref?: string; backLabel?: string; replaceTargets?: ReplaceTarget[] };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
 type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
 type Result = { ok: boolean; text: string };
@@ -34,7 +34,7 @@ function Item({ icon, label, children, testId }: { icon: ReactNode; label: strin
   return <div className="detail-item"><span className="detail-item-icon" aria-hidden="true">{icon}</span><div><span className="detail-item-label">{label}</span><strong data-testid={testId}>{children}</strong></div></div>;
 }
 
-export function PrintServerDetailPage({ venue, state: rawState, api, refresh, stale = false, embedded = false, scope = 'admin', printServerId = null, backHref, backLabel, replaceTargets = [] }: Props) {
+export function PrintServerDetailPage({ venue, state: rawState, api, refresh, stale = false, embedded = false, scope = 'admin', printServerId = null, deviceId, backHref, backLabel, replaceTargets = [] }: Props) {
   const { locale, t } = useLocale();
   // Only this device's printers: anything explicitly bound to another PS of the venue is left out.
   const state = printServerId ? { ...rawState, printers: rawState.printers.filter(printer => !printer.print_server_id || printer.print_server_id === printServerId) } : rawState;
@@ -51,7 +51,6 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
   // The one-time enrollment code lives only here: never in storage, the URL, the query cache or a log.
   const [enrollment, setEnrollment] = useState<{ code: string; expires_at: string | null } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [enrollLabel, setEnrollLabel] = useState('');
   const [certMissing, setCertMissing] = useState(false);
   const [downloadedFingerprint, setDownloadedFingerprint] = useState<string | null>(null);
   const [scan, setScan] = useState<PanelScan | null>(null);
@@ -103,12 +102,11 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
   // --- Print Server: assign / replace / revoke -------------------------------
   function askEnrollment() {
-    const label = enrollLabel.trim();
     ask({ title: t(server ? 'ps.replace' : 'ps.assign'), danger: !!server,
       body: fill(t(server ? 'ps.confirm.replace' : 'ps.confirm.assign'), { venue: venueName }),
       run: async () => {
-        const created = await api.createEnrollment(venueId, label);
-        setCopied(false); setEnrollment({ code: created.enrollment_code, expires_at: created.expires_at }); setEnrollLabel('');
+        const created = await api.createEnrollment(venueId, '');
+        setCopied(false); setEnrollment({ code: created.enrollment_code, expires_at: created.expires_at });
         return t('ps.result.enrollmentCreated');
       } });
   }
@@ -277,14 +275,14 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
     </div>;
 
   return <div className="page-stack staff-page" data-testid="ps-detail">
-    {backHref ? <Link className="back-link" to={backHref} data-testid="ps-sheet-back"><ArrowLeft size={17}/>{backLabel ?? t('ps.back')}</Link> : scope === 'admin' && <Link className="back-link" to={embedded ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : '/admin/print-servers'}><ArrowLeft size={17}/>{t('ps.back')}</Link>}
-    {embedded ? <div className="ps-embedded-heading"><h2 data-testid="ps-venue-name">{t('ps.detailEyebrow')}</h2><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div> : <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
-    <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+    {!embedded && (backHref ? <Link className="back-link" to={backHref} data-testid="ps-sheet-back"><ArrowLeft size={17}/>{backLabel ?? t('ps.back')}</Link> : scope === 'admin' && <Link className="back-link" to="/admin/print-servers"><ArrowLeft size={17}/>{t('ps.back')}</Link>)}
+    {!embedded && <div className="page-heading detail-heading"><div><p className="eyebrow">{t('ps.detailEyebrow')}</p><h1 data-testid="ps-venue-name">{venueName}</h1><p>{venue.venue_slug || t('notProvided')}{venue.venue_is_active === false && ` · ${t('ps.venueInactive')}`}</p></div><span className={`server-status ${fleetStateClass[status]}`} data-testid="ps-state" data-state={status}><span className="badge-dot"/>{t(`ps.state.${status}`)}</span></div>}
+    <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="action-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result && !result.ok && <>{t('ps469.operationFailed').replace('{name}',server?.label || server?.hostname || t('printServer'))} </>}{result?.text ?? ''}</span></div>
     {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
     {stale && <div className="form-error" role="alert"><AlertTriangle size={19}/><span>{t('ps.stale')}</span></div>}
     {!canManage && <div className="staff-self-note" data-testid="ps-read-only">{t('ps.readOnly')}</div>}
 
-    <section className="detail-panel" aria-labelledby="ps-card-title"><div className="section-heading"><div><p className="eyebrow">{t('printServer')}</p><h2 id="ps-card-title">{t('ps.cardTitle')}</h2></div><span className="section-icon"><Server size={20}/></span></div>
+    {!embedded && <section className="detail-panel" aria-labelledby="ps-card-title"><div className="section-heading"><div><p className="eyebrow">{t('printServer')}</p><h2 id="ps-card-title">{t('ps.cardTitle')}</h2></div><span className="section-icon"><Server size={20}/></span></div>
       {server ? <div className="detail-grid">
         <Item icon={<Activity size={19}/>} label={t('state')}>{t(`ps.state.${status}`)}</Item>
         <Item icon={<Tag size={19}/>} label={t('ps.label')}>{server.label || t('notProvided')}</Item>
@@ -298,12 +296,11 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       <div className="ps-section-body">
         {pendingEnrollment && <p className="staff-notice ps-pending" data-testid="ps-enrollment-pending"><Clock3 size={18}/><span>{fill(t('ps.enrollmentPendingUntil'), { time: date(pendingEnrollment.expires_at) })}{pendingEnrollment.label ? ` · ${pendingEnrollment.label}` : ''}</span></p>}
         {scope === 'admin' && canManage && <div className="staff-actions ps-actions">
-          <label className="field ps-inline-field"><span>{t('ps.enrollLabel')}</span><div className="field-control"><input type="text" data-testid="ps-assign-label" autoComplete="off" maxLength={80} value={enrollLabel} onChange={event => setEnrollLabel(event.target.value)} placeholder={t('ps.enrollLabelPlaceholder')} disabled={busy}/></div></label>
           <button type="button" className="button button-primary" data-testid="ps-assign" disabled={busy} onClick={askEnrollment}><Plus size={17}/>{t(server ? 'ps.replace' : 'ps.assign')}</button>
           {server && <button type="button" className="button button-secondary ps-danger" data-testid="ps-revoke" disabled={busy} onClick={askRevoke}><X size={17}/>{t('ps.revoke')}</button>}
         </div>}
       </div>
-    </section>
+    </section>}
 
 
 
@@ -321,7 +318,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     {scope === 'owner' && <PrintServerOtaBlock venueId={venueId} printServerId={sheetPsId}/>}
 
-    <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} adminScope={scope === 'admin'} caContent={caContent}/>
+    <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} deviceId={deviceId} adminScope={scope === 'admin'} compact={embedded} caContent={caContent}/>
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <div className="detail-grid">
@@ -357,7 +354,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       })}</tbody></table></div>)}
     </section>
 
-    <section className="staff-panel" aria-labelledby="ps-printers-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="ps-printers-title">{t('ps.printers.title')}</h2></div><span className="count-pill">{state.printers.length}</span></div>
+    <section className="staff-panel" id="ps469-printers" aria-labelledby="ps-printers-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="ps-printers-title">{t('ps.printers.title')}</h2></div><span className="count-pill">{state.printers.length}</span></div>
       <p className="staff-panel-lead">{t('ps.printers.lead')}</p>
       <button type="button" className="ps-printers-toggle" data-testid="printers-toggle" aria-expanded={printersOpen} aria-controls={printersRegionId} onClick={() => setPrintersOpen(value => !value)}><span>{t(printersOpen ? 'ps.printers.closeList' : 'ps.printers.openList')}</span><ChevronDown size={18} aria-hidden="true"/></button>
       <div id={printersRegionId} hidden={!printersOpen}>
@@ -395,11 +392,10 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       </div>
     </section>
 
-    {state.printers.length > 0 && <section className="staff-panel" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
+    <section className="staff-panel" id="ps469-queue" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
       <p className="staff-panel-lead">{t('ps.jobs.lead')}</p>
-      <div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div>
-      <PrintListPagination pagination={printerPagination} id="queues"/>
-    </section>}
+      {state.printers.length ? <><div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div><PrintListPagination pagination={printerPagination} id="queues"/></> : <p className="inline-empty">{t('ps469.noQueue')}</p>}
+    </section>
 
     {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>
         <button type="button" className={`button button-primary ${confirm.danger ? 'ps-danger-solid' : ''}`} data-testid="confirm-accept" disabled={busy} onClick={() => void accept()}><Check size={15}/>{t(busy ? 'ps.working' : 'staff.confirm')}</button>

@@ -16,15 +16,15 @@ import { CredentialProgress } from './CredentialProgress';
 import { DeviceAdminSummary } from './DeviceAdminSummary';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
-type Props = { venueId: string; printServerId: string | null; adminScope?: boolean; caContent?: ReactNode };
+type Props = { venueId: string; printServerId: string | null; deviceId?: string; adminScope?: boolean; compact?: boolean; caContent?: ReactNode };
 type Result = { ok: boolean; text: string };
 
-export function PrintServerDevicePanel({ venueId, printServerId, adminScope = false, caContent }: Props) {
+export function PrintServerDevicePanel({ venueId, printServerId, deviceId, adminScope = false, compact = false, caContent }: Props) {
   const { t, locale } = useLocale();
   const {session} = useAuth();
   const localPending = useRef(false);
   const inFlight = useRef<string | null>(null);
-  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, venueId, printServerId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal, printServerId),
+  const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, deviceId, venueId, printServerId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal, printServerId, deviceId),
     gcTime: 0, refetchOnMount: 'always', retry: false,
     refetchInterval: query => deviceSheetPollInterval(query.state.data, localPending.current) });
   // Reuse the existing read-only PE-428 context; a link is only offered when authorized and available.
@@ -43,7 +43,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   const accessError = sheet.isError ? psErrorKey(sheet.error) : null;
   const accessLost = accessError === 'accessDenied' || accessError === 'sessionExpired';
   const trackingUnavailable = sheet.isError && !accessLost;
-  const operationScope = JSON.stringify([session?.user.id, venueId, printServerId, data?.device?.id, data?.credentialAccess, data?.can_manage_credentials, accessLost]);
+  const operationScope = JSON.stringify([session?.user.id, deviceId, venueId, printServerId, data?.device?.id, data?.credentialAccess, data?.can_manage_credentials, accessLost]);
   const scopeRef = useRef(operationScope);
   scopeRef.current = operationScope;
   const operationFor = (kind: CredentialKind) => {
@@ -82,7 +82,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   const adminCode = data?.credentialAccess ? data.appliedAdminCode : null;
   // Revealed values belong to this exact identity and confirmed snapshot. A new snapshot
   // is masked during render itself, before effects run (no one-frame disclosure).
-  const revealScope = JSON.stringify([session?.user.id, venueId, printServerId, data?.device?.id, data?.credentialAccess, wifi?.ssid, wifi?.psk, adminCode?.code]);
+  const revealScope = JSON.stringify([session?.user.id, deviceId, venueId, printServerId, data?.device?.id, data?.credentialAccess, wifi?.ssid, wifi?.psk, adminCode?.code]);
   const hidden = { psk: false, code: false };
   const show = visibility.scope === revealScope ? visibility : hidden;
   function setShow(next: typeof hidden | ((previous: typeof hidden) => typeof hidden)) {
@@ -90,7 +90,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   }
 
 
-  useEffect(() => { setShow({ psk: false, code: false }); }, [session?.user.id, venueId, printServerId, data?.credentialAccess]);
+  useEffect(() => { setShow({ psk: false, code: false }); }, [session?.user.id, deviceId, venueId, printServerId, data?.credentialAccess]);
   useEffect(() => { setShow({ psk: false, code: false }); }, [wifi?.ssid, wifi?.psk, adminCode?.code]);
 
   useEffect(() => {
@@ -155,8 +155,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
 
   const help = <details className="dev-help" id="ps-recovery-help"><summary>{t('dev.help.title')}</summary><ol><li>{t('dev.help.identify')}</li><li>{t('dev.help.connect')}</li><li>{t('dev.help.recover')}</li><li>{t('dev.help.install')}</li><li>{t('dev.help.enroll')}</li><li>{t('dev.help.rotate')}</li><li>{t('dev.help.confirm')}</li></ol></details>;
   const label = <PrintServerLabel key={`${session?.user.id}:${venueId}:${printServerId ?? ''}`} userId={session?.user.id} venueId={venueId} printServerId={printServerId} sheet={data} accessLost={accessLost} sheetUnavailable={uncertain} pendingWifi={credentialBlocked(operationFor('wifi')) || !!data?.rotations.some(o => o.kind === 'wifi' && o.status === 'pending')}/>;
-  if (accessLost || (sheet.isError && !data)) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="alert" className="ps-cert-small">{t(accessLost ? accessError! : 'genericError')}</p></section></>;
-  if (!data) return <><section className="detail-panel" data-testid="ps-device-panel"><div className="inline-empty" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" data-testid="ps-https-panel">{caContent}<p role="status" className="ps-cert-small">{t('dev.loading')}</p></section></>;
+  if (accessLost || (sheet.isError && !data)) return <><section className="detail-panel" id="ps469-wifi" data-testid="ps-device-panel"><div className="inline-empty">{t(accessLost ? accessError! : 'genericError')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" id="ps469-certificates" data-testid="ps-https-panel">{caContent}<p role="alert" className="ps-cert-small">{t(accessLost ? accessError! : 'genericError')}</p></section></>;
+  if (!data) return <><section className="detail-panel" id="ps469-wifi" data-testid="ps-device-panel"><div className="inline-empty" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</div>{label}{help}</section><section className="detail-panel ps-cert-panel" id="ps469-certificates" data-testid="ps-https-panel">{caContent}<p role="status" className="ps-cert-small">{t('dev.loading')}</p></section></>;
   const opLabel = (o: DeviceOp) => `${t(`dev.op.${o.kind}`)} · ${t(`dev.status.${o.status}`)}`;
   const errorText = (code: string | null) => { const key = credentialErrorKey(code); return t(key) === key ? t('dev.progress.rotationErrorUnknown') : t(key); };
   const rotationStatus = (kind: CredentialKind) => {
@@ -168,17 +168,17 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
   return <>
-    <section className="detail-panel ps-device-panel" aria-labelledby="ps-device-title" data-testid="ps-device-panel">
-      <div className="section-heading"><div><p className="eyebrow">{t('dev.eyebrow')}</p><h2 id="ps-device-title">{t('dev.title')}</h2></div><span className="section-icon"><Wifi size={20}/></span></div>
+    <section className="detail-panel ps-device-panel" id="ps469-wifi" aria-labelledby="ps-device-title" data-testid="ps-device-panel">
+      <div className="section-heading"><div><p className="eyebrow">{t(compact?'ps469.wifiEyebrow':'dev.eyebrow')}</p><h2 id="ps-device-title">{t(compact?'ps469.wifi':'dev.title')}</h2></div><span className="section-icon"><Wifi size={20}/></span></div>
       {trackingUnavailable && <p className="dev-tracking-warning" role="status" data-testid="dev-tracking-warning"><AlertTriangle size={16}/><span>{t('dev.trackingUnavailable')}</span></p>}
       {!data.device ? <div className="inline-empty" data-testid="ps-device-none">{t('dev.noDevice')}</div> : <>
         <dl className="dev-facts">
-          <div><dt>{t('dev.serial')}</dt><dd data-testid="dev-serial">{data.device.serial}</dd></div>
-          <div><dt>{t('ps.hostname')}</dt><dd data-testid="dev-hostname">{data.device.hostname}</dd></div>
-          <div><dt>{t('fw.model')}</dt><dd>{data.device.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : data.device.model}</dd></div>
-          <div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${data.device.status}`)}{data.device.legacy ? ` · ${t('dev.legacy')}` : ''}</dd></div>
+          {!compact && <div><dt>{t('dev.serial')}</dt><dd data-testid="dev-serial">{data.device.serial}</dd></div>}
+          {!compact && <div><dt>{t('ps.hostname')}</dt><dd data-testid="dev-hostname">{data.device.hostname}</dd></div>}
+          {!compact && <div><dt>{t('fw.model')}</dt><dd>{data.device.model === 'rpi4-2gb' ? 'Raspberry Pi 4 2GB' : data.device.model}</dd></div>}
+          {!compact && <div><dt>{t('state')}</dt><dd>{t(`dev.deviceStatus.${data.device.status}`)}{data.device.legacy ? ` · ${t('dev.legacy')}` : ''}</dd></div>}
           {data.enroll && !data.device.legacy && data.enroll.state !== 'not_expected' && <div><dt>{t('dev.enroll.title')}</dt><dd data-testid="dev-enroll" data-state={data.enroll.state}><span className={`server-status ${data.enroll.state === 'applied' ? 'server-online' : data.enroll.state === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{t(`dev.enroll.state.${data.enroll.state}`)}</span>{data.enroll.state === 'failed' && <small className="dev-enroll-parts">{(['wifi', 'admin_code'] as const).map(k => `${t(`dev.op.${k}`)}: ${t(`dev.enroll.part.${data.enroll![k]}`)}${data.enroll![k] === 'failed' && data.enroll![`${k}_error`] ? ` (${data.enroll![`${k}_error`]})` : ''}`).join(' · ')}</small>}</dd></div>}
-          <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online === null ? 'notProvided' : data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>
+          {!compact && <div><dt>{t('dev.online')}</dt><dd data-testid="dev-online" data-online={String(data.ps_online)}>{t(data.ps_online === null ? 'notProvided' : data.ps_online ? 'dev.onlineYes' : 'dev.onlineNo')}{data.last_seen_at ? ` · ${t('dev.lastSeen').replace('{date}', date(data.last_seen_at))}` : ''}</dd></div>}
         </dl>
         {data.credentialAccess ? <div className="dev-wifi">
           <div className="dev-wifi-values">
@@ -208,9 +208,9 @@ export function PrintServerDevicePanel({ venueId, printServerId, adminScope = fa
       <p className="ps-cert-small">{t('dev.tokensNote')}</p>
     </section>
 
-    {adminScope && data.is_platform_admin && data.device && <DeviceAdminSummary deviceId={data.device.id}/>}
+    {adminScope && data.is_platform_admin && data.device && <div id="ps469-firmware"><DeviceAdminSummary deviceId={data.device.id}/></div>}
 
-    <section className="detail-panel ps-cert-panel" aria-labelledby="ps-cert-title" data-testid="ps-https-panel">
+    <section className="detail-panel ps-cert-panel" id="ps469-certificates" aria-labelledby="ps-cert-title" data-testid="ps-https-panel">
       {caContent}
       <div className="ps-cert-server"><h3 id="ps-https-title" className="ps-cert-subtitle">{t('dev.https.title')}</h3>
       <p className="owner-section-lead">{t('dev.https.lead')}</p>

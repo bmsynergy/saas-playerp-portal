@@ -1,0 +1,79 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "started": "2026-10-14T23:08:27.068Z",
+  "criteria": {
+    "1": [
+      "Admin: guardado real, refresh, entrada inválida deshabilitada, rechazo controlado sin cambio y reintento; identidad técnica intacta.",
+      "Owner: editor autorizado guarda y persiste al refrescar; sin controles de asignación staff.",
+      "Fallo controlado de lectura posterior al guardado: editor y nombre guardado conservados, aviso visible y Reintentar recupera lectura."
+    ],
+    "2": [
+      "390/1440 px: Agregar alineado a derecha, separación al texto >=8 px, sin overflow; capturas de venue, inventario, modal, update y ficha owner."
+    ],
+    "3": [
+      "Segundo fixture no preparado asignado al venue aislado; todos los dispositivos previos conservados y vínculo del primero idéntico.",
+      "Admin/owner 390/1440: ambos fixtures en venue, ficha canónica; inventario/global muestran serial/nombre/modelo/venue, pendiente de sincronización y telemetría pendiente; refresh conserva filas."
+    ],
+    "4": [
+      "Preparado: venue + confirmación sin código; fallo de red antes de guardar y respuesta perdida después de guardar; reintento conserva revisión sin duplicar vínculo.",
+      "No preparado: asignación inmediata, preparación física pendiente explicada, ningún código emitido."
+    ]
+  },
+  "mutations": [
+    {
+      "name": "ps_device_set_label",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_device_set_label",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_device_set_label",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_admin_device_move",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_admin_device_move",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_device_set_label",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    },
+    {
+      "name": "ps_device_set_label",
+      "device": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+    }
+  ],
+  "blocked": [],
+  "screenshots": [
+    "c1-nombre-invalido",
+    "c1-nombre-error",
+    "c1-refresco-error",
+    "c4-asignacion-confirmar",
+    "c4-asignacion-reintento",
+    "c4-onboarding-pendiente",
+    "c2-venue-admin-390",
+    "c3-inventario-390",
+    "c2-modal-390",
+    "c3-global-390",
+    "c2-update-390",
+    "c2-venue-admin-1440",
+    "c3-inventario-1440",
+    "c2-modal-1440",
+    "c3-global-1440",
+    "c2-update-1440",
+    "c3-venue-owner-390",
+    "c1-ficha-owner-390",
+    "c3-venue-owner-1440",
+    "c1-ficha-owner-1440"
+  ],
+  "pass": true,
+  "finished": "2026-10-14T23:08:55.951Z",
+  "implementation_commit": "55a113d922883f75dfbf844100008bf17ac003b4",
+  "review": "Gaby, solo lectura en esta misma sesión; dos hallazgos corregidos (preservar editor en error transitorio y cerrar snapshot ante NotFound), revisión final sin hallazgos."
+}

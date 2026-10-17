@@ -1,20 +1,21 @@
 import type { ReactNode } from 'react';
-import { Building2, Globe2, Mail, MapPin, Phone, Server, UsersRound } from 'lucide-react';
+import { Bot, Building2, Globe2, Mail, MapPin, Phone, Server, UsersRound } from 'lucide-react';
 import type { OwnerVenue } from '../lib/types';
 import { useLocale } from '../locales';
 
-export type VenueSection = 'overview' | 'users' | 'print-servers';
+export type VenueSection = 'overview' | 'users' | 'print-servers' | 'mcp';
 type Tab = { section: VenueSection; label: string; icon: ReactNode; testId?: string };
 
-export function VenueSectionTabs({ active, users, printServers, render }: {
-  active: VenueSection; users: boolean; printServers: boolean;
+export function VenueSectionTabs({ active, users, printServers, mcp = false, render }: {
+  active: VenueSection; users: boolean; printServers: boolean; mcp?: boolean;
   render: (tab: Tab, active: boolean) => ReactNode;
 }) {
   const { t } = useLocale();
-  if (!users && !printServers) return null;
+  if (!users && !printServers && !mcp) return null;
   const tabs: Tab[] = [{ section: 'overview', label: t('venueDetails'), icon: <Building2 size={16}/> }];
   if (users) tabs.push({ section: 'users', label: t('identity.tab'), icon: <UsersRound size={16}/>, testId: 'venue-users-tab' });
   if (printServers) tabs.push({ section: 'print-servers', label: t('printServers'), icon: <Server size={16}/>, testId: 'venue-print-servers-tab' });
+  if (mcp) tabs.push({ section: 'mcp', label: t('mcp.tab'), icon: <Bot size={16}/>, testId: 'venue-mcp-tab' });
   return <nav className="detail-tabs" aria-label={t('identity.tabsLabel')}>{tabs.map(tab => render(tab, active === tab.section))}</nav>;
 }
 

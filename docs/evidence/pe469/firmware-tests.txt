@@ -1,0 +1,33 @@
+test_ack_after_save_then_once (tests.test_pe462.PE462LinkAckTests.test_ack_after_save_then_once) ... ok
+test_new_revision_or_venue_acknowledged_again_and_stale_not_marked (tests.test_pe462.PE462LinkAckTests.test_new_revision_or_venue_acknowledged_again_and_stale_not_marked) ... ok
+test_no_ack_before_the_link_is_saved (tests.test_pe462.PE462LinkAckTests.test_no_ack_before_the_link_is_saved) ... ok
+test_old_backend_without_link_sends_no_ack (tests.test_pe462.PE462LinkAckTests.test_old_backend_without_link_sends_no_ack) ... ok
+test_rejected_ack_is_retried_and_survives_restart (tests.test_pe462.PE462LinkAckTests.test_rejected_ack_is_retried_and_survives_restart) ... ok
+test_ack_after_save_then_once (tests.test_pe469.PE469UnlinkAckTests.test_ack_after_save_then_once) ... ok
+test_new_revision_or_venue_acknowledged_again_and_stale_not_marked (tests.test_pe469.PE469UnlinkAckTests.test_new_revision_or_venue_acknowledged_again_and_stale_not_marked) ... ok
+test_no_ack_before_the_link_is_saved (tests.test_pe469.PE469UnlinkAckTests.test_no_ack_before_the_link_is_saved) ... ok
+test_null_venue_without_explicit_link_changes_nothing (tests.test_pe469.PE469UnlinkAckTests.test_null_venue_without_explicit_link_changes_nothing) ... ok
+test_old_backend_without_link_sends_no_ack (tests.test_pe469.PE469UnlinkAckTests.test_old_backend_without_link_sends_no_ack) ... ok
+test_rejected_ack_is_retried_and_survives_restart (tests.test_pe469.PE469UnlinkAckTests.test_rejected_ack_is_retried_and_survives_restart) ... ok
+test_stale_unlink_ack_not_marked_and_retried_after_restart (tests.test_pe469.PE469UnlinkAckTests.test_stale_unlink_ack_not_marked_and_retried_after_restart) ... ok
+test_unlink_forgets_venue_and_acknowledges_after_save_once (tests.test_pe469.PE469UnlinkAckTests.test_unlink_forgets_venue_and_acknowledges_after_save_once) ... ok
+test_health_host_matches_cloud_backend (wifi.tests.test_pe469_activation.Constants.test_health_host_matches_cloud_backend) ... ok
+test_results (wifi.tests.test_pe469_activation.Enroll.test_results) ... ok
+test_already_prepared_refused_without_enroll_or_takeover (wifi.tests.test_pe469_activation.Flow.test_already_prepared_refused_without_enroll_or_takeover) ... ok
+test_bad_format_rejected_before_storing (wifi.tests.test_pe469_activation.Flow.test_bad_format_rejected_before_storing) ... ok
+test_code_dropped_after_ttl_or_restart_requires_reissue (wifi.tests.test_pe469_activation.Flow.test_code_dropped_after_ttl_or_restart_requires_reissue) ... ok
+test_expired_and_invalid_reopen_setup_and_drop_code (wifi.tests.test_pe469_activation.Flow.test_expired_and_invalid_reopen_setup_and_drop_code) ... ok
+test_no_internet_keeps_code_retries_then_reopens_and_finally_drops (wifi.tests.test_pe469_activation.Flow.test_no_internet_keeps_code_retries_then_reopens_and_finally_drops) ... ok
+test_prepared_meanwhile_is_not_re_enrolled (wifi.tests.test_pe469_activation.Flow.test_prepared_meanwhile_is_not_re_enrolled) ... ok
+test_rate_limit (wifi.tests.test_pe469_activation.Flow.test_rate_limit) ... ok
+test_serve_loop_reopens_setup_wifi_on_failure_not_on_success (wifi.tests.test_pe469_activation.Flow.test_serve_loop_reopens_setup_wifi_on_failure_not_on_success) ... ok
+test_success_after_network_with_internet_then_code_erased (wifi.tests.test_pe469_activation.Flow.test_success_after_network_with_internet_then_code_erased) ... ok
+test_already_prepared_answers_409 (wifi.tests.test_pe469_activation.Http.test_already_prepared_answers_409) ... ok
+test_page_flow_and_no_secret_in_answers (wifi.tests.test_pe469_activation.Http.test_page_flow_and_no_secret_in_answers) ... ok
+test_setup_page_has_real_field_and_script (wifi.tests.test_pe469_activation.Http.test_setup_page_has_real_field_and_script) ... ok
+test_unauthorized_csrf_origin_and_session_required (wifi.tests.test_pe469_activation.Http.test_unauthorized_csrf_origin_and_session_required) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 2.843s
+
+OK
