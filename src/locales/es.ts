@@ -1029,7 +1029,7 @@ export const es: Record<keyof typeof en, string> = {
   'legacy.fingerprintHelp': 'Usa hex contiguos o pares separados por dos puntos. Se admiten mayúsculas, minúsculas y espacios alrededor. No se admite el prefijo OpenSSL. Compara la huella de la CA pública, no la del certificado del servidor HTTPS.',
   'legacy.requirements': 'Introduce el valor y la evidencia de CA coincidente y confirma expresamente la comprobación física.',
   'firmware.compatibility': 'Modelo, arquitectura y política de edición',
-  'firmware.stableRing': 'General: edición firmada y publicada tras confirmación canary',
+  'firmware.stableRing': 'Edición firmada y compatible disponible para este dueño',
   'firmware.ownerReadOnly': 'Solo el dueño del local puede solicitar una actualización publicada en General.',
   'firmware.adminCandidate': 'Última edición compatible y firmada para este anillo',
   'firmware.newestSigned': 'Edición firmada más reciente',

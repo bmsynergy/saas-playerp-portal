@@ -1027,7 +1027,7 @@ export const en = {
   'legacy.fingerprintHelp': 'Use contiguous hex or pairs separated by colons. Letter case and surrounding spaces are accepted. The OpenSSL prefix is not accepted. Compare the public CA fingerprint, not the HTTPS server certificate.',
   'legacy.requirements': 'Enter the value and matching CA evidence, then explicitly confirm the physical check.',
   'firmware.compatibility': 'Model, architecture and release policy',
-  'firmware.stableRing': 'General: signed release published after canary confirmation',
+  'firmware.stableRing': 'Signed, compatible edition available to this owner',
   'firmware.ownerReadOnly': 'Only the venue owner can request an update published in General.',
   'firmware.adminCandidate': 'Latest compatible signed release for this ring',
   'firmware.newestSigned': 'Newest signed release',

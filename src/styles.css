@@ -624,3 +624,50 @@ input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   .pe474-channels-table :is(th,td):nth-child(3) { min-width: 160px; }
   .pe474-channels-table :is(th,td):nth-child(7) { min-width: 150px; }
 }
+/* Keep the deployment catalogue as one full-width block inside the form grid. */
+.ota-deploy-form > .ota-wide:first-child {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.ota-deploy-form .ota-edition-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-height: 19rem;
+  padding: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.ota-deploy-form .ota-edition-picker .ota-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.ota-deploy-form .ota-edition-picker .ota-radio:has(input:checked) {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.ota-deploy-form .ota-edition-picker .ota-radio span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fw-form .ota-edition-picker input[type=radio] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 1px 0 0;
+  padding: 0;
+  flex: none;
+  accent-color: var(--blue);
+}
