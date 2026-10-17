@@ -1,0 +1,1930 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "startedAt": "2026-10-17T23:47:40.803Z",
+  "realData": true,
+  "readOnly": true,
+  "views": [
+    {
+      "name": "firmwares",
+      "width": 1440,
+      "lang": "es",
+      "path": "/admin/print-servers/firmwares",
+      "overflow": false
+    },
+    {
+      "name": "channels",
+      "width": 1440,
+      "lang": "es",
+      "path": "/admin/print-servers/channels",
+      "overflow": false
+    },
+    {
+      "name": "updates",
+      "width": 1440,
+      "lang": "es",
+      "path": "/admin/print-servers/updates",
+      "overflow": false
+    },
+    {
+      "name": "device",
+      "width": 1440,
+      "lang": "es",
+      "version": "0.3.23",
+      "newerNotEnabled": "0.3.24",
+      "updateDisabled": true
+    },
+    {
+      "name": "firmwares",
+      "width": 1440,
+      "lang": "en",
+      "path": "/admin/print-servers/firmwares",
+      "overflow": false
+    },
+    {
+      "name": "channels",
+      "width": 1440,
+      "lang": "en",
+      "path": "/admin/print-servers/channels",
+      "overflow": false
+    },
+    {
+      "name": "updates",
+      "width": 1440,
+      "lang": "en",
+      "path": "/admin/print-servers/updates",
+      "overflow": false
+    },
+    {
+      "name": "device",
+      "width": 1440,
+      "lang": "en",
+      "version": "0.3.23",
+      "newerNotEnabled": "0.3.24",
+      "updateDisabled": true
+    },
+    {
+      "name": "firmwares",
+      "width": 390,
+      "lang": "es",
+      "path": "/admin/print-servers/firmwares",
+      "overflow": false
+    },
+    {
+      "name": "channels",
+      "width": 390,
+      "lang": "es",
+      "path": "/admin/print-servers/channels",
+      "overflow": false
+    },
+    {
+      "name": "updates",
+      "width": 390,
+      "lang": "es",
+      "path": "/admin/print-servers/updates",
+      "overflow": false
+    },
+    {
+      "name": "device",
+      "width": 390,
+      "lang": "es",
+      "version": "0.3.23",
+      "newerNotEnabled": "0.3.24",
+      "updateDisabled": true
+    },
+    {
+      "name": "firmwares",
+      "width": 390,
+      "lang": "en",
+      "path": "/admin/print-servers/firmwares",
+      "overflow": false
+    },
+    {
+      "name": "channels",
+      "width": 390,
+      "lang": "en",
+      "path": "/admin/print-servers/channels",
+      "overflow": false
+    },
+    {
+      "name": "updates",
+      "width": 390,
+      "lang": "en",
+      "path": "/admin/print-servers/updates",
+      "overflow": false
+    },
+    {
+      "name": "device",
+      "width": 390,
+      "lang": "en",
+      "version": "0.3.23",
+      "newerNotEnabled": "0.3.24",
+      "updateDisabled": true
+    },
+    {
+      "name": "owner",
+      "width": 1440,
+      "lang": "es",
+      "noInternalControls": true,
+      "noLongHashes": true
+    },
+    {
+      "name": "owner",
+      "width": 1440,
+      "lang": "en",
+      "noInternalControls": true,
+      "noLongHashes": true
+    },
+    {
+      "name": "owner",
+      "width": 390,
+      "lang": "es",
+      "noInternalControls": true,
+      "noLongHashes": true
+    },
+    {
+      "name": "owner",
+      "width": 390,
+      "lang": "en",
+      "noInternalControls": true,
+      "noLongHashes": true
+    }
+  ],
+  "network": [
+    {
+      "view": "login",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "login",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-1440",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 24,
+      "limit": 25,
+      "offset": 0,
+      "rows": 24
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 25,
+      "offset": 0,
+      "rows": 17
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 10,
+      "offset": 0,
+      "rows": 10
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 10,
+        "p_offset": 10,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 10,
+      "offset": 10,
+      "rows": 7
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": "78d05113",
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 1,
+      "limit": 10,
+      "offset": 0,
+      "rows": 1
+    },
+    {
+      "view": "channels-es-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": "78d05113",
+        "p_channel": "lab",
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 1,
+      "limit": 10,
+      "offset": 0,
+      "rows": 1
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_overview",
+      "params": {
+        "p_include_audit": false
+      },
+      "status": 200,
+      "rows": 0,
+      "contract_version": 2,
+      "noMassiveArrays": true
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_deployments_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      },
+      "status": 200,
+      "total": 53,
+      "limit": 25,
+      "offset": 0,
+      "rows": 25
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 22,
+      "limit": 25,
+      "offset": 0,
+      "rows": 22
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_deployments_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 25,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      },
+      "status": 200,
+      "total": 53,
+      "limit": 25,
+      "offset": 25,
+      "rows": 25
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_targets_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_deployment_id": "5410a54e-fb6b-4ae5-b546-3e05e13f9c6a"
+      },
+      "status": 200,
+      "total": 1,
+      "limit": 25,
+      "offset": 0,
+      "rows": 1
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_events_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_target_id": "edb07423-4b45-40cc-aa93-cfa817ba2a8c",
+        "p_phase": null
+      },
+      "status": 200,
+      "total": 9,
+      "limit": 25,
+      "offset": 0,
+      "rows": 9
+    },
+    {
+      "view": "updates-es-1440",
+      "rpc": "ps_ota_admin_audit_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_action": null
+      },
+      "status": 200,
+      "total": 227,
+      "limit": 25,
+      "offset": 0,
+      "rows": 25
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "portal_tenant_directory",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "7d619bc0-fc50-406f-9d31-6b71f39b3ab4",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "31fbe909-5b33-483e-84c0-69bdd22a4d35",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "3a9adf86-2d0b-4739-a800-f4e090ecad8c",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_admin_device_detail",
+      "params": {
+        "p_device_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-1440",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-1440",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 24,
+      "limit": 25,
+      "offset": 0,
+      "rows": 24
+    },
+    {
+      "view": "channels-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-1440",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 25,
+      "offset": 0,
+      "rows": 17
+    },
+    {
+      "view": "channels-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "ps_ota_admin_overview",
+      "params": {
+        "p_include_audit": false
+      },
+      "status": 200,
+      "rows": 0,
+      "contract_version": 2,
+      "noMassiveArrays": true
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "ps_ota_admin_deployments_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      },
+      "status": 200,
+      "total": 53,
+      "limit": 25,
+      "offset": 0,
+      "rows": 25
+    },
+    {
+      "view": "updates-en-1440",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 22,
+      "limit": 25,
+      "offset": 0,
+      "rows": 22
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "portal_tenant_directory",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "7d619bc0-fc50-406f-9d31-6b71f39b3ab4",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "31fbe909-5b33-483e-84c0-69bdd22a4d35",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "3a9adf86-2d0b-4739-a800-f4e090ecad8c",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-1440",
+      "rpc": "ps_admin_device_detail",
+      "params": {
+        "p_device_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-es-390",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 24,
+      "limit": 25,
+      "offset": 0,
+      "rows": 24
+    },
+    {
+      "view": "channels-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-es-390",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 25,
+      "offset": 0,
+      "rows": 17
+    },
+    {
+      "view": "channels-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "ps_ota_admin_overview",
+      "params": {
+        "p_include_audit": false
+      },
+      "status": 200,
+      "rows": 0,
+      "contract_version": 2,
+      "noMassiveArrays": true
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "ps_ota_admin_deployments_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      },
+      "status": 200,
+      "total": 53,
+      "limit": 25,
+      "offset": 0,
+      "rows": 25
+    },
+    {
+      "view": "updates-es-390",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 22,
+      "limit": 25,
+      "offset": 0,
+      "rows": 22
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "portal_tenant_directory",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "7d619bc0-fc50-406f-9d31-6b71f39b3ab4",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "31fbe909-5b33-483e-84c0-69bdd22a4d35",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "3a9adf86-2d0b-4739-a800-f4e090ecad8c",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-es-390",
+      "rpc": "ps_admin_device_detail",
+      "params": {
+        "p_device_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "firmwares-en-390",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 24,
+      "limit": 25,
+      "offset": 0,
+      "rows": 24
+    },
+    {
+      "view": "channels-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-390",
+      "rpc": "ps_ota_channels_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_channel": null,
+        "p_status": null,
+        "p_venue_id": null,
+        "p_group_id": null
+      },
+      "status": 200,
+      "total": 17,
+      "limit": 25,
+      "offset": 0,
+      "rows": 17
+    },
+    {
+      "view": "channels-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "channels-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "ps_ota_admin_overview",
+      "params": {
+        "p_include_audit": false
+      },
+      "status": 200,
+      "rows": 0,
+      "contract_version": 2,
+      "noMassiveArrays": true
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "ps_ota_admin_deployments_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_ring": null
+      },
+      "status": 200,
+      "total": 53,
+      "limit": 25,
+      "offset": 0,
+      "rows": 25
+    },
+    {
+      "view": "updates-en-390",
+      "rpc": "ps_firmware_page",
+      "params": {
+        "p_limit": 25,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": "signed",
+        "p_ring": null,
+        "p_model": null,
+        "p_arch": null
+      },
+      "status": 200,
+      "total": 22,
+      "limit": 25,
+      "offset": 0,
+      "rows": 22
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_tenant_directory",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "7d619bc0-fc50-406f-9d31-6b71f39b3ab4",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "31fbe909-5b33-483e-84c0-69bdd22a4d35",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_printer_jobs",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_printer_id": "3a9adf86-2d0b-4739-a800-f4e090ecad8c",
+        "p_limit": 10,
+        "p_offset": 0,
+        "p_query": null,
+        "p_status": null,
+        "p_from": null,
+        "p_to": null,
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_admin_device_detail",
+      "params": {
+        "p_device_id": "59a41440-8536-4045-aed1-3fcc5adaf193"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_admin_legacy_credentials_context",
+      "params": {
+        "p_venue_id": "a0000000-0000-0000-0000-000000000001",
+        "p_print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_owner_venues",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "device-en-390",
+      "rpc": "ps_panel_devices",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "portal_owner_venues",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_panel_ota",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "portal_owner_venues",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_panel_ota",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-1440",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "portal_owner_venues",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_panel_ota",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-es-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "portal_owner_venues",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "is_platform_staff",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "portal_access",
+      "params": {},
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_device_resolve",
+      "params": {
+        "p_id": "4a738466-52b2-4a38-a418-9ea8a46a2525"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_panel_state",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_panel_device",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_panel_ota",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    },
+    {
+      "view": "owner-en-390",
+      "rpc": "ps_panel_recovery_label",
+      "params": {
+        "p_venue_id": "f4430000-0000-4000-8000-0000000000f1",
+        "p_print_server_id": "3d906114-f0c3-496b-83ca-8465c97530b6"
+      },
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "pass": true,
+  "finishedAt": "2026-10-17T23:48:26.786Z"
+}
