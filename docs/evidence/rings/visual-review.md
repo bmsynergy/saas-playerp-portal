@@ -1,0 +1,3 @@
+Uma revisó capturas EN escritorio1440 y ES móvil390: tres tarjetas con selección visible, acordeón con datos propios y acción separada, filtros y paginación legibles. El navegador verificó scrollWidth <= viewport para todas las capturas EN/ES a ambos tamaños. Las capturas son fixtures identificados, no datos reales. No hay gráficos ni filas ocultas fuera de la página de25.
+
+El navegador también comprobó owner sin controles de rings en ficha, acceso directo owner/support/operations denegado antes de consultar Canales, y revisión de canal obsoleta en ficha cancelada sin escritura. La regresión Update General ejecutada es la prueba frontend existente (15 casos pe441FirmwareRoles), no prueba del servidor ni OTA física.
