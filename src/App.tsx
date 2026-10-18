@@ -1,8 +1,9 @@
+import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
-import { destination, preferredScope, chooseScope, safeNext } from './lib/access';
+import { destination, preferredScope, chooseScope, safeNext, canManageRings } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
 import { StaffPage, type StaffMember } from './pages/StaffPage';
 import { getVenueUsers, venueUsersRequest, type VenueUser, type VenueUserAction, type VenueUserInvite } from './lib/venueUsers';
@@ -337,7 +338,7 @@ function PrintServersRoute({detail=false,list=false,firmwares=false,channels=fal
   const access=useAccess(); const {venueId='',id=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
   if (firmwares) return <PrintFirmwaresPage/>;
-  if (channels) return <PrintChannelsPage/>;
+  if (channels) return canManageRings(access.data) ? <PrintChannelsPage/> : <StateView kind="denied"/>;
   if (inventory) return <PrintDevicesData/>;
   if (updates) return <PrintUpdatesData/>;
   if (device) return UUID.test(id) ? <DeviceSheetData key={id} id={id} scope="admin"/> : <StateView kind="notFound"/>;
@@ -453,14 +454,15 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   if(scope==='admin'&&!venueId&&fromVenue&&directory.isPending)return <StateView kind="loading"/>;
   const returnVenue=venueId??(scope==='admin'&&fromVenue&&directory.data?.some(item=>item.id===fromVenue)?fromVenue:null);
   const returnVenueName=returnVenue?(r.venue?.id===returnVenue?r.venue.name:directory.data?.find(item=>item.id===returnVenue)?.name??t('printServers')):null;
-  const back=returnVenue?{href:venueListHref(scope,returnVenue,r.device_id),label:returnVenueName??t('printServers')}:{href:'/admin/print-servers/inventory',label:t('inv.title')};
+  const channelsBack=scope==='admin'?channelsReturnTo(location.state?.channelsReturnTo):null;
+  const back=channelsBack?{href:channelsBack,label:t('pe474.channels.title')}:returnVenue?{href:venueListHref(scope,returnVenue,r.device_id),label:returnVenueName??t('printServers')}:{href:'/admin/print-servers/inventory',label:t('inv.title')};
   if(id!==r.device_id){
     const canonical=scope==='owner'&&venueId?ownerSheetHref(venueId,r.device_id):r.canonical_path;
-    return <Navigate to={canonical+(scope==='admin'&&returnVenue?`?fromVenue=${encodeURIComponent(returnVenue)}`:'')} replace/>;
+    return <Navigate to={canonical+(scope==='admin'&&returnVenue?`?fromVenue=${encodeURIComponent(returnVenue)}`:'')} state={channelsBack?{channelsReturnTo:channelsBack}:undefined} replace/>;
   }
   const staff=scope==='admin'&&r.is_staff;
   return <PsDeviceSheet key={r.device_id} device={r} staff={staff} scope={scope} back={back} stale={ref.isError}
-    onChanged={()=>invalidatePsViews(queryClient)} onCanonicalNavigate={path=>navigate(path,{replace:true})}/>;
+    onChanged={()=>invalidatePsViews(queryClient)} onCanonicalNavigate={path=>navigate(path,{replace:true,state:channelsBack?{channelsReturnTo:channelsBack}:undefined})}/>;
 }
 function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavigate}:{device:ResolvedDevice;staff:boolean;scope:'owner'|'admin';back:{href:string;label:string};stale:boolean;onChanged:()=>Promise<unknown>;onCanonicalNavigate:(path:string)=>void}) {
   const {t}=useLocale();

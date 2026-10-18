@@ -40,7 +40,7 @@ type Pagination = {
   setPageSize: (size: number) => void;
 };
 
-export function PrintListPagination({ pagination, id, disabled = false }: { pagination: Pagination; id: string; disabled?: boolean }) {
+export function PrintListPagination({ pagination, id, disabled = false, fixedSize = false }: { pagination: Pagination; id: string; disabled?: boolean; fixedSize?: boolean }) {
   const { locale, t } = useLocale();
   const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
   const { page, pageCount, pageSize, start, end, total, setPage, setPageSize } = pagination;
@@ -64,10 +64,10 @@ export function PrintListPagination({ pagination, id, disabled = false }: { pagi
   return <nav className="ps-pagination" aria-label={t('ps.pagination.label')} data-testid={`${id}-pagination`}>
     <span className="ps-pagination-range" data-testid={`${id}-pagination-range`}>{range}</span>
     <div className="ps-pagination-controls">
-      <label htmlFor={`${id}-page-size`}>{t('ps.pagination.rows')}</label>
-      <select id={`${id}-page-size`} value={pageSize} onChange={event => setPageSize(Number(event.target.value))} disabled={disabled} data-testid={`${id}-pagination-size`}>
-        {PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
-      </select>
+      {fixedSize ? <span className="ps-pagination-fixed-size">{t('ps.pagination.rows')}: {pageSize}</span> : <><label htmlFor={`${id}-page-size`}>{t('ps.pagination.rows')}</label>
+        <select id={`${id}-page-size`} value={pageSize} onChange={event => setPageSize(Number(event.target.value))} disabled={disabled} data-testid={`${id}-pagination-size`}>
+          {PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
+        </select></>}
       <button type="button" onClick={() => setPage(page - 1)} disabled={disabled || page <= 1} data-testid={`${id}-pagination-prev`}>{t('ps.pagination.previous')}</button>
       <div className="ps-pagination-jump" data-testid={`${id}-pagination-page`}>
         <label htmlFor={`${id}-pagination-input`}>{t('ps.pagination.pageInput')}</label>

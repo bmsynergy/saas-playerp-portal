@@ -1814,4 +1814,9 @@ export const en = {
   'pe474.reason.incompatible_device': 'Edition incompatible with this device.',
   'pe474.reason.unknown': 'The server rejected this device.',
   'pe474.channels.clearGroup': 'Show all channels',
+  'pe474.channels.chooseRing': 'Choose a ring',
+  'pe474.channels.chooseFirst': 'Choose Laboratory, Canary or General to see its Print Servers.',
+  'pe474.channels.countScope': 'Counts follow the current search and filters across all rings, excluding ring selection. The list and total show only the selected ring.',
+  'pe474.channels.servers': 'Print Servers',
+  'pe474.channels.total': '{n} Print Servers in this ring',
 } as const;

@@ -1817,4 +1817,9 @@ export const es: Record<keyof typeof en, string> = {
   'pe474.reason.incompatible_device': 'La edición no es compatible con este aparato.',
   'pe474.reason.unknown': 'El servidor rechazó este aparato.',
   'pe474.channels.clearGroup': 'Mostrar todos los canales',
+  'pe474.channels.chooseRing': 'Elige un anillo',
+  'pe474.channels.chooseFirst': 'Elige Laboratorio, Canary o General para ver sus Print Servers.',
+  'pe474.channels.countScope': 'Las cifras siguen la búsqueda y los filtros actuales en todos los anillos, salvo la selección del anillo. La lista y el total muestran solo el anillo elegido.',
+  'pe474.channels.servers': 'Print Servers',
+  'pe474.channels.total': '{n} Print Servers en este anillo',
 };

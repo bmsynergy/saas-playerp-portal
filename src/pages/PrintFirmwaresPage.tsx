@@ -1,3 +1,5 @@
+import { useAccess } from '../hooks/usePortalData';
+import { canManageRings } from '../lib/access';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,6 +18,7 @@ import { useOtaPage } from '../lib/useOtaPage';
 
 export function PrintServersTabs() {
   const { t } = useLocale();
+  const access = useAccess();
   const items = [
     { to: '/admin/print-servers', label: t('fw.tab.dashboard'), icon: <LayoutDashboard size={16}/>, testId: 'ps-tab-dashboard' },
     { to: '/admin/print-servers/list', label: t('fw.tab.list'), icon: <List size={16}/>, testId: 'ps-tab-list' },
@@ -25,7 +28,7 @@ export function PrintServersTabs() {
     { to: '/admin/print-servers/updates', label: t('ota.tab'), icon: <Rocket size={16}/>, testId: 'ps-tab-updates' },
   ];
   return <nav className="detail-tabs ps-global-tabs" aria-label={t('secondaryNavigation')}>
-    {items.map(item => <NavLink key={item.to} end to={item.to} data-testid={item.testId} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}>{item.icon}{item.label}</NavLink>)}
+    {items.filter(item => item.testId !== 'ps-tab-channels' || canManageRings(access.data)).map(item => <NavLink key={item.to} end to={item.to} data-testid={item.testId} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}>{item.icon}{item.label}</NavLink>)}
   </nav>;
 }
 

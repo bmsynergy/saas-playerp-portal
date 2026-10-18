@@ -607,7 +607,32 @@ input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .pe474-updates-refresh { display:flex; justify-content:flex-end; }
 .pe474-deploy-errors { margin:.55rem 0 0; padding-left:1.15rem; overflow-wrap:anywhere; }
 .pe474-deploy-errors li + li { margin-top:.35rem; }
-.pe474-channels-table { min-width: 790px; }
+.channels-scope{color:var(--muted);font-size:.78rem;line-height:1.55;margin:0 0 12px}
+.channels-ring-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.channels-ring-card{font:inherit;min-width:0;min-height:116px;text-align:left;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);padding:16px;display:grid;align-content:center;gap:3px;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+.channels-ring-card:hover{border-color:var(--blue);background:var(--blue-soft)}
+.channels-ring-card.is-selected{border:2px solid var(--blue);background:var(--blue-soft);box-shadow:0 0 0 2px rgba(18,104,254,.12);padding:15px}
+.channels-ring-card:focus-visible,.channels-item-toggle:focus-visible,.channels-change-label select:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.channels-ring-name{font-size:.8rem;font-weight:800;overflow-wrap:anywhere}
+.channels-ring-count{font-family:Manrope,sans-serif;font-size:1.55rem;line-height:1.15}
+.channels-ring-caption{font-size:.69rem;color:var(--muted)}
+.channels-toolbar{align-items:center}.channels-toolbar .directory-count{white-space:normal}
+.channels-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.channels-item{border:1px solid var(--line);border-radius:12px;background:var(--surface);min-width:0;overflow:hidden}
+.channels-item.is-open{border-color:var(--blue-line)}
+.channels-item-heading{margin:0}
+.channels-item-toggle{font:inherit;color:var(--ink);background:transparent;border:0;width:100%;padding:14px 16px;text-align:left;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) 18px;align-items:center;gap:12px;cursor:pointer}
+.channels-item-toggle:hover{background:var(--canvas)}
+.channels-item-main{min-width:0;display:grid;gap:3px}.channels-item-main strong{font-size:.86rem;overflow-wrap:anywhere}.channels-item-main .ps-mono{color:var(--muted)}
+.channels-item-venue{min-width:0;color:var(--muted);font-size:.76rem;overflow-wrap:anywhere}
+.channels-item-state{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:.72rem;color:var(--muted)}
+.channels-chevron{color:var(--muted);transition:transform .15s}.channels-item.is-open .channels-chevron{transform:rotate(180deg)}
+.channels-item-detail{border-top:1px solid var(--line);padding:17px 16px 18px;background:var(--canvas)}
+.channels-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 18px}.channels-facts>div{min-width:0}.channels-facts dt{font-size:.67rem;color:var(--muted);font-weight:800}.channels-facts dd{margin:4px 0 0;font-size:.79rem;overflow-wrap:anywhere}
+.channels-item-actions{display:flex;align-items:end;flex-wrap:wrap;gap:12px}.channels-change-label{display:grid;gap:5px;min-width:min(100%,185px);font-size:.72rem;font-weight:700}.channels-change-label select{width:100%;min-height:var(--portal-control-height);border:1px solid var(--control-line);border-radius:9px;background:var(--surface);color:var(--ink);padding:0 10px}
+.channels-choose-message{border:1px dashed var(--line);border-radius:11px}
+@media(max-width:760px){.channels-item-toggle{grid-template-columns:minmax(0,1fr) 18px;gap:5px 10px}.channels-item-main,.channels-item-venue,.channels-item-state{grid-column:1}.channels-chevron{grid-column:2;grid-row:1/4}.channels-item-venue{font-size:.73rem}.channels-item-state{margin-top:4px}}
+@media(max-width:520px){.channels-ring-grid{grid-template-columns:minmax(0,1fr);gap:8px}.channels-ring-card{min-height:78px;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}.channels-ring-name{grid-column:1}.channels-ring-count{grid-column:2;grid-row:1/3}.channels-ring-caption{grid-column:1}.channels-item-actions{align-items:stretch}.channels-item-actions>.button,.channels-change-label{width:100%}}
 .pe474-channels-table :is(th,td):nth-child(4),
 .pe474-channels-table :is(th,td):nth-child(5) { min-width: 125px; }
 .pe474-channels-table .server-status { white-space: nowrap; flex: none; }

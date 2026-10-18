@@ -1,6 +1,7 @@
 // Admin-only presentation of the PE-474 device channel and installable editions.
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { channelsReturnTo } from '../lib/channelNavigation';
+import { Link, useLocation } from 'react-router-dom';
 import { useLocale } from '../locales';
 import type { FirmwareRing } from '../lib/firmwareLifecycle';
 import { type NewerBlocked, type OtaChannel, type OtaEdition } from '../lib/psOtaDevice';
@@ -9,12 +10,14 @@ import { PortalDialog } from './PortalDialog';
 const RINGS: FirmwareRing[]=['lab','canary','general'];
 export function ChannelBlock({ deviceId, channel, onChange }: {deviceId:string;channel:OtaChannel;onChange:()=>void}) {
   const {t}=useLocale();
+  const location=useLocation();
+  const href=channelsReturnTo(location.state?.channelsReturnTo)??`${channel.href}?channel=${channel.ring}`;
   return <div className="ota-block" data-testid="admin-device-channel" aria-labelledby={`ota-channel-${deviceId}`} role="group">
     <h4 id={`ota-channel-${deviceId}`}>{t('otaDevice.channel.title')}</h4>
     <p><strong>{t(`ota.ring.${channel.ring}`)}</strong> · {t('pe474.channels.revision').replace('{n}',String(channel.revision))}</p>
     <p className="ps-cert-small">{t('pe474.channels.deviceRule')}</p>
     {channel.deployment_groups.length>0&&<p className="ps-cert-small">{t('pe474.channels.deploymentGroups')}: {channel.deployment_groups.map(g=>g.name).join(', ')}</p>}
-    <div className="staff-actions"><button type="button" className="button button-secondary" data-testid="admin-device-change-channel" disabled={!channel.can_change} onClick={onChange}>{t('otaDevice.channel.change')}</button><Link className="staff-action-link" to={channel.href}>{t('pe474.channels.manage')}</Link></div>
+    <div className="staff-actions"><button type="button" className="button button-secondary" data-testid="admin-device-change-channel" disabled={!channel.can_change} onClick={onChange}>{t('otaDevice.channel.change')}</button><Link className="staff-action-link" to={href}>{t('pe474.channels.manage')}</Link></div>
     {!channel.can_change&&channel.blocked_reason&&<p className="ps-cert-small">{t(`adminDevice.reason.${channel.blocked_reason}`)}</p>}
   </div>;
 }

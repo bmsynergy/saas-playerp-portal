@@ -1,3 +1,6 @@
+import { useAccess } from '../hooks/usePortalData';
+import { canManageRings } from '../lib/access';
+import type { OtaChannel } from '../lib/psOtaDevice';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
@@ -17,6 +20,8 @@ type Confirmation = { editionId: string; version: string; installed: string; rin
 export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }: Props) {
   const { t } = useLocale();
   const { session } = useAuth();
+  const access = useAccess();
+  const ringAdmin = canManageRings(access.data);
   const [confirm, setConfirm] = useState<Confirmation | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -25,7 +30,7 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
   const ota = update?.ota;
   const editions = ota?.editions ?? null;
   const [picked, setPicked] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<'channel' | null>(null);
+  const [dialog, setDialog] = useState<OtaChannel | null>(null);
   const [dialogError, setDialogError] = useState('');
   // PE-473: with the editions contract staff choose any selectable edition; without it, the candidate as before.
   const selected = editions ? editions.find(e => e.edition_id === (picked ?? defaultEditionId(editions)) && e.selectable) ?? null : null;
@@ -47,22 +52,22 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
     return u.can_update && u.candidate ? { edition_id: u.candidate.edition_id, version: u.candidate.version } : null;
   };
   const confirmTargetId = () => confirm?.editionId ?? target?.edition_id ?? null;
-  const openChannel = () => { setDialogError(''); setNotice(''); setDialog('channel'); };
+  const openChannel = () => { if (!ringAdmin || !ota?.channel) return; setDialogError(''); setNotice(''); setDialog({...ota.channel}); };
 
 
   async function changeChannel(ring: FirmwareRing) {
-    const channel = ota?.channel;
-    if (!channel || busy) return;
+    const channel = dialog;
+    if (!ringAdmin || !channel || busy) return;
     setBusy(true); setDialogError('');
     try {
       const refreshed = await detail.refetch();
       const fresh = refreshed.data?.update.ota.channel;
-      if (refreshed.isError || !fresh?.can_change || fresh.ring !== channel.ring || fresh.revision !== channel.revision) { setDialogError(t('adminDevice.error.channel_changed')); return; }
+      if (refreshed.isError || !fresh?.can_change || fresh.ring !== channel.ring || fresh.revision !== channel.revision) { setDialog(null); setNotice(t('adminDevice.error.channel_changed')); return; }
       const result = await setAdminDeviceChannel(deviceId, ring, channel.ring, channel.revision);
       setDialog(null); setNotice(t(result.changed ? 'otaDevice.channel.changed' : 'otaDevice.channel.unchanged'));
       await detail.refetch();
       await onChanged?.();
-    } catch (error) { setDialogError(t(adminDeviceErrorKey(error))); await detail.refetch(); await onChanged?.(); }
+    } catch (error) { setDialog(null); setNotice(t(adminDeviceErrorKey(error))); await detail.refetch(); await onChanged?.(); }
     finally { setBusy(false); }
   }
 
@@ -111,7 +116,7 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
       {update.active_update && <p className="owner-section-lead" role="status">{t('adminDevice.updateInProgress')}: {update.active_update.stage ?? update.active_update.status}{update.active_update.progress !== null ? ` · ${update.active_update.progress}%` : ''}</p>}
       {editions && <EditionPicker editionsTotal={ota?.editions_total} reason={update.reason} newerBlocked={ota?.newer_blocked} editions={editions} value={selected?.edition_id ?? null} onChange={id => { setPicked(id); setConfirm(null); }} disabled={busy || !!update.active_update}/>}
       <FirmwareUpdateAction testId="admin-device-update" disabled={!canUpdate || busy} onClick={() => void review()} reason={!editions && !canUpdate && !detail.isFetching && !update.active_update ? blockedReason(update.reason) : null} loading={busy}/>
-      {ota?.channel && <ChannelBlock deviceId={deviceId} channel={ota.channel} onChange={openChannel}/>}
+      {ringAdmin && ota?.channel && <ChannelBlock deviceId={deviceId} channel={ota.channel} onChange={openChannel}/>}
     </> : null}
     {detail.isFetching && !detail.isPending && <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p>}
     {notice && <p role="status" className="ps-result">{notice}</p>}
@@ -121,6 +126,6 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
       {!stillCurrent && <p role="status">{t('adminDevice.updateChanged')}</p>}
       <div className="staff-actions"><button type="button" className="button button-primary" disabled={busy || !stillCurrent} onClick={() => void submit()}>{t('adminDevice.update')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={() => setConfirm(null)}>{t('staff.cancel')}</button></div>
     </div>}
-    {dialog === 'channel' && ota?.channel && <ChannelDialog channel={ota.channel} serial={serial} busy={busy} error={dialogError} onCancel={() => setDialog(null)} onConfirm={ring => void changeChannel(ring)}/>}
+    {ringAdmin && dialog && <ChannelDialog channel={dialog} serial={serial} busy={busy} error={dialogError} onCancel={() => setDialog(null)} onConfirm={ring => void changeChannel(ring)}/>}
   </section>;
 }

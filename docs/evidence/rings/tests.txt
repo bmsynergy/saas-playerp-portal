@@ -1,0 +1,49 @@
+
+> saas-playerp-portal@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/74957d03-f9e0-4d00-b39e-d3df7774a519/portal
+
+ ✓ tests/core.test.ts (7 tests) 86ms
+ ✓ tests/printServerApi.test.ts (15 tests) 49ms
+ ✓ tests/printFleet.test.ts (14 tests) 26ms
+ ✓ tests/venueUsers.test.ts (8 tests) 37ms
+ ✓ tests/psAdminDevice.test.ts (17 tests) 33ms
+ ✓ tests/legacyEvidence.test.ts (32 tests) 19ms
+ ✓ tests/printInventory.test.ts (5 tests) 15ms
+ ✓ tests/pe473OtaDevice.test.ts (11 tests) 114ms
+ ✓ tests/psAdminCode.test.ts (24 tests) 20ms
+ ✓ tests/pe441FirmwareRoles.test.ts (15 tests) 32ms
+ ✓ tests/ownerUsers.test.ts (6 tests) 76ms
+ ✓ tests/pe474Pagination.test.ts (8 tests) 18ms
+ ✓ tests/psLink.test.ts (13 tests) 17ms
+ ✓ tests/firmwareEligibility.test.ts (13 tests) 18ms
+ ✓ tests/firmwareDelete.test.ts (9 tests) 46ms
+ ✓ tests/psResolvedDevice.test.ts (8 tests) 12ms
+ ✓ tests/firmwareLifecycleApi.test.ts (11 tests) 14ms
+ ✓ tests/access.test.ts (17 tests) 19ms
+ ✓ tests/psAdminDeviceSheet.test.ts (4 tests) 11ms
+ ✓ tests/psInvalidation.test.ts (1 test) 11ms
+ ✓ tests/pe443MultiPs.test.ts (6 tests) 10ms
+ ✓ tests/invitation.test.ts (9 tests) 9ms
+ ✓ tests/pe458Mcp.test.ts (8 tests) 8ms
+ ✓ tests/psVenueOverview.test.ts (4 tests) 9ms
+ ✓ tests/psLabel.test.ts (5 tests) 9ms
+ ✓ tests/psRecoveryLabel.test.ts (7 tests) 6ms
+ ✓ tests/adminLists.test.ts (5 tests) 10ms
+ ✓ tests/psCredentialOperation.test.ts (14 tests) 9ms
+ ✓ tests/firmwareLifecycle.test.ts (22 tests) 8ms
+ ✓ tests/psRotationStatus.test.ts (4 tests) 7ms
+ ✓ tests/otaDeviceModels.test.ts (3 tests) 6ms
+ ✓ tests/psSsidAdoption.test.ts (4 tests) 7ms
+ ✓ tests/oauthConsent.test.ts (5 tests) 6ms
+ ✓ tests/psEnroll.test.ts (3 tests) 5ms
+ ✓ tests/channelNavigation.test.ts (4 tests) 7ms
+ ✓ tests/otaEvents.test.ts (2 tests) 8ms
+
+ Test Files  36 passed (36)
+      Tests  343 passed (343)
+   Start at  00:35:06
+   Duration  15.36s (transform 1.67s, setup 0ms, collect 3.77s, tests 799ms, environment 7ms, prepare 3.59s)
+
