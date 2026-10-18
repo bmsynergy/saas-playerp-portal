@@ -22,6 +22,7 @@ import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
 import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
 import { PsDeviceSetup } from './components/PsDeviceSetup';
+import { DeviceAdminSummary } from './components/DeviceAdminSummary';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
@@ -531,6 +532,8 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
         {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
     </section>
     {setup&&<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>}
+    {/* PE-486: a new unit has no venue yet, so the existing firmware block (channel + eligible editions) is reused here. */}
+    {setup&&runtime&&!venue&&<div id="ps-setup-firmware"><DeviceAdminSummary key={`fw:${device.device_id}`} deviceId={device.device_id}/></div>}
     {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id}/>:null}
     {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}

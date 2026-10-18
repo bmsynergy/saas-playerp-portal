@@ -70,7 +70,7 @@ export function PsDeviceSetup({ device }: { device: ResolvedDevice }) {
     online: <><p className="ps-cert-small">{t('psSetup.step.online.body')}</p>{(lastSeen || firmware) && <dl className="dev-facts">{lastSeen && <div><dt>{t('psSetup.lastSeen')}</dt><dd>{date(lastSeen)}</dd></div>}{firmware && <div><dt>{t('psSetup.firmware')}</dt><dd className="ps-mono">{firmware}</dd></div>}</dl>}</>,
     channel: <><p className="ps-cert-small">{t('psSetup.step.channel.body')}</p>
       {detail.isError ? <p className="ps-cert-small" role="status" data-testid="ps-setup-channel-error">{t('psSetup.channel.unavailable')}</p> : detail.isPending ? <p className="ps-cert-small" role="status">{t('psSetup.channel.loading')}</p> : <dl className="dev-facts" data-testid="ps-setup-channel"><div><dt>{t('psSetup.channel.ring')}</dt><dd>{ringLabel(ring)}</dd></div><div><dt>{t('psSetup.channel.effective')}</dt><dd>{ringLabel(effective)}</dd></div></dl>}
-      <a className="staff-action-link" href="#ps469-firmware">{t('psSetup.openFirmware')}</a></>,
+      <a className="staff-action-link" href={device.venue ? '#ps469-firmware' : '#ps-setup-firmware'}>{t('psSetup.openFirmware')}</a></>,
   };
   if (!allowed) return null;
   return <section className="detail-panel ps-setup" id="ps-setup" aria-labelledby="ps-setup-title" data-testid="ps-setup">
