@@ -21,6 +21,7 @@ import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
 import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
+import { PsDeviceSetup } from './components/PsDeviceSetup';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
@@ -466,6 +467,9 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
 }
 function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavigate}:{device:ResolvedDevice;staff:boolean;scope:'owner'|'admin';back:{href:string;label:string};stale:boolean;onChanged:()=>Promise<unknown>;onCanonicalNavigate:(path:string)=>void}) {
   const {t}=useLocale();
+  // PE-486: Setup only for platform super_admin in the admin scope; owners never read access for it.
+  const access=useAccess(staff);
+  const setup=staff&&canManageRings(access.data);
   const [confirm,setConfirm]=useState<{deviceId:string;rev:number;venueName:string}|null>(null);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
@@ -511,7 +515,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
     {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
     {notice&&<p className="staff-notice" role="status">{notice}</p>}
-    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
+    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}{setup&&<a href="#ps-setup">{t('psSetup.nav')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
     <section id="ps469-overview" className="ps469-overview" aria-label={t('ps469.summary')}>
       <div className="ps469-sync" data-testid="ps-link-sync"><strong>{sync?.confirmed?t(sync.scope==='unlinked'?'ps469.unlinkConfirmed':'ps469.syncConfirmed'):venue?t('ps469.syncPending'):t('ps469.stock')}</strong>
         {venue&&!sync?.confirmed&&<p>{ack.supported===false?t('ps469.compatNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',ack.required_version):t('ps469.waitAck')}{available&&` ${t('ps469.available')}: ${available}.`}</p>}
@@ -526,6 +530,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
         {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):t('ps469.unlinkForbidden')}</p>}
         {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
     </section>
+    {setup&&<PsDeviceSetup key={device.device_id} device={device}/>}
     {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id}/>:null}
     {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}

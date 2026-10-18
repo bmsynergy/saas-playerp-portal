@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List, PenLine, RefreshCw, Rocket, ShieldCheck, Trash2, Upload, RadioTower } from 'lucide-react';
-import { FirmwareError, deleteFirmware, firmwareDownloadUrl, promoteFirmwareEdition, setFirmwareAvailability, sha256OfFile, uploadFirmware, listInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
+import { FirmwareError, deleteFirmware, firmwareDownloadUrl, promoteFirmwareEdition, setFirmwareAvailability, sha256OfFile, uploadFirmware, listInstallKits, initialInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
 import { FirmwareInstallKit } from '../components/FirmwareInstallKit';
 import { useAuth } from '../hooks/useAuth';
 import { signEdition } from '../lib/ota';
@@ -47,7 +47,7 @@ export function PrintFirmwaresPage() {
   // PE-485: kits are requested only once access confirms a super_admin; the edge enforces it again.
   const kitsAllowed = access.data?.is_platform_staff === true && access.data.platform_role === 'super_admin';
   const kits = useQuery({ queryKey: ['ps-install-kits', session?.user.id], queryFn: listInstallKits, enabled: !!session && kitsAllowed, retry: false });
-  const kitsByRelease = useMemo(() => { const map = new Map<string, InstallKit[]>(); for (const kit of kits.data ?? []) map.set(kit.release_id, [...(map.get(kit.release_id) ?? []), kit]); return map; }, [kits.data]);
+  const kitsByRelease = useMemo(() => { const map = new Map<string, InstallKit[]>(); for (const kit of initialInstallKits(kits.data ?? [])) map.set(kit.release_id, [...(map.get(kit.release_id) ?? []), kit]); return map; }, [kits.data]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [fileKey, setFileKey] = useState(0);

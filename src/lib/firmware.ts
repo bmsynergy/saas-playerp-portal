@@ -100,15 +100,17 @@ export async function firmwareDownloadUrl(id: string): Promise<string> {
 
 // PE-485: initial SD install kits. Super_admin only, enforced by ps-firmware-admin; listing and
 // downloading never sign, promote or authorize installing anything.
+// PE-486: `kind` separates the initial SD kit (Firmwares page) from the generic bootable image (device Setup).
+export type InstallKitKind = 'initial_install' | 'bootable_image';
 export type InstallKit = {
-  id: string; release_id: string; release_version: string | null; release_sha256: string | null; profile: string; file_name: string;
+  id: string; kind: InstallKitKind; release_id: string; release_version: string | null; release_sha256: string | null; profile: string; file_name: string;
   sha256: string; bytes: number | null; base_image_name: string | null; base_image_url: string | null; base_image_sha256: string | null;
   built_from_commit: string | null; created_at: string | null;
 };
 export type InstallKitDownload = { url: string; filename: string; sha256: string; bytes: number | null; expires_in: number | null };
 function projectInstallKit(v: Raw): InstallKit {
   if (typeof v.id !== 'string' || typeof v.release_id !== 'string' || typeof v.sha256 !== 'string' || typeof v.file_name !== 'string') throw new PortalError('genericError');
-  return { id: v.id, release_id: v.release_id, release_version: str(v.release_version), release_sha256: str(v.release_sha256), profile: String(v.profile ?? ''),
+  return { id: v.id, kind: v.kind === 'bootable_image' ? 'bootable_image' : 'initial_install', release_id: v.release_id, release_version: str(v.release_version), release_sha256: str(v.release_sha256), profile: String(v.profile ?? ''),
     file_name: v.file_name, sha256: v.sha256, bytes: num(v.bytes), base_image_name: str(v.base_image_name), base_image_url: str(v.base_image_url),
     base_image_sha256: str(v.base_image_sha256), built_from_commit: str(v.built_from_commit), created_at: str(v.created_at) };
 }
@@ -117,6 +119,7 @@ export async function listInstallKits(): Promise<InstallKit[]> {
   if (!Array.isArray(data.kits)) throw new PortalError('genericError');
   return data.kits.map(v => projectInstallKit(v as Raw));
 }
+export const initialInstallKits = (kits: InstallKit[]): InstallKit[] => kits.filter(kit => kit.kind === 'initial_install');
 export async function getInstallKitDownload(id: string): Promise<InstallKitDownload> {
   const data = await call({ action: 'kit_download', id });
   if (typeof data.url !== 'string') throw new PortalError('genericError');

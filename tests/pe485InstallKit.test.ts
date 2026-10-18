@@ -17,7 +17,7 @@ import { EMPTY_LIST_FILTERS } from '../src/lib/adminLists';
 import type { PortalAccess } from '../src/lib/types';
 
 const SHA = 'ab'.repeat(32), BASE_SHA = 'cd'.repeat(32), PATH = '/admin/print-servers/firmwares';
-const kit: InstallKit = { id: 'kit-1', release_id: 'rel-1', release_version: '0.3.20', release_sha256: 'ef'.repeat(32), profile: 'prod', file_name: 'playerp-ps-0.3.20-prod-kit.zip',
+const kit: InstallKit = { id: 'kit-1', kind: 'initial_install', release_id: 'rel-1', release_version: '0.3.20', release_sha256: 'ef'.repeat(32), profile: 'prod', file_name: 'playerp-ps-0.3.20-prod-kit.zip',
   sha256: SHA, bytes: 3145728, base_image_name: 'raspios-bookworm-arm64-lite.img.xz', base_image_url: 'https://example.test/base.img.xz', base_image_sha256: BASE_SHA,
   built_from_commit: 'abc1234', created_at: '2026-10-01T10:00:00Z' };
 const release = (id: string): FirmwareRelease => ({ id, version: id === 'rel-1' ? '0.3.20' : '0.3.19', revision: null, model: 'rpi4-2gb', arch: 'arm64', notes: null, filename: `${id}.zip`,
@@ -81,6 +81,10 @@ describe('PE-485 firmwares page kit block', () => {
     expect(html).toContain('Descargar kit');
     const rel2 = html.slice(html.indexOf('data-testid="fw-row-rel-2"'));
     expect(rel2.slice(0, rel2.indexOf('</li>'))).not.toContain('fw-kit-');
+  });
+  it('PE-486: a bootable_image kit of the same release is not shown on the Firmwares page', () => {
+    const html = render(client(superAdmin, [kit, { ...kit, id: 'img-1', kind: 'bootable_image', file_name: 'playerp-ps-0.3.20.img.xz' }]), createElement(PrintFirmwaresPage));
+    expect(html).toContain('data-testid="fw-kit-kit-1"'); expect(html).not.toContain('fw-kit-img-1'); expect(html).not.toContain('playerp-ps-0.3.20.img.xz');
   });
   it('a failed kit_list shows a small non-blocking error and the release list still renders', async () => {
     const qc = client(superAdmin, undefined, true, false); // keep the failed state visible in a static render
