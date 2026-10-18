@@ -2,9 +2,11 @@ import { useAccess } from '../hooks/usePortalData';
 import { canManageRings } from '../lib/access';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, NavLink, useSearchParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Check, Cpu, Download, FileArchive, LayoutDashboard, List, PenLine, RefreshCw, Rocket, ShieldCheck, Trash2, Upload, RadioTower } from 'lucide-react';
-import { FirmwareError, deleteFirmware, firmwareDownloadUrl, promoteFirmwareEdition, setFirmwareAvailability, sha256OfFile, uploadFirmware, type FirmwareRelease } from '../lib/firmware';
+import { FirmwareError, deleteFirmware, firmwareDownloadUrl, promoteFirmwareEdition, setFirmwareAvailability, sha256OfFile, uploadFirmware, listInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
+import { FirmwareInstallKit } from '../components/FirmwareInstallKit';
+import { useAuth } from '../hooks/useAuth';
 import { signEdition } from '../lib/ota';
 import { FIRMWARE_RINGS, firmwareRingAvailable, type FirmwareRing, type FirmwareConfirmation } from '../lib/firmwareLifecycle';
 import { errorCode } from '../lib/errors';
@@ -40,6 +42,12 @@ export function PrintFirmwaresPage() {
   const { t, locale } = useLocale();
   const cache = useQueryClient();
   const page = useOtaPage('firmwares');
+  const { session } = useAuth();
+  const access = useAccess();
+  // PE-485: kits are requested only once access confirms a super_admin; the edge enforces it again.
+  const kitsAllowed = access.data?.is_platform_staff === true && access.data.platform_role === 'super_admin';
+  const kits = useQuery({ queryKey: ['ps-install-kits', session?.user.id], queryFn: listInstallKits, enabled: !!session && kitsAllowed, retry: false });
+  const kitsByRelease = useMemo(() => { const map = new Map<string, InstallKit[]>(); for (const kit of kits.data ?? []) map.set(kit.release_id, [...(map.get(kit.release_id) ?? []), kit]); return map; }, [kits.data]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [fileKey, setFileKey] = useState(0);
@@ -78,6 +86,7 @@ export function PrintFirmwaresPage() {
     } catch (error) { setResult({ok:false,text:t(error instanceof FirmwareError ? error.key : errorCode(error)),release:error instanceof FirmwareError ? error.release : undefined}); }
     finally { setStage('idle'); await refresh().catch(() => {setNoticeError(true);setNotice(t('fw.refreshFailed'));}); }
   }
+  const kitError = (error: unknown) => { setNoticeError(true); setNotice(t(error instanceof FirmwareError ? error.key : errorCode(error))); };
   async function download(id: string) { try { window.location.assign(await firmwareDownloadUrl(id)); } catch (error) { setNotice(t(error instanceof FirmwareError ? error.key : errorCode(error))); } }
   async function perform(action: () => Promise<void>, success: string, close: () => void) {
     if (busyAction || page.query.isError || page.query.isFetching) return;
@@ -129,12 +138,14 @@ export function PrintFirmwaresPage() {
     <section className="servers-panel" aria-labelledby="fw-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t('fw.listEyebrow')}</p><h2 id="fw-list-title">{t('fw.listTitle')}</h2></div><button type="button" className="button button-secondary" onClick={() => void page.query.refetch()} disabled={page.query.isFetching}><RefreshCw size={15}/>{t('refresh')}</button></div>
       <div className="admin-list-toolbar"><AdminListFilters id="fw-releases" filters={page.filters} set={page.set} clear={page.clear} statuses={[{value:'ready',label:t('fw.loaded')},{value:'signed',label:t('fw.lifecycle.signed')},{value:'unsigned',label:t('fw.lifecycle.unsigned')},{value:'retired',label:t('fw.lifecycle.retired')},{value:'rejected',label:t('fw.rejected')}]} afterStatus={<><label><span>{t('ota.ring')}</span><select value={page.filters.ring ?? ''} onChange={e => page.set('ring',e.target.value)} data-testid="fw-ring-filter"><option value="">{t('list.allStates')}</option>{[...FIRMWARE_RINGS,'none'].map(r => <option key={r} value={r}>{r === 'none' ? t('pe474.firmware.noChannels') : t(`ota.ring.${r}`)}</option>)}</select></label><label><span>{t('fw.model')}</span><input value={page.filters.model ?? ''} onChange={e => page.set('model',e.target.value)}/></label><label><span>{t('fw.arch')}</span><input value={page.filters.arch ?? ''} onChange={e => page.set('arch',e.target.value)}/></label></>}/><span className="directory-count">{page.pagination.total}</span></div>
+      {kits.isError && <p className="fw-notice" role="status" data-testid="fw-kit-list-error"><AlertTriangle size={15}/>{t('fw.kit.listError')}</p>}
       {notice && <div role={noticeError?'alert':'status'} className={`ps-result ${noticeError?'ps-result-error':'ps-result-ok'}`}>{notice}</div>}
       {page.query.isError ? <div role="alert" className="form-error">{t(psErrorKey(page.query.error))}<button className="button button-secondary" onClick={() => void page.query.refetch()}>{t('refresh')}</button></div> : page.query.isPending ? <p className="inline-empty" role="status">{t('dev.loading')}</p> : releases.length === 0 ? <p className="inline-empty">{t('list.noMatches')}</p> : <ul className="fw-release-list" data-testid="fw-release-list">{releases.map(r => {
         const lifecycle = r.lifecycle, expanded = focused?.id === r.id;
         return <li id={`firmware-release-${r.id}`} className={`fw-release-card ${expanded ? 'fw-release-focused' : ''}`} key={r.id} data-testid={`fw-row-${r.id}`} data-status={stateOf(r)}>
           <div className="fw-release-head"><div className="fw-release-title"><strong><button className="staff-action-link pe474-title-button" type="button" onClick={() => chooseDetail(r)} data-testid={`fw-open-${r.id}`}>{r.version}</button></strong>{r.revision && <span>{t('fw.revision')} {r.revision}</span>}<span>{r.model} · {r.arch}</span></div><span className={`server-status ${stateOf(r)==='signed'?'server-online':stateOf(r)==='retired'||stateOf(r)==='rejected'?'server-revoked':'server-pending'}`} data-testid={`fw-state-${r.id}`}>{t(stateOf(r)==='signed'?'fw.lifecycle.signed':stateOf(r)==='retired'?'fw.lifecycle.retired':stateOf(r)==='rejected'?'fw.rejected':stateOf(r)==='unknown'?'pe474.firmware.unknown':'fw.loaded')}</span><div className="fw-release-actions"><button type="button" className="button button-secondary" onClick={() => chooseDetail(r)}>{t('pe474.firmware.details')}</button>{r.status==='ready'&&<button type="button" className="button button-secondary" onClick={() => void download(r.id)}><Download size={15}/>{t('fw.download')}</button>}{lifecycle?.can_sign&&<button className="button button-primary" disabled={busyAction||page.query.isFetching||page.query.isError||!r.sha256} onClick={() => {setSignTarget(r);setSignConfirmed(false);setActionError('');}}><PenLine size={15}/>{t('fw.lifecycle.sign')}</button>}<button className="button button-secondary ps-danger" disabled={busyAction||stageBusy} onClick={() => {setDeleteTarget(r);setActionError('');}}><Trash2 size={15}/>{t('fw.delete')}</button></div></div>
           <p className="ps-sub">{r.filename} · {formatDate(r.created_at)} · {t('pe474.firmware.installedCount').replace('{n}',String(r.installed_count))}</p>
+          {kitsByRelease.get(r.id)?.map(kit => <FirmwareInstallKit key={kit.id} kit={kit} t={t} onError={kitError}/>)}
           {expanded && <div className="pe474-firmware-detail" data-testid={`fw-detail-${r.id}`}>
             <div className="fw-focus-toolbar"><strong>{t('pe474.firmware.details')}</strong><button type="button" className="button button-secondary" onClick={() => setSearchParams({})}>{t('pe474.firmware.closeDetails')}</button></div>
             <dl className="fw-release-facts"><div><dt>{t('fw.col.file')}</dt><dd>{r.filename}</dd></div><div><dt>{t('fw.fileSize')}</dt><dd>{r.size_bytes === null?t('notProvided'):`${(r.size_bytes/1048576).toFixed(1)} MB`}</dd></div><div><dt>SHA-256</dt><dd className="fw-hash">{r.sha256??t('notProvided')}</dd></div><div><dt>{t('fw.uploadedBy')}</dt><dd>{r.uploaded_by_email??t('notProvided')}</dd></div>{r.notes&&<div><dt>{t('fw.notes')}</dt><dd>{r.notes}</dd></div>}{r.errors.length>0&&<div><dt>{t('fw.validation')}</dt><dd>{r.errors.map(e=>t(`fw.check.${e}`)).join(' · ')}</dd></div>}{lifecycle?.edition_id&&<div><dt>{t('fw.lifecycle.editionId')}</dt><dd className="fw-hash">{lifecycle.edition_id}</dd></div>}{lifecycle?.signed_at&&<div><dt>{t('fw.lifecycle.signedAt')}</dt><dd>{formatDate(lifecycle.signed_at)}</dd></div>}{lifecycle?.key_id&&<div><dt>{t('fw.lifecycle.signature')}</dt><dd className="fw-hash">{lifecycle.key_id}</dd></div>}</dl>

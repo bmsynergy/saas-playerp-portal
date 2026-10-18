@@ -98,6 +98,31 @@ export async function firmwareDownloadUrl(id: string): Promise<string> {
   return data.url;
 }
 
+// PE-485: initial SD install kits. Super_admin only, enforced by ps-firmware-admin; listing and
+// downloading never sign, promote or authorize installing anything.
+export type InstallKit = {
+  id: string; release_id: string; release_version: string | null; release_sha256: string | null; profile: string; file_name: string;
+  sha256: string; bytes: number | null; base_image_name: string | null; base_image_url: string | null; base_image_sha256: string | null;
+  built_from_commit: string | null; created_at: string | null;
+};
+export type InstallKitDownload = { url: string; filename: string; sha256: string; bytes: number | null; expires_in: number | null };
+function projectInstallKit(v: Raw): InstallKit {
+  if (typeof v.id !== 'string' || typeof v.release_id !== 'string' || typeof v.sha256 !== 'string' || typeof v.file_name !== 'string') throw new PortalError('genericError');
+  return { id: v.id, release_id: v.release_id, release_version: str(v.release_version), release_sha256: str(v.release_sha256), profile: String(v.profile ?? ''),
+    file_name: v.file_name, sha256: v.sha256, bytes: num(v.bytes), base_image_name: str(v.base_image_name), base_image_url: str(v.base_image_url),
+    base_image_sha256: str(v.base_image_sha256), built_from_commit: str(v.built_from_commit), created_at: str(v.created_at) };
+}
+export async function listInstallKits(): Promise<InstallKit[]> {
+  const data = await call({ action: 'kit_list' });
+  if (!Array.isArray(data.kits)) throw new PortalError('genericError');
+  return data.kits.map(v => projectInstallKit(v as Raw));
+}
+export async function getInstallKitDownload(id: string): Promise<InstallKitDownload> {
+  const data = await call({ action: 'kit_download', id });
+  if (typeof data.url !== 'string') throw new PortalError('genericError');
+  return { url: data.url, filename: String(data.filename ?? ''), sha256: String(data.sha256 ?? ''), bytes: num(data.bytes), expires_in: num(data.expires_in) };
+}
+
 // PE-416: authorization and in-use checks belong to Tom's DEV endpoint.
 export async function deleteFirmware(id: string): Promise<{ fileRemoved: boolean }> {
   const data = await call({ action: 'delete', id });
