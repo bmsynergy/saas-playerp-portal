@@ -20,7 +20,7 @@ export class FirmwareError extends Error { constructor(public key: string, publi
 type Raw = Record<string, unknown>;
 const str = (v: unknown) => typeof v === 'string' && v !== '' ? v : null;
 const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? v : null;
-function release(v: Raw): FirmwareRelease {
+export function projectFirmwareRelease(v: Raw): FirmwareRelease {
   if (typeof v.id !== 'string' || typeof v.version !== 'string' || (v.status !== 'ready' && v.status !== 'rejected')) throw new PortalError('genericError');
   const validation = (v.validation && typeof v.validation === 'object' ? v.validation : {}) as Raw;
   return { id: v.id, version: v.version, revision: str(v.revision), model: String(v.model ?? ''), arch: String(v.arch ?? ''), notes: str(v.notes),
@@ -34,12 +34,13 @@ export async function getFirmwares(signal?: AbortSignal): Promise<FirmwareList> 
   const { data, error } = await supabase.rpc('ps_firmware_list').abortSignal(signal ?? new AbortController().signal);
   if (error) throw error;
   if (!data || !Array.isArray(data.releases) || !Array.isArray(data.installed)) throw new PortalError('genericError');
-  return { releases: data.releases.map(release), complete: data.complete === true && data.total === data.releases.length,
+  return { releases: data.releases.map(projectFirmwareRelease), complete: data.complete === true && data.total === data.releases.length,
     total: num(data.total),
     installed: data.installed.map((v: Raw) => ({ version: String(v.version ?? ''), print_servers: num(v.print_servers) ?? 0, uploaded: v.uploaded === true })) };
 }
 
 const errorKeys: Record<string, string> = {
+  canary_required: 'pe474.reason.canary_required', lab_required: 'pe474.reason.lab_required', already_enabled: 'pe474.reason.already_enabled', version_not_semver: 'pe474.reason.version_not_semver',
   invalid_version: 'fw.error.version', invalid_filename: 'fw.error.filename', invalid_size: 'fw.error.size', invalid_model: 'fw.error.model',
   invalid_arch: 'fw.error.arch', invalid_zip: 'fw.error.zip', duplicate: 'fw.error.duplicate', not_uploaded: 'fw.error.upload',
   unknown_upload: 'fw.error.upload', forbidden: 'accessDenied',
@@ -66,7 +67,7 @@ async function call(body: Raw): Promise<Raw> {
   if (response.status === 403) throw new PortalError('accessDenied');
   if (!response.ok || !data || data.ok !== true) {
     const code = typeof data?.error === 'string' ? data.error : '';
-    const r = data?.release && typeof data.release === 'object' ? release(data.release as Raw) : undefined;
+    const r = data?.release && typeof data.release === 'object' ? projectFirmwareRelease(data.release as Raw) : undefined;
     throw new FirmwareError(errorKeys[code] ?? 'genericError', r);
   }
   return data;
@@ -88,13 +89,41 @@ export async function uploadFirmware(input: FirmwareUpload, onStage?: (stage: 'u
   if (error) throw new FirmwareError('fw.error.upload');
   onStage?.('verify');
   const done = await call({ action: 'finalize', id: begun.id });
-  return release(done.release as Raw);
+  return projectFirmwareRelease(done.release as Raw);
 }
 
 export async function firmwareDownloadUrl(id: string): Promise<string> {
   const data = await call({ action: 'download', id });
   if (typeof data.url !== 'string') throw new PortalError('genericError');
   return data.url;
+}
+
+// PE-485: initial SD install kits. Super_admin only, enforced by ps-firmware-admin; listing and
+// downloading never sign, promote or authorize installing anything.
+// PE-486: `kind` separates the initial SD kit (Firmwares page) from the generic bootable image (device Setup).
+export type InstallKitKind = 'initial_install' | 'bootable_image';
+export type InstallKit = {
+  id: string; kind: InstallKitKind; release_id: string; release_version: string | null; release_sha256: string | null; profile: string; file_name: string;
+  sha256: string; bytes: number | null; base_image_name: string | null; base_image_url: string | null; base_image_sha256: string | null;
+  built_from_commit: string | null; created_at: string | null;
+};
+export type InstallKitDownload = { url: string; filename: string; sha256: string; bytes: number | null; expires_in: number | null };
+function projectInstallKit(v: Raw): InstallKit {
+  if (typeof v.id !== 'string' || typeof v.release_id !== 'string' || typeof v.sha256 !== 'string' || typeof v.file_name !== 'string') throw new PortalError('genericError');
+  return { id: v.id, kind: v.kind === 'bootable_image' ? 'bootable_image' : 'initial_install', release_id: v.release_id, release_version: str(v.release_version), release_sha256: str(v.release_sha256), profile: String(v.profile ?? ''),
+    file_name: v.file_name, sha256: v.sha256, bytes: num(v.bytes), base_image_name: str(v.base_image_name), base_image_url: str(v.base_image_url),
+    base_image_sha256: str(v.base_image_sha256), built_from_commit: str(v.built_from_commit), created_at: str(v.created_at) };
+}
+export async function listInstallKits(): Promise<InstallKit[]> {
+  const data = await call({ action: 'kit_list' });
+  if (!Array.isArray(data.kits)) throw new PortalError('genericError');
+  return data.kits.map(v => projectInstallKit(v as Raw));
+}
+export const initialInstallKits = (kits: InstallKit[]): InstallKit[] => kits.filter(kit => kit.kind === 'initial_install');
+export async function getInstallKitDownload(id: string): Promise<InstallKitDownload> {
+  const data = await call({ action: 'kit_download', id });
+  if (typeof data.url !== 'string') throw new PortalError('genericError');
+  return { url: data.url, filename: String(data.filename ?? ''), sha256: String(data.sha256 ?? ''), bytes: num(data.bytes), expires_in: num(data.expires_in) };
 }
 
 // PE-416: authorization and in-use checks belong to Tom's DEV endpoint.
@@ -114,4 +143,13 @@ export async function setFirmwareAvailability(editionId: string, enabledRings: F
   if (error) throw error;
   if (!data || data.ok !== true) throw new FirmwareError(data?.error === 'deployment_in_progress'
     ? 'fw.lifecycle.reason.deployment_in_progress' : errorKeys[String(data?.error)] ?? 'genericError');
+}
+
+export async function promoteFirmwareEdition(editionId: string, ring: FirmwareRing, expectedRevision: number): Promise<void> {
+  if (!editionId || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0) throw new FirmwareError('genericError');
+  const { data, error } = await supabase.rpc('ps_ota_edition_promote', {
+    p_edition_id: editionId, p_ring: ring, p_expected_revision: expectedRevision,
+  });
+  if (error) throw error;
+  if (!data || data.ok !== true) throw new FirmwareError(errorKeys[String(data?.error)] ?? 'genericError');
 }

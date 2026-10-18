@@ -1,3 +1,4 @@
+import {deviceUpdate} from './fixtures/pe474';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), getSession: vi.fn() }));
 vi.mock('../src/lib/supabase',()=>({supabase:{rpc:mocks.rpc,auth:{getSession:mocks.getSession}}}));
@@ -5,7 +6,7 @@ import {compareFirmware,firmwareBlockReason} from '../src/lib/firmwareEligibilit
 import {projectAdminDeviceDetail,updateAdminDevice} from '../src/lib/psAdminDevice';
 import {getPanelOta} from '../src/lib/ota';
 const stable={edition_id:'edition',version:'0.3.10',model:'rpi4-2gb',arch:'arm64'};
-const raw=()=>({ok:true,device:{id:'device',serial:'PS-TEST',hostname:'ps-test',model:stable.model,arch:stable.arch,status:'assigned',venue_id:'venue'},update:{current_version:'0.3.9',latest_stable:stable,candidate:{...stable,ring:'general',general_eligible:true,eligibility_reason:'general',admitted:true,admitted_ring:'general'},effective_ring:'general',can_update:true,update_available:true,reason:null,active_update:null},delete:{allowed:false,blockers:['assigned']}});
+const raw=()=>({ok:true,device:{id:'device',serial:'PS-TEST',hostname:'ps-test',model:stable.model,arch:stable.arch,status:'assigned',venue_id:'venue'},update:deviceUpdate(),delete:{allowed:false,blockers:['assigned']}});
 beforeEach(()=>{vi.resetAllMocks();vi.unstubAllGlobals();mocks.getSession.mockResolvedValue({data:{session:{access_token:'fixture'}}});mocks.rpc.mockResolvedValue({data:raw()});});
 describe('Firmware eligibility, read projection and intercepted update confirmation',()=>{
  it('compares 0.3.9 < 0.3.10 numerically, and blocks unknown semver',()=>{
@@ -13,7 +14,7 @@ describe('Firmware eligibility, read projection and intercepted update confirmat
   for(const v of [null,'','unknown','0.3','0.3.10-lab','01.2.3'])expect(compareFirmware(v,'0.3.10')).toBeNull();
  });
  for(const installed of ['0.3.10','0.4.0','1.0.0'])it(`blocks equal/older target vs ${installed}`,()=>{
-  const f=raw();f.update.current_version=installed;expect(projectAdminDeviceDetail(f).update).toMatchObject({update_available:false,reason:'up_to_date'});
+  const f=raw();f.update.current_version=installed;f.update.reason='up_to_date';f.update.can_update=false;f.update.editions=[];f.update.editions_total=0;expect(projectAdminDeviceDetail(f).update).toMatchObject({update_available:false,reason:'up_to_date'});
  });
  it('blocks unknown installed, incompatible model/arch, missing metadata and server denial',()=>{
   expect(firmwareBlockReason(null,stable,stable.model,stable.arch,true,null)).toBe('metadata_missing');

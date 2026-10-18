@@ -580,3 +580,130 @@ input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .ps469-command { display: block; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; padding: .7rem; border-radius: .5rem; background: #182338; color: #f8fafc; }
 .ps-fleet-table tr[data-selected="true"] { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
 @media (max-width: 720px) { .ps469-header { flex-direction: column; } .ps469-statuses { justify-content: flex-start; } .ps469-overview { grid-template-columns: 1fr; } .ps469-sections { overflow-x: auto; flex-wrap: nowrap; padding-bottom: .8rem; } .ps469-sections a { flex: 0 0 auto; } }
+/* PE-473 admin OTA blocks on the Print Server sheet */
+.ota-block{border-top:1px solid var(--line);padding-top:16px;margin-top:16px;display:grid;gap:10px}
+.ota-block h4{font-size:.9rem;margin:0}.ota-block p{margin:0}
+.ota-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:0}.ota-facts dt{font-size:.68rem;color:var(--muted);font-weight:800}.ota-facts dd{margin:2px 0 0;overflow-wrap:anywhere}
+.ota-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.8rem}.ota-list li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ota-list li[data-met="true"] svg{color:var(--success)}.ota-list li[data-met="false"] svg,.ota-list li:not([data-met]) svg{color:var(--danger)}
+.ota-editions,.ota-channel-options{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;display:grid;gap:6px}.ota-editions legend,.ota-channel-options legend{font-size:.72rem;font-weight:800;padding:0 4px}
+.ota-radio{display:flex;align-items:flex-start;gap:8px;font-size:.8rem}.ota-radio input{margin-top:3px}.ota-reason{color:var(--muted)}
+.ota-other-editions summary{cursor:pointer;font-size:.76rem;color:var(--muted);font-weight:700;margin:4px 0}.ota-other-editions{display:grid;gap:6px}
+
+/* PE-474 paged firmware and channel controls */
+.pe474-title-button { font: inherit; text-align: left; }
+.pe474-firmware-detail { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border, #dce3ea); }
+.pe474-firmware-detail .fw-release-facts { margin: .75rem 0 1rem; }
+.pe474-channel-select select { min-width: 9.5rem; }
+.pe474-channels-table .staff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.ota-edition-picker { display: grid; gap: .45rem; max-height: 18rem; overflow: auto; padding: .4rem; }
+.ota-deploy-devices { grid-column: 1 / -1; min-width: 0; }
+.ota-deploy-devices .ota-checklist { max-height: 23rem; overflow: auto; }
+@media (max-width: 720px) {
+  .pe474-channels-table .staff-actions { justify-content: flex-start; }
+  .pe474-channel-select, .pe474-channel-select select { width: 100%; }
+  .pe474-firmware-detail .fw-release-facts { grid-template-columns: 1fr; }
+  .ota-edition-picker { max-height: 15rem; }
+}
+.pe474-updates-refresh { display:flex; justify-content:flex-end; }
+.pe474-deploy-errors { margin:.55rem 0 0; padding-left:1.15rem; overflow-wrap:anywhere; }
+.pe474-deploy-errors li + li { margin-top:.35rem; }
+.channels-scope{color:var(--muted);font-size:.78rem;line-height:1.55;margin:0 0 12px}
+.channels-ring-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.channels-ring-card{font:inherit;min-width:0;min-height:116px;text-align:left;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);padding:16px;display:grid;align-content:center;gap:3px;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+.channels-ring-card:hover{border-color:var(--blue);background:var(--blue-soft)}
+.channels-ring-card.is-selected{border:2px solid var(--blue);background:var(--blue-soft);box-shadow:0 0 0 2px rgba(18,104,254,.12);padding:15px}
+.channels-ring-card:focus-visible,.channels-item-toggle:focus-visible,.channels-change-label select:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.channels-ring-name{font-size:.8rem;font-weight:800;overflow-wrap:anywhere}
+.channels-ring-count{font-family:Manrope,sans-serif;font-size:1.55rem;line-height:1.15}
+.channels-ring-caption{font-size:.69rem;color:var(--muted)}
+.channels-toolbar{align-items:center}.channels-toolbar .directory-count{white-space:normal}
+.channels-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.channels-item{border:1px solid var(--line);border-radius:12px;background:var(--surface);min-width:0;overflow:hidden}
+.channels-item.is-open{border-color:var(--blue-line)}
+.channels-item-heading{margin:0}
+.channels-item-toggle{font:inherit;color:var(--ink);background:transparent;border:0;width:100%;padding:14px 16px;text-align:left;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) 18px;align-items:center;gap:12px;cursor:pointer}
+.channels-item-toggle:hover{background:var(--canvas)}
+.channels-item-main{min-width:0;display:grid;gap:3px}.channels-item-main strong{font-size:.86rem;overflow-wrap:anywhere}.channels-item-main .ps-mono{color:var(--muted)}
+.channels-item-venue{min-width:0;color:var(--muted);font-size:.76rem;overflow-wrap:anywhere}
+.channels-item-state{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:.72rem;color:var(--muted)}
+.channels-chevron{color:var(--muted);transition:transform .15s}.channels-item.is-open .channels-chevron{transform:rotate(180deg)}
+.channels-item-detail{border-top:1px solid var(--line);padding:17px 16px 18px;background:var(--canvas)}
+.channels-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 18px}.channels-facts>div{min-width:0}.channels-facts dt{font-size:.67rem;color:var(--muted);font-weight:800}.channels-facts dd{margin:4px 0 0;font-size:.79rem;overflow-wrap:anywhere}
+.channels-item-actions{display:flex;align-items:end;flex-wrap:wrap;gap:12px}.channels-change-label{display:grid;gap:5px;min-width:min(100%,185px);font-size:.72rem;font-weight:700}.channels-change-label select{width:100%;min-height:var(--portal-control-height);border:1px solid var(--control-line);border-radius:9px;background:var(--surface);color:var(--ink);padding:0 10px}
+.channels-choose-message{border:1px dashed var(--line);border-radius:11px}
+@media(max-width:760px){.channels-item-toggle{grid-template-columns:minmax(0,1fr) 18px;gap:5px 10px}.channels-item-main,.channels-item-venue,.channels-item-state{grid-column:1}.channels-chevron{grid-column:2;grid-row:1/4}.channels-item-venue{font-size:.73rem}.channels-item-state{margin-top:4px}}
+@media(max-width:520px){.channels-ring-grid{grid-template-columns:minmax(0,1fr);gap:8px}.channels-ring-card{min-height:78px;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}.channels-ring-name{grid-column:1}.channels-ring-count{grid-column:2;grid-row:1/3}.channels-ring-caption{grid-column:1}.channels-item-actions{align-items:stretch}.channels-item-actions>.button,.channels-change-label{width:100%}}
+.pe474-channels-table :is(th,td):nth-child(4),
+.pe474-channels-table :is(th,td):nth-child(5) { min-width: 125px; }
+.pe474-channels-table .server-status { white-space: nowrap; flex: none; }
+@media (max-width: 700px) {
+  .pe474-channels-table { min-width: 0; }
+  .pe474-channels-table :is(th,td):nth-child(4),
+  .pe474-channels-table :is(th,td):nth-child(5) { min-width: 0; }
+  .pe474-channels-table td .server-status { max-width: 100%; }
+}
+@media (min-width: 701px) {
+  .pe474-channels-table { min-width: 1000px; }
+  .pe474-channels-table :is(th,td):first-child { min-width: 115px; white-space: nowrap; overflow-wrap: normal; }
+  .pe474-channels-table :is(th,td):nth-child(2) { min-width: 145px; }
+  .pe474-channels-table :is(th,td):nth-child(3) { min-width: 160px; }
+  .pe474-channels-table :is(th,td):nth-child(7) { min-width: 150px; }
+}
+/* Keep the deployment catalogue as one full-width block inside the form grid. */
+.ota-deploy-form > .ota-wide:first-child {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.ota-deploy-form .ota-edition-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-height: 19rem;
+  padding: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.ota-deploy-form .ota-edition-picker .ota-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.ota-deploy-form .ota-edition-picker .ota-radio:has(input:checked) {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.ota-deploy-form .ota-edition-picker .ota-radio span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fw-form .ota-edition-picker input[type=radio] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 1px 0 0;
+  padding: 0;
+  flex: none;
+  accent-color: var(--blue);
+}
+/* Form field sizing must not stretch the nested catalogue pagination controls. */
+.ota-deploy-form [data-testid="ota-deploy-catalog-pagination"] .ps-pagination-controls > select {
+  width: auto;
+  min-width: 4rem;
+  padding: 0 9px;
+}
+.ota-deploy-form [data-testid="ota-deploy-catalog-pagination"] .ps-pagination-jump > input {
+  width: 4.5rem;
+  min-width: 0;
+  padding: 6px 8px;
+}

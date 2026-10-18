@@ -23,6 +23,7 @@ export function safeNext(value: string | null): string | null {
   }
   if(path==='/admin/print-servers/inventory')return only(['fromVenue','selected','create'])&&id('fromVenue')&&id('selected')&&(!params.has('create')||params.get('create')==='1')?value:null;
   if(/^\/admin\/tenants\/[0-9a-f-]+\/print-servers$/.test(path))return uuid.test(path.split('/')[3])&&only(['selected'])&&id('selected')?value:null;
+  if(path==='/admin/print-servers/channels')return only(['channel','q','status','venue','venueName','group','page','lang']) ? value : null;
   if(query)return null;
   return /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/(?:list|firmwares|updates)|\/tenants\/[a-f0-9-]+\/(?:users|mcp|print-servers(?:\/detail)?))?$/.test(path)?value:null;
 }
@@ -64,4 +65,9 @@ export function chooseScope(id: string, scope: Scope) {
 }
 export function clearScopes() {
   try { for (const k of Object.keys(sessionStorage)) if (k.startsWith(`${AUXILIARY_STORAGE_PREFIX}scope.`)) sessionStorage.removeItem(k); } catch { /* storage unavailable */ }
+}
+
+// Rings follow the explicit super_admin contract, independently of broad staff navigation.
+export function canManageRings(access: PortalAccess | undefined): boolean {
+  return !!access?.can_manage_staff && access.platform_role === 'super_admin';
 }

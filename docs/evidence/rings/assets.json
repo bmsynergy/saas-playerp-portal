@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-18T00:37:01.485Z",
+  "origin": "https://playerp.dev.bmore.app",
+  "commit": "5ddd1574fd1c486a1377314ffd7ad2bf3fef04ef",
+  "release": "20261018T003622-5ddd1574fd1c",
+  "index": {
+    "status": 200,
+    "sha256": "e6d3a03c3085bff77e82d35b044c2758cb2b118ba7ba2cd67e1eb71af3ffac74"
+  },
+  "assets": [
+    {
+      "path": "/assets/index-jDCfnoGX.js",
+      "status": 200,
+      "sha256": "5935c5aa0867349e10729201cba16a769b66923bf6abfdfeb4d164130a2df087",
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-DP6aoh3p.css",
+      "status": 200,
+      "sha256": "1cd809fe5113e7f530fcb2bfb89c9f647aaf2f03469bd240dc89bc311b769bd0",
+      "matchesBuild": true
+    }
+  ],
+  "pass": true
+}

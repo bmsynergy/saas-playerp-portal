@@ -1,24 +1,12 @@
 import {describe,it,expect,vi} from 'vitest';
 vi.mock('../src/lib/supabase',()=>({supabase:{rpc:vi.fn()}}));
 import {projectOverview} from '../src/lib/ota';
-describe('OTA device hardware models',()=>{
- it('joins hardware by server identity, never by hostname or list order',()=>{
-  const overview={ok:true,keys:[],releases:[],groups:[],deployments:[],audit:[],devices:[{print_server_id:'server-a',hostname:'same'},{print_server_id:'server-b',hostname:'same'},{print_server_id:'legacy'}]};
-  const result=projectOverview(overview,[{print_server_id:'server-b',model:'model-b'},{print_server_id:null,model:'unassigned'},{print_server_id:'server-a',model:'model-a'}]);
-  expect(result.devices.map(d=>d.model)).toEqual(['model-a','model-b',null]);
+import {overview} from './fixtures/pe474';
+describe('PE474 summary overview (no inventory join)',()=>{
+ it('projects totals, bounded groups and no massive auxiliary lists',()=>{
+  const p=projectOverview({...overview(),devices:[{secret:'no'}],releases:[{secret:'no'}],groups:[{id:'g',name:'Deployment',kind:'deployment',ring:'lab',member_count:2000,members:['secret']}]});
+  expect(p.totals.devices).toBe(2000);expect(p.groups[0].member_count).toBe(2000);expect(p).not.toHaveProperty('devices');expect(p).not.toHaveProperty('releases');expect(JSON.stringify(p)).not.toContain('secret');
  });
-});
-
-describe('OTA overview without automatic audit',()=>{
- const overview={ok:true,keys:[],releases:[],groups:[],devices:[],deployments:[]};
- it('accepts explicit audit omission from DEV and projects an empty list',()=>{
-  expect(projectOverview({...overview,audit_included:false}).audit).toEqual([]);
- });
- it('keeps legacy audit responses compatible',()=>{
-  expect(projectOverview({...overview,audit:[{action:'ps_ota_deployed'}]}).audit[0].action).toBe('ps_ota_deployed');
- });
- it('rejects missing or malformed audit without the omission contract',()=>{
-  expect(()=>projectOverview(overview)).toThrow();
-  expect(()=>projectOverview({...overview,audit_included:false,audit:{}})).toThrow();
- });
+ it('accepts explicit audit omission or bounded audit response',()=>{expect(projectOverview(overview()).audit).toEqual([]);expect(projectOverview({...overview(),audit:[{action:'ps_ota_deployed'}]}).audit[0].action).toBe('ps_ota_deployed');});
+ it('rejects old versions, unbounded groups and malformed omission',()=>{expect(()=>projectOverview({...overview(),contract_version:1})).toThrow();expect(()=>projectOverview({...overview(),groups:Array(101).fill({})})).toThrow();expect(()=>projectOverview({...overview(),audit_included:false,audit:{}})).toThrow();});
 });

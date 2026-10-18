@@ -1,8 +1,9 @@
+import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
-import { destination, preferredScope, chooseScope, safeNext } from './lib/access';
+import { destination, preferredScope, chooseScope, safeNext, canManageRings } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
 import { StaffPage, type StaffMember } from './pages/StaffPage';
 import { getVenueUsers, venueUsersRequest, type VenueUser, type VenueUserAction, type VenueUserInvite } from './lib/venueUsers';
@@ -20,11 +21,13 @@ import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
 import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
+import { PsDeviceSetup } from './components/PsDeviceSetup';
+import { DeviceAdminSummary } from './components/DeviceAdminSummary';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
-import { getFirmwares } from './lib/firmware';
+import { PrintChannelsPage } from './pages/PrintChannelsPage';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
 import { getInventoryDevices } from './lib/psDevice';
 import { assignDevice } from './lib/psDevice';
@@ -333,10 +336,11 @@ function VenueUsersData({venueId}:{venueId:string}) {
 }
 // Print Server fleet: platform Admin only (the same gate as venue users and Staff).
 // The backend validates every RPC again and answers 42501 when it refuses.
-function PrintServersRoute({detail=false,list=false,firmwares=false,inventory=false,updates=false,device=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;inventory?:boolean;updates?:boolean;device?:boolean}) {
+function PrintServersRoute({detail=false,list=false,firmwares=false,channels=false,inventory=false,updates=false,device=false}:{detail?:boolean;list?:boolean;firmwares?:boolean;channels?:boolean;inventory?:boolean;updates?:boolean;device?:boolean}) {
   const access=useAccess(); const {venueId='',id=''}=useParams();
   if (!access.data?.can_manage_staff) return <StateView kind="denied"/>;
-  if (firmwares) return <PrintFirmwaresData/>;
+  if (firmwares) return <PrintFirmwaresPage/>;
+  if (channels) return canManageRings(access.data) ? <PrintChannelsPage/> : <StateView kind="denied"/>;
   if (inventory) return <PrintDevicesData/>;
   if (updates) return <PrintUpdatesData/>;
   if (device) return UUID.test(id) ? <DeviceSheetData key={id} id={id} scope="admin"/> : <StateView kind="notFound"/>;
@@ -353,27 +357,6 @@ function PrintDashboardData() {
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
   return <StateView kind="loading"/>;
 }
-// Firmware releases: platform Admin only; ps_firmware_list answers 42501 to anyone else.
-function PrintFirmwaresData() {
-  const {session,expire}=useAuth();
-  const data=useQuery({queryKey:['ps-firmwares',session?.user.id],queryFn:({signal})=>getFirmwares(signal),refetchInterval:60_000});
-  const error=data.error;
-  useEffect(()=>{if(error&&psErrorKey(error)==='sessionExpired') void expire();},[error,expire]);
-  const refresh=async()=>{await Promise.all([
-    data.refetch({throwOnError:true}),
-    queryClient.invalidateQueries({queryKey:['ps-ota',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-ota-page',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-admin-device',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-device',session?.user.id]}),
-    queryClient.invalidateQueries({queryKey:['ps-panel-ota',session?.user.id]}),
-  ]);};
-  if(error&&psErrorKey(error)==='accessDenied')return <StateView kind="denied"/>;
-  // A failed lifecycle refresh invalidates the displayed authorization snapshot. Do not
-  // expose new mutations from cached eligibility; the backend must still revalidate writes.
-  if(error)return <StateView kind="error" onRetry={()=>{void refresh().catch(()=>{});}}/>;
-  if(data.data)return <PrintFirmwaresPage data={data.data} refreshing={data.isFetching} onRefresh={refresh}/>;
-  return <StateView kind="loading"/>;
-}
 // OTA of the Print Server app (PE-385): platform Admin only; ps_ota_admin_overview answers 42501 otherwise.
 function PrintUpdatesData() {
   const {session,expire}=useAuth();
@@ -381,7 +364,7 @@ function PrintUpdatesData() {
   useEffect(()=>{if(data.error&&psErrorKey(data.error)==='sessionExpired') void expire();},[data.error,expire]);
   if(data.isError&&psErrorKey(data.error)==='accessDenied')return <StateView kind="denied"/>;
   if(data.isError)return <StateView kind="error" onRetry={()=>void data.refetch()}/>;
-  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={()=>data.refetch()}/>;
+  if(data.data)return <PrintUpdatesPage data={data.data} refreshing={data.isFetching} onRefresh={async()=>{await data.refetch({throwOnError:true});await queryClient.invalidateQueries({queryKey:['ps-ota-page']},{throwOnError:true});}}/>;
   return <StateView kind="loading"/>;
 }
 function PsRefreshWarning({onRetry}:{onRetry:()=>Promise<unknown>}) {
@@ -473,17 +456,21 @@ function DeviceSheetData({id,scope,expectedVenueId}:{id:string;scope:'owner'|'ad
   if(scope==='admin'&&!venueId&&fromVenue&&directory.isPending)return <StateView kind="loading"/>;
   const returnVenue=venueId??(scope==='admin'&&fromVenue&&directory.data?.some(item=>item.id===fromVenue)?fromVenue:null);
   const returnVenueName=returnVenue?(r.venue?.id===returnVenue?r.venue.name:directory.data?.find(item=>item.id===returnVenue)?.name??t('printServers')):null;
-  const back=returnVenue?{href:venueListHref(scope,returnVenue,r.device_id),label:returnVenueName??t('printServers')}:{href:'/admin/print-servers/inventory',label:t('inv.title')};
+  const channelsBack=scope==='admin'?channelsReturnTo(location.state?.channelsReturnTo):null;
+  const back=channelsBack?{href:channelsBack,label:t('pe474.channels.title')}:returnVenue?{href:venueListHref(scope,returnVenue,r.device_id),label:returnVenueName??t('printServers')}:{href:'/admin/print-servers/inventory',label:t('inv.title')};
   if(id!==r.device_id){
     const canonical=scope==='owner'&&venueId?ownerSheetHref(venueId,r.device_id):r.canonical_path;
-    return <Navigate to={canonical+(scope==='admin'&&returnVenue?`?fromVenue=${encodeURIComponent(returnVenue)}`:'')} replace/>;
+    return <Navigate to={canonical+(scope==='admin'&&returnVenue?`?fromVenue=${encodeURIComponent(returnVenue)}`:'')} state={channelsBack?{channelsReturnTo:channelsBack}:undefined} replace/>;
   }
   const staff=scope==='admin'&&r.is_staff;
   return <PsDeviceSheet key={r.device_id} device={r} staff={staff} scope={scope} back={back} stale={ref.isError}
-    onChanged={()=>invalidatePsViews(queryClient)} onCanonicalNavigate={path=>navigate(path,{replace:true})}/>;
+    onChanged={()=>invalidatePsViews(queryClient)} onCanonicalNavigate={path=>navigate(path,{replace:true,state:channelsBack?{channelsReturnTo:channelsBack}:undefined})}/>;
 }
 function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavigate}:{device:ResolvedDevice;staff:boolean;scope:'owner'|'admin';back:{href:string;label:string};stale:boolean;onChanged:()=>Promise<unknown>;onCanonicalNavigate:(path:string)=>void}) {
   const {t}=useLocale();
+  // PE-486: Setup only for platform super_admin in the admin scope; owners never read access for it.
+  const access=useAccess(staff);
+  const setup=staff&&canManageRings(access.data);
   const [confirm,setConfirm]=useState<{deviceId:string;rev:number;venueName:string}|null>(null);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
@@ -529,7 +516,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
     {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
     {notice&&<p className="staff-notice" role="status">{notice}</p>}
-    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
+    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}{setup&&<a href="#ps-setup">{t('psSetup.nav')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
     <section id="ps469-overview" className="ps469-overview" aria-label={t('ps469.summary')}>
       <div className="ps469-sync" data-testid="ps-link-sync"><strong>{sync?.confirmed?t(sync.scope==='unlinked'?'ps469.unlinkConfirmed':'ps469.syncConfirmed'):venue?t('ps469.syncPending'):t('ps469.stock')}</strong>
         {venue&&!sync?.confirmed&&<p>{ack.supported===false?t('ps469.compatNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',ack.required_version):t('ps469.waitAck')}{available&&` ${t('ps469.available')}: ${available}.`}</p>}
@@ -544,6 +531,9 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
         {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):t('ps469.unlinkForbidden')}</p>}
         {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
     </section>
+    {setup&&<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>}
+    {/* PE-486: a new unit has no venue yet, so the existing firmware block (channel + eligible editions) is reused here. */}
+    {setup&&runtime&&!venue&&<div id="ps-setup-firmware"><DeviceAdminSummary key={`fw:${device.device_id}`} deviceId={device.device_id}/></div>}
     {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id}/>:null}
     {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}
@@ -632,6 +622,7 @@ export default function App() {
     <Route path="/admin/print-servers/list" element={<Scope scope="admin"><PrintServersRoute list/></Scope>}/>
     <Route path="/admin/print-servers/inventory" element={<Scope scope="admin"><PrintServersRoute inventory/></Scope>}/>
     <Route path="/admin/print-servers/firmwares" element={<Scope scope="admin"><PrintServersRoute firmwares/></Scope>}/>
+    <Route path="/admin/print-servers/channels" element={<Scope scope="admin"><PrintServersRoute channels/></Scope>}/>
     <Route path="/admin/print-servers/updates" element={<Scope scope="admin"><PrintServersRoute updates/></Scope>}/>
     <Route path="/admin/print-servers/devices/:id" element={<Scope scope="admin"><PrintServersRoute device/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>

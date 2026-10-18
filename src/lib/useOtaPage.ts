@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { EMPTY_LIST_FILTERS, validDateRange } from './adminLists';
+import { psErrorKey } from './printServerApi';
 import { getOtaPage, type OtaPageFilter, type OtaPageKind } from './ota';
 
-export function useOtaPage<K extends OtaPageKind>(kind: K, parentId: string | null = null) {
-  const { session } = useAuth();
+export function useOtaPage<K extends OtaPageKind>(kind: K, parentId: string | null = null, initialFilters: Partial<OtaPageFilter> = {}) {
+  const { session, expire } = useAuth();
   const onDemand = kind === 'audit';
-  const [filters, setFilters] = useState<OtaPageFilter>(EMPTY_LIST_FILTERS);
+  const [filters, setFilters] = useState<OtaPageFilter>(() => ({...EMPTY_LIST_FILTERS,...initialFilters}));
   const [submitted, setSubmitted] = useState<OtaPageFilter | null>(null);
   const [searchNumber, setSearchNumber] = useState(0);
   const [page, setPage] = useState(1);
@@ -25,6 +26,8 @@ export function useOtaPage<K extends OtaPageKind>(kind: K, parentId: string | nu
     // Audit is an explicit search, including on return to this screen or retry.
     ...(onDemand ? { gcTime: 0, retry: false, refetchOnMount: false } : {}),
   });
+  useEffect(() => { if (query.error && psErrorKey(query.error)==='sessionExpired') void expire(); }, [query.error, expire]);
+  useEffect(() => { setPage(1); }, [parentId]);
   const total = started ? query.data?.total ?? 0 : 0;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   useEffect(() => {
@@ -50,6 +53,6 @@ export function useOtaPage<K extends OtaPageKind>(kind: K, parentId: string | nu
   const start = (page - 1) * pageSize;
   return { query, filters, set, clear, valid, started, search, pagination: {
     page, pageCount, pageSize, start, end: Math.min(start + pageSize, total), total,
-    setPage, setPageSize: (size: number) => { changeSize(size); setPage(1); }, reset: () => setPage(1),
+    setPage, setPageSize: (size: number) => { changeSize(Math.max(1,Math.min(100,size))); setPage(1); }, reset: () => setPage(1),
   } };
 }

@@ -1,0 +1,51 @@
+{
+ "origin": "https://playerp.dev.bmore.app",
+ "device": "59a41440-8536-4045-aed1-3fcc5adaf193",
+ "readOnly": true,
+ "mocks": false,
+ "startedAt": "2026-10-17T20:53:51.575Z",
+ "blockedWrites": [],
+ "views": [
+  {
+   "lang": "es",
+   "url": "/admin/print-servers/devices/59a41440-8536-4045-aed1-3fcc5adaf193?lang=es",
+   "checks": {
+    "pending": true,
+    "channel_lab": true,
+    "change_button": true,
+    "validate_button_is_own_button": true,
+    "validate_disabled_with_reason": true,
+    "updater_warning": true,
+    "requirements": true,
+    "firmwares_link_href": "/admin/print-servers/firmwares",
+    "edition_sha": true,
+    "change_confirm_text": true
+   },
+   "pass": true
+  },
+  {
+   "lang": "en",
+   "url": "/admin/print-servers/devices/59a41440-8536-4045-aed1-3fcc5adaf193?lang=en",
+   "checks": {
+    "pending": true,
+    "channel_lab": true,
+    "change_button": true,
+    "validate_button_is_own_button": true,
+    "validate_disabled_with_reason": true,
+    "updater_warning": true,
+    "requirements": true,
+    "firmwares_link_href": "/admin/print-servers/firmwares",
+    "edition_sha": true,
+    "change_confirm_text": true
+   },
+   "pass": true
+  }
+ ],
+ "owner": {
+  "url": "/?lang=es",
+  "found": [],
+  "pass": true
+ },
+ "finishedAt": "2026-10-17T20:54:08.675Z",
+ "pass": true
+}
