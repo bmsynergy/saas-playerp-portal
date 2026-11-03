@@ -92,8 +92,8 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
         <label className="maintenance-show"><span>{t('maintenance.show')}</span><select value={show} onChange={event => onShowChange(event.target.value as MaintenanceVenueStatus)} data-testid="maintenance-show"><option value="all">{t('maintenance.showAll')}</option><option value="problem">{t('maintenance.showProblem')}</option><option value="last_night_problem">{t('maintenance.showLastNightProblem')}</option><option value="ok">{t('maintenance.showOk')}</option></select></label>
         <label className="maintenance-query"><span>{t('maintenance.searchVenue')}</span><input type="search" value={query} onChange={event => onQueryChange(event.target.value)} placeholder={t('maintenance.searchVenuePlaceholder')} data-testid="maintenance-venue-search"/></label>
       </div>
-      <PrintListPagination pagination={pagination} id="maintenance" disabled={loading} fixedSize />
       {loading && <p className="maintenance-muted" role="status">{t('maintenance.loadingVenues')}</p>}
+      <div data-pagination-list="maintenance" />
       <div aria-busy={loading}>{!loading && !overviewError && data.venues.length ? <div className="maintenance-venue-list">{data.venues.map(venue => <Link className={`maintenance-venue-row ${venue.problem_nights > 0 ? 'maintenance-venue-row-problem' : ''}`} to={`/admin/tenants/${encodeURIComponent(venue.venue_id)}/maintenance`} key={venue.venue_id} data-testid="maintenance-venue-row">
         <span className="maintenance-venue-identity"><strong>{venue.venue_name || venue.venue_id}</strong><small>{venue.timezone}</small></span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.latestNight')}</small>{venue.last_night ? <><span><span className={`maintenance-status maintenance-status-${venue.last_night.problem || venue.last_night.status}`}>{t(`maintenance.status.${venue.last_night.problem || venue.last_night.status}`)}</span><small>{formatDate(venue.last_night.local_date)}</small></span>{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale) && <span className="maintenance-failure-summary">{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale)}</span>}</> : <span>{t('maintenance.noNights')}</span>}</span>
@@ -101,6 +101,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
         <span className="maintenance-venue-metric"><small>{t('maintenance.lastSuccess')}</small><span>{formatDate(venue.last_success_date)}</span></span>
         <span className="maintenance-row-action" aria-hidden="true">{t('maintenance.openVenue')} →</span>
       </Link>)}</div> : !loading && !overviewError && <p className="maintenance-muted maintenance-empty-nights">{query ? t('maintenance.noMatchingVenues') : show !== 'all' ? t('maintenance.noFilteredVenues') : t('maintenance.noVenues')}</p>}</div>
+      <PrintListPagination pagination={pagination} id="maintenance" disabled={loading} fixedSize />
     </section>
 
     {recipientDialogOpen && <PortalDialog title={t('maintenance.recipients')} titleId="maintenance-recipients-title" testId="maintenance-recipients-dialog" onClose={() => setRecipientDialogOpen(false)} actions={<button className="button button-secondary" type="button" onClick={() => setRecipientDialogOpen(false)}>{t('maintenance.close')}</button>}>

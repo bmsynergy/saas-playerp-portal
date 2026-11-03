@@ -86,6 +86,7 @@ export function PrinterQueue({ venueId, printer, api, reloadKey = 0 }: Props) {
     </div>
     <AdminListFilters id={`queue-${printer.id}`} {...list} statuses={['pending','printing','sent','done','failed','expired','cancelled','unconfirmed'].map(value=>({value,label:label('ps.jobs.status',value,'ps.jobs.status.unknown')}))} dateLabel={t('ps.jobs.date')}/>
     {errorKey && <div className="form-error ps-scan-error" role="alert" data-testid={`queue-error-${printer.id}`}><AlertTriangle size={19}/><span>{t(errorKey)}</span></div>}
+    <div data-pagination-list={`queue-${printer.id}`} />
     {!page ? (!errorKey && valid && <p className="staff-self-note" data-testid={`queue-loading-${printer.id}`}>{t('ps.jobs.loading')}</p>)
       : total === 0 ? <div className="staff-empty ps-queue-empty" data-testid={`queue-empty-${printer.id}`}><Inbox size={25}/><strong>{t('ps.jobs.empty')}</strong><span>{t('ps.jobs.emptyHint')}</span></div>
       : <>

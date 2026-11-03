@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Clock3, Inbox, LockKeyhole, MessageCircle, Refre
 import { useLocale } from '../locales';
 import { supportText } from '../locales/support';
 import { VenueCombobox } from '../components/VenueCombobox';
+import { PrintListPagination } from '../components/PrintListPagination';
 import type { AdminVenueOption } from '../lib/psAdminDevice';
 import { defaultSupportFilters, type SupportDetail, type SupportFilters, type SupportList, type SupportPriority, type SupportScope, type SupportStaff, type SupportStatus, type SupportTicket } from '../lib/support';
 import '../support.css';
@@ -109,6 +110,10 @@ export function SupportPage(props: SupportPageProps) {
   const selectedVenue = filters.venueId ? (venueOptions.find(venue => venue.id === filters.venueId) || list?.items.find(ticket => ticket.venue_id === filters.venueId) && { id: filters.venueId, name: list.items.find(ticket => ticket.venue_id === filters.venueId)!.venue_name }) : undefined;
   const selectedComboboxVenue = selectedVenueOption?.id === filters.venueId ? selectedVenueOption : selectedVenue ? { id: selectedVenue.id, name: selectedVenue.name, slug: null, city: null, state: null, is_active: true, assigned_device: null } : null;
   const patch = (change: Partial<SupportFilters>) => onFiltersChange({ ...change, page: 1 });
+  const page = list?.page ?? filters.page;
+  const pageSize = list?.page_size ?? 25;
+  const total = list?.total ?? 0;
+  const pagination = { page, pageCount: Math.max(1, list?.pages ?? Math.ceil(total / pageSize)), pageSize, start: (page - 1) * pageSize, end: Math.min(total, page * pageSize), total, setPage: onPageChange, setPageSize: () => {} };
   return <div className={`page-stack support-page ${selectedTicketId ? 'support-with-thread' : ''}`} data-testid="support-page" data-support-scope={scope}>
     <div className="page-heading"><div><p className="eyebrow">{scope === 'platform' ? 'SaaS Admin' : venueName || copy.overview}</p><h1>{copy.title}</h1><p>{scope === 'platform' ? copy.platformLead : venueName ? copy.venueLead : copy.ownerLead}</p></div><div className="heading-accent" aria-hidden="true"><Inbox size={29}/></div></div>
     <div className="support-summary" role="group" aria-label={copy.overview} title={copy.filteredSummary}>{summaryCards.map(card => <div className={`support-summary-card is-${card.kind}`} key={card.kind}><span>{card.label}</span><strong>{list ? card.value : '—'}</strong></div>)}</div>
@@ -123,8 +128,9 @@ export function SupportPage(props: SupportPageProps) {
         <label className="support-filter"><span>{copy.sort}</span><select aria-label={copy.sort} value={filters.sort} onChange={event => patch({ sort: event.target.value })}><option value="last_activity">{copy.lastActivity}</option><option value="newest">{copy.newest}</option><option value="oldest">{copy.oldest}</option><option value="priority">{copy.prioritySort}</option></select></label>
       </div><div className="support-filter-foot"><label><input type="checkbox" checked={filters.pendingOnly} onChange={event => patch({ pendingOnly: event.target.checked })}/>{copy.pendingOnly}</label><label><input type="checkbox" checked={filters.unreadOnly} onChange={event => patch({ unreadOnly: event.target.checked })}/>{copy.unreadOnly}</label>{hasFilters && <button type="button" className="support-clear" onClick={() => { setQueryDraft(''); onFiltersChange(defaultSupportFilters); }}><SlidersHorizontal size={14}/>{copy.clear}</button>}</div>
       {error && <div className="support-list-error" role="alert"><span>{error}</span><button type="button" className="button button-secondary" onClick={onRetry}><RefreshCw size={15}/>{copy.retry}</button></div>}
+      <div data-pagination-list="support" />
       {loading && !list ? <div className="support-placeholder" role="status"><span className="spinner"/>{copy.loading}</div> : !error && !loading && !list?.items.length ? <div className="support-placeholder"><Inbox size={33}/><strong>{hasFilters ? copy.noMatches : copy.empty}</strong></div> : <ul className="support-ticket-list" aria-busy={loading}>{list?.items.map(ticket => <TicketRow key={ticket.id} ticket={ticket} scope={scope} copy={copy} locale={locale} onOpen={onOpen}/>)}</ul>}
-      {!!list?.pages && <nav className="support-pagination" aria-label={copy.page}><span>{copy.page} {list.page} {copy.of} {list.pages}</span><div><button type="button" className="button button-secondary" disabled={loading || list.page <= 1} onClick={() => onPageChange(list.page - 1)}>{copy.previous}</button><button type="button" data-testid="support-next" className="button button-secondary" disabled={loading || list.page >= list.pages} onClick={() => onPageChange(list.page + 1)}>{copy.next}<ArrowRight size={15}/></button></div></nav>}
+      {!!list?.pages && <PrintListPagination pagination={pagination} id="support" disabled={loading} fixedSize/>}
     </section>{selectedTicketId && <SupportThread {...props}/>}</div>
   </div>;
 }

@@ -26,7 +26,7 @@ try{
  await page.screenshot({path:out+'/owner-thread.png',fullPage:true});
  report.criteria[1]={venue:target.venue_id,ticket:target.id,creatorIsAnotherEmployee:true,ownerOverviewTotal:ownerTickets.total,replyPersisted:true};
  const adminPage=await pageFor(admin);page=adminPage;const first=response(page,'support_ticket_list');await page.goto(origin+'/admin/support');const firstData=await(await first).json();await expect(page.getByTestId('support-page')).toBeVisible();assert(firstData.total>100);assert.equal(firstData.items.length,25);
- const next=response(page,'support_ticket_list');await page.getByTestId('support-next').click();const secondData=await(await next).json();assert.equal(secondData.page,2);assert(!firstData.items.some(t=>secondData.items.some(v=>v.id===t.id)));
+ const next=response(page,'support_ticket_list');await page.getByTestId('support-pagination-next').click();const secondData=await(await next).json();assert.equal(secondData.page,2);assert(!firstData.items.some(t=>secondData.items.some(v=>v.id===t.id)));
  await page.getByRole('searchbox').fill(target.subject);await expect(page.getByTestId('support-ticket-'+target.id)).toBeVisible();
  await page.getByTestId('support-ticket-'+target.id).click();await expect(page.getByTestId('support-thread')).toContainText(ownerReply);
  const thread=page.getByTestId('support-thread');

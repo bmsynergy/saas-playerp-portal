@@ -37,8 +37,9 @@ export function VenueMaintenancePage({ data, filters, onFiltersChange, onPageCha
     </div>
     {data.range_clamped && <p className="maintenance-muted maintenance-range-note" role="status">{t('maintenance.rangeClamped')}</p>}
     {error && <div className="maintenance-inline-error" role="alert"><span>{error}</span><button className="button button-secondary" type="button" onClick={onRefresh}>{t('maintenance.retry')}</button></div>}
-    <PrintListPagination pagination={pagination} id="venue-maintenance" disabled={loading} fixedSize/>
     {loading && <p className="maintenance-muted" role="status">{t('maintenance.loadingHistory')}</p>}
+    <div data-pagination-list="venue-maintenance" />
     <div aria-busy={loading}>{!loading && !error && <MaintenanceNights nights={data.nights} venueId={data.venue.venue_id}/>}</div>
+    <PrintListPagination pagination={pagination} id="venue-maintenance" disabled={loading} fixedSize/>
   </section>;
 }

@@ -515,8 +515,6 @@ html[data-nav="keyboard"] .ps-venue-card summary:focus-visible{outline:2px solid
 .mcp-filters .native-select-wrap select{background:var(--surface);box-shadow:none}
 html[data-nav="keyboard"] .mcp-filters .native-select-wrap select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .mcp-venue-link{display:inline-flex;align-items:center;gap:6px;font-weight:700}
-.mcp-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;color:var(--muted);font-size:.85rem}
-.mcp-pagination>div{display:flex;align-items:center;gap:10px}
 .mcp-editor{display:grid;gap:16px}
 .mcp-editor-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .mcp-editor-title h3{margin:0 0 4px}
@@ -545,7 +543,7 @@ html[data-nav="keyboard"] .mcp-switch-row input[type=checkbox]:focus-visible{out
 .mcp-consent-check{display:flex;align-items:flex-start;gap:10px;line-height:1.5;cursor:pointer}
 .mcp-consent-check input{margin-top:4px;flex:none}
 @media(max-width:850px){.mcp-filters{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.owner-integrations > .owner-venue-card,.owner-integrations .mcp-clients-card{padding:18px}.mcp-filters{grid-template-columns:1fr}.mcp-filter-submit{width:100%}.mcp-pagination{align-items:flex-start;flex-direction:column}.mcp-editor-title{flex-direction:column}.mcp-editor-card{padding:12px}.mcp-facts>div{display:block}.mcp-facts dd{text-align:left;margin-top:3px}}
+@media(max-width:560px){.owner-integrations > .owner-venue-card,.owner-integrations .mcp-clients-card{padding:18px}.mcp-filters{grid-template-columns:1fr}.mcp-filter-submit{width:100%}.mcp-editor-title{flex-direction:column}.mcp-editor-card{padding:12px}.mcp-facts>div{display:block}.mcp-facts dd{text-align:left;margin-top:3px}}
 /* Keep the shared keyboard focus visible on inputs inside custom controls. */
 html[data-nav="keyboard"] input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 

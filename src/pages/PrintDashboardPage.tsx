@@ -91,6 +91,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
 
     <section className="print-dashboard-inventory" aria-labelledby="dashboard-list-title" ref={listRef} data-testid="dashboard-inventory">
       <div className="print-dashboard-section-title print-dashboard-list-heading"><div><p className="eyebrow">{t('dash.inventoryEyebrow')}</p><h2 id="dashboard-list-title">{t('dash.inventory')}</h2><p>{t('dash.sameFilter')}</p></div><span className="count-pill">{numberFormatter.format(filtered.length)}</span></div>
+      <div data-pagination-list="dashboard" />
       {filtered.length === 0 ? <div className="print-dashboard-empty" data-testid="dashboard-empty"><Server size={27}/><strong>{inventory.items.length ? t('dash.noMatches') : t('dash.empty')}</strong><p>{inventory.items.length ? t('dash.noMatchesHint') : t('dash.emptyHint')}</p></div> : <div className="print-dashboard-table-wrap"><table className="print-dashboard-table"><thead><tr><th>{t('dash.device')}</th><th>{t('dash.venue')}</th><th>{t('dash.state')}</th><th>{t('dash.version')}</th><th>{t('dash.lastContact')}</th><th>{t('dash.notices')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{visible.map(item => <InventoryRow key={item.id} item={item} t={t} formatDate={formatDate}/>)}</tbody></table></div>}
       <PrintListPagination pagination={pagination} id="dashboard"/>
     </section>

@@ -53,6 +53,7 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
         <AdminDateFilters id="fleet" label={t('list.lastContact')} from={dateFilter.from} to={dateFilter.to} onChange={(key, value) => { setDateFilter(current => ({ ...current, [key]: value })); pagination.reset(); }}/>
         <ClearFiltersButton testId="fleet-filter-clear" disabled={!isFiltered(filter) && !dateFilter.from && !dateFilter.to} onClick={() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }}/>
       </div>
+      <div data-pagination-list="fleet" />
       {filtered.length === 0 ? <div className="staff-empty" data-testid="fleet-empty"><Server size={27}/><strong>{t(isVenue ? (scopedRows.length ? 'ps.venueNoMatches' : 'ps.venueEmpty') : (scopedRows.length ? 'ps.noMatches' : 'ps.emptyFleet'))}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t(isVenue ? 'ps.col.device' : 'ps.col.venue')}</th><th>{t('ps.col.state')}</th><th>{t('version')}</th><th>{t('lastSignal')}</th><th>{t('ps.col.printers')}</th><th>{t('ps.col.queue')}</th>{(!isVenue || detailHref) && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{visible.map(row => {
         const state = fleetState(row); const server = row.print_server;
         const relative = relativeTime(server?.last_seen_at ?? null, now, locale);

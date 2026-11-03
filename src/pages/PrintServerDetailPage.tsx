@@ -367,6 +367,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
         <label className="field"><span>{t('ps.printers.location')}</span><div className="field-control"><input type="text" data-testid="printer-form-location" autoComplete="off" maxLength={80} value={form.location} onChange={event => setForm({ ...form, location: event.target.value })} disabled={busy}/></div></label>
         <button type="submit" className="button button-primary" data-testid="printer-form-submit" disabled={busy}><Plus size={17}/>{t('ps.printers.addSubmit')}</button>
       </form>}
+      <div data-pagination-list="printers" />
       {state.printers.length === 0 ? <div className="staff-empty" data-testid="printers-empty"><Printer size={27}/><strong>{t('ps.printers.empty')}</strong></div> : matchingPrinters.length === 0 ? <div className="staff-empty" data-testid="printers-no-results"><Search size={27}/><strong>{t('ps.printers.noResults')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-printers-table"><thead><tr><th>{t('ps.printers.name')}</th><th>{t('ps.printers.mac')}</th><th>{t('state')}</th><th>{t('ps.printers.lastReport')}</th><th>{t('ps.printers.lastError')}</th><th>{t('ps.pendingJobs')}</th><th>{t('ps.printers.workstations')}</th>{canManage && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => {
         const report = printer.last_report; const reportAt = report?.reported_at ?? printer.last_report_at;
         const error = printer.last_error || report?.error || null;
@@ -394,7 +395,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     <section className="staff-panel" id="ps469-queue" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
       <p className="staff-panel-lead">{t('ps.jobs.lead')}</p>
-      {state.printers.length ? <><div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div><PrintListPagination pagination={printerPagination} id="queues"/></> : <p className="inline-empty">{t('ps469.noQueue')}</p>}
+      {state.printers.length ? <><div data-pagination-list="queues" /><div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div><PrintListPagination pagination={printerPagination} id="queues"/></> : <p className="inline-empty">{t('ps469.noQueue')}</p>}
     </section>
 
     {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>

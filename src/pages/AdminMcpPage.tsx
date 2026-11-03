@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Building2, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Bot, Building2, ChevronDown, Search } from 'lucide-react';
 import { useLocale } from '../locales';
 import type { McpFilters, McpVenueList } from '../lib/mcp';
+import { PrintListPagination } from '../components/PrintListPagination';
 
 export type AdminMcpPageProps = {
   filters: McpFilters; onFilters: (filters: McpFilters) => void;
@@ -20,10 +21,11 @@ export function McpEffectiveBadge({ efectivo, motivo }: { efectivo: boolean; mot
 export function AdminMcpPage({ filters, onFilters, list, loading, error, onRetry }: AdminMcpPageProps) {
   const { t } = useLocale();
   const [draft, setDraft] = useState(() => ({ search: filters.search, owner_search: filters.owner_search, status: filters.status }));
-  const pages = Math.max(1, Math.ceil((list?.total ?? 0) / filters.page_size));
   const apply = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onFilters({ ...filters, ...draft, page: 1 }); };
-  const start = list && list.total ? (list.page - 1) * list.page_size + 1 : 0;
-  const end = list ? Math.min(list.total, list.page * list.page_size) : 0;
+  const page = list?.page ?? filters.page;
+  const pageSize = list?.page_size ?? filters.page_size;
+  const total = list?.total ?? 0;
+  const pagination = { page, pageCount: Math.max(1, Math.ceil(total / pageSize)), pageSize, start: (page - 1) * pageSize, end: Math.min(total, page * pageSize), total, setPage: (next: number) => onFilters({ ...filters, page: next }), setPageSize: () => {} };
   return <div className="page-stack staff-page" data-testid="admin-mcp">
     <div className="page-heading"><div><p className="eyebrow">{t('mcp.eyebrow')}</p><h1>{t('mcp.adminTitle')}</h1><p>{t('mcp.adminLead')}</p></div><div className="heading-accent"><Bot size={30} /></div></div>
     <section className="staff-panel" aria-labelledby="mcp-directory-title">
@@ -37,8 +39,9 @@ export function AdminMcpPage({ filters, onFilters, list, loading, error, onRetry
       {error && <div className="form-error" role="alert"><span>{t(error)}</span><button className="button button-secondary" type="button" onClick={onRetry}>{t('mcp.retry')}</button></div>}
       {loading && <p className="mcp-muted" role="status">{t('mcp.loadingVenues')}</p>}
       {!loading && !error && list?.rows.length === 0 && <div className="inline-empty">{t('mcp.noVenues')}</div>}
+      <div data-pagination-list="mcp" />
       {!loading && list && list.rows.length > 0 && <div className="staff-table-wrap"><table className="staff-table mcp-table"><thead><tr><th>{t('mcp.venueKind')}</th><th>{t('mcp.col.switch')}</th><th>{t('mcp.owners')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{list.rows.map(venue => { const href = `/admin/tenants/${encodeURIComponent(venue.venue_id)}/mcp`; return <tr key={venue.venue_id}><td data-label={t('mcp.venueKind')} className="staff-identity"><Link className="mcp-venue-link" to={href}><Building2 size={16} aria-hidden="true" /> {venue.nombre}</Link></td><td data-label={t('mcp.col.switch')}><span className={`status-badge ${venue.habilitado ? 'status-active' : 'status-inactive'}`}><span className="badge-dot" />{t(venue.habilitado ? 'mcp.switch.on' : 'mcp.switch.off')}</span></td><td data-label={t('mcp.owners')}>{venue.owners}</td><td data-label={t('staff.actions')}><Link className="button button-secondary" to={href}>{t('mcp.openDetail')}</Link></td></tr>; })}</tbody></table></div>}
-      {list && list.total > 0 && <nav className="mcp-pagination" aria-label={t('mcp.pagination')}><span>{t('mcp.range').replace('{from}', String(start)).replace('{to}', String(end)).replace('{total}', String(list.total))}</span><div><button className="button button-secondary" type="button" disabled={loading || filters.page <= 1} onClick={() => onFilters({ ...filters, page: filters.page - 1 })} aria-label={t('mcp.previous')}><ChevronLeft size={18} /></button><span>{t('mcp.page').replace('{page}', String(filters.page)).replace('{pages}', String(pages))}</span><button className="button button-secondary" type="button" disabled={loading || filters.page >= pages} onClick={() => onFilters({ ...filters, page: filters.page + 1 })} aria-label={t('mcp.next')}><ChevronRight size={18} /></button></div></nav>}
+      {list && list.total > 0 && <PrintListPagination pagination={pagination} id="mcp" disabled={loading} fixedSize/>}
     </section>
   </div>;
 }
