@@ -1,0 +1,493 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "at": "2026-11-03T16:48:09.798Z",
+  "mocked": false,
+  "mutations": false,
+  "errors": [],
+  "requests": [
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "all"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "last_night_problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "ok"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 2,
+        "p_page_size": 25,
+        "p_status": "ok"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "last_night_problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "all"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": "QA-120",
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "problem"
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25,
+        "p_status": "all"
+      },
+      "status": 200
+    }
+  ],
+  "criteria": {
+    "1": {
+      "summary": {
+        "venues": 133,
+        "problem_nights": 10,
+        "alert_recipients": 1,
+        "venues_with_problems": 9,
+        "venues_last_night_problem": 1
+      },
+      "options": {
+        "all": {
+          "total": 133,
+          "page": 1,
+          "pages": 6,
+          "rows": 25,
+          "problemNights": [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "venues": 133,
+            "problem_nights": 10,
+            "alert_recipients": 1,
+            "venues_with_problems": 9,
+            "venues_last_night_problem": 1
+          }
+        },
+        "problem": {
+          "total": 9,
+          "page": 1,
+          "pages": 1,
+          "rows": 9,
+          "problemNights": [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "summary": {
+            "venues": 133,
+            "problem_nights": 10,
+            "alert_recipients": 1,
+            "venues_with_problems": 9,
+            "venues_last_night_problem": 1
+          }
+        },
+        "last_night_problem": {
+          "total": 1,
+          "page": 1,
+          "pages": 1,
+          "rows": 1,
+          "problemNights": [
+            1
+          ],
+          "summary": {
+            "venues": 133,
+            "problem_nights": 10,
+            "alert_recipients": 1,
+            "venues_with_problems": 9,
+            "venues_last_night_problem": 1
+          }
+        },
+        "ok": {
+          "total": 124,
+          "page": 1,
+          "pages": 5,
+          "rows": 25,
+          "problemNights": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "venues": 133,
+            "problem_nights": 10,
+            "alert_recipients": 1,
+            "venues_with_problems": 9,
+            "venues_last_night_problem": 1
+          }
+        }
+      },
+      "okPage2": {
+        "total": 124,
+        "page": 2,
+        "pages": 5,
+        "rows": 25,
+        "problemNights": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "summary": {
+          "venues": 133,
+          "problem_nights": 10,
+          "alert_recipients": 1,
+          "venues_with_problems": 9,
+          "venues_last_night_problem": 1
+        }
+      }
+    },
+    "2": {
+      "cards": [
+        {
+          "index": 1,
+          "status": "problem",
+          "count": 9,
+          "total": 9,
+          "sumProblemNights": 10,
+          "ariaPressed": "true",
+          "focus": {
+            "element": {
+              "tag": "BUTTON",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "container": {
+              "tag": "DIV",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "focused": true,
+            "nav": null,
+            "tabindex": null
+          },
+          "url": "https://playerp.dev.bmore.app/admin/maintenance?show=problem"
+        },
+        {
+          "index": 2,
+          "status": "last_night_problem",
+          "count": 1,
+          "total": 1,
+          "sumProblemNights": 1,
+          "ariaPressed": "true",
+          "focus": {
+            "element": {
+              "tag": "BUTTON",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "container": {
+              "tag": "DIV",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "focused": true,
+            "nav": null,
+            "tabindex": null
+          },
+          "url": "https://playerp.dev.bmore.app/admin/maintenance?show=last_night_problem"
+        },
+        {
+          "index": 3,
+          "status": "problem",
+          "count": 10,
+          "total": 9,
+          "sumProblemNights": 10,
+          "ariaPressed": "true",
+          "focus": {
+            "element": {
+              "tag": "BUTTON",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "container": {
+              "tag": "DIV",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "focused": true,
+            "nav": null,
+            "tabindex": null
+          },
+          "url": "https://playerp.dev.bmore.app/admin/maintenance?show=problem"
+        },
+        {
+          "index": 0,
+          "status": "all",
+          "count": 133,
+          "total": 133,
+          "sumProblemNights": 10,
+          "ariaPressed": "true",
+          "focus": {
+            "element": {
+              "tag": "BUTTON",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "container": {
+              "tag": "DIV",
+              "outlineStyle": "none",
+              "outlineWidth": "3px",
+              "boxShadow": "none"
+            },
+            "focused": true,
+            "nav": null,
+            "tabindex": null
+          },
+          "url": "https://playerp.dev.bmore.app/admin/maintenance?show=all"
+        }
+      ]
+    },
+    "3": {
+      "url": "https://playerp.dev.bmore.app/admin/maintenance?show=problem",
+      "before": 9,
+      "after": 9,
+      "show": "problem",
+      "activeCards": [
+        "true",
+        "true"
+      ]
+    }
+  },
+  "search": {
+    "total": 7,
+    "page": 1,
+    "pages": 1,
+    "rows": 7,
+    "problemNights": [
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "summary": {
+      "venues": 133,
+      "problem_nights": 10,
+      "alert_recipients": 1,
+      "venues_with_problems": 9,
+      "venues_last_night_problem": 1
+    }
+  },
+  "invalidUrl": {
+    "total": 133,
+    "show": "all"
+  },
+  "keyboard": {
+    "element": {
+      "tag": "BUTTON",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "boxShadow": "none"
+    },
+    "container": {
+      "tag": "DIV",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "boxShadow": "none"
+    },
+    "focused": true,
+    "nav": "keyboard",
+    "tabindex": null
+  },
+  "mobile": {
+    "width": 390,
+    "overflow": false
+  },
+  "ok": true,
+  "published_commit": "d5a3581ce7add62670a59660ca4b18ba78019443",
+  "github_branch": "uma/portal-dev-resume"
+}

@@ -1,1 +1,2 @@
 PE-570.4: revisión independiente Gaby, solo lectura, misma sesión. Sin problemas verificables en el diff: queryKey/p_status, URL, reinicio de página, botones/selector y foco data-nav. Pasada publicada pendiente al revisar. Principal: diff revisado, build y 395 pruebas verdes.
+Gaby revisó después acceptance.json y filtered-reloaded.png: sin inconsistencias, criterios 1–3 respaldados por la pasada DEV sin mocks; 133/9/1/124, página 2 con 25 ceros, cuatro clics, suma 10 y recarga 9. SHA y publicación comprobados directamente por Uma mediante GitHub y conector.
