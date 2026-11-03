@@ -31,7 +31,7 @@ export async function searchMaintenanceVenues(query:string,_includeVenueId?:stri
 
 export type MaintenanceVenueSummary = Omit<MaintenanceVenue, 'problems' | 'nights'> & {
   problem_nights: number;
-  last_night: {local_date: string; status: string; problem: string | null} | null;
+  last_night: {local_date: string; status: string; problem: string | null; failed_tasks: string[]; tasks_total: number} | null;
 };
 export type MaintenanceVenueList = {
   as_of: string; query: string | null; days: number;

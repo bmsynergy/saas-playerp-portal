@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, Bell, Clock3, RefreshCw, Search } from 'lucide-react';
 import { useLocale } from '../locales';
 import { errorCode } from '../lib/errors';
+import { maintenanceFailureSummary } from '../lib/maintenanceMessages';
 import { searchMaintenanceRecipients, type MaintenanceCandidate, type MaintenanceVenueList, type MaintenanceRecipients } from '../lib/maintenance';
 import { PrintListPagination } from '../components/PrintListPagination';
 import { PortalDialog } from '../components/PortalDialog';
@@ -87,7 +88,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
       {loading && <p className="maintenance-muted" role="status">{t('maintenance.loadingVenues')}</p>}
       <div aria-busy={loading}>{!loading && !overviewError && data.venues.length ? <div className="maintenance-venue-list">{data.venues.map(venue => <Link className={`maintenance-venue-row ${venue.problem_nights > 0 ? 'maintenance-venue-row-problem' : ''}`} to={`/admin/tenants/${encodeURIComponent(venue.venue_id)}/maintenance`} key={venue.venue_id} data-testid="maintenance-venue-row">
         <span className="maintenance-venue-identity"><strong>{venue.venue_name || venue.venue_id}</strong><small>{venue.timezone}</small></span>
-        <span className="maintenance-venue-metric"><small>{t('maintenance.latestNight')}</small>{venue.last_night ? <span><span className={`maintenance-status maintenance-status-${venue.last_night.problem || venue.last_night.status}`}>{t(`maintenance.status.${venue.last_night.problem || venue.last_night.status}`)}</span><small>{formatDate(venue.last_night.local_date)}</small></span> : <span>{t('maintenance.noNights')}</span>}</span>
+        <span className="maintenance-venue-metric"><small>{t('maintenance.latestNight')}</small>{venue.last_night ? <><span><span className={`maintenance-status maintenance-status-${venue.last_night.problem || venue.last_night.status}`}>{t(`maintenance.status.${venue.last_night.problem || venue.last_night.status}`)}</span><small>{formatDate(venue.last_night.local_date)}</small></span>{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale) && <span className="maintenance-failure-summary">{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale)}</span>}</> : <span>{t('maintenance.noNights')}</span>}</span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.problemNightsInPeriod')}</small><strong className={venue.problem_nights > 0 ? 'maintenance-danger-text' : ''}>{venue.problem_nights}</strong></span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.lastSuccess')}</small><span>{formatDate(venue.last_success_date)}</span></span>
         <span className="maintenance-row-action" aria-hidden="true">{t('maintenance.openVenue')} →</span>

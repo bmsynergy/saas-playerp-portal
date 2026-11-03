@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import { useLocale } from '../locales';
+import { maintenanceTaskName } from '../lib/maintenanceMessages';
 import type { MaintenanceRunFilters, MaintenanceVenueRuns } from '../lib/maintenance';
 import { PrintListPagination } from '../components/PrintListPagination';
 import { MaintenanceNights } from './MaintenanceNights';
@@ -31,7 +32,7 @@ export function VenueMaintenancePage({ data, filters, onFiltersChange, onPageCha
       <label><span>{t('maintenance.from')}</span><input type="date" value={filters.from || data.from} max={filters.to || data.to} onChange={event => onFiltersChange({ from: event.target.value, page: 1 })}/></label>
       <label><span>{t('maintenance.to')}</span><input type="date" value={filters.to || data.to} min={filters.from || data.from} onChange={event => onFiltersChange({ to: event.target.value, page: 1 })}/></label>
       <label><span>{t('maintenance.statusFilter')}</span><select value={filters.status} onChange={event => onFiltersChange({ status: event.target.value, page: 1 })}><option value="">{t('maintenance.allStatuses')}</option>{['success','error','missing','running','problem'].map(status => <option key={status} value={status}>{t(`maintenance.status.${status}`)}</option>)}</select></label>
-      <label><span>{t('maintenance.taskFilter')}</span><select value={filters.task} onChange={event => onFiltersChange({ task: event.target.value, page: 1 })}><option value="">{t('maintenance.allTasks')}</option>{data.task_keys.map(task => <option key={task} value={task}>{task}</option>)}</select></label>
+      <label><span>{t('maintenance.taskFilter')}</span><select value={filters.task} onChange={event => onFiltersChange({ task: event.target.value, page: 1 })}><option value="">{t('maintenance.allTasks')}</option>{data.task_keys.map(task => <option key={task} value={task}>{maintenanceTaskName(task, locale)}</option>)}</select></label>
       <label><span>{t('maintenance.order')}</span><select value={filters.order} onChange={event => onFiltersChange({ order: event.target.value as MaintenanceRunFilters['order'], page: 1 })}><option value="desc">{t('maintenance.newestFirst')}</option><option value="asc">{t('maintenance.oldestFirst')}</option></select></label>
     </div>
     {data.range_clamped && <p className="maintenance-muted maintenance-range-note" role="status">{t('maintenance.rangeClamped')}</p>}
