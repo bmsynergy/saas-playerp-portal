@@ -55,12 +55,11 @@ try {
  await button.click();const dialog=page.getByRole('dialog');await dialog.waitFor();
  await dialog.getByRole('combobox').fill(candidate.email);
  await dialog.getByRole('option').filter({hasText:candidate.email}).click();
- const addResponse=page.waitForResponse(r=>r.url().endsWith('/rpc/portal_maintenance_alert_recipient_set')&&r.request().postDataJSON().p_enabled===true);
- addedId=candidate.user_id;await dialog.getByRole('button',{name:'Agregar',exact:true}).click();assert.equal((await addResponse).status(),200);
+ addedId=candidate.user_id;
+ const [addResponse]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/rpc/portal_maintenance_alert_recipient_set')&&r.request().postDataJSON().p_enabled===true),dialog.getByRole('button',{name:'Añadir',exact:true}).click()]);assert.equal(addResponse.status(),200);
  await expect(page.getByTestId('maintenance-recipients-open')).toHaveText(`Destinatarios de alertas (${initialIds.length+1})`);
  await page.screenshot({path:`${out}/criterion-3.png`,fullPage:false});
- const removeResponse=page.waitForResponse(r=>r.url().endsWith('/rpc/portal_maintenance_alert_recipient_set')&&r.request().postDataJSON().p_enabled===false);
- await dialog.getByRole('button',{name:`Quitar ${candidate.email}`,exact:true}).click();assert.equal((await removeResponse).status(),200);
+ const [removeResponse]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/rpc/portal_maintenance_alert_recipient_set')&&r.request().postDataJSON().p_enabled===false),dialog.getByRole('button',{name:`Quitar ${candidate.email}`,exact:true}).click()]);assert.equal(removeResponse.status(),200);
  await expect(page.getByTestId('maintenance-recipients-open')).toHaveText(`Destinatarios de alertas (${initialIds.length})`);
  const restored=await rpc('portal_maintenance_alert_recipients');assert.deepEqual(restored.recipients.map(p=>p.user_id).sort(),initialIds);addedId=null;
  report.criteria[3]={before:initialIds.length,afterAdd:initialIds.length+1,afterRemove:restored.recipients.length,restored:true,serverSearch:true,screenshot:'criterion-3.png'};
