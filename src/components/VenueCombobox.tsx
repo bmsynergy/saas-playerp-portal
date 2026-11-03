@@ -4,8 +4,8 @@ import { createPortal } from 'react-dom';
 import { searchAdminVenues, type AdminVenueOption, adminDeviceErrorKey } from '../lib/psAdminDevice';
 import { useLocale } from '../locales';
 
-type Props = { value: AdminVenueOption | null; onChange: (venue: AdminVenueOption | null) => void; disabled?: boolean; includeVenueId?: string | null; testId?: string; emptyLabel?: string };
-export function VenueCombobox({ value, onChange, disabled, includeVenueId, testId, emptyLabel }: Props) {
+type Props = { value: AdminVenueOption | null; onChange: (venue: AdminVenueOption | null) => void; disabled?: boolean; includeVenueId?: string | null; testId?: string; emptyLabel?: string; search?: typeof searchAdminVenues };
+export function VenueCombobox({ value, onChange, disabled, includeVenueId, testId, emptyLabel, search = searchAdminVenues }: Props) {
   const { t } = useLocale();
   const id = useId();
   const [query, setQuery] = useState('');
@@ -48,13 +48,13 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
     const controller = new AbortController();
     setLoading(true); setError(''); setItems([]); setActive(0);
     const timer = window.setTimeout(() => {
-      void searchAdminVenues(query, includeVenueId ?? value?.id ?? undefined, controller.signal)
+      void search(query, includeVenueId ?? value?.id ?? undefined, controller.signal)
         .then(found => { if (request.current === current) setItems(found); })
         .catch(err => { if (request.current === current && !controller.signal.aborted) setError(t(adminDeviceErrorKey(err))); })
         .finally(() => { if (request.current === current) setLoading(false); });
     }, query ? 250 : 0);
     return () => { controller.abort(); window.clearTimeout(timer); };
-  }, [open, query, includeVenueId, value?.id, disabled, t]);
+  }, [open, query, includeVenueId, value?.id, disabled, t, search]);
   useEffect(() => {
     if (!open) return;
     const outside = (event: PointerEvent) => { if (!rootRef.current?.contains(event.target as Node) && !listRef.current?.contains(event.target as Node)) { setOpen(false); setQuery(''); } };

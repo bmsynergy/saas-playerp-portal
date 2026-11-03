@@ -3,7 +3,7 @@ import { getMaintenanceOverview, getMaintenanceRecipients, setMaintenanceRecipie
 import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { destination, preferredScope, chooseScope, safeNext, canManageRings } from './lib/access';
 import { getStaff, staffRequest, staffErrorKey, acceptInvitation } from './lib/staff';
@@ -66,21 +66,24 @@ import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 function MaintenanceRoute() {
   const {session,expire}=useAuth(); const {t}=useLocale();
   const [days,setDays]=useState(14); const [busy,setBusy]=useState(false); const [mutationError,setMutationError]=useState<string|null>(null);
+  const [venue,setVenue]=useState<AdminVenueOption|null>(null); const [page,setPage]=useState(1);
   const recipientKey=['maintenance-recipients',session?.user.id];
-  const overview=useQuery({queryKey:['maintenance-overview',session?.user.id,days],queryFn:({signal})=>getMaintenanceOverview(days,signal),retry:false,gcTime:0});
+  const overview=useQuery({queryKey:['maintenance-overview',session?.user.id,days,venue?.id??null,page],queryFn:({signal})=>getMaintenanceOverview(days,venue?.id??null,page,signal),placeholderData:keepPreviousData,retry:false,gcTime:0});
   const recipients=useQuery({queryKey:recipientKey,queryFn:({signal})=>getMaintenanceRecipients(signal),retry:false,gcTime:0});
   useEffect(()=>{if([overview.error,recipients.error].some(e=>e&&errorCode(e)==='sessionExpired'))void expire();},[overview.error,recipients.error,expire]);
   const setRecipient=async(userId:string,enabled:boolean)=>{
     if(busy)return;
     setBusy(true);setMutationError(null);
     try{const data=await setMaintenanceRecipient(userId,enabled);queryClient.setQueryData(recipientKey,data);void overview.refetch();}
-    catch(error){setMutationError(t(errorCode(error)));if(errorCode(error)==='sessionExpired')void expire();}
+    catch(error){setMutationError(t(errorCode(error)));if(errorCode(error)==='sessionExpired')void expire();throw error;}
     finally{setBusy(false);}
   };
-  if(overview.isError)return <StateView kind={errorCode(overview.error)==='accessDenied'?'denied':'error'} onRetry={()=>void overview.refetch()}/>;
+  if(overview.isError&&!overview.data)return <StateView kind={errorCode(overview.error)==='accessDenied'?'denied':'error'} onRetry={()=>void overview.refetch()}/>;
   if(!overview.data)return <StateView kind="loading"/>;
   return <MaintenancePage data={overview.data} recipients={recipients.isError?null:recipients.data??null} recipientsLoading={recipients.isPending}
-    recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={setDays}
+    recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={value=>{setDays(value);setPage(1);}}
+    venue={venue} onVenueChange={value=>{setVenue(value);setPage(1);}} onPageChange={setPage} loading={overview.isFetching}
+    overviewError={overview.error?t(errorCode(overview.error)):null}
     onRefresh={()=>{void overview.refetch();void recipients.refetch();}} onRecipientsRetry={()=>void recipients.refetch()} onSetRecipient={setRecipient}/>;
 }
 function Standalone({children}:{children:ReactNode}) {
