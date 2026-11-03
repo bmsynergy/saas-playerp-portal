@@ -24,6 +24,7 @@ export function safeNext(value: string | null): string | null {
   if(path==='/admin/print-servers/inventory')return only(['fromVenue','selected','create'])&&id('fromVenue')&&id('selected')&&(!params.has('create')||params.get('create')==='1')?value:null;
   if(/^\/admin\/tenants\/[0-9a-f-]+\/print-servers$/.test(path))return uuid.test(path.split('/')[3])&&only(['selected'])&&id('selected')?value:null;
   if(path==='/admin/print-servers/channels')return only(['channel','q','status','venue','venueName','group','page','lang']) ? value : null;
+  if(path==='/admin/maintenance')return only(['lang'])&&(!params.has('lang')||['es','en'].includes(params.get('lang')!))?value:null;
   if(query)return null;
   return /^\/admin(?:\/staff|\/mcp|\/(?:tenants|print-servers)(?:\/[a-f0-9-]+)?|\/print-servers\/(?:list|firmwares|updates)|\/tenants\/[a-f0-9-]+\/(?:users|mcp|print-servers(?:\/detail)?))?$/.test(path)?value:null;
 }
@@ -35,6 +36,7 @@ export function destination(access: PortalAccess, next: string | null = null): s
   if (safe?.startsWith('/oauth/consent?')) return safe;
   if (access.is_platform_staff) {
     if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
+    if(safe.split('?')[0]==='/admin/maintenance')return safe;
     // Tenants: Admin and Operations. Venue Users/Print Servers, staff and the fleet: Admin only.
     return (safe.startsWith('/admin/tenants') && !safe.endsWith('/users') && !safe.endsWith('/mcp') && !safe.includes('/print-servers') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
   }

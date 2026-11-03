@@ -1,0 +1,65 @@
+.maintenance-page{gap:20px}
+.maintenance-heading{align-items:flex-start;gap:16px;margin-bottom:0}
+.maintenance-heading>div{min-width:0}
+.maintenance-heading p:last-child{max-width:68ch}
+.maintenance-heading .button{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.maintenance-panel{min-width:0;padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+.maintenance-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}
+.maintenance-section-head .eyebrow{margin:0 0 5px}
+.maintenance-section-head h2{margin:0 0 5px;font-size:1.07rem}
+.maintenance-section-head p:last-child{margin:0;color:var(--muted);font-size:.77rem;line-height:1.5}
+.maintenance-section-head>svg{color:var(--blue-text);flex:none}
+.maintenance-count{display:inline-flex;align-items:center;justify-content:center;min-width:31px;min-height:31px;padding:4px 9px;border-radius:99px;background:var(--success-soft);color:var(--success);font-size:.72rem;font-weight:800;white-space:nowrap}
+.maintenance-count-danger{background:var(--danger-soft);color:var(--danger)}
+.maintenance-problems{border-top:3px solid var(--danger)}
+.maintenance-problem-list,.maintenance-recipient-list,.maintenance-task-list ul{list-style:none;margin:0;padding:0}
+.maintenance-problem-list{display:grid;gap:9px}
+.maintenance-problem{display:flex;align-items:flex-start;gap:12px;padding:15px;border:1px solid var(--danger-line);border-radius:10px;background:var(--danger-soft)}
+.maintenance-problem>svg{flex:none;color:var(--danger);margin-top:1px}
+.maintenance-problem>div{flex:1;min-width:0}
+.maintenance-problem strong,.maintenance-problem span{display:block;overflow-wrap:anywhere}
+.maintenance-problem strong{font-size:.81rem}
+.maintenance-problem span{margin-top:3px;font-size:.74rem;color:var(--danger);font-weight:700}
+.maintenance-problem p{margin:5px 0 0;font-size:.72rem;line-height:1.45;overflow-wrap:anywhere}
+.maintenance-problem .button{flex:none;min-height:35px;padding:6px 10px;font-size:.71rem}
+.maintenance-ok{display:flex;align-items:center;gap:9px;color:var(--success);font-weight:700;font-size:.78rem;padding:10px 0}
+.maintenance-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.maintenance-filters label,.maintenance-add label{display:grid;gap:6px;font-size:.7rem;font-weight:800;color:var(--muted)}
+.maintenance-filters label:first-child{width:125px}.maintenance-filters label:nth-child(2){width:min(100%,300px)}
+.maintenance-filters select,.maintenance-add select{height:var(--portal-control-height);min-width:0;width:100%;padding:0 10px;border:1px solid var(--control-line);border-radius:8px;background:var(--surface);color:var(--ink);font-size:.77rem}
+.maintenance-venues{display:grid;gap:17px}
+.maintenance-venue{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.maintenance-venue-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;background:var(--canvas);border-bottom:1px solid var(--line)}
+.maintenance-venue-head h3{margin:0;font-size:.84rem;overflow-wrap:anywhere}.maintenance-venue-head p{margin:4px 0 0;font-size:.68rem;color:var(--muted)}
+.maintenance-nights{display:grid}.maintenance-night+.maintenance-night{border-top:1px solid var(--line)}
+.maintenance-night-problem{box-shadow:inset 3px 0 var(--danger)}
+.maintenance-night-toggle{display:flex;align-items:center;gap:18px;width:100%;min-height:64px;border:0;background:var(--surface);padding:12px 16px;color:var(--ink);text-align:left;cursor:pointer}
+.maintenance-night-toggle:hover{background:var(--canvas)}
+.maintenance-night-main{display:flex;align-items:center;gap:9px;min-width:185px;flex-wrap:wrap}.maintenance-night-main strong{font-size:.78rem}
+.maintenance-night-facts{display:flex;align-items:center;gap:8px 18px;flex:1;flex-wrap:wrap;color:var(--muted);font-size:.71rem}
+.maintenance-night-toggle>svg{flex:none;color:var(--muted);transition:transform .15s}.maintenance-chevron-open{transform:rotate(180deg)}
+.maintenance-status{display:inline-flex;align-items:center;border-radius:99px;padding:4px 8px;background:var(--blue-soft);color:var(--blue-text);font-size:.67rem;font-weight:800;white-space:nowrap}
+.maintenance-status-success,.maintenance-status-ok{background:var(--success-soft);color:var(--success)}
+.maintenance-status-error,.maintenance-status-missing{background:var(--danger-soft);color:var(--danger)}
+.maintenance-status-running,.maintenance-status-stuck{background:var(--warning-soft);color:var(--warning)}
+.maintenance-status-not_required{background:var(--canvas);color:var(--muted)}
+.maintenance-night-body{padding:16px 17px 18px;background:var(--canvas);border-top:1px solid var(--line)}
+.maintenance-executions{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.maintenance-execution{padding:16px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.maintenance-execution-head,.maintenance-task-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.maintenance-execution-head h4{margin:0 0 4px;font-size:.8rem}.maintenance-execution-head>div>span{font-size:.69rem;color:var(--muted)}
+.maintenance-current{display:inline-block;margin-left:8px;border-radius:4px;padding:2px 5px;background:var(--blue-soft);color:var(--blue-text);font-size:.6rem;vertical-align:middle}
+.maintenance-facts{display:flex;gap:12px 24px;flex-wrap:wrap;margin:12px 0}.maintenance-facts>div{display:flex;gap:5px;font-size:.72rem}.maintenance-facts dt{color:var(--muted)}.maintenance-facts dd{margin:0;font-weight:800}
+.maintenance-task-list{margin-top:15px;border-top:1px solid var(--line);padding-top:12px}.maintenance-task-list h5{margin:0 0 10px;font-size:.73rem}
+.maintenance-task-list ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:9px}
+.maintenance-task{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--canvas)}
+.maintenance-task-head strong{font-size:.73rem;overflow-wrap:anywhere}.maintenance-task .maintenance-facts{margin-bottom:0}
+.maintenance-error{color:var(--danger);font-size:.72rem;line-height:1.5;overflow-wrap:anywhere}
+.maintenance-muted{display:flex;align-items:center;gap:7px;margin:0;color:var(--muted);font-size:.76rem;line-height:1.5}
+.maintenance-empty-nights{padding:16px}.maintenance-inline-error{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--danger-line);border-radius:8px;background:var(--danger-soft);color:var(--danger);font-size:.75rem;overflow-wrap:anywhere}
+.maintenance-empty-alert{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;padding:11px 12px;border:1px solid var(--warning-line);border-radius:8px;background:var(--warning-soft);color:var(--warning);font-size:.76rem;font-weight:700;line-height:1.5}.maintenance-empty-alert svg{flex:none}
+.maintenance-recipient-list{display:grid;gap:8px;margin-bottom:16px}.maintenance-recipient-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}.maintenance-recipient-list strong,.maintenance-recipient-list span{display:block;overflow-wrap:anywhere}.maintenance-recipient-list strong{font-size:.77rem}.maintenance-recipient-list span{margin-top:3px;color:var(--muted);font-size:.7rem}.maintenance-recipient-list .button{flex:none;font-size:.71rem}
+.maintenance-add{max-width:580px;margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}.maintenance-add>div{display:flex;gap:9px;margin-top:7px}.maintenance-add select{flex:1}.maintenance-add .button{flex:none}.maintenance-add p{margin-top:8px}
+@media(max-width:800px){.maintenance-night-toggle{align-items:flex-start}.maintenance-night-main{min-width:0;flex:1}.maintenance-night-facts{flex-basis:100%;order:2}.maintenance-night-toggle>svg{order:1}}
+@media(max-width:600px){.maintenance-panel{padding:17px}.maintenance-heading{flex-direction:column}.maintenance-problem{flex-wrap:wrap}.maintenance-problem .button{margin-left:32px}.maintenance-filters label:first-child,.maintenance-filters label:nth-child(2){width:100%}.maintenance-night-toggle{flex-wrap:wrap;gap:8px}.maintenance-recipient-list li{align-items:flex-start;flex-wrap:wrap}.maintenance-recipient-list .button{margin-left:auto}.maintenance-add>div{flex-direction:column}.maintenance-add .button{align-self:flex-start}}
+@media(prefers-reduced-motion:reduce){.maintenance-night-toggle>svg{transition:none}}

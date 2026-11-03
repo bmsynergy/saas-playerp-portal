@@ -1,3 +1,5 @@
+import { MaintenancePage } from './pages/MaintenancePage';
+import { getMaintenanceOverview, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
 import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
@@ -61,6 +63,26 @@ import { McpVenueEditor } from './components/McpVenueEditor';
 import { AdminMcpPage } from './pages/AdminMcpPage';
 import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 
+function MaintenanceRoute() {
+  const {session,expire}=useAuth(); const {t}=useLocale();
+  const [days,setDays]=useState(14); const [busy,setBusy]=useState(false); const [mutationError,setMutationError]=useState<string|null>(null);
+  const recipientKey=['maintenance-recipients',session?.user.id];
+  const overview=useQuery({queryKey:['maintenance-overview',session?.user.id,days],queryFn:({signal})=>getMaintenanceOverview(days,signal),retry:false,gcTime:0});
+  const recipients=useQuery({queryKey:recipientKey,queryFn:({signal})=>getMaintenanceRecipients(signal),retry:false,gcTime:0});
+  useEffect(()=>{if([overview.error,recipients.error].some(e=>e&&errorCode(e)==='sessionExpired'))void expire();},[overview.error,recipients.error,expire]);
+  const setRecipient=async(userId:string,enabled:boolean)=>{
+    if(busy)return;
+    setBusy(true);setMutationError(null);
+    try{const data=await setMaintenanceRecipient(userId,enabled);queryClient.setQueryData(recipientKey,data);void overview.refetch();}
+    catch(error){setMutationError(t(errorCode(error)));if(errorCode(error)==='sessionExpired')void expire();}
+    finally{setBusy(false);}
+  };
+  if(overview.isError)return <StateView kind={errorCode(overview.error)==='accessDenied'?'denied':'error'} onRetry={()=>void overview.refetch()}/>;
+  if(!overview.data)return <StateView kind="loading"/>;
+  return <MaintenancePage data={overview.data} recipients={recipients.isError?null:recipients.data??null} recipientsLoading={recipients.isPending}
+    recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={setDays}
+    onRefresh={()=>{void overview.refetch();void recipients.refetch();}} onRecipientsRetry={()=>void recipients.refetch()} onSetRecipient={setRecipient}/>;
+}
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
   if (session) return <>{children}</>;
@@ -613,6 +635,7 @@ export default function App() {
     <Route path="/oauth/consent" element={<OAuthConsentRoute/>}/>
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
+    <Route path="/admin/maintenance" element={<Scope scope="admin"><MaintenanceRoute/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
     <Route path="/admin/mcp" element={<Scope scope="admin"><McpAdminRoute/></Scope>}/>
     {/* PE-328: the global user list is retired; venue users live in each venue's Users tab. */}

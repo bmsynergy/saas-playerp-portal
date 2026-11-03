@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Bot, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, Bot, Building2, ChevronDown, ChevronLeft, ChevronRight, KeyRound, LayoutDashboard, LogOut, MailCheck, Menu, PanelLeftClose, Printer, ShieldCheck, UsersRound, Wrench } from 'lucide-react';
 import { useLocale } from '../locales';
 import type { OwnerVenue } from '../lib/types';
 import type { OwnerSection } from '../hooks/useOwnerNavigation';
@@ -94,7 +94,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
   const areaTitle = scope === 'admin' ? t('staffArea') : t('ownerArea');
   const initial = (displayName || email).charAt(0).toUpperCase() || 'P';
   const nav = !navigationAllowed ? [] : scope === 'admin'
-    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/mcp', label: t('mcp.nav'), icon: Bot, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : [])]
+    ? [{ to: '/admin', label: t('overview'), icon: LayoutDashboard, end: true }, ...(canViewTenants ? [{ to: '/admin/tenants', label: t('directory'), icon: Building2, end: false }] : []), ...(canManageStaff ? [{ to: '/admin/print-servers', label: t('ps.nav'), icon: Printer, end: false }, { to: '/admin/mcp', label: t('mcp.nav'), icon: Bot, end: false }, { to: '/admin/staff', label: t('staff.nav'), icon: UsersRound, end: false }] : []), ...(canAdmin ? [{ to: '/admin/maintenance', label: t('maintenance.nav'), icon: Wrench, end: false }] : [])]
     : [{ to: '/', label: t('yourVenues'), icon: Building2, end: true }];
   const ownerVenue = ownerContext?.venues.find(venue => venue.id === ownerContext.selectedId);
   const ownerHasMany = (ownerContext?.venues.length ?? 0) > 1;
@@ -122,7 +122,7 @@ export function PortalShell({ ownerContext, scope, email, displayName, canAdmin,
       { label: t('ps.nav'), to: venuePrint[2] && canManageStaff ? `${venuePrint[1]}/print-servers` : undefined },
       ...(venuePrint[2] ? [{ label: t('ps.detailEyebrow') }] : [])];
     if (path.startsWith('/admin/tenants/')) return [root, { label: t('directory'), to: canViewTenants ? '/admin/tenants' : undefined }, { label: t('venueDetails') }];
-    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav'), '/admin/mcp': t('mcp.nav') };
+    const sectionLabels: Record<string, string> = { '/admin/tenants': t('directory'), '/admin/print-servers': t('ps.nav'), '/admin/staff': t('staff.nav'), '/admin/mcp': t('mcp.nav'), '/admin/maintenance': t('maintenance.nav') };
     return [root, { label: sectionLabels[path] ?? t('notFoundTitle') }];
   })();
   const context = crumbs[crumbs.length - 1].label;
