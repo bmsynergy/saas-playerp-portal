@@ -1,0 +1,39 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "realData": true,
+  "startedAt": "2026-11-03T13:06:10.209Z",
+  "checks": [
+    {
+      "platform": true,
+      "venues": 13,
+      "problemNights": 2,
+      "archivedAndCurrentVisible": true
+    },
+    {
+      "historicalNullDuration": "no disponible"
+    },
+    {
+      "recipientRemoveAndAdd": 200,
+      "emptyListNotice": true,
+      "originalRecipientRestored": true
+    },
+    {
+      "mobileOverflow": false
+    },
+    {
+      "ownerDirectRoute": "redirect /",
+      "ownerMenuAbsent": true,
+      "ownerMaintenanceRequests": 0
+    }
+  ],
+  "errors": [],
+  "pass": true,
+  "finishedAt": "2026-11-03T13:06:16.662Z",
+  "deployed_commit": "e32dade22e9c264c006cbc06514d60bd4eda03d4",
+  "unit_tests": {
+    "files": 39,
+    "passed": 376
+  },
+  "config_unchanged": true,
+  "config_sha256": "11aa61c47c31be5e934508d1928a8b78581b597f4163bc4842109e3d5c842313"
+}
