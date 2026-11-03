@@ -18,7 +18,11 @@ await context.addInitScript(s=>{localStorage.setItem('playerp.portal.dev.auth',J
 const page=await context.newPage();page.setDefaultTimeout(30000);
 const report={origin,at:new Date().toISOString(),mocked:false,mutations:false,errors:[],requests:[],criteria:{}};
 page.on('pageerror',e=>report.errors.push(e.message));
-page.on('response',async r=>{if(/\/rpc\/portal_maintenance_venue_(list|runs)$/.test(r.url())){const data=await r.json();report.requests.push({rpc:r.url().split('/').at(-1),request:r.request().postDataJSON(),status:r.status(),total:data.total,page:data.page,page_size:data.page_size});}});
+page.on('response',r=>{
+ if(!/\/rpc\/portal_maintenance_venue_(list|runs)$/.test(r.url()))return;
+ // Log request metadata synchronously: a reload may release the response body in Chromium.
+ report.requests.push({rpc:r.url().split('/').at(-1),request:r.request().postDataJSON(),status:r.status()});
+});
 const response=(name,predicate=()=>true)=>page.waitForResponse(r=>r.url().endsWith('/rpc/'+name)&&r.status()===200&&predicate(r.request().postDataJSON()));
 const list=(predicate)=>response('portal_maintenance_venue_list',predicate);
 const runs=(predicate)=>response('portal_maintenance_venue_runs',predicate);
