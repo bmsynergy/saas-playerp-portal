@@ -546,6 +546,7 @@ html[data-nav="keyboard"] .mcp-switch-row input[type=checkbox]:focus-visible{out
 @media(max-width:560px){.owner-integrations > .owner-venue-card,.owner-integrations .mcp-clients-card{padding:18px}.mcp-filters{grid-template-columns:1fr}.mcp-filter-submit{width:100%}.mcp-editor-title{flex-direction:column}.mcp-editor-card{padding:12px}.mcp-facts>div{display:block}.mcp-facts dd{text-align:left;margin-top:3px}}
 /* Keep the shared keyboard focus visible on inputs inside custom controls. */
 html[data-nav="keyboard"] input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+html[data-nav="keyboard"] .search-field input:focus-visible{outline:0}
 
 html[data-nav="keyboard"] .sidebar :is(a,button,input,select,summary,[tabindex]):focus-visible{outline-color:var(--focus-on-dark)}
 html[data-nav="keyboard"] .sidebar .nav-link.active:focus-visible{outline-color:var(--focus)}
