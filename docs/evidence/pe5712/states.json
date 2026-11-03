@@ -1,0 +1,11 @@
+{
+  "mocks": true,
+  "checks": [
+    "Support without legacy admin can open inbox; loading and empty states",
+    "Error is safe and retry recovers",
+    "operations denied admin Support without querying tickets",
+    "owner denied admin Support without querying tickets"
+  ],
+  "errors": [],
+  "passed": true
+}

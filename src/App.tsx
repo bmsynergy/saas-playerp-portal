@@ -1,3 +1,4 @@
+import { SupportRoute, SupportOverview } from './components/SupportData';
 import { VenueMaintenancePage } from './pages/VenueMaintenancePage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { getMaintenanceVenueList, maintenanceVenueStatus, type MaintenanceVenueStatus, getMaintenanceVenueRuns, maintenanceRunFilters, type MaintenanceRunFilters, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
@@ -64,6 +65,7 @@ import { McpVenueEditor } from './components/McpVenueEditor';
 import { AdminMcpPage } from './pages/AdminMcpPage';
 import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 
+function SupportAdminRoute(){const access=useAccess();return access.data?.support_staff?<SupportRoute scope="platform"/>:<StateView kind="denied"/>;}
 function MaintenanceRoute() {
   const {session,expire}=useAuth(); const {t}=useLocale();
   const [days,setDays]=useState(14); const [busy,setBusy]=useState(false); const [mutationError,setMutationError]=useState<string|null>(null);
@@ -191,7 +193,7 @@ function OwnerRoute() {
   const access=useAccess();
   const {venues,selectedId,known,section,device,onSelect}=useOwnerNavigation(access.data?.owner_venues??[]);
   const detail=useOwnerVenue(known?selectedId:'');
-  if(!selectedId)return <OwnerPage venues={venues} selectedId="" section={section} onSelect={onSelect}/>;
+  if(!selectedId)return <OwnerPage venues={venues} selectedId="" section={section} onSelect={onSelect} support={<SupportRoute scope="venue" venues={venues}/>} supportOverview={<SupportOverview venues={venues}/>}/>;
   if(!known)return <StateView kind="denied"/>;
   if(detail.isPending)return <StateView kind="loading"/>;
   if(detail.isError)return <StateView kind={errorCode(detail.error)==='accessDenied'?'denied':'error'} onRetry={()=>void detail.refetch()}/>;
@@ -199,6 +201,8 @@ function OwnerRoute() {
   if(!selected)return <StateView kind="denied"/>;
   if((section==='users'||section==='integrations')&&selected.is_owner!==true)return <StateView kind="denied"/>;
   return <OwnerPage key={selectedId} venues={venues.map(venue=>venue.id===selectedId?selected:venue)} selectedId={selectedId} section={section} onSelect={onSelect}
+    support={section==='support'?<SupportRoute key={selectedId} scope="venue" venueId={selectedId} venues={venues}/>:undefined}
+    supportOverview={section==='dashboard'?<SupportOverview venueId={selectedId} venues={venues}/>:undefined}
     users={section==='users'&&selected.is_owner===true?<OwnerUsersData key={selectedId} venueId={selectedId}/>:undefined}
     integrations={section==='integrations'&&selected.is_owner===true?<McpIntegrationData key={selectedId} venueId={selectedId}/>:undefined}
     printServers={section==='print-servers'?(device?<DeviceSheetData key={`${selectedId}:${device}`} id={device} scope="owner" expectedVenueId={selectedId}/>:<VenueDevicesData key={selectedId} venue={selected} scope="owner"/>):undefined}/>;
@@ -290,8 +294,8 @@ function McpAdminData() {
 }
 function DirectoryRoute({home=false}:{home?:boolean}) {
   const access=useAccess(); const {t}=useLocale();
-  if (!access.data?.can_view_tenants) return home ? <div className="page-heading"><h1>{t('adminHome')}</h1><p>{t('staff.limitedAccess')}</p></div> : <StateView kind="denied"/>;
-  return <DirectoryData home={home}/>;
+  if (!access.data?.can_view_tenants) return home ? <div className="page-stack"><div className="page-heading"><h1>{t('adminHome')}</h1><p>{t('staff.limitedAccess')}</p></div>{access.data?.support_staff&&<SupportOverview scope="platform"/>}</div> : <StateView kind="denied"/>;
+  return <div className="page-stack"><DirectoryData home={home}/>{home&&access.data?.support_staff&&<SupportOverview scope="platform"/>}</div>;
 }
 function DirectoryData({home=false}:{home?:boolean}) {
   const data=useDirectory();
@@ -652,6 +656,7 @@ function AuthenticatedLayout({children}:{children:ReactNode}) {
   if (!auth.session) return <>{children}</>;
   return <PortalShell scope={scope} email={auth.session.user.email??''} displayName={name}
     navigationAllowed={navigationAllowed} canAdmin={navigationAllowed&&canAdmin} canOwner={navigationAllowed&&canOwner}
+    canSupport={navigationAllowed&&!!access.data?.support_staff}
     canManageStaff={navigationAllowed&&!!access.data?.can_manage_staff} canViewTenants={navigationAllowed&&!!access.data?.can_view_tenants}
     ownerContext={navigationAllowed&&scope==='owner'?{...ownerContext,canManageUsers}:undefined}
     onSwitchScope={next=>chooseScope(auth.session!.user.id,next)} onLogout={auth.logout}>
@@ -680,6 +685,7 @@ export default function App() {
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
     <Route path="/admin/tenants/:id/maintenance" element={<Scope scope="admin"><MaintenanceDetailRoute/></Scope>}/>
+    <Route path="/admin/support" element={<Scope scope="admin"><SupportAdminRoute/></Scope>}/>
     <Route path="/admin/maintenance" element={<Scope scope="admin"><MaintenanceRoute/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
     <Route path="/admin/mcp" element={<Scope scope="admin"><McpAdminRoute/></Scope>}/>

@@ -13,8 +13,8 @@ export function safeNext(value: string | null): string | null {
   if(path === '/oauth/consent') return only(['request_id']) && uuid.test(params.get('request_id') ?? '') ? value : null;
   if(path === '/') {
     if(!only(['venue','section','device','selected']) || !id('venue') || !id('device') || !id('selected'))return null;
-    if(params.has('section') && !params.has('venue'))return null;
-    if(params.has('section') && !['details','users','print-servers','integrations'].includes(params.get('section')!))return null;
+    if(params.has('section') && !params.has('venue') && params.get('section')!=='support')return null;
+    if(params.has('section') && !['details','users','print-servers','integrations','support'].includes(params.get('section')!))return null;
     if((params.has('device')||params.has('selected')) && (params.get('section')!=='print-servers'||!params.has('venue')))return null;
     return value;
   }
@@ -24,6 +24,7 @@ export function safeNext(value: string | null): string | null {
   if(path==='/admin/print-servers/inventory')return only(['fromVenue','selected','create'])&&id('fromVenue')&&id('selected')&&(!params.has('create')||params.get('create')==='1')?value:null;
   if(/^\/admin\/tenants\/[0-9a-f-]+\/print-servers$/.test(path))return uuid.test(path.split('/')[3])&&only(['selected'])&&id('selected')?value:null;
   if(path==='/admin/print-servers/channels')return only(['channel','q','status','venue','venueName','group','page','lang']) ? value : null;
+  if(path==='/admin/support')return only(['lang'])?value:null;
   if(path==='/admin/maintenance')return only(['lang'])&&(!params.has('lang')||['es','en'].includes(params.get('lang')!))?value:null;
   if(/^\/admin\/tenants\/[0-9a-f-]+\/maintenance$/.test(path))return uuid.test(path.split('/')[3])&&only(['from','to','status','task','order','page','lang'])?value:null;
   if(query)return null;
@@ -37,6 +38,7 @@ export function destination(access: PortalAccess, next: string | null = null): s
   if (safe?.startsWith('/oauth/consent?')) return safe;
   if (access.is_platform_staff) {
     if (!safe?.startsWith('/admin') || safe === '/admin') return '/admin';
+    if(safe.split('?')[0]==='/admin/support')return access.support_staff?safe:'/admin';
     if(safe.split('?')[0]==='/admin/maintenance'||/^\/admin\/tenants\/[^/]+\/maintenance$/.test(safe.split('?')[0]))return safe;
     // Tenants: Admin and Operations. Venue Users/Print Servers, staff and the fleet: Admin only.
     return (safe.startsWith('/admin/tenants') && !safe.endsWith('/users') && !safe.endsWith('/mcp') && !safe.includes('/print-servers') ? access.can_view_tenants : access.can_manage_staff) ? safe : '/admin';
