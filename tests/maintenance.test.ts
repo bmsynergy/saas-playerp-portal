@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const rpc = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/supabase', () => ({ supabase: { rpc } }));
-import { getMaintenanceVenueList, getMaintenanceVenueRuns, maintenanceRunFilters, getMaintenanceOverview, getMaintenanceRecipients, searchMaintenanceVenues, searchMaintenanceRecipients, setMaintenanceRecipient } from '../src/lib/maintenance';
+import { getMaintenanceVenueList, maintenanceVenueStatus, getMaintenanceVenueRuns, maintenanceRunFilters, getMaintenanceOverview, getMaintenanceRecipients, searchMaintenanceVenues, searchMaintenanceRecipients, setMaintenanceRecipient } from '../src/lib/maintenance';
 
 describe('maintenance server contracts', () => {
+  it.each(['all','problem','last_night_problem','ok'] as const)('reads show=%s from the URL', show => {
+    expect(maintenanceVenueStatus(new URLSearchParams({show}))).toBe(show);
+  });
+  it.each(['','show=','show=nope','show=PROBLEM','show=%20ok%20'])('defaults malformed or absent show to all (%s)', query => {
+    expect(maintenanceVenueStatus(new URLSearchParams(query))).toBe('all');
+  });
   it('searches venues on the server and requests at most 25 rows', async () => {
     const data={total:133, summary:{venues:133}, venues:[]};
     rpc.mockResolvedValue({data,error:null});
-    expect(await getMaintenanceVenueList(' QA-120 Sede 117 ',90,2)).toBe(data);
-    expect(rpc).toHaveBeenLastCalledWith('portal_maintenance_venue_list',{p_query:'QA-120 Sede 117',p_days:90,p_page:2,p_page_size:25});
+    expect(await getMaintenanceVenueList(' QA-120 Sede 117 ',90,2,'problem')).toBe(data);
+    expect(rpc).toHaveBeenLastCalledWith('portal_maintenance_venue_list',{p_query:'QA-120 Sede 117',p_days:90,p_page:2,p_page_size:25,p_status:'problem'});
     await getMaintenanceVenueList(' ',7,1);
-    expect(rpc).toHaveBeenLastCalledWith('portal_maintenance_venue_list',{p_query:null,p_days:7,p_page:1,p_page_size:25});
+    expect(rpc).toHaveBeenLastCalledWith('portal_maintenance_venue_list',{p_query:null,p_days:7,p_page:1,p_page_size:25,p_status:'all'});
   });
   it('passes date, status, task, order and pagination to venue runs without client filtering',async()=>{
     const filters=maintenanceRunFilters(new URLSearchParams('from=2026-10-01&to=2026-11-03&status=problem&task=pos_card_stale&order=asc&page=3'));

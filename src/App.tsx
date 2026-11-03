@@ -1,6 +1,6 @@
 import { VenueMaintenancePage } from './pages/VenueMaintenancePage';
 import { MaintenancePage } from './pages/MaintenancePage';
-import { getMaintenanceVenueList, getMaintenanceVenueRuns, maintenanceRunFilters, type MaintenanceRunFilters, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
+import { getMaintenanceVenueList, maintenanceVenueStatus, type MaintenanceVenueStatus, getMaintenanceVenueRuns, maintenanceRunFilters, type MaintenanceRunFilters, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
 import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
@@ -67,10 +67,21 @@ import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 function MaintenanceRoute() {
   const {session,expire}=useAuth(); const {t}=useLocale();
   const [days,setDays]=useState(14); const [busy,setBusy]=useState(false); const [mutationError,setMutationError]=useState<string|null>(null);
-  const [query,setQuery]=useState(''); const [search,setSearch]=useState(''); const [page,setPage]=useState(1);
-  useEffect(()=>{const timer=window.setTimeout(()=>{setSearch(query);setPage(1);},250);return()=>window.clearTimeout(timer);},[query]);
+  const [params,setParams]=useSearchParams();
+  const show=maintenanceVenueStatus(params);
+  const [query,setQuery]=useState(''); const [search,setSearch]=useState('');
+  const [pagination,setPagination]=useState({show,page:1});
+  const page=pagination.show===show?pagination.page:1;
+  const setPage=(page:number)=>setPagination({show,page});
+  // Reset on browser history changes as well as changes made by the controls.
+  useEffect(()=>{setPagination({show,page:1});},[show]);
+  const changeShow=(value:MaintenanceVenueStatus)=>{
+    setPagination({show:value,page:1});
+    const next=new URLSearchParams(params);next.set('show',value);setParams(next);
+  };
+  useEffect(()=>{const timer=window.setTimeout(()=>{setSearch(query);setPagination(current=>({...current,page:1}));},250);return()=>window.clearTimeout(timer);},[query]);
   const recipientKey=['maintenance-recipients',session?.user.id];
-  const overview=useQuery({queryKey:['maintenance-venues',session?.user.id,days,search,page],queryFn:({signal})=>getMaintenanceVenueList(search,days,page,signal),placeholderData:keepPreviousData,retry:false,gcTime:0});
+  const overview=useQuery({queryKey:['maintenance-venues',session?.user.id,days,search,page,show],queryFn:({signal})=>getMaintenanceVenueList(search,days,page,show,signal),placeholderData:keepPreviousData,retry:false,gcTime:0});
   const recipients=useQuery({queryKey:recipientKey,queryFn:({signal})=>getMaintenanceRecipients(signal),retry:false,gcTime:0});
   useEffect(()=>{if([overview.error,recipients.error].some(e=>e&&errorCode(e)==='sessionExpired'))void expire();},[overview.error,recipients.error,expire]);
   const setRecipient=async(userId:string,enabled:boolean)=>{
@@ -84,7 +95,7 @@ function MaintenanceRoute() {
   if(!overview.data)return <StateView kind="loading"/>;
   return <MaintenancePage data={overview.data} recipients={recipients.isError?null:recipients.data??null} recipientsLoading={recipients.isPending}
     recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={value=>{setDays(value);setPage(1);}}
-    query={query} onQueryChange={setQuery} onPageChange={setPage} loading={overview.isFetching||query!==search}
+    show={show} onShowChange={changeShow} query={query} onQueryChange={setQuery} onPageChange={setPage} loading={overview.isFetching||query!==search}
     overviewError={overview.error?t(errorCode(overview.error)):null}
     onRefresh={()=>{void overview.refetch();void recipients.refetch();}} onRecipientsRetry={()=>void recipients.refetch()} onSetRecipient={setRecipient}/>;
 }

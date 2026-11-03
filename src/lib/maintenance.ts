@@ -60,8 +60,13 @@ export function maintenanceRunFilters(params: URLSearchParams): MaintenanceRunFi
     task: params.get('task') ?? '', order: params.get('order') === 'asc' ? 'asc' : 'desc',
     page: Number.isSafeInteger(page) && page > 0 ? page : 1};
 }
-export function getMaintenanceVenueList(query: string, days: number, page: number, signal?: AbortSignal) {
-  return rpc<MaintenanceVenueList>('portal_maintenance_venue_list', {p_query: query.trim() || null, p_days: days, p_page: page, p_page_size: 25}, signal);
+export type MaintenanceVenueStatus = 'all' | 'problem' | 'last_night_problem' | 'ok';
+export function maintenanceVenueStatus(params: URLSearchParams): MaintenanceVenueStatus {
+  const show = params.get('show');
+  return show === 'problem' || show === 'last_night_problem' || show === 'ok' ? show : 'all';
+}
+export function getMaintenanceVenueList(query: string, days: number, page: number, status: MaintenanceVenueStatus = 'all', signal?: AbortSignal) {
+  return rpc<MaintenanceVenueList>('portal_maintenance_venue_list', {p_query: query.trim() || null, p_days: days, p_page: page, p_page_size: 25, p_status: status}, signal);
 }
 export function getMaintenanceVenueRuns(venueId: string, filters: MaintenanceRunFilters, signal?: AbortSignal) {
   return rpc<MaintenanceVenueRuns>('portal_maintenance_venue_runs', {p_venue_id: venueId, p_from: filters.from || null,

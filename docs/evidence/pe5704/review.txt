@@ -1,0 +1,1 @@
+PE-570.4: revisión independiente Gaby, solo lectura, misma sesión. Sin problemas verificables en el diff: queryKey/p_status, URL, reinicio de página, botones/selector y foco data-nav. Pasada publicada pendiente al revisar. Principal: diff revisado, build y 395 pruebas verdes.

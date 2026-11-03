@@ -4,7 +4,7 @@ import { AlertCircle, Bell, Clock3, RefreshCw, Search } from 'lucide-react';
 import { useLocale } from '../locales';
 import { errorCode } from '../lib/errors';
 import { maintenanceFailureSummary } from '../lib/maintenanceMessages';
-import { searchMaintenanceRecipients, type MaintenanceCandidate, type MaintenanceVenueList, type MaintenanceRecipients } from '../lib/maintenance';
+import { searchMaintenanceRecipients, type MaintenanceCandidate, type MaintenanceVenueList, type MaintenanceRecipients, type MaintenanceVenueStatus } from '../lib/maintenance';
 import { PrintListPagination } from '../components/PrintListPagination';
 import { PortalDialog } from '../components/PortalDialog';
 import '../maintenance.css';
@@ -23,12 +23,14 @@ type Props = {
   mutationError: string | null;
   days: number;
   onDaysChange: (days: number) => void;
+  show: MaintenanceVenueStatus;
+  onShowChange: (show: MaintenanceVenueStatus) => void;
   onRefresh: () => void;
   onRecipientsRetry: () => void;
   onSetRecipient: (userId: string, enabled: boolean) => Promise<void>;
 };
 
-export function MaintenancePage({ data, query, onQueryChange, onPageChange, loading, overviewError, recipients, recipientsLoading, recipientsError, busy, mutationError, days, onDaysChange, onRefresh, onRecipientsRetry, onSetRecipient }: Props) {
+export function MaintenancePage({ data, query, onQueryChange, onPageChange, loading, overviewError, recipients, recipientsLoading, recipientsError, busy, mutationError, days, onDaysChange, show, onShowChange, onRefresh, onRecipientsRetry, onSetRecipient }: Props) {
   const { locale, t } = useLocale();
   const [recipientDialogOpen, setRecipientDialogOpen] = useState(false);
   const [recipientQuery, setRecipientQuery] = useState('');
@@ -76,12 +78,18 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
       <div className="maintenance-heading-actions"><button className="button button-secondary" type="button" onClick={() => { setCandidateLoading(true); setRecipientDialogOpen(true); }} data-testid="maintenance-recipients-open"><Bell size={16} aria-hidden="true"/>{t('maintenance.recipientsButton').replace('{count}', String(recipients?.recipients.length ?? data.summary.alert_recipients ?? 0))}</button><button className="button button-secondary" type="button" onClick={onRefresh}><RefreshCw size={16} aria-hidden="true"/>{t('maintenance.refresh')}</button></div>
     </header>
 
-    <div className="maintenance-summary" aria-label={t('maintenance.summary')}><div><span>{t('maintenance.summaryVenues')}</span><strong>{data.summary.venues}</strong></div><div><span>{t('maintenance.summaryProblemVenues')}</span><strong>{data.summary.venues_with_problems}</strong></div><div><span>{t('maintenance.summaryLastNightProblemVenues')}</span><strong>{data.summary.venues_last_night_problem}</strong></div><div><span>{t('maintenance.summaryProblemNights')}</span><strong>{data.summary.problem_nights}</strong></div></div>
+    <div className="maintenance-summary" role="group" aria-label={t('maintenance.summary')}>
+      <button type="button" aria-pressed={show === 'all'} data-testid="maintenance-summary-venues" onClick={() => onShowChange('all')}><span>{t('maintenance.summaryVenues')}</span><strong>{data.summary.venues}</strong></button>
+      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-venues" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemVenues')}</span><strong>{data.summary.venues_with_problems}</strong></button>
+      <button type="button" aria-pressed={show === 'last_night_problem'} data-testid="maintenance-summary-last-night-problem" onClick={() => onShowChange('last_night_problem')}><span>{t('maintenance.summaryLastNightProblemVenues')}</span><strong>{data.summary.venues_last_night_problem}</strong></button>
+      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-nights" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemNights')}</span><strong>{data.summary.problem_nights}</strong></button>
+    </div>
     {overviewError && <div className="maintenance-inline-error" role="alert"><span>{overviewError}</span><button className="button button-secondary" type="button" onClick={onRefresh}>{t('maintenance.retry')}</button></div>}
     <section className="maintenance-panel" aria-labelledby="maintenance-venues-title">
       <div className="maintenance-section-head"><div><p className="eyebrow">{t('maintenance.historyEyebrow')}</p><h2 id="maintenance-venues-title">{t('maintenance.venueList')}</h2><p>{t('maintenance.venueListLead')}</p></div></div>
       <div className="maintenance-filters">
         <label><span>{t('maintenance.days')}</span><select value={days} onChange={event => onDaysChange(Number(event.target.value))}>{[7, 14, 30, 90].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label className="maintenance-show"><span>{t('maintenance.show')}</span><select value={show} onChange={event => onShowChange(event.target.value as MaintenanceVenueStatus)} data-testid="maintenance-show"><option value="all">{t('maintenance.showAll')}</option><option value="problem">{t('maintenance.showProblem')}</option><option value="last_night_problem">{t('maintenance.showLastNightProblem')}</option><option value="ok">{t('maintenance.showOk')}</option></select></label>
         <label className="maintenance-query"><span>{t('maintenance.searchVenue')}</span><input type="search" value={query} onChange={event => onQueryChange(event.target.value)} placeholder={t('maintenance.searchVenuePlaceholder')} data-testid="maintenance-venue-search"/></label>
       </div>
       <PrintListPagination pagination={pagination} id="maintenance" disabled={loading} fixedSize />
@@ -92,7 +100,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
         <span className="maintenance-venue-metric"><small>{t('maintenance.problemNightsInPeriod')}</small><strong className={venue.problem_nights > 0 ? 'maintenance-danger-text' : ''}>{venue.problem_nights}</strong></span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.lastSuccess')}</small><span>{formatDate(venue.last_success_date)}</span></span>
         <span className="maintenance-row-action" aria-hidden="true">{t('maintenance.openVenue')} →</span>
-      </Link>)}</div> : !loading && !overviewError && <p className="maintenance-muted maintenance-empty-nights">{query ? t('maintenance.noMatchingVenues') : t('maintenance.noVenues')}</p>}</div>
+      </Link>)}</div> : !loading && !overviewError && <p className="maintenance-muted maintenance-empty-nights">{query ? t('maintenance.noMatchingVenues') : show !== 'all' ? t('maintenance.noFilteredVenues') : t('maintenance.noVenues')}</p>}</div>
     </section>
 
     {recipientDialogOpen && <PortalDialog title={t('maintenance.recipients')} titleId="maintenance-recipients-title" testId="maintenance-recipients-dialog" onClose={() => setRecipientDialogOpen(false)} actions={<button className="button button-secondary" type="button" onClick={() => setRecipientDialogOpen(false)}>{t('maintenance.close')}</button>}>
