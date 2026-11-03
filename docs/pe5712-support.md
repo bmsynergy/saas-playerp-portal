@@ -17,3 +17,5 @@ Sin adjuntos: el modelo existente no los soporta. No se añade otro sistema de t
 - Gaby: revisión independiente solo lectura, misma sesión; sin hallazgos verificables ni bloqueos. No ejecutó tests.
 
 Las conversaciones de prueba se marcan `[PE-571.2 UI DEV]` sobre el ticket fixture de PE-571.1. Al finalizar la prueba completa se restauran asignación, prioridad y estado iniciales. La prueba modifica solo datos de prueba DEV y conserva los mensajes como evidencia.
+
+Publicación verificada: `218d13e4817ec6c7c1c0f22aecaee3821269cd2c`, target `playerp.dev`, HTTP 200. La misma prueba real pasó en `https://playerp.dev.bmore.app` con asignación a otro miembro del staff (no solo desasignación), y todas las comprobaciones de `published/report.json` en verde. El commit posterior de evidencias no modifica el código de la aplicación publicada.

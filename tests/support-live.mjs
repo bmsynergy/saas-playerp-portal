@@ -35,7 +35,7 @@ try{
  await thread.getByRole('button',{name:'Nota interna',exact:true}).click();await page.getByTestId('support-reply-body').fill(note);
  const noted=response(page,'support_ticket_add_internal_note');await page.getByTestId('support-send').click();await noted;await expect(thread.locator('.support-message.is-internal').filter({hasText:note})).toHaveCount(1);
  await expect(page.getByTestId('support-send')).toBeDisabled();
- const assignee=before.assigned_to===admin.user.id?'':admin.user.id;
+ const candidates=(await rpc(admin,'support_assignable_staff')).data;const assignee=candidates.find(s=>s.user_id!==before.assigned_to)?.user_id;assert(assignee,'Another assignable test staff member');
  const assigned=response(page,'support-ticket-assign');await thread.getByLabel('Asignar a',{exact:true}).selectOption(assignee);await assigned;await expect(thread.getByLabel('Asignar a',{exact:true})).toBeEnabled();
  const priority=before.priority==='urgent'?'high':'urgent';const prioritized=response(page,'support_ticket_set_priority');await thread.getByLabel('Cambiar prioridad',{exact:true}).selectOption(priority);await prioritized;await expect(thread.getByLabel('Cambiar prioridad',{exact:true})).toBeEnabled();
  const status=before.status==='waiting_tenant'?'in_progress':'waiting_tenant';const changed=response(page,'update-support-ticket-status');await thread.getByLabel('Cambiar estado',{exact:true}).selectOption(status);await changed;await expect(thread.getByLabel('Cambiar estado',{exact:true})).toBeEnabled();
@@ -50,7 +50,6 @@ try{
 
  await page.screenshot({path:out+'/admin-thread.png',fullPage:true});
  report.criteria[2]={total:firstData.total,pageSize:firstData.items.length,page2:secondData.page,...report.adminMutations};
- // Further mutation selectors are filled in after UI integration.
  const foreign=firstData.items.find(t=>!ownerTickets.items.some(o=>o.venue_id===t.venue_id));assert(foreign);
  const denied=await rpc(owner,'support_ticket_detail',{p_scope:'venue',p_ticket_id:foreign.id});assert.equal(denied.status,403);
  const foreignList=await rpc(owner,'support_ticket_list',{p_scope:'venue',p_venue_ids:[foreign.venue_id]});assert.equal(foreignList.data.total,0);
