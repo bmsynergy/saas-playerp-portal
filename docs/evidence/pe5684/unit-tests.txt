@@ -1,0 +1,528 @@
+
+> saas-playerp-portal@0.1.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal
+
+stderr | tests/maintenancePage.test.ts > maintenance page presentation > uses server-wide counts and a searchable venue input with server pagination
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at div
+    at div
+    at section
+    at div
+    at MaintenancePage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/MaintenancePage.tsx:12:28)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+
+··stderr | tests/pe485InstallKit.test.ts > PE-485 firmwares page kit block > renders the kit only for the matching release with full SHA-256, base image and the non-OTA warning
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+······stderr | tests/pe485InstallKit.test.ts > PE-485 firmwares page kit block > PE-486: a bootable_image kit of the same release is not shown on the Firmwares page
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe485InstallKit.test.ts > PE-485 firmwares page kit block > a failed kit_list shows a small non-blocking error and the release list still renders
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe485InstallKit.test.ts > PE-485 guard: tenant owner opening the firmwares URL > is redirected by the existing admin guard and no admin read is made or even prepared
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+····stderr | tests/pe485InstallKit.test.ts > PE-485 guard: tenant owner opening the firmwares URL > control: a super_admin passes the same guard and the page registers the kit_list query
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at div
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at aside
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at span
+    at nav
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at span
+    at nav
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at NavLinkWithRef (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:885:25)
+    at nav
+    at PrintServersTabs (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:25:53)
+    at div
+    at PrintFirmwaresPage (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/pages/PrintFirmwaresPage.tsx:75:57)
+    at PrintServersRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:1068:30)
+    at Scope (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:298:18)
+    at RenderedRoute (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:535:7)
+    at Routes (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1269:7)
+    at main
+    at div
+    at div
+    at PortalShell (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/components/PortalShell.tsx:17:24)
+    at AuthenticatedLayout (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/src/App.tsx:2026:32)
+    at App
+    at Router (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+········stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > super_admin sees steps, full SHA-256, verification command, troubleshooting and limits — never a pse_ code
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > code_expired shows the recovery alert
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > online device with a channel: all checks done and the channel label is shown
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > owner gets nothing and no admin call is made
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > support staff gets nothing and no admin call is made
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/a39f97f2-30f4-4366-86a0-1cf567dba6f8/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+
+·············································································································································································································································································································································································
+
+ Test Files  41 passed (41)
+      Tests  385 passed (385)
+   Start at  15:27:30
+   Duration  34.54s (transform 5.49s, setup 0ms, collect 10.20s, tests 1.67s, environment 32ms, prepare 8.07s)
+

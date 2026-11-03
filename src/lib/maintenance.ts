@@ -27,3 +27,44 @@ export async function searchMaintenanceVenues(query:string,_includeVenueId?:stri
   const data=await rpc<{venues:{venue_id:string;venue_name:string;timezone:string}[]}>('portal_maintenance_venue_search',{p_query:query.trim()||null,p_limit:20},signal);
   return data.venues.map(venue=>({id:venue.venue_id,name:venue.venue_name,slug:null,city:null,state:null,is_active:true,assigned_device:null}));
 }
+
+
+export type MaintenanceVenueSummary = Omit<MaintenanceVenue, 'problems' | 'nights'> & {
+  problem_nights: number;
+  last_night: {local_date: string; status: string; problem: string | null} | null;
+};
+export type MaintenanceVenueList = {
+  as_of: string; query: string | null; days: number;
+  total: number; page: number; page_size: number; pages: number;
+  summary: MaintenanceOverview['summary'] & {venues_last_night_problem: number};
+  venues: MaintenanceVenueSummary[];
+};
+export type MaintenanceVenueRuns = {
+  as_of: string; venue: Omit<MaintenanceVenue, 'problems' | 'nights'>;
+  from: string; to: string; range_clamped: boolean;
+  status: string | null; task: string | null; order: 'asc' | 'desc';
+  task_keys: string[]; counts: Record<string, number>;
+  total: number; page: number; page_size: number; pages: number; nights: MaintenanceNight[];
+};
+export type MaintenanceRunFilters = {from: string; to: string; status: string; task: string; order: 'asc' | 'desc'; page: number};
+const validDate = (value: string | null): string => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : '';
+};
+export function maintenanceRunFilters(params: URLSearchParams): MaintenanceRunFilters {
+  const status = params.get('status') ?? '';
+  const page = Number(params.get('page') ?? 1);
+  return {from: validDate(params.get('from')), to: validDate(params.get('to')),
+    status: ['success', 'error', 'missing', 'running', 'problem'].includes(status) ? status : '',
+    task: params.get('task') ?? '', order: params.get('order') === 'asc' ? 'asc' : 'desc',
+    page: Number.isSafeInteger(page) && page > 0 ? page : 1};
+}
+export function getMaintenanceVenueList(query: string, days: number, page: number, signal?: AbortSignal) {
+  return rpc<MaintenanceVenueList>('portal_maintenance_venue_list', {p_query: query.trim() || null, p_days: days, p_page: page, p_page_size: 25}, signal);
+}
+export function getMaintenanceVenueRuns(venueId: string, filters: MaintenanceRunFilters, signal?: AbortSignal) {
+  return rpc<MaintenanceVenueRuns>('portal_maintenance_venue_runs', {p_venue_id: venueId, p_from: filters.from || null,
+    p_to: filters.to || null, p_status: filters.status || null, p_task: filters.task || null,
+    p_order: filters.order, p_page: filters.page, p_page_size: 25}, signal);
+}

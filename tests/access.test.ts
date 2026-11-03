@@ -7,7 +7,7 @@ const user='33333333-3333-4333-8333-333333333333';
 const venueUsers='/admin/tenants/'+owner.id+'/users';
 describe('scope routing uses backend permissions',()=>{
   it('allows all platform staff to return to maintenance, never owners',()=>{
-    for(const path of ['/admin/maintenance','/admin/maintenance?lang=es']) {
+    for(const path of ['/admin/maintenance','/admin/maintenance?lang=es',`/admin/tenants/${owner.id}/maintenance`,`/admin/tenants/${owner.id}/maintenance?from=2026-10-01&to=2026-11-03&status=problem&task=pos_quotes_expire&order=asc&page=2`]) {
       expect(safeNext(path)).toBe(path);
       expect(destination(access(true,[],false),path)).toBe(path);
       expect(destination(access(false,[owner]),path)).toBe('/');

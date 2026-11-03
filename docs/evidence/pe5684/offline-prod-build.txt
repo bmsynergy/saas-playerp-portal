@@ -1,0 +1,18 @@
+
+> saas-playerp-portal@0.1.0 build:prod
+> tsc --noEmit && vite build --mode prod
+
+vite v6.4.1 building for prod...
+transforming...
+✓ 1873 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.68 kB │ gzip:   0.37 kB
+dist/assets/index-CgpP6vOM.css    151.04 kB │ gzip:  26.00 kB
+dist/assets/index-CR5DXot-.js   1,253.97 kB │ gzip: 338.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.92s

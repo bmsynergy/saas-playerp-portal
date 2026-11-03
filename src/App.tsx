@@ -1,5 +1,6 @@
+import { VenueMaintenancePage } from './pages/VenueMaintenancePage';
 import { MaintenancePage } from './pages/MaintenancePage';
-import { getMaintenanceOverview, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
+import { getMaintenanceVenueList, getMaintenanceVenueRuns, maintenanceRunFilters, type MaintenanceRunFilters, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
 import { channelsReturnTo } from './lib/channelNavigation';
 import { invalidatePsViews } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
@@ -66,9 +67,10 @@ import { IntegrationsMcpSection } from './pages/IntegrationsMcpSection';
 function MaintenanceRoute() {
   const {session,expire}=useAuth(); const {t}=useLocale();
   const [days,setDays]=useState(14); const [busy,setBusy]=useState(false); const [mutationError,setMutationError]=useState<string|null>(null);
-  const [venue,setVenue]=useState<AdminVenueOption|null>(null); const [page,setPage]=useState(1);
+  const [query,setQuery]=useState(''); const [search,setSearch]=useState(''); const [page,setPage]=useState(1);
+  useEffect(()=>{const timer=window.setTimeout(()=>{setSearch(query);setPage(1);},250);return()=>window.clearTimeout(timer);},[query]);
   const recipientKey=['maintenance-recipients',session?.user.id];
-  const overview=useQuery({queryKey:['maintenance-overview',session?.user.id,days,venue?.id??null,page],queryFn:({signal})=>getMaintenanceOverview(days,venue?.id??null,page,signal),placeholderData:keepPreviousData,retry:false,gcTime:0});
+  const overview=useQuery({queryKey:['maintenance-venues',session?.user.id,days,search,page],queryFn:({signal})=>getMaintenanceVenueList(search,days,page,signal),placeholderData:keepPreviousData,retry:false,gcTime:0});
   const recipients=useQuery({queryKey:recipientKey,queryFn:({signal})=>getMaintenanceRecipients(signal),retry:false,gcTime:0});
   useEffect(()=>{if([overview.error,recipients.error].some(e=>e&&errorCode(e)==='sessionExpired'))void expire();},[overview.error,recipients.error,expire]);
   const setRecipient=async(userId:string,enabled:boolean)=>{
@@ -82,9 +84,36 @@ function MaintenanceRoute() {
   if(!overview.data)return <StateView kind="loading"/>;
   return <MaintenancePage data={overview.data} recipients={recipients.isError?null:recipients.data??null} recipientsLoading={recipients.isPending}
     recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={value=>{setDays(value);setPage(1);}}
-    venue={venue} onVenueChange={value=>{setVenue(value);setPage(1);}} onPageChange={setPage} loading={overview.isFetching}
+    query={query} onQueryChange={setQuery} onPageChange={setPage} loading={overview.isFetching||query!==search}
     overviewError={overview.error?t(errorCode(overview.error)):null}
     onRefresh={()=>{void overview.refetch();void recipients.refetch();}} onRecipientsRetry={()=>void recipients.refetch()} onSetRecipient={setRecipient}/>;
+}
+function VenueMaintenanceData({venueId, standalone=false}:{venueId:string;standalone?:boolean}) {
+  const {session,expire}=useAuth(); const {t}=useLocale();
+  const [params,setParams]=useSearchParams();
+  const filters=maintenanceRunFilters(params);
+  const result=useQuery({queryKey:['maintenance-runs',session?.user.id,venueId,filters],queryFn:({signal})=>getMaintenanceVenueRuns(venueId,filters,signal),retry:false,gcTime:0});
+  useEffect(()=>{if(result.error&&errorCode(result.error)==='sessionExpired')void expire();},[result.error,expire]);
+  const change=(patch:Partial<MaintenanceRunFilters>)=>{
+    const current=result.data??last.current;
+    const next={...filters,from:filters.from||current?.from||'',to:filters.to||current?.to||'',...patch,page:patch.page??1};
+    const search=new URLSearchParams(params);
+    for(const [key,value] of Object.entries(next)){if(value===''||(key==='page'&&value===1))search.delete(key);else search.set(key,String(value));}
+    setParams(search);
+  };
+  // Keep the filters mounted while a different server page is loading.
+  const last=useRef<typeof result.data>();
+  if(result.data)last.current=result.data;
+  const data=result.data??last.current;
+  if(!data)return result.isError?<StateView kind={errorCode(result.error)==='accessDenied'?'denied':'error'} onRetry={()=>void result.refetch()}/>:<StateView kind="loading"/>;
+  const content=<VenueMaintenancePage data={data} filters={filters} onFiltersChange={change} onPageChange={page=>change({page})} loading={result.isFetching} error={result.error?t(errorCode(result.error)):null} onRefresh={()=>void result.refetch()}/>;
+  // Support has maintenance permission but not Directory permission. Do not query tenant details for it.
+  return standalone?<div className="page-stack"><Link className="back-link" to="/admin/maintenance">{t('maintenance.nav')}</Link><header className="page-heading"><h1>{data.venue.venue_name}</h1></header><nav className="detail-tabs"><Link className="detail-tab active" aria-current="page" data-testid="venue-maintenance-tab" to={`/admin/tenants/${venueId}/maintenance`}>{t('maintenance.venueTab')}</Link></nav>{content}</div>:content;
+}
+function MaintenanceDetailRoute() {
+  const access=useAccess(); const {id=''}=useParams();
+  if(!UUID.test(id))return <StateView kind="notFound"/>;
+  return access.data?.can_view_tenants?<DetailData id={id} tab="maintenance" canManageUsers={!!access.data.can_manage_staff}/>:<VenueMaintenanceData key={id} venueId={id} standalone/>;
 }
 function Standalone({children}:{children:ReactNode}) {
   const {session}=useAuth();
@@ -275,6 +304,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
+    maintenance={<VenueMaintenanceData key={id} venueId={id}/>}
     mcp={canManageUsers?<McpIntegrationData key={id} venueId={id} admin/>:undefined}
     printServers={canManageUsers?(tab==='print-server-detail'?<VenueRedirect key={id} venueId={id}/>:<VenueDevicesData key={id} venue={data.data.venue} scope="admin"/>):undefined}/>;
 }
@@ -638,6 +668,7 @@ export default function App() {
     <Route path="/oauth/consent" element={<OAuthConsentRoute/>}/>
     <Route path="/" element={<Scope scope="owner"><OwnerRoute/></Scope>}/>
     <Route path="/admin" element={<Scope scope="admin"><DirectoryRoute home/></Scope>}/>
+    <Route path="/admin/tenants/:id/maintenance" element={<Scope scope="admin"><MaintenanceDetailRoute/></Scope>}/>
     <Route path="/admin/maintenance" element={<Scope scope="admin"><MaintenanceRoute/></Scope>}/>
     <Route path="/admin/staff" element={<Scope scope="admin"><StaffRoute/></Scope>}/>
     <Route path="/admin/mcp" element={<Scope scope="admin"><McpAdminRoute/></Scope>}/>

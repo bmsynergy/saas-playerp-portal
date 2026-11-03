@@ -67,7 +67,6 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
   const focusReconciliation = () => requestAnimationFrame(() => {
     const target = document.getElementById('legacy-reconcile-title');
     target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    target?.focus({ preventScroll: true });
   });
   const absence = (kind: CredentialKind) => {
     if (!data?.credentialAccess) return null;
