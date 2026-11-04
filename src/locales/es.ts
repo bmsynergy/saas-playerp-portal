@@ -2128,6 +2128,7 @@ export const es: Record<keyof typeof en, string> = {
   "subdomain.confirmTitle": "Confirmar cambio de dirección",
   "subdomain.previous": "Dirección anterior",
   "subdomain.new": "Dirección nueva",
+  "subdomain.effect.previous_kept_pending_environment": "La dirección anterior se conserva para este local como alias verificado, pero no es operativa hasta que termine el traslado del entorno.",
   "subdomain.effect.no_previous_address": "No hay una dirección de plataforma anterior.",
   "subdomain.effect.previous_kept_as_alias_still_served": "La dirección anterior queda como alias y sigue llevando a este local.",
   "subdomain.effect.previous_kept_as_alias_not_served": "La dirección anterior queda como alias; tampoco prestaba servicio antes.",

@@ -111,7 +111,7 @@ export function PlatformSubdomainPanel({ venueId, canEdit }: { venueId: string; 
         {!preview ? <div className="nt-actions"><button type="button" className="button button-secondary" disabled={busy} onClick={() => { setEditing(false); setError(null); }}>{t('subdomain.cancel')}</button><button type="button" className="button button-primary" disabled={!checked || busy} onClick={() => void openPreview()}>{busy ? <span className="spinner"/> : null}{t('subdomain.preview')}</button></div> : <div className="platform-subdomain-confirm" role="group" aria-label={t('subdomain.confirmTitle')}>
           <h3>{t('subdomain.confirmTitle')}</h3>
           <dl className="dev-facts"><div><dt>{t('subdomain.previous')}</dt><dd>{preview.from ?? t('notProvided')}</dd></div><div><dt>{t('subdomain.new')}</dt><dd>{preview.to}</dd></div></dl>
-          <p>{t(`subdomain.effect.${preview.old_address_effect}`)}</p>
+          <p>{t(`subdomain.effect.${preview.environment_state === 'pending_relocation' && preview.old_address_effect === 'previous_kept_as_alias_still_served' ? 'previous_kept_pending_environment' : preview.old_address_effect}`)}</p>
           <p>{preview.environment_state === 'pending_relocation' ? t('subdomain.pendingRelocation') : t('subdomain.newPending')}</p>
           <div className="nt-actions"><button type="button" className="button button-secondary" disabled={busy} onClick={() => setPreview(null)}>{t('subdomain.cancel')}</button><button type="button" className="button button-primary" disabled={busy} onClick={() => void confirm()}>{busy ? <span className="spinner"/> : null}{t(busy ? 'subdomain.saving' : 'subdomain.confirm')}</button></div>
         </div>}

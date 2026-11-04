@@ -2125,6 +2125,7 @@ export const en = {
   "subdomain.confirmTitle": "Confirm address change",
   "subdomain.previous": "Previous address",
   "subdomain.new": "New address",
+  "subdomain.effect.previous_kept_pending_environment": "The previous address remains reserved for this venue as a verified alias, but it is not operational until the environment relocation is complete.",
   "subdomain.effect.no_previous_address": "There is no previous platform address.",
   "subdomain.effect.previous_kept_as_alias_still_served": "The previous address stays as an alias and continues to serve this venue.",
   "subdomain.effect.previous_kept_as_alias_not_served": "The previous address stays as an alias; it was not serving before this change.",

@@ -28,3 +28,15 @@ the already-current message and an EN translation insertion syntax error.
 Live fixtures use only the existing controlled staff test identity and Resend
 sink addresses. Test reports never contain sessions or credentials. Reruns use
 the journal to recover the same onboarding request rather than create duplicates.
+
+## Published DEV acceptance
+
+`live-published.json`: full browser flow at https://playerp.dev.bmore.app after
+publishing a4c26998adf380e2275fad8860cdd2881d7494eb. Created inactive fixture
+`08d3d13a-8816-41f6-8fdc-811f67de40dc` (`pe577-uma-mw1h4su2`). Dropped the first
+completed create response and retried the same request: same venue, no duplicate.
+Corrected its address from `pe577-uma-mw1h4su2-address` to
+`pe577-uma-mw1h4su2-corrected`, with the former retained as an alias, unchanged slug,
+external primary and inactive state; reload, EN/ES and 390/1440 px passed.
+A final wording guard also avoids describing a verified alias as serving while
+its environment is still pending relocation.
