@@ -300,11 +300,8 @@ function DirectoryRoute({home=false}:{home?:boolean}) {
   return <div className="page-stack"><DirectoryData home={home}/>{home&&access.data?.support_staff&&<SupportOverview scope="platform"/>}</div>;
 }
 function DirectoryData({home=false}:{home?:boolean}) {
-  const data=useDirectory(); const canCreate=canManageRings(useAccess().data);
-  if(data.isPending)return <StateView kind="loading"/>;
-  if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
-  const venues:OwnerVenue[]=data.data??[];
-  return home?<AdminHome venues={venues} canCreate={canCreate}/>:<TenantDirectory venues={venues} canCreate={canCreate}/>;
+  const canCreate=canManageRings(useAccess().data);
+  return home?<AdminHome canCreate={canCreate}/>:<TenantDirectory canCreate={canCreate}/>;
 }
 function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   const access=useAccess(); const {id=''}=useParams();
@@ -331,7 +328,7 @@ function NewTenantRoute() {
   const access=useAccess(); const {session}=useAuth();
   if(access.isPending)return <StateView kind="loading"/>;
   if(!canManageRings(access.data)||!session)return <StateView kind="denied"/>;
-  return <NewTenantPage key={session.user.id} userId={session.user.id} onCreated={()=>void queryClient.invalidateQueries({queryKey:['directory']})}/>;
+  return <NewTenantPage key={session.user.id} userId={session.user.id} onCreated={()=>{ void queryClient.invalidateQueries({queryKey:['directory']}); void queryClient.invalidateQueries({queryKey:['tenant-readiness-list']}); }}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);

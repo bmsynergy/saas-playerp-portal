@@ -39,6 +39,8 @@ function ReadinessRow({ item, venueId, canManage }: { item: ReadinessItem; venue
   if (item.key === 'owner_access') detail.push(t('readiness.owners').replace('{accepted}', String(item.owners_accepted ?? 0)).replace('{total}', String(item.owners_total ?? 0)));
   if (item.key === 'operations') detail.push(t('readiness.operationsCounts').replace('{ws}', String(item.workstations_active ?? 0)).replace('{ps}', String(item.print_servers_active ?? 0))
     + ' · ' + t(item.operating_hours_set ? 'readiness.hoursSet' : 'readiness.hoursMissing') + ' · ' + t(item.tax_settings_set ? 'readiness.taxSet' : 'readiness.taxMissing'));
+  if (item.key === 'operations' && item.terminal_readers === 'not_tracked_here') detail.push(t('readiness.readersNotTracked'));
+  if (item.key === 'domain' && typeof item.domains_total === 'number' && typeof item.domains_verified === 'number') detail.push(t('readiness.domainsCount').replace('{verified}', String(item.domains_verified)).replace('{total}', String(item.domains_total)));
   const where = item.managed_in === 'pos' ? 'readiness.where.pos' : item.managed_in === 'admin_legacy' ? 'readiness.where.legacy' : null;
   const link = canManage && item.key === 'owner_access' ? `/admin/tenants/${encodeURIComponent(venueId)}/users`
     : canManage && item.key === 'operations' ? `/admin/tenants/${encodeURIComponent(venueId)}/print-servers` : null;
@@ -74,7 +76,7 @@ export function TenantInfoEditor({ venue, onSaved }: { venue: OwnerVenue; onSave
     try {
       await updateTenantInfo(venue.id, fields);
       setEditing(false); setSaved(true); onSaved();
-      void queryClient.invalidateQueries({ queryKey: ['tenant-readiness'] }); void queryClient.invalidateQueries({ queryKey: ['directory'] });
+      void queryClient.invalidateQueries({ queryKey: ['tenant-readiness'] }); void queryClient.invalidateQueries({ queryKey: ['tenant-readiness-list'] }); void queryClient.invalidateQueries({ queryKey: ['directory'] });
     } catch (e) { setError(onboardingErrorKey(e)); } finally { setBusy(false); }
   };
   if (!editing) return <div className="tenant-edit-bar">{saved && <span className="staff-notice" role="status">{t('tenantEdit.saved')}</span>}<button type="button" className="button button-secondary" onClick={open}><Pencil size={16}/>{t('tenantEdit.edit')}</button></div>;

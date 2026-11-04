@@ -52,9 +52,34 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
     catch (e) {
       setError(onboardingErrorKey(e));
       if (e instanceof OnboardingError && e.request) { setResult(e.request); setSubmitted(true); setStep(3); }
+      else if (e instanceof OnboardingError && e.key.startsWith('tenantNew.error.') && e.key !== 'tenantNew.error.notFound') {
+        // A validation/conflict response can precede creation of the request.
+        // Confirm absence before offering edits; never abandon an ambiguous send.
+        try { setResult(await onboardingStatus(requestKey)); setStep(3); }
+        catch (statusError) {
+          if (onboardingErrorKey(statusError) === 'tenantNew.error.notFound') {
+            setSubmitted(false); setResult(null); setStep(2);
+          }
+        }
+      }
     } finally { setBusy(false); }
   };
-  const submit = () => run(() => createTenant(form, requestKey));
+  const submit = () => {
+    // Persist before the request leaves the browser, including when its response
+    // is lost or the tab reloads while the backend is still provisioning.
+    if (!saveDraft(userId, { request_key: requestKey, form, submitted: true })) {
+      setError('tenantNew.error.storage'); return;
+    }
+    setSubmitted(true); setStep(3);
+    return run(() => createTenant(form, requestKey));
+  };
+  const refresh = () => run(async () => {
+    try { return await onboardingStatus(requestKey); }
+    catch (e) {
+      if (onboardingErrorKey(e) === 'tenantNew.error.notFound') { setSubmitted(false); setStep(2); }
+      throw e;
+    }
+  });
   // A key is replaced only once the previous request is known not to have created a venue.
   const startOver = (keepData: boolean) => {
     clearDraft(userId); setRequestKey(newKey()); setSubmitted(false); setResult(null); setError(null);
@@ -116,17 +141,17 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
         </div>
       </div>}
       {step === 3 && <ResultView result={result} busy={busy} onRetry={() => void submit()} onResend={() => void run(() => resendOwnerInvite(requestKey))}
-        onRefresh={() => void run(() => onboardingStatus(requestKey))} onNew={() => startOver(false)} onEdit={() => startOver(true)}/>}
+        onRefresh={() => void refresh()} onNew={() => startOver(false)} onEdit={() => startOver(true)}/>}
     </section>
   </div>;
 }
 
 function ResultView({ result, busy, onRetry, onResend, onRefresh, onNew, onEdit }: { result: OnboardingRequest | null; busy: boolean; onRetry: () => void; onResend: () => void; onRefresh: () => void; onNew: () => void; onEdit: () => void }) {
   const { t } = useLocale();
-  if (!result) return busy ? <p className="nt-lead"><span className="spinner"/> {t('loadingTitle')}</p> : <div className="nt-actions"><button type="button" className="button button-secondary" onClick={onRefresh}><RefreshCw size={17}/>{t('retry')}</button></div>;
+  if (!result) return busy ? <p className="nt-lead"><span className="spinner"/> {t('loadingTitle')}</p> : <div><p className="nt-lead">{t('tenantNew.recovering')}</p><div className="nt-actions"><button type="button" className="button button-secondary" onClick={onRefresh}><RefreshCw size={17}/>{t('tenantNew.refresh')}</button><button type="button" className="button button-primary" onClick={onRetry}><RotateCcw size={17}/>{t('tenantNew.retry')}</button></div></div>;
   const venueLink = result.venue_id ? <Link className="button button-primary" to={`/admin/tenants/${encodeURIComponent(result.venue_id)}`}><Building2 size={17}/>{t('tenantNew.openTenant')}</Link> : null;
   if (result.status === 'completed') return <div className="nt-result nt-ok" role="status">
-    <CheckCircle2 size={26}/><div><strong>{t('tenantNew.done')}</strong><p>{t(result.email_kind === 'recovery' ? 'tenantNew.doneExistingAccount' : 'tenantNew.doneInvited').replace('{email}', result.owner_email ?? '')}</p><p>{t('tenantNew.doneInactive')}</p></div>
+    <CheckCircle2 size={26}/><div><strong>{t('tenantNew.done')}</strong><p>{t(result.email_kind === 'recovery' ? 'tenantNew.doneExistingAccount' : result.email_kind === 'invite' ? 'tenantNew.doneInvited' : 'tenantNew.doneRecovered').replace('{email}', result.owner_email ?? '')}</p><p>{t('tenantNew.doneInactive')}</p></div>
     <div className="nt-actions">{venueLink}<button type="button" className="button button-secondary" onClick={onNew}>{t('tenantNew.another')}</button></div>
   </div>;
   if (result.status === 'invite_failed') return <div className="nt-result nt-warn" role="alert">

@@ -101,7 +101,7 @@ export function onboardingErrorKey(error: unknown): string {
 }
 
 // The draft lives only in this tab and only for this user; it is removed on
-// completion and on sign-out (clearScopes-style prefix sweep below).
+// starting another request and on sign-out (clearScopes-style prefix sweep below).
 const draftKey = (userId: string) => `${AUXILIARY_STORAGE_PREFIX}newTenant.${userId}`;
 export interface TenantDraft { request_key: string; form: TenantForm; submitted: boolean }
 export function loadDraft(userId: string): TenantDraft | null {
@@ -111,7 +111,7 @@ export function loadDraft(userId: string): TenantDraft | null {
     return typeof d?.request_key === 'string' && d.form && typeof d.form.name === 'string' ? d : null;
   } catch { return null; }
 }
-export function saveDraft(userId: string, draft: TenantDraft) { try { sessionStorage.setItem(draftKey(userId), JSON.stringify(draft)); } catch { /* wizard stays usable */ } }
+export function saveDraft(userId: string, draft: TenantDraft): boolean { try { sessionStorage.setItem(draftKey(userId), JSON.stringify(draft)); return true; } catch { return false; } }
 export function clearDraft(userId?: string) {
   try { for (const k of Object.keys(sessionStorage)) if (userId ? k === draftKey(userId) : k.startsWith(`${AUXILIARY_STORAGE_PREFIX}newTenant.`)) sessionStorage.removeItem(k); } catch { /* storage unavailable */ }
 }
