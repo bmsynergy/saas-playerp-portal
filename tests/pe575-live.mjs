@@ -11,6 +11,7 @@ const reportPath = `${out}/report.json`;
 const saved = await readFile(reportPath,'utf8').then(JSON.parse).catch(()=>null);
 const report = saved || {origin,at:new Date().toISOString(),stamp:Date.now().toString(36),checks:{}};
 delete report.failure;
+report.passed=false;
 const stamp = report.stamp;
 const accounts = JSON.parse(await readFile('/home/coredev/.coredeva-private/pe321-portal-dev/cuentas.json','utf8'));
 const defaults = await readFile(new URL('../build/dev-defaults.ts',import.meta.url),'utf8');
@@ -52,6 +53,7 @@ try {
  const positions = await page.evaluate(()=>({list:document.querySelector('.directory-list').getBoundingClientRect().bottom,pager:document.querySelector('.ps-pagination').getBoundingClientRect().top}));
  assert(positions.pager>=positions.list);
  await page.setViewportSize({width:390,height:844});
+ await expect(page.locator('.directory-row .status-badge').first()).toBeVisible();
  await page.getByRole('button',{name:'EN',exact:true}).click();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:`${out}/2-directory-mobile-en.png`,fullPage:true});
