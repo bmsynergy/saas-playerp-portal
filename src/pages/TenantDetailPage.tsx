@@ -8,7 +8,7 @@ import { VenueDetailsPanel, VenueSectionTabs } from './VenueSections';
 
 export type TenantTab = 'overview' | 'users' | 'print-servers' | 'print-server-detail' | 'mcp' | 'maintenance';
 
-export function TenantDetailPage({ detail, tab = 'overview', users, printServers, mcp, maintenance }: { detail: TenantDetail; tab?: TenantTab; users?: ReactNode; printServers?: ReactNode; mcp?: ReactNode; maintenance?: ReactNode }) {
+export function TenantDetailPage({ detail, tab = 'overview', users, printServers, mcp, maintenance, editor, readiness }: { detail: TenantDetail; tab?: TenantTab; users?: ReactNode; printServers?: ReactNode; mcp?: ReactNode; maintenance?: ReactNode; editor?: ReactNode; readiness?: ReactNode }) {
   const { t } = useLocale();
   const { venue } = detail;
   const base = `/admin/tenants/${encodeURIComponent(venue.id)}`;
@@ -16,7 +16,7 @@ export function TenantDetailPage({ detail, tab = 'overview', users, printServers
     <Link className="back-link" to="/admin/tenants"><ArrowLeft size={17}/>{t('backToDirectory')}</Link>
     <div className="page-heading detail-heading"><div><p className="eyebrow">{t('tenantOverview')}</p><h1>{venue.name}</h1><p>{t('detailLead')}</p></div><span className={`status-badge ${venue.is_active === true ? 'status-active' : venue.is_active === false ? 'status-inactive' : 'status-unknown'}`}><span className="badge-dot"/>{venue.is_active === true ? t('active') : venue.is_active === false ? t('inactive') : t('unknown')}</span></div>
     <VenueSectionTabs active={tab === 'print-server-detail' ? 'print-servers' : tab} users={users !== undefined} printServers={printServers !== undefined} mcp={mcp !== undefined} maintenance={maintenance !== undefined} render={(item) => <NavLink key={item.section} end={item.section === 'overview'} to={item.section === 'overview' ? base : `${base}/${item.section}`} data-testid={item.testId} className={({ isActive }) => `detail-tab ${isActive ? 'active' : ''}`}>{item.icon}{item.label}</NavLink>}/>
-    {tab === 'maintenance' && maintenance !== undefined ? maintenance : tab === 'mcp' && mcp !== undefined ? mcp : tab === 'users' && users !== undefined ? users : (tab === 'print-servers' || tab === 'print-server-detail') && printServers !== undefined ? printServers : <><VenueDetailsPanel venue={venue} scope="admin"/>{printServers === undefined && <VenueServerSummary servers={detail.print_servers}/>}</>}
+    {tab === 'maintenance' && maintenance !== undefined ? maintenance : tab === 'mcp' && mcp !== undefined ? mcp : tab === 'users' && users !== undefined ? users : (tab === 'print-servers' || tab === 'print-server-detail') && printServers !== undefined ? printServers : <>{editor}<VenueDetailsPanel venue={venue} scope="admin"/>{readiness}{printServers === undefined && <VenueServerSummary servers={detail.print_servers}/>}</>}
   </div>;
 }
 

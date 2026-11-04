@@ -58,6 +58,8 @@ import { OwnerPage } from './pages/OwnerPage';
 import { AdminHome } from './pages/AdminHome';
 import { TenantDirectory } from './pages/TenantDirectory';
 import { TenantDetailPage, type TenantTab } from './pages/TenantDetailPage';
+import { NewTenantPage } from './pages/NewTenantPage';
+import { TenantInfoEditor, TenantReadinessPanel } from './pages/TenantReadiness';
 import { OAuthConsentPage } from './pages/OAuthConsentPage';
 import { consentRequestId, consentPath } from './lib/oauthConsent';
 import { getMcpVenues, getMcpVenue, saveMcpVenue, mcpErrorKey, type McpFilters, type McpSave } from './lib/mcp';
@@ -298,11 +300,11 @@ function DirectoryRoute({home=false}:{home?:boolean}) {
   return <div className="page-stack"><DirectoryData home={home}/>{home&&access.data?.support_staff&&<SupportOverview scope="platform"/>}</div>;
 }
 function DirectoryData({home=false}:{home?:boolean}) {
-  const data=useDirectory();
+  const data=useDirectory(); const canCreate=canManageRings(useAccess().data);
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   const venues:OwnerVenue[]=data.data??[];
-  return home?<AdminHome venues={venues}/>:<TenantDirectory venues={venues}/>;
+  return home?<AdminHome venues={venues} canCreate={canCreate}/>:<TenantDirectory venues={venues} canCreate={canCreate}/>;
 }
 function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   const access=useAccess(); const {id=''}=useParams();
@@ -314,14 +316,22 @@ function DetailRoute({tab='overview'}:{tab?:TenantTab}) {
   return <DetailData id={id} tab={tab} canManageUsers={canManageUsers}/>;
 }
 function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUsers:boolean}) {
-  const data=useTenantDetail(id);
+  const data=useTenantDetail(id); const access=useAccess();
   if(data.isPending)return <StateView kind="loading"/>;
   if(data.isError)return <StateView kind={errorCode(data.error)==='accessDenied'?'denied':'error'} onRetry={()=>void data.refetch()}/>;
   if(!data.data)return <StateView kind="notFound"/>;
   return <TenantDetailPage detail={data.data} tab={tab} users={canManageUsers?<VenueUsersData key={id} venueId={id}/>:undefined}
     maintenance={<VenueMaintenanceData key={id} venueId={id}/>}
     mcp={canManageUsers?<McpIntegrationData key={id} venueId={id} admin/>:undefined}
+    editor={canManageRings(access.data)?<TenantInfoEditor key={id} venue={data.data.venue} onSaved={()=>void data.refetch()}/>:undefined}
+    readiness={<TenantReadinessPanel venueId={id} canManage={canManageUsers}/>}
     printServers={canManageUsers?(tab==='print-server-detail'?<VenueRedirect key={id} venueId={id}/>:<VenueDevicesData key={id} venue={data.data.venue} scope="admin"/>):undefined}/>;
+}
+function NewTenantRoute() {
+  const access=useAccess(); const {session}=useAuth();
+  if(access.isPending)return <StateView kind="loading"/>;
+  if(!canManageRings(access.data)||!session)return <StateView kind="denied"/>;
+  return <NewTenantPage key={session.user.id} userId={session.user.id} onCreated={()=>void queryClient.invalidateQueries({queryKey:['directory']})}/>;
 }
 function InvitationRoute() {
   const auth=useAuth(); const navigate=useNavigate(); const [busy,setBusy]=useState(false); const [error,setError]=useState<string|null>(null);
@@ -701,6 +711,7 @@ export default function App() {
     <Route path="/admin/print-servers/devices/:id" element={<Scope scope="admin"><PrintServersRoute device/></Scope>}/>
     <Route path="/admin/print-servers/:venueId" element={<Scope scope="admin"><PrintServersRoute detail/></Scope>}/>
     <Route path="/admin/tenants" element={<Scope scope="admin"><DirectoryRoute/></Scope>}/>
+    <Route path="/admin/tenants/new" element={<Scope scope="admin"><NewTenantRoute/></Scope>}/>
     <Route path="/admin/tenants/:id" element={<Scope scope="admin"><DetailRoute/></Scope>}/>
     <Route path="/admin/tenants/:id/print-servers" element={<Scope scope="admin"><DetailRoute tab="print-servers"/></Scope>}/>
     <Route path="/admin/tenants/:id/print-servers/detail" element={<Scope scope="admin"><DetailRoute tab="print-server-detail"/></Scope>}/>
