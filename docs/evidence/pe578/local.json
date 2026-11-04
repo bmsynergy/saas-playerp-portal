@@ -1,0 +1,62 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "venueId": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+  "checks": [
+    {
+      "lang": "es",
+      "width": 390,
+      "defaultCollapsed": true,
+      "historyCount": 2,
+      "noOverflow": true,
+      "pendingNotLinked": true
+    },
+    {
+      "lang": "es",
+      "width": 1440,
+      "defaultCollapsed": true,
+      "historyCount": 2,
+      "noOverflow": true,
+      "pendingNotLinked": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "defaultCollapsed": true,
+      "historyCount": 2,
+      "noOverflow": true,
+      "pendingNotLinked": true
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "defaultCollapsed": true,
+      "historyCount": 2,
+      "noOverflow": true,
+      "pendingNotLinked": true
+    },
+    {
+      "allFourAvailabilityGuards": true
+    },
+    {
+      "ambiguousUnconfiguredDisabled": true
+    },
+    {
+      "longUrlsBothLanguagesAndWidths": true,
+      "verifiedAliasNotOperational": true
+    },
+    {
+      "copyMatchesSavedAddress": true
+    },
+    {
+      "copyAliasMatchesSavedAddress": true
+    },
+    {
+      "reservedNameStillRejected": true
+    },
+    {
+      "savedDataUnchanged": true,
+      "mutations": 0
+    }
+  ],
+  "passed": true
+}

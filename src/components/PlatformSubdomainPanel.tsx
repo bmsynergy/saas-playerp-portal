@@ -21,6 +21,8 @@ export function PlatformSubdomainPanel({ venueId, canEdit }: { venueId: string; 
   const [checkState, setCheckState] = useState<CheckState>('idle');
   const [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState(false);
   const submitLock = useRef(false);
 
   const reload = async () => {
@@ -80,32 +82,39 @@ export function PlatformSubdomainPanel({ venueId, canEdit }: { venueId: string; 
     finally { submitLock.current = false; setBusy(false); }
   };
   const stateKey = (value: string | null | undefined) => value && ['verified', 'pending', 'pending_verification', 'disabled', 'none', 'live', 'pending_relocation', 'configured', 'not_configured', 'ambiguous'].includes(value) ? t(`subdomain.state.${value}`) : t('unknown');
+  const canOpen = Boolean(current?.public_url && current.operational && current.environment_state === 'live' && current.serving_state === 'verified');
+  const mainStatus = current?.address_state === 'ambiguous' ? t('subdomain.state.ambiguous')
+    : canOpen ? t('subdomain.status.available')
+    : current?.address_state === 'disabled' || current?.serving_state === 'disabled' ? t('subdomain.state.disabled')
+    : current?.domain ? t('subdomain.notAvailableYet') : t('subdomain.state.not_configured');
+  const copyDomain = async (domain: string) => {
+    try {
+      await navigator.clipboard.writeText(domain);
+      setCopiedDomain(domain); setCopyError(false);
+    } catch { setCopiedDomain(null); setCopyError(true); }
+  };
 
   return <section className="detail-panel platform-subdomain-panel" aria-labelledby="platform-subdomain-heading">
-    <div className="section-heading"><div><p className="eyebrow">{t('subdomain.platform')}</p><h2 id="platform-subdomain-heading">{t('subdomain.panelTitle')}</h2></div><Globe2 size={23} aria-hidden="true" /></div>
+    <div className="section-heading"><h2 id="platform-subdomain-heading">{t('subdomain.panelTitle')}</h2><Globe2 size={23} aria-hidden="true" /></div>
     {loading && !address ? <p role="status">{t('loadingTitle')}</p> : null}
     {error && <div className="form-error" role="alert">{t(error)}</div>}
     {success && <div className="platform-subdomain-success" role="status"><CheckCircle2 size={18}/>{t(success === 'current' ? 'subdomain.alreadyCurrent' : 'subdomain.savedPending')}</div>}
     {address && current && <>
       <div className="platform-subdomain-current">
-        <span>{t('subdomain.currentAddress')}</span>
-        {current.public_url && current.operational && current.environment_state === 'live' && current.serving_state === 'verified' ? <a href={current.public_url} target="_blank" rel="noopener noreferrer">{current.domain}</a> : <strong>{current.domain ?? t(`subdomain.state.${current.address_state}`)}</strong>}
-        <small>{current.environment_state === 'pending_relocation' ? t('subdomain.pendingRelocation') : !current.operational ? t('subdomain.notOperational') : t('subdomain.operational')}</small>
+        <span className="platform-subdomain-label">{t('subdomain.currentAddress')}</span>
+        <strong className="platform-subdomain-address">{current.domain ?? t('subdomain.noAddress')}</strong>
+        <span className={`platform-subdomain-status${canOpen ? ' is-available' : ''}`}>{mainStatus}</span>
+        {!canOpen && current.domain && current.address_state !== 'ambiguous' && current.address_state !== 'disabled' && current.serving_state !== 'disabled' && <p className="platform-subdomain-help">{t('subdomain.pendingHelp')}</p>}
       </div>
-      <dl className="dev-facts platform-subdomain-facts">
-        <div><dt>{t('subdomain.venueName')}</dt><dd>{address.venue_name}</dd></div>
-        <div><dt>{t('subdomain.slug')}</dt><dd>{address.slug}</dd></div>
-        <div><dt>{t('subdomain.environment')}</dt><dd>{address.environment.environment.toUpperCase()} · {stateKey(address.environment.base_status)}</dd></div>
-        <div><dt>{t('subdomain.addressState')}</dt><dd>{stateKey(current.address_state)}</dd></div>
-        <div><dt>{t('subdomain.servingState')}</dt><dd>{stateKey(current.serving_state)}</dd></div>
-        <div><dt>{t('subdomain.venueState')}</dt><dd>{address.venue_state.is_active ? t('active') : t('inactive')} · {t(`subdomain.lifecycle.${address.venue_state.lifecycle}`)}</dd></div>
-        <div><dt>{t('subdomain.externalPrimary')}</dt><dd>{address.external_primary?.domain ?? t('notProvided')}</dd></div>
-      </dl>
-      <p className="platform-subdomain-context">{t('subdomain.currentApp')} <a href={address.environment.current_app_url} target="_blank" rel="noopener noreferrer">{address.environment.current_app_url}</a> · {t('subdomain.currentPortal')} <a href={address.environment.current_portal_url} target="_blank" rel="noopener noreferrer">{address.environment.current_portal_url}</a></p>
-      {address.aliases.length > 0 && <div className="platform-subdomain-aliases"><strong>{t('subdomain.aliases')}</strong><ul>{address.aliases.map(item => <li key={item.domain}>{item.domain} · {stateKey(item.status)}</li>)}</ul></div>}
+      <div className="platform-subdomain-actions">
+        {current.domain && <button type="button" className="button button-secondary" onClick={() => void copyDomain(current.domain!)}>{t('subdomain.copy')}</button>}
+        {canOpen && <a className="button button-secondary" href={current.public_url!} target="_blank" rel="noopener noreferrer">{t('subdomain.openSite')}</a>}
+        {canEdit && !editing && current.address_state !== 'ambiguous' && <button type="button" className="button button-secondary" onClick={startEdit}>{t('subdomain.edit')}</button>}
+      </div>
+      <p className="platform-subdomain-copy-feedback" role="status" aria-live="polite">{copyError ? t('subdomain.copyError') : copiedDomain ? t('subdomain.copied') : null}</p>
+      {address.aliases.length > 0 && <details className="platform-subdomain-aliases"><summary><span>{t('subdomain.aliases')}</span><span className="platform-subdomain-count">{address.aliases.length}</span></summary><ul>{address.aliases.map(item => <li key={item.domain}><div className="platform-subdomain-alias-info"><strong>{item.domain}</strong><span>{item.status === 'verified' ? t('subdomain.aliasReserved') : stateKey(item.status)}</span></div><button type="button" className="button button-secondary" onClick={() => void copyDomain(item.domain)}>{t('subdomain.copy')}</button></li>)}</ul><p>{t('subdomain.aliasNote')}</p></details>}
       {current.address_state === 'ambiguous' && <div className="platform-subdomain-warning" role="status"><p>{t('subdomain.ambiguous')}</p><ul>{current.candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul></div>}
       {error && address && <div className="nt-actions"><button type="button" className="button button-secondary" disabled={busy} onClick={() => void reload()}><RefreshCw size={17}/>{t('subdomain.reload')}</button></div>}
-      {canEdit && !editing && current.address_state !== 'ambiguous' && <div className="nt-actions"><button type="button" className="button button-secondary" onClick={startEdit}>{t('subdomain.edit')}</button></div>}
       {canEdit && editing && <div className="platform-subdomain-edit">
         <PlatformSubdomainField value={label} onChange={setLabel} state={checkState} check={check} disabled={busy} id={`platform-subdomain-${venueId}`} />
         {!preview ? <div className="nt-actions"><button type="button" className="button button-secondary" disabled={busy} onClick={() => { setEditing(false); setError(null); }}>{t('subdomain.cancel')}</button><button type="button" className="button button-primary" disabled={!checked || busy} onClick={() => void openPreview()}>{busy ? <span className="spinner"/> : null}{t('subdomain.preview')}</button></div> : <div className="platform-subdomain-confirm" role="group" aria-label={t('subdomain.confirmTitle')}>

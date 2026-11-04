@@ -496,6 +496,35 @@ html[data-nav="keyboard"] .ps-venue-card summary:focus-visible{outline:2px solid
 
 /* Direct actions use the same clearance when a screen has no action wrapper. */
 :is(.staff-panel,.detail-panel,.servers-panel,.overview-panel,.directory-panel,.ps-dialog-body,.state-view,.inv-manage-danger,.dev-label-replacement)>:is(p,ul,ol,dl,.staff-table-wrap,.table-scroll,.inline-empty,.staff-notice,.form-error,.ps-result)+:is(button.button,a.button,button.ps-printers-toggle){margin-block-start:var(--portal-action-clearance)}
+
+/* PlayERP address card: the address stays readable at narrow widths. */
+.platform-subdomain-panel{min-width:0}
+.platform-subdomain-panel .section-heading{align-items:center;margin-bottom:0}
+.platform-subdomain-panel .section-heading h2{margin:0}
+.platform-subdomain-panel .platform-subdomain-current{display:grid;gap:8px;min-width:0;padding:0;border:0;border-radius:0;background:transparent}
+.platform-subdomain-label{color:var(--muted);font-size:.75rem;font-weight:700}
+.platform-subdomain-panel .platform-subdomain-address{display:block;min-width:0;padding:0;border:0;border-radius:0;background:transparent;font-size:clamp(1.05rem,2.5vw,1.35rem);line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
+.platform-subdomain-panel .platform-subdomain-status{justify-self:start;min-height:0;border-radius:999px;padding:6px 10px;background:var(--warning-soft);color:var(--warning);font-size:.73rem;font-weight:800}
+.platform-subdomain-panel .platform-subdomain-status.is-available{background:var(--success-soft);color:var(--success)}
+.platform-subdomain-help{margin:0;color:var(--muted);font-size:.78rem;line-height:1.5}
+.platform-subdomain-actions{display:flex;flex-wrap:wrap;gap:9px}
+.platform-subdomain-actions .button,.platform-subdomain-aliases .button{max-width:100%;white-space:normal;text-align:center}
+.platform-subdomain-copy-feedback{margin:0;color:var(--muted);font-size:.72rem}
+.platform-subdomain-copy-feedback:empty{display:none}
+.platform-subdomain-panel .platform-subdomain-aliases{min-width:0;margin:0;border-top:1px solid var(--line);padding-top:16px}
+.platform-subdomain-aliases summary{display:flex;align-items:center;gap:9px;width:max-content;max-width:100%;cursor:pointer;color:var(--ink);font-size:.82rem;font-weight:800;list-style:none}
+.platform-subdomain-aliases summary::-webkit-details-marker{display:none}
+.platform-subdomain-aliases summary::before{content:'▸';color:var(--muted);font-size:.9rem;transition:transform .15s ease}
+.platform-subdomain-aliases[open] summary::before{transform:rotate(90deg)}
+.platform-subdomain-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:var(--surface-soft);color:var(--muted);font-size:.68rem}
+.platform-subdomain-panel .platform-subdomain-aliases ul{list-style:none;margin:13px 0 0;padding:0;border-top:1px solid var(--line)}
+.platform-subdomain-aliases li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px 0;border-bottom:1px solid var(--line)}
+.platform-subdomain-alias-info{display:grid;gap:4px;min-width:0}
+.platform-subdomain-alias-info strong{font-size:.79rem;overflow-wrap:anywhere;word-break:break-word}
+.platform-subdomain-alias-info span{color:var(--muted);font-size:.71rem}
+.platform-subdomain-aliases>p{margin:12px 0 0;color:var(--muted);font-size:.73rem;line-height:1.5}
+.platform-subdomain-warning li,.platform-subdomain-confirm dd{overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:450px){.platform-subdomain-actions .button{flex:1 1 auto}.platform-subdomain-aliases li{align-items:flex-start;flex-direction:column}.platform-subdomain-aliases li .button{align-self:flex-start}}
 .staff-panel-lead+button.ps-printers-toggle{margin-block-start:var(--portal-action-clearance)}
 .inline-empty>.button{display:inline-flex;margin-block-start:var(--portal-action-clearance)}
 .state-view p:has(+.button){margin-block-end:0}

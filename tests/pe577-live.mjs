@@ -92,7 +92,7 @@ try {
  await page.reload();await expect(panel.locator('.platform-subdomain-current')).toContainText(corrected+'.playerp.dev.bmore.app');
  report.checks.correction={venue_id:report.venue_id,slug:after.slug,from:report.stamp+'-address.playerp.dev.bmore.app',to:after.platform_subdomain.domain,aliases:after.aliases,confirmationNoWrite:true,oneWrite:true,persistedAfterReload:true,venueUnchanged:true,externalPrimaryUnchanged:true};
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'EN',exact:true}).click();
- await expect(panel).toContainText('PlayERP subdomain');assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await expect(panel).toContainText('PlayERP address');assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:`${out}/detail-mobile-en.png`,fullPage:true});
  await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'ES',exact:true}).click();await page.screenshot({path:`${out}/detail-desktop-es.png`,fullPage:true});
  report.checks.ui={english:true,spanish:true,mobileWidth:390,desktopWidth:1440,noOverflow:true};assert.deepEqual(errors,[]);report.passed=true;await journal();console.log(JSON.stringify({passed:true,venue_id:report.venue_id,report:reportPath}));
