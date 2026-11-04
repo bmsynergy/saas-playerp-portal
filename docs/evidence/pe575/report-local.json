@@ -1,0 +1,36 @@
+{
+ "origin": "http://127.0.0.1:18793",
+ "at": "2026-11-04T00:10:26.988Z",
+ "stamp": "mw1d1qgc",
+ "errors": [],
+ "calls": [
+  {
+   "url": "platform-tenant-onboard",
+   "status": 200
+  },
+  {
+   "url": "portal_tenant_readiness",
+   "status": 200
+  },
+  {
+   "url": "update_tenant_info",
+   "status": 200
+  },
+  {
+   "url": "portal_tenant_readiness",
+   "status": 200
+  }
+ ],
+ "criteria": {
+  "wizard": "created",
+  "readiness": [
+   "Datos básicos\nIncompleto\nFalta: correo o teléfono, dirección",
+   "Acceso del owner\nInvitado, pendiente de aceptar\n0 de 1 owners aceptaron\nGestionar usuarios",
+   "Stripe Connect\nSin empezar\nSe configura desde el admin actual; aún no desde este portal.",
+   "Dominio\nSin configurar · opcional\nSe configura desde el admin actual; aún no desde este portal.",
+   "Operación y hardware\nSin empezar · opcional\n0 estaciones activas · 0 Print Servers activos · sin horarios · sin impuestos\nSe gestiona en el POS; aquí solo se muestra.\nVer Print Servers"
+  ],
+  "edit": "saved"
+ },
+ "venue_url": "http://127.0.0.1:18793/admin/tenants/2bfa82ea-8591-471f-af0d-73555ec35768"
+}
