@@ -3,6 +3,8 @@ import '../tenant-onboarding.css';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Building2, CheckCircle2, MailWarning, RefreshCw, RotateCcw, Send, UserRound } from 'lucide-react';
 import { useLocale } from '../locales';
+import { PlatformSubdomainField } from '../components/PlatformSubdomainField';
+import { checkSubdomain, suggestSubdomain, type SubdomainCheck } from '../lib/platformSubdomain';
 import {
   clearDraft, createTenant, emptyTenantForm, invalidFields, loadDraft, onboardingErrorKey, onboardingStatus, OnboardingError,
   resendOwnerInvite, saveDraft, slugify, type OnboardingRequest, type TenantForm,
@@ -20,15 +22,45 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
   const [requestKey, setRequestKey] = useState(draft?.request_key ?? newKey());
   const [submitted, setSubmitted] = useState(draft?.submitted ?? false);
   const [slugTouched, setSlugTouched] = useState(!!draft?.form.slug);
+  const [subdomainTouched, setSubdomainTouched] = useState(!!draft?.form.platform_subdomain);
+  const [subdomainCheck, setSubdomainCheck] = useState<SubdomainCheck | null>(null);
+  const [subdomainState, setSubdomainState] = useState<'idle' | 'checking' | 'available' | 'unavailable' | 'invalid' | 'error'>('idle');
   const [step, setStep] = useState<Step>(draft?.submitted ? 3 : 0);
   const [errors, setErrors] = useState<(keyof TenantForm)[]>([]);
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OnboardingRequest | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => { saveDraft(userId, { request_key: requestKey, form, submitted }); }, [userId, requestKey, form, submitted]);
   useEffect(() => { heading.current?.focus(); }, [step]);
+  useEffect(() => {
+    if (subdomainTouched || !form.name.trim() || submitted) return;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      suggestSubdomain(form.name).then(suggestion => {
+        if (active) setForm(current => ({ ...current, platform_subdomain: suggestion.subdomain }));
+      }).catch(() => { if (active) setSubdomainState('error'); });
+    }, 350);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [form.name, subdomainTouched, submitted]);
+  useEffect(() => {
+    const label = form.platform_subdomain.trim();
+    setSubdomainCheck(null);
+    if (!label || submitted) { setSubdomainState('idle'); return; }
+    let active = true;
+    setSubdomainState('checking');
+    const timer = window.setTimeout(() => {
+      checkSubdomain(label, undefined, requestKey).then(result => {
+        if (!active) return;
+        setSubdomainCheck(result);
+        setSubdomainState(result.available ? 'available' : result.reason === 'invalid_format' || result.reason === 'reserved' ? 'invalid' : 'unavailable');
+      }).catch(() => { if (active) setSubdomainState('error'); });
+    }, 350);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [form.platform_subdomain, requestKey, submitted]);
+  const subdomainReady = subdomainState === 'available' && subdomainCheck?.subdomain === form.platform_subdomain.trim().toLowerCase();
   // After a reload, recover the state of a request that was already sent.
   useEffect(() => {
     if (!draft?.submitted) return;
@@ -44,9 +76,12 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
   const next = (from: 0 | 1) => (event: FormEvent) => {
     event.preventDefault();
     const bad = invalidFields(form, from); setErrors(bad);
+    if (from === 0 && !subdomainReady) return;
     if (!bad.length) setStep((from + 1) as Step);
   };
   const run = async (fn: () => Promise<OnboardingRequest>) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true); setError(null);
     try { const r = await fn(); setResult(r); setSubmitted(true); setStep(3); onCreated(); }
     catch (e) {
@@ -62,9 +97,10 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
           }
         }
       }
-    } finally { setBusy(false); }
+    } finally { busyRef.current = false; setBusy(false); }
   };
   const submit = () => {
+    if (busyRef.current || (!submitted && !subdomainReady)) return;
     // Persist before the request leaves the browser, including when its response
     // is lost or the tab reloads while the backend is still provisioning.
     if (!saveDraft(userId, { request_key: requestKey, form, submitted: true })) {
@@ -83,10 +119,10 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
   // A key is replaced only once the previous request is known not to have created a venue.
   const startOver = (keepData: boolean) => {
     clearDraft(userId); setRequestKey(newKey()); setSubmitted(false); setResult(null); setError(null);
-    if (!keepData) { setForm(emptyTenantForm(locale)); setSlugTouched(false); }
+    if (!keepData) { setForm(emptyTenantForm(locale)); setSlugTouched(false); setSubdomainTouched(false); }
     setStep(0);
   };
-  const conflict = error === 'tenantNew.error.conflict' || error === 'tenantNew.error.duplicateSlug';
+  const conflict = error === 'tenantNew.error.conflict' || error === 'tenantNew.error.duplicateSlug' || error === 'tenantNew.error.subdomainUnavailable' || error === 'tenantNew.error.invalidSubdomain' || error === 'tenantNew.error.reservedSubdomain';
 
   const field = (key: keyof TenantForm, label: string, opts: { type?: string; required?: boolean; hint?: string; auto?: string } = {}) => {
     const invalid = errors.includes(key);
@@ -110,13 +146,14 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
       {step === 0 && <form className="nt-form" onSubmit={next(0)} noValidate>
         {field('name', 'tenantNew.name', { required: true })}
         {field('slug', 'tenantNew.slug', { required: true, hint: 'tenantNew.slugHint' })}
+        <PlatformSubdomainField value={form.platform_subdomain} onChange={value => { setSubdomainTouched(true); set('platform_subdomain', value.toLowerCase()); }} state={subdomainState} check={subdomainCheck} disabled={busy} />
         {field('timezone', 'timezone', { required: true, hint: 'tenantNew.timezoneHint' })}
         {field('email', 'email', { type: 'email', auto: 'off' })}
         {field('phone', 'phone', { type: 'tel', auto: 'off' })}
         {field('address', 'address')}
         {field('city', 'city')}
         {field('state', 'tenantNew.state')}
-        <div className="nt-actions"><Link className="button button-secondary" to="/admin/tenants">{t('tenantNew.cancel')}</Link><button type="submit" className="button button-primary">{t('tenantNew.next')}<ArrowRight size={17}/></button></div>
+        <div className="nt-actions"><Link className="button button-secondary" to="/admin/tenants">{t('tenantNew.cancel')}</Link><button type="submit" className="button button-primary" disabled={!subdomainReady || busy}>{t('tenantNew.next')}<ArrowRight size={17}/></button></div>
       </form>}
       {step === 1 && <form className="nt-form" onSubmit={next(1)} noValidate>
         <p className="nt-lead nt-wide">{t('tenantNew.ownerLead')}</p>
@@ -129,6 +166,7 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
       {step === 2 && <div className="nt-review">
         <dl className="dev-facts">
           <div><dt>{t('tenantNew.name')}</dt><dd>{form.name}</dd></div><div><dt>{t('tenantNew.slug')}</dt><dd>{form.slug}</dd></div>
+          <div><dt>{t('subdomain.label')}</dt><dd>{form.platform_subdomain}</dd></div><div><dt>{t('subdomain.address')}</dt><dd>{subdomainCheck?.domain ?? t('subdomain.unavailable')}</dd></div>
           <div><dt>{t('timezone')}</dt><dd>{form.timezone}</dd></div><div><dt>{t('email')}</dt><dd>{form.email || t('notProvided')}</dd></div>
           <div><dt>{t('phone')}</dt><dd>{form.phone || t('notProvided')}</dd></div><div><dt>{t('address')}</dt><dd>{[form.address, form.city, form.state].filter(Boolean).join(', ') || t('notProvided')}</dd></div>
           <div><dt>{t('tenantNew.ownerEmail')}</dt><dd>{form.owner_email}</dd></div><div><dt>{t('tenantNew.ownerName')}</dt><dd>{form.owner_first_name} {form.owner_last_name}</dd></div>
@@ -137,7 +175,7 @@ export function NewTenantPage({ userId, onCreated }: { userId: string; onCreated
         <div className="nt-actions">
           <button type="button" className="button button-secondary" onClick={() => setStep(1)} disabled={busy}><ArrowLeft size={17}/>{t('tenantNew.back')}</button>
           {conflict ? <button type="button" className="button button-secondary" onClick={() => { startOver(true); }}><RotateCcw size={17}/>{t('tenantNew.editAndRetry')}</button> : null}
-          <button type="button" className="button button-primary" onClick={() => void submit()} disabled={busy}>{busy ? <span className="spinner"/> : <Send size={17}/>}{t(busy ? 'tenantNew.creating' : 'tenantNew.create')}</button>
+          <button type="button" className="button button-primary" onClick={() => void submit()} disabled={busy || !subdomainReady}>{busy ? <span className="spinner"/> : <Send size={17}/>}{t(busy ? 'tenantNew.creating' : 'tenantNew.create')}</button>
         </div>
       </div>}
       {step === 3 && <ResultView result={result} busy={busy} onRetry={() => void submit()} onResend={() => void run(() => resendOwnerInvite(requestKey))}

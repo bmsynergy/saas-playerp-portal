@@ -1,3 +1,4 @@
+import { PlatformSubdomainPanel } from './components/PlatformSubdomainPanel';
 import { SupportRoute, SupportOverview } from './components/SupportData';
 import { VenueMaintenancePage } from './pages/VenueMaintenancePage';
 import { MaintenancePage } from './pages/MaintenancePage';
@@ -321,7 +322,7 @@ function DetailData({id,tab,canManageUsers}:{id:string;tab:TenantTab;canManageUs
     maintenance={<VenueMaintenanceData key={id} venueId={id}/>}
     mcp={canManageUsers?<McpIntegrationData key={id} venueId={id} admin/>:undefined}
     editor={canManageRings(access.data)?<TenantInfoEditor key={id} venue={data.data.venue} onSaved={()=>void data.refetch()}/>:undefined}
-    readiness={<TenantReadinessPanel venueId={id} canManage={canManageUsers}/>}
+    readiness={<><PlatformSubdomainPanel key={id} venueId={id} canEdit={canManageRings(access.data)}/><TenantReadinessPanel venueId={id} canManage={canManageUsers}/></>}
     printServers={canManageUsers?(tab==='print-server-detail'?<VenueRedirect key={id} venueId={id}/>:<VenueDevicesData key={id} venue={data.data.venue} scope="admin"/>):undefined}/>;
 }
 function NewTenantRoute() {

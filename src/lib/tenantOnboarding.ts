@@ -7,16 +7,17 @@ import { AUXILIARY_STORAGE_PREFIX } from './config';
 // saas-playerp-backend 76052081, _docs/pe5751_alta_tenant_contrato.md.
 export type OnboardingStatus = 'pending' | 'owner_ready' | 'provisioned' | 'completed' | 'invite_failed' | 'failed';
 export interface OnboardingRequest {
+  platform_subdomain?: string | null; platform_domain?: string | null;
   request_key: string; status: OnboardingStatus; venue_id: string | null; venue_name: string | null;
   venue_slug: string | null; owner_email: string | null; retryable: boolean; attempts: number;
   email_sent: boolean | null; email_kind: 'invite' | 'recovery' | null;
 }
 export interface TenantForm {
-  name: string; slug: string; timezone: string; email: string; phone: string; address: string; city: string; state: string;
+  platform_subdomain: string; name: string; slug: string; timezone: string; email: string; phone: string; address: string; city: string; state: string;
   owner_email: string; owner_first_name: string; owner_last_name: string; locale: 'es' | 'en';
 }
 export const emptyTenantForm = (locale: 'es' | 'en'): TenantForm => ({
-  name: '', slug: '', timezone: 'America/Puerto_Rico', email: '', phone: '', address: '', city: '', state: '',
+  platform_subdomain: '', name: '', slug: '', timezone: 'America/Puerto_Rico', email: '', phone: '', address: '', city: '', state: '',
   owner_email: '', owner_first_name: '', owner_last_name: '', locale,
 });
 export class OnboardingError extends Error {
@@ -24,6 +25,8 @@ export class OnboardingError extends Error {
 }
 // Known server slugs become localized keys; anything else is a safe generic message.
 const codes: Record<string, string> = {
+  invalid_platform_subdomain: 'tenantNew.error.invalidSubdomain', reserved_platform_subdomain: 'tenantNew.error.reservedSubdomain',
+  platform_subdomain_unavailable: 'tenantNew.error.subdomainUnavailable', platform_base_not_configured: 'tenantNew.error.subdomainEnvironment',
   duplicate_slug: 'tenantNew.error.duplicateSlug', idempotency_conflict: 'tenantNew.error.conflict',
   account_unconfirmed: 'tenantNew.error.accountUnconfirmed', cannot_change_self: 'tenantNew.error.ownerNotAllowed',
   protected_super_admin: 'tenantNew.error.ownerNotAllowed', display_staff_dedicated: 'tenantNew.error.ownerNotAllowed',
@@ -59,7 +62,7 @@ const opt = (v: string) => v.trim() || undefined;
 export function createBody(form: TenantForm, requestKey: string) {
   return {
     action: 'create', request_key: requestKey, locale: form.locale,
-    venue: { name: form.name.trim(), slug: form.slug, timezone: form.timezone.trim(), email: opt(form.email), phone: opt(form.phone), address: opt(form.address), city: opt(form.city), state: opt(form.state) },
+    venue: { ...(form.platform_subdomain ? { platform_subdomain: form.platform_subdomain } : {}), name: form.name.trim(), slug: form.slug, timezone: form.timezone.trim(), email: opt(form.email), phone: opt(form.phone), address: opt(form.address), city: opt(form.city), state: opt(form.state) },
     owner: { email: form.owner_email.trim().toLowerCase(), first_name: form.owner_first_name.trim(), last_name: form.owner_last_name.trim() },
     billing: {},
   };
@@ -69,6 +72,7 @@ const str = (v: unknown) => typeof v === 'string' ? v : null;
 export function toRequest(d: Record<string, unknown>): OnboardingRequest {
   if (typeof d.request_key !== 'string' || !STATUSES.includes(d.status as OnboardingStatus)) throw new PortalError('genericError');
   return {
+    platform_subdomain: str(d.platform_subdomain), platform_domain: str(d.platform_domain),
     request_key: d.request_key, status: d.status as OnboardingStatus, venue_id: str(d.venue_id), venue_name: str(d.venue_name),
     venue_slug: str(d.venue_slug), owner_email: str(d.owner_email), retryable: d.retryable === true,
     attempts: typeof d.attempts === 'number' ? d.attempts : 0,
@@ -108,7 +112,7 @@ export function loadDraft(userId: string): TenantDraft | null {
   try {
     const raw = sessionStorage.getItem(draftKey(userId)); if (!raw) return null;
     const d = JSON.parse(raw) as TenantDraft;
-    return typeof d?.request_key === 'string' && d.form && typeof d.form.name === 'string' ? d : null;
+    return typeof d?.request_key === 'string' && d.form && typeof d.form.name === 'string' ? {...d, form: {...d.form, platform_subdomain: d.form.platform_subdomain ?? ''}} : null;
   } catch { return null; }
 }
 export function saveDraft(userId: string, draft: TenantDraft): boolean { try { sessionStorage.setItem(draftKey(userId), JSON.stringify(draft)); return true; } catch { return false; } }
