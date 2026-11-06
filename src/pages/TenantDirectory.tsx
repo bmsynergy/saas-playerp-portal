@@ -1,25 +1,42 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import '../tenant-onboarding.css';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Building2, MapPin, Search } from 'lucide-react';
-import type { OwnerVenue } from '../lib/types';
+import { ArrowRight, Building2, Plus, Search } from 'lucide-react';
 import { useLocale } from '../locales';
 import { AdminListFilters, useAdminListFilters } from '../components/AdminListFilters';
-import { PrintListPagination, usePrintListPagination } from '../components/PrintListPagination';
-import { matchesText } from '../lib/adminLists';
+import { PrintListPagination } from '../components/PrintListPagination';
+import { useTenantReadinessList } from '../hooks/useTenantReadinessList';
+import type { Lifecycle } from '../lib/tenantOnboarding';
 
-export function TenantDirectory({ venues }: { venues: OwnerVenue[] }) {
+export function TenantDirectory({ canCreate = false }: { canCreate?: boolean }) {
   const { t } = useLocale();
   const { filters, set, clear } = useAdminListFilters();
-  const filtered = useMemo(() => {
-    return venues.filter(venue => matchesText(filters.query, venue.name, venue.slug, venue.city) && (!filters.status || (filters.status === 'active' ? venue.is_active === true : filters.status === 'inactive' ? venue.is_active === false : venue.is_active == null)));
-  }, [venues, filters]);
-  const pages = usePrintListPagination(filtered.length);
-  const setFilter = (key: keyof typeof filters, value: string) => { set(key, value); pages.reset(); };
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQuery(filters.query), 250);
+    return () => window.clearTimeout(timer);
+  }, [filters.query]);
+  const list = useTenantReadinessList(query, filters.status as Lifecycle | '', page, pageSize);
+  const result = list.data;
+  useEffect(() => { if (result && page > result.pages) setPage(result.pages); }, [result, page]);
+  const setFilter = (key: keyof typeof filters, value: string) => { set(key, value); setPage(1); };
+  const pagination = {
+    page: result?.page ?? page, pageCount: result?.pages ?? 1, pageSize: result?.page_size ?? pageSize,
+    start: ((result?.page ?? page) - 1) * (result?.page_size ?? pageSize),
+    end: result ? Math.min(result.page * result.page_size, result.total) : 0,
+    total: result?.total ?? 0, setPage, setPageSize: (size: number) => { setPageSize(size); setPage(1); },
+  };
   return <div className="page-stack">
-    <div className="page-heading"><div><p className="eyebrow">{t('staffArea')}</p><h1>{t('tenantDirectory')}</h1><p>{t('directoryLead')}</p></div><div className="heading-accent" aria-hidden="true"><Building2 size={28}/></div></div>
-    <section className="directory-panel"><div className="directory-toolbar"><AdminListFilters id="tenants" filters={filters} set={setFilter} clear={() => { clear(); pages.reset(); }} statuses={[{ value: 'active', label: t('active') }, { value: 'inactive', label: t('inactive') }, { value: 'unknown', label: t('unknown') }]}/><span className="directory-count">{filtered.length} / {venues.length}</span></div>
-      {filtered.length ? <div className="directory-list" aria-label={t('searchResults')}>{filtered.slice(pages.start, pages.end).map((venue) => <Link key={venue.id} to={`/admin/tenants/${encodeURIComponent(venue.id)}`} className="directory-row"><span className="directory-row-icon"><Building2 size={21}/></span><span className="directory-row-primary"><strong>{venue.name}</strong><small>{venue.slug || t('notProvided')}</small></span><span className="directory-row-city"><MapPin size={15}/>{venue.city || t('notProvided')}</span><span className={`status-badge ${venue.is_active === true ? 'status-active' : venue.is_active === false ? 'status-inactive' : 'status-unknown'}`}><span className="badge-dot"/>{venue.is_active === true ? t('active') : venue.is_active === false ? t('inactive') : t('unknown')}</span><ArrowRight className="row-arrow" size={18}/></Link>)}</div> : <div className="directory-empty"><div className="directory-empty-icon"><Search size={24}/></div><h2>{filters.query || filters.status ? t('noResults') : t('emptyDirectory')}</h2>{(filters.query || filters.status) && <p>{t('noResultsHint')}</p>}</div>}
-      <PrintListPagination pagination={pages} id="tenants"/>
+    <div className="page-heading"><div><p className="eyebrow">{t('staffArea')}</p><h1>{t('tenantDirectory')}</h1><p>{t('directoryLead')}</p></div>{canCreate ? <Link className="button button-primary" to="/admin/tenants/new" data-testid="new-tenant"><Plus size={17}/>{t('tenantNew.button')}</Link> : <div className="heading-accent" aria-hidden="true"><Building2 size={28}/></div>}</div>
+    <section className="directory-panel"><div className="directory-toolbar"><AdminListFilters id="tenants" filters={filters} set={setFilter} clear={() => { clear(); setPage(1); }} searchPlaceholder={t('searchPlaceholder')} statuses={(['setup_incomplete', 'ready', 'active', 'suspended'] as const).map(value => ({ value, label: t(`readiness.lifecycle.${value}`) }))}/>{result && !list.isError && <span className="directory-count">{result.total}</span>}</div>
+      <div data-pagination-list="tenants" />
+      {list.isError ? <div className="form-error" role="alert">{t('genericError')} <button type="button" className="text-link" onClick={() => void list.refetch()}>{t('retry')}</button></div>
+        : !result ? <div className="inline-empty" role="status"><span className="spinner"/> {t('loadingTitle')}</div>
+        : result.items.length ? <div className="directory-list" aria-label={t('searchResults')}>{result.items.map(venue => <Link key={venue.venue_id} to={`/admin/tenants/${encodeURIComponent(venue.venue_id)}`} className="directory-row tenant-directory-row"><span className="directory-row-icon"><Building2 size={21}/></span><span className="directory-row-primary"><strong>{venue.venue_name}</strong><small>{venue.venue_slug || t('notProvided')}</small></span><span className={`status-badge readiness-${venue.lifecycle}`}><span className="badge-dot"/>{t(`readiness.lifecycle.${venue.lifecycle}`)}</span><ArrowRight className="row-arrow" size={18}/></Link>)}</div>
+        : <div className="directory-empty"><div className="directory-empty-icon"><Search size={24}/></div><h2>{filters.query || filters.status ? t('noResults') : t('emptyDirectory')}</h2>{(filters.query || filters.status) && <p>{t('noResultsHint')}</p>}</div>}
+      {result && !list.isError && <PrintListPagination pagination={pagination} id="tenants" disabled={list.isFetching || query !== filters.query}/>}
     </section>
   </div>;
 }

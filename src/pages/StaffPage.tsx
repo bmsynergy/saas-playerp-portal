@@ -100,6 +100,7 @@ export function StaffPage({ members, currentUserId, busy, error, notice, onInvit
     <section className="staff-panel" aria-labelledby="staff-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t('staff.directoryEyebrow')}</p><h2 id="staff-list-title">{t('staff.listTitle')}</h2></div><span className="count-pill">{filtered.length} / {members.length}</span></div>
       <AdminListFilters id="staff" filters={filters} set={(key, value) => { set(key, value); pagination.reset(); }} clear={() => { clear(); pagination.reset(); }} statuses={['active', 'invited', 'revoked'].map(value => ({ value, label: t(`staff.status.${value}`) }))} dateLabel={t('list.created')}/>
+      <div data-pagination-list="staff" />
       {busy && members.length === 0 ? <div className="staff-empty" role="status"><span className="spinner"/>{t('staff.loading')}</div> : filtered.length === 0 ? <div className="staff-empty"><UsersRound size={27}/><strong>{members.length ? t('list.noMatches') : t('staff.emptyTitle')}</strong><span>{members.length ? t('list.noMatchesHint') : t('staff.emptyBody')}</span></div> : <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th>{t('name')}</th><th>{t('staff.roleLabel')}</th><th>{t('state')}</th><th>{t('staff.lastAccess')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{filtered.slice(pagination.start, pagination.end).map(member => {
         const self = member.is_self || member.user_id === currentUserId;
         return <tr key={member.user_id}>

@@ -53,11 +53,31 @@ export function PrintListPagination({ pagination, id, disabled = false, fixedSiz
     .replace('{total}', number.format(total));
   const pageNumber = /^\d+$/.test(draft) ? Number(draft) : NaN;
   const validDraft = Number.isSafeInteger(pageNumber) && pageNumber >= 1 && pageNumber <= pageCount;
+  const scrollToList = () => {
+    const list = Array.from(document.querySelectorAll<HTMLElement>('[data-pagination-list]'))
+      .find(element => element.dataset.paginationList === id);
+    // Scroll before requesting data: server-backed lists may unmount this pager
+    // while loading. Each nested list supplies its own destination.
+    if (list) {
+      list.scrollTop = 0;
+      list.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  };
+  const changePage = (next: number) => {
+    if (disabled || next === page || next < 1 || next > pageCount) return;
+    scrollToList();
+    setPage(next);
+  };
+  const changeSize = (size: number) => {
+    if (disabled || size === pageSize) return;
+    scrollToList();
+    setPageSize(size);
+  };
   const confirm = () => {
     if (!validDraft) { setInvalid(true); return; }
     setInvalid(false);
     setDraft(String(pageNumber));
-    setPage(pageNumber);
+    changePage(pageNumber);
   };
   const error = t('ps.pagination.invalid').replace('{pages}', number.format(pageCount));
 
@@ -65,17 +85,17 @@ export function PrintListPagination({ pagination, id, disabled = false, fixedSiz
     <span className="ps-pagination-range" data-testid={`${id}-pagination-range`}>{range}</span>
     <div className="ps-pagination-controls">
       {fixedSize ? <span className="ps-pagination-fixed-size">{t('ps.pagination.rows')}: {pageSize}</span> : <><label htmlFor={`${id}-page-size`}>{t('ps.pagination.rows')}</label>
-        <select id={`${id}-page-size`} value={pageSize} onChange={event => setPageSize(Number(event.target.value))} disabled={disabled} data-testid={`${id}-pagination-size`}>
+        <select id={`${id}-page-size`} value={pageSize} onChange={event => changeSize(Number(event.target.value))} disabled={disabled} data-testid={`${id}-pagination-size`}>
           {PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
         </select></>}
-      <button type="button" onClick={() => setPage(page - 1)} disabled={disabled || page <= 1} data-testid={`${id}-pagination-prev`}>{t('ps.pagination.previous')}</button>
+      <button type="button" onClick={() => changePage(page - 1)} disabled={disabled || page <= 1} data-testid={`${id}-pagination-prev`}>{t('ps.pagination.previous')}</button>
       <div className="ps-pagination-jump" data-testid={`${id}-pagination-page`}>
         <label htmlFor={`${id}-pagination-input`}>{t('ps.pagination.pageInput')}</label>
         <input id={`${id}-pagination-input`} type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" value={draft} disabled={disabled} aria-invalid={invalid} aria-describedby={`${id}-pagination-total${invalid ? ` ${id}-pagination-error` : ''}`} onChange={event => { setDraft(event.target.value); setInvalid(false); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); confirm(); } }} data-testid={`${id}-pagination-input`}/>
         <span id={`${id}-pagination-total`} className="ps-pagination-page" aria-live="polite">{t('ps.pagination.ofPages').replace('{pages}', number.format(pageCount))}</span>
         <button type="button" onClick={confirm} disabled={disabled} data-testid={`${id}-pagination-go`}>{t('ps.pagination.go')}</button>
       </div>
-      <button type="button" onClick={() => setPage(page + 1)} disabled={disabled || page >= pageCount} data-testid={`${id}-pagination-next`}>{t('ps.pagination.next')}</button>
+      <button type="button" onClick={() => changePage(page + 1)} disabled={disabled || page >= pageCount} data-testid={`${id}-pagination-next`}>{t('ps.pagination.next')}</button>
       {invalid && <span id={`${id}-pagination-error`} className="ps-pagination-error" role="alert">{error}</span>}
     </div>
   </nav>;

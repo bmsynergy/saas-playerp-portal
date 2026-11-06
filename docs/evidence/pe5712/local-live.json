@@ -1,0 +1,50 @@
+{
+  "origin": "http://127.0.0.1:18791",
+  "mocks": false,
+  "criteria": {
+    "1": {
+      "venue": "c1700000-0000-0000-0000-0000000000a0",
+      "ticket": "d1820561-e4f7-48cc-898b-1e13f9e9b9ed",
+      "creatorIsAnotherEmployee": true,
+      "ownerOverviewTotal": 2,
+      "replyPersisted": true
+    },
+    "2": {
+      "total": 122,
+      "pageSize": 25,
+      "page2": 2,
+      "assigned": true,
+      "priority": true,
+      "status": true,
+      "publicReply": true,
+      "internalNote": true
+    },
+    "3": {
+      "foreignDetailStatus": 403,
+      "foreignListTotal": 0,
+      "before": true,
+      "after": false,
+      "pending": true,
+      "privateNoteHidden": true
+    },
+    "4": {
+      "mobileWidth": 390,
+      "noHorizontalOverflow": true
+    }
+  },
+  "errors": [],
+  "adminMutations": {
+    "assigned": true,
+    "priority": true,
+    "status": true,
+    "publicReply": true,
+    "internalNote": true
+  },
+  "unread": {
+    "before": true,
+    "after": false,
+    "pending": true,
+    "privateNoteHidden": true
+  },
+  "passed": true
+}

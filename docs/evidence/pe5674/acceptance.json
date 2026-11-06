@@ -1,0 +1,582 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "startedAt": "2026-11-03T14:07:33.518Z",
+  "mocks": false,
+  "pages": [
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": null,
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "total": 133,
+      "page": 1,
+      "pages": 6,
+      "page_size": 25,
+      "rows": 25,
+      "summary": {
+        "venues": 133,
+        "problem_nights": 9,
+        "alert_recipients": 1,
+        "venues_with_problems": 8
+      },
+      "problems_total": 9,
+      "venues": [
+        {
+          "id": "ca9a0386-0000-4000-8000-000000000000",
+          "name": "CANARIO PE-386 (sede ficticia, solo DEV)",
+          "problems": 1
+        },
+        {
+          "id": "f5430000-0000-4000-8000-0000000000a1",
+          "name": "PE543 vigilante · sede sin historial (solo DEV)",
+          "problems": 1
+        },
+        {
+          "id": "c4ac30eb-976c-471a-a042-821dccb02c25",
+          "name": "QA-120 Sede 007",
+          "problems": 1
+        },
+        {
+          "id": "cc003881-4cb7-493c-9dfe-5efb89d3d186",
+          "name": "QA-120 Sede 023",
+          "problems": 1
+        },
+        {
+          "id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+          "name": "QA-120 Sede 045",
+          "problems": 2
+        },
+        {
+          "id": "d83a354e-a77a-4859-9643-14edb6e41c1f",
+          "name": "QA-120 Sede 068",
+          "problems": 1
+        },
+        {
+          "id": "337e2ec6-76ff-4bc0-acda-aca0eba3b21f",
+          "name": "QA-120 Sede 091",
+          "problems": 1
+        },
+        {
+          "id": "2d25b9b2-2427-4d17-8559-0d7584d7b4a2",
+          "name": "QA-120 Sede 112",
+          "problems": 1
+        },
+        {
+          "id": "a0000000-0000-0000-0000-000000000001",
+          "name": "Dynamic Park",
+          "problems": 0
+        },
+        {
+          "id": "76f205a2-dc67-42db-b73e-a9c899af8d9d",
+          "name": "Jumping Florida",
+          "problems": 0
+        },
+        {
+          "id": "f5615000-0000-4000-8000-000000000000",
+          "name": "PE-561.5 VOLUMEN RELEVOS (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "f5640000-0000-4000-8000-000000000000",
+          "name": "PE-564 ATRASO COTIZACIONES (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a3",
+          "name": "PE428 fixture · legacy solo Wi-Fi",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a2",
+          "name": "PE428 fixture · rotación aplicada/pendiente",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a1",
+          "name": "PE428 fixture · rotación pendiente/fallida",
+          "problems": 0
+        },
+        {
+          "id": "f4430000-0000-4000-8000-0000000000f1",
+          "name": "PE443 fixture · dos Print Servers",
+          "problems": 0
+        },
+        {
+          "id": "f4570000-0000-4000-8000-0000000000e1",
+          "name": "PE457 fixture · correo sin verificar (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "4906158a-bb73-4d99-989a-dbf36571fb24",
+          "name": "QA-120 Sede 001",
+          "problems": 0
+        },
+        {
+          "id": "4ae7875a-e925-4134-9fc4-393bba0e2165",
+          "name": "QA-120 Sede 002",
+          "problems": 0
+        },
+        {
+          "id": "c73327d8-9017-4c1f-b486-9ba7c30529a2",
+          "name": "QA-120 Sede 003",
+          "problems": 0
+        },
+        {
+          "id": "3adff43e-f1ca-48cf-ae26-9033739fad77",
+          "name": "QA-120 Sede 004",
+          "problems": 0
+        },
+        {
+          "id": "0f67fe1e-2706-4812-8fd6-19c1c14c1aae",
+          "name": "QA-120 Sede 005",
+          "problems": 0
+        },
+        {
+          "id": "13847247-d99f-4a77-8dfe-c52bd603ab83",
+          "name": "QA-120 Sede 006",
+          "problems": 0
+        },
+        {
+          "id": "0aff9ca0-c55f-45d3-823f-4fae6368eaa1",
+          "name": "QA-120 Sede 008",
+          "problems": 0
+        },
+        {
+          "id": "00493d6b-8d57-4729-bee6-62d8ad45d81d",
+          "name": "QA-120 Sede 009",
+          "problems": 0
+        }
+      ]
+    },
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": null,
+        "p_page": 2,
+        "p_page_size": 25
+      },
+      "total": 133,
+      "page": 2,
+      "pages": 6,
+      "page_size": 25,
+      "rows": 25,
+      "summary": {
+        "venues": 133,
+        "problem_nights": 9,
+        "alert_recipients": 1,
+        "venues_with_problems": 8
+      },
+      "problems_total": 9,
+      "venues": [
+        {
+          "id": "48fa485c-dccd-4818-ad59-b58c46cc9636",
+          "name": "QA-120 Sede 010",
+          "problems": 0
+        },
+        {
+          "id": "47a0d031-144f-4349-9571-df202720554f",
+          "name": "QA-120 Sede 011",
+          "problems": 0
+        },
+        {
+          "id": "71ef1c40-8d8e-4967-884f-2303b905760f",
+          "name": "QA-120 Sede 012",
+          "problems": 0
+        },
+        {
+          "id": "47a96beb-c7d0-4989-97a1-46b47cbe0b14",
+          "name": "QA-120 Sede 013",
+          "problems": 0
+        },
+        {
+          "id": "8681a2e8-cfbc-49d8-bdc6-fe3231be04c3",
+          "name": "QA-120 Sede 014",
+          "problems": 0
+        },
+        {
+          "id": "943cb2e7-1550-40e7-b348-3b8ef15d0a95",
+          "name": "QA-120 Sede 015",
+          "problems": 0
+        },
+        {
+          "id": "1e4af546-4b47-4ab4-b065-c952506501ce",
+          "name": "QA-120 Sede 016",
+          "problems": 0
+        },
+        {
+          "id": "ae8ab6e7-afd7-4c8a-8f4b-efa0135ca2e7",
+          "name": "QA-120 Sede 017",
+          "problems": 0
+        },
+        {
+          "id": "bf90f631-b85a-48b3-b212-4422cfde2bfd",
+          "name": "QA-120 Sede 018",
+          "problems": 0
+        },
+        {
+          "id": "d1adc556-413c-4c5a-b28b-0ef72c280e37",
+          "name": "QA-120 Sede 019",
+          "problems": 0
+        },
+        {
+          "id": "91e70fc6-394f-4eb5-85a5-878fe716cde5",
+          "name": "QA-120 Sede 020",
+          "problems": 0
+        },
+        {
+          "id": "f3b6cff3-a03f-40e0-bf5f-29794eeb0a3f",
+          "name": "QA-120 Sede 021",
+          "problems": 0
+        },
+        {
+          "id": "7c1153e0-1c5c-4da7-bd6b-949e96d1a797",
+          "name": "QA-120 Sede 022",
+          "problems": 0
+        },
+        {
+          "id": "a979a0b9-0ef0-4e26-b372-a0713bee0d82",
+          "name": "QA-120 Sede 024",
+          "problems": 0
+        },
+        {
+          "id": "24077e26-5519-4664-bbd5-dfb77527f539",
+          "name": "QA-120 Sede 025",
+          "problems": 0
+        },
+        {
+          "id": "e4283363-03f0-49f8-9767-288aafded3d2",
+          "name": "QA-120 Sede 026",
+          "problems": 0
+        },
+        {
+          "id": "62d3f76f-88a9-4a53-b283-cdb2938ed252",
+          "name": "QA-120 Sede 027",
+          "problems": 0
+        },
+        {
+          "id": "7a9d801d-2624-4652-8d70-5fe795b2f7be",
+          "name": "QA-120 Sede 028",
+          "problems": 0
+        },
+        {
+          "id": "7e1e1c9c-b7f5-4f63-87aa-307ab92b2ea1",
+          "name": "QA-120 Sede 029",
+          "problems": 0
+        },
+        {
+          "id": "ff06791a-596f-4617-be8a-7a61ca90630b",
+          "name": "QA-120 Sede 030",
+          "problems": 0
+        },
+        {
+          "id": "e6068fe0-bb8a-4dad-b534-561fba9f71c5",
+          "name": "QA-120 Sede 031",
+          "problems": 0
+        },
+        {
+          "id": "30c76796-bebf-4ac0-8817-43a13635485c",
+          "name": "QA-120 Sede 032",
+          "problems": 0
+        },
+        {
+          "id": "0c07d7cd-6cdc-4b22-850a-46dd52db58d2",
+          "name": "QA-120 Sede 033",
+          "problems": 0
+        },
+        {
+          "id": "4ac2343d-a8c2-408c-a864-d49c9cf8575d",
+          "name": "QA-120 Sede 034",
+          "problems": 0
+        },
+        {
+          "id": "177ba28d-4af1-45d6-a53e-a42f16768344",
+          "name": "QA-120 Sede 035",
+          "problems": 0
+        }
+      ]
+    },
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": "086f4851-3e36-4209-b763-e81e4ef997a1",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "total": 1,
+      "page": 1,
+      "pages": 1,
+      "page_size": 25,
+      "rows": 1,
+      "summary": {
+        "venues": 1,
+        "problem_nights": 0,
+        "alert_recipients": 1,
+        "venues_with_problems": 0
+      },
+      "problems_total": 0,
+      "venues": [
+        {
+          "id": "086f4851-3e36-4209-b763-e81e4ef997a1",
+          "name": "QA-120 Sede 117",
+          "problems": 0
+        }
+      ]
+    },
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": "086f4851-3e36-4209-b763-e81e4ef997a1",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "total": 1,
+      "page": 1,
+      "pages": 1,
+      "page_size": 25,
+      "rows": 1,
+      "summary": {
+        "venues": 1,
+        "problem_nights": 0,
+        "alert_recipients": 2,
+        "venues_with_problems": 0
+      },
+      "problems_total": 0,
+      "venues": [
+        {
+          "id": "086f4851-3e36-4209-b763-e81e4ef997a1",
+          "name": "QA-120 Sede 117",
+          "problems": 0
+        }
+      ]
+    },
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": null,
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "total": 133,
+      "page": 1,
+      "pages": 6,
+      "page_size": 25,
+      "rows": 25,
+      "summary": {
+        "venues": 133,
+        "problem_nights": 9,
+        "alert_recipients": 1,
+        "venues_with_problems": 8
+      },
+      "problems_total": 9,
+      "venues": [
+        {
+          "id": "ca9a0386-0000-4000-8000-000000000000",
+          "name": "CANARIO PE-386 (sede ficticia, solo DEV)",
+          "problems": 1
+        },
+        {
+          "id": "f5430000-0000-4000-8000-0000000000a1",
+          "name": "PE543 vigilante · sede sin historial (solo DEV)",
+          "problems": 1
+        },
+        {
+          "id": "c4ac30eb-976c-471a-a042-821dccb02c25",
+          "name": "QA-120 Sede 007",
+          "problems": 1
+        },
+        {
+          "id": "cc003881-4cb7-493c-9dfe-5efb89d3d186",
+          "name": "QA-120 Sede 023",
+          "problems": 1
+        },
+        {
+          "id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+          "name": "QA-120 Sede 045",
+          "problems": 2
+        },
+        {
+          "id": "d83a354e-a77a-4859-9643-14edb6e41c1f",
+          "name": "QA-120 Sede 068",
+          "problems": 1
+        },
+        {
+          "id": "337e2ec6-76ff-4bc0-acda-aca0eba3b21f",
+          "name": "QA-120 Sede 091",
+          "problems": 1
+        },
+        {
+          "id": "2d25b9b2-2427-4d17-8559-0d7584d7b4a2",
+          "name": "QA-120 Sede 112",
+          "problems": 1
+        },
+        {
+          "id": "a0000000-0000-0000-0000-000000000001",
+          "name": "Dynamic Park",
+          "problems": 0
+        },
+        {
+          "id": "76f205a2-dc67-42db-b73e-a9c899af8d9d",
+          "name": "Jumping Florida",
+          "problems": 0
+        },
+        {
+          "id": "f5615000-0000-4000-8000-000000000000",
+          "name": "PE-561.5 VOLUMEN RELEVOS (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "f5640000-0000-4000-8000-000000000000",
+          "name": "PE-564 ATRASO COTIZACIONES (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a3",
+          "name": "PE428 fixture · legacy solo Wi-Fi",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a2",
+          "name": "PE428 fixture · rotación aplicada/pendiente",
+          "problems": 0
+        },
+        {
+          "id": "f4281000-0000-4000-8000-0000000000a1",
+          "name": "PE428 fixture · rotación pendiente/fallida",
+          "problems": 0
+        },
+        {
+          "id": "f4430000-0000-4000-8000-0000000000f1",
+          "name": "PE443 fixture · dos Print Servers",
+          "problems": 0
+        },
+        {
+          "id": "f4570000-0000-4000-8000-0000000000e1",
+          "name": "PE457 fixture · correo sin verificar (solo DEV)",
+          "problems": 0
+        },
+        {
+          "id": "4906158a-bb73-4d99-989a-dbf36571fb24",
+          "name": "QA-120 Sede 001",
+          "problems": 0
+        },
+        {
+          "id": "4ae7875a-e925-4134-9fc4-393bba0e2165",
+          "name": "QA-120 Sede 002",
+          "problems": 0
+        },
+        {
+          "id": "c73327d8-9017-4c1f-b486-9ba7c30529a2",
+          "name": "QA-120 Sede 003",
+          "problems": 0
+        },
+        {
+          "id": "3adff43e-f1ca-48cf-ae26-9033739fad77",
+          "name": "QA-120 Sede 004",
+          "problems": 0
+        },
+        {
+          "id": "0f67fe1e-2706-4812-8fd6-19c1c14c1aae",
+          "name": "QA-120 Sede 005",
+          "problems": 0
+        },
+        {
+          "id": "13847247-d99f-4a77-8dfe-c52bd603ab83",
+          "name": "QA-120 Sede 006",
+          "problems": 0
+        },
+        {
+          "id": "0aff9ca0-c55f-45d3-823f-4fae6368eaa1",
+          "name": "QA-120 Sede 008",
+          "problems": 0
+        },
+        {
+          "id": "00493d6b-8d57-4729-bee6-62d8ad45d81d",
+          "name": "QA-120 Sede 009",
+          "problems": 0
+        }
+      ]
+    },
+    {
+      "request": {
+        "p_days": 14,
+        "p_venue_id": "ca9a0386-0000-4000-8000-000000000000",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "total": 1,
+      "page": 1,
+      "pages": 1,
+      "page_size": 25,
+      "rows": 1,
+      "summary": {
+        "venues": 1,
+        "problem_nights": 1,
+        "alert_recipients": 1,
+        "venues_with_problems": 1
+      },
+      "problems_total": 1,
+      "venues": [
+        {
+          "id": "ca9a0386-0000-4000-8000-000000000000",
+          "name": "CANARIO PE-386 (sede ficticia, solo DEV)",
+          "problems": 1
+        }
+      ]
+    }
+  ],
+  "searches": [
+    {
+      "request": {
+        "p_query": "Sede 117",
+        "p_limit": 20
+      },
+      "rows": 1,
+      "names": [
+        "QA-120 Sede 117"
+      ]
+    }
+  ],
+  "errors": [],
+  "criteria": {
+    "1": {
+      "searched": "Sede 117",
+      "selected": "QA-120 Sede 117",
+      "venueId": "086f4851-3e36-4209-b763-e81e4ef997a1",
+      "total": 1,
+      "rows": 1,
+      "screenshot": "criterion-1.png"
+    },
+    "2": {
+      "total": 133,
+      "rows": 25,
+      "first": "CANARIO PE-386 (sede ficticia, solo DEV)",
+      "firstProblems": 1,
+      "secondPage": 2,
+      "secondRows": 25,
+      "summary": {
+        "venues": 133,
+        "problem_nights": 9,
+        "alert_recipients": 1,
+        "venues_with_problems": 8
+      },
+      "screenshot": "criterion-2.png"
+    },
+    "3": {
+      "before": 1,
+      "afterAdd": 2,
+      "afterRemove": 1,
+      "restored": true,
+      "serverSearch": true,
+      "screenshot": "criterion-3.png"
+    }
+  },
+  "viewNight": {
+    "filtered": true,
+    "total": 1,
+    "expanded": true
+  },
+  "passed": true,
+  "finishedAt": "2026-11-03T14:07:47.587Z"
+}

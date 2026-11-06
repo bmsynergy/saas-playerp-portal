@@ -1,0 +1,32 @@
+{
+  "syntheticFaults": true,
+  "liveReadVenue": "dc07c55d-146f-4284-94b7-47be29e9324e",
+  "checks": {
+    "stale_current": {
+      "oneRequest": true,
+      "noFalseSuccess": true,
+      "reload": true
+    },
+    "platform_subdomain_unavailable": {
+      "oneRequest": true,
+      "noFalseSuccess": true,
+      "reload": true
+    },
+    "staleAvailabilityIgnored": true,
+    "currentNotError": true,
+    "prodAddressFromServerAndPendingNotLinked": true,
+    "sharedHeights": [
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "newMobileEn": true
+  },
+  "passed": true
+}

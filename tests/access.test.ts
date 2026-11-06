@@ -6,6 +6,14 @@ const access=(staff:boolean,venues:OwnerVenue[]=[],manage=staff,tenants=manage):
 const user='33333333-3333-4333-8333-333333333333';
 const venueUsers='/admin/tenants/'+owner.id+'/users';
 describe('scope routing uses backend permissions',()=>{
+  it('allows all platform staff to return to maintenance, never owners',()=>{
+    for(const path of ['/admin/maintenance','/admin/maintenance?lang=es',`/admin/tenants/${owner.id}/maintenance`,`/admin/tenants/${owner.id}/maintenance?from=2026-10-01&to=2026-11-03&status=problem&task=pos_quotes_expire&order=asc&page=2`]) {
+      expect(safeNext(path)).toBe(path);
+      expect(destination(access(true,[],false),path)).toBe(path);
+      expect(destination(access(false,[owner]),path)).toBe('/');
+    }
+    expect(safeNext('/admin/maintenance?next=https://evil.invalid')).toBeNull();
+  });
   it('keeps the global list login destination limited to platform Admin',()=>{
     const path='/admin/print-servers/list';
     expect(destination(access(true),path)).toBe(path);

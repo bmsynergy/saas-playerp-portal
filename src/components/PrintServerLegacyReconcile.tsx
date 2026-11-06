@@ -26,8 +26,8 @@ export function PrintServerLegacyReconcile({ venueId, printServerId = null }: { 
   const ctx = context.data;
   if (ctx && !needsLegacyReconciliation(ctx)) return null;
 
-  return <section id="legacy-reconcile" tabIndex={-1} className="detail-panel legacy-reconcile" aria-labelledby="legacy-reconcile-title" data-testid="legacy-reconcile">
-    <div className="section-heading"><div><p className="eyebrow">{t('legacy.eyebrow')}</p><h2 id="legacy-reconcile-title" tabIndex={-1}>{t('legacy.title')}</h2></div><span className="section-icon"><ShieldCheck size={20}/></span></div>
+  return <section id="legacy-reconcile" className="detail-panel legacy-reconcile" aria-labelledby="legacy-reconcile-title" data-testid="legacy-reconcile">
+    <div className="section-heading"><div><p className="eyebrow">{t('legacy.eyebrow')}</p><h2 id="legacy-reconcile-title">{t('legacy.title')}</h2></div><span className="section-icon"><ShieldCheck size={20}/></span></div>
     <p className="owner-section-lead">{t('legacy.lead')}</p>
     {context.isPending ? <div className="inline-empty">{t('dev.loading')}</div>
       : !ctx ? <div className="inline-empty" data-testid="legacy-context-error">{tr(t, errorKey ?? 'genericError')}</div>

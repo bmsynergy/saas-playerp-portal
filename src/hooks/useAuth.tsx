@@ -5,6 +5,7 @@ import { queryClient } from '../lib/queryClient';
 import { AUTH_STORAGE_KEY } from '../lib/config';
 import { clearVenueSelection, persist, recoveryPending, invitationPending } from '../lib/storage';
 import { clearScopes } from '../lib/access';
+import { clearDraft } from '../lib/tenantOnboarding';
 import { savePassword } from '../lib/invitation';
 import { useLocale } from '../locales';
 import { errorCode, PortalError } from '../lib/errors';
@@ -19,7 +20,7 @@ const Context = createContext<AuthState | null>(null);
 
 function clearPrivateState(clearPreferences=true) {
   void queryClient.cancelQueries(); queryClient.clear();
-  if (clearPreferences) { clearVenueSelection(); clearScopes(); }
+  if (clearPreferences) { clearVenueSelection(); clearScopes(); clearDraft(); }
 }
 export function AuthProvider({children}: {children: ReactNode}) {
   const {locale}=useLocale();

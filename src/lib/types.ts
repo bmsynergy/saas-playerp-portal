@@ -11,6 +11,6 @@ export interface PrintServerSummary {
 }
 export interface TenantDetail { venue: OwnerVenue; print_servers: PrintServerSummary[] }
 export type PlatformRole = 'super_admin' | 'support' | 'operations';
-export interface PortalAccess { is_platform_staff: boolean; can_manage_staff: boolean; can_view_tenants: boolean; platform_role: PlatformRole | null; owner_venues: OwnerVenue[] }
+export interface PortalAccess { support_staff?: boolean; is_platform_staff: boolean; can_manage_staff: boolean; can_view_tenants: boolean; platform_role: PlatformRole | null; owner_venues: OwnerVenue[] }
 export type UiError = 'invalidCredentials' | 'networkError' | 'accessDenied' | 'sessionExpired' | 'invalidLink' | 'weakPassword' | 'rateLimited' | 'passwordMismatch' | 'requiredFields' | 'invalidEmail' | 'genericError';
 export type SignalState = 'pending' | 'revoked' | 'online' | 'offline' | 'noSignal';

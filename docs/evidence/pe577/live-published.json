@@ -1,0 +1,145 @@
+{
+  "stamp": "pe577-uma-mw1h4su2",
+  "checks": {
+    "lostResponse": {
+      "request_key": "a0a524ca-911b-4f1e-8c70-e7e2fb807360",
+      "firstVenue": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+      "sameVenueOnRetry": true
+    },
+    "creation": {
+      "serverValidated": true,
+      "reservedRejected": true,
+      "invalidRejected": true,
+      "takenRejected": true,
+      "suggestion": "pe577-uma-mw1h4su2",
+      "request_key": "a0a524ca-911b-4f1e-8c70-e7e2fb807360",
+      "venue_id": "08d3d13a-8816-41f6-8fdc-811f67de40dc"
+    },
+    "environment": {
+      "base": "playerp.dev.bmore.app",
+      "current_app": "https://playerp.lovable.app",
+      "current_portal": "https://playerp.dev.bmore.app",
+      "environment": "pending_relocation",
+      "serving": "pending_verification",
+      "active": false,
+      "linkCount": 0
+    },
+    "correction": {
+      "venue_id": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+      "slug": "pe577-uma-mw1h4su2",
+      "from": "pe577-uma-mw1h4su2-address.playerp.dev.bmore.app",
+      "to": "pe577-uma-mw1h4su2-corrected.playerp.dev.bmore.app",
+      "aliases": [
+        {
+          "label": "pe577-uma-mw1h4su2-address",
+          "domain": "pe577-uma-mw1h4su2-address.playerp.dev.bmore.app",
+          "status": "pending"
+        }
+      ],
+      "confirmationNoWrite": true,
+      "oneWrite": true,
+      "persistedAfterReload": true,
+      "venueUnchanged": true,
+      "externalPrimaryUnchanged": true
+    },
+    "ui": {
+      "english": true,
+      "spanish": true,
+      "mobileWidth": 390,
+      "desktopWidth": 1440,
+      "noOverflow": true
+    }
+  },
+  "origin": "https://playerp.dev.bmore.app",
+  "passed": true,
+  "suggested": "pe577-uma-mw1h4su2",
+  "form": {
+    "platform_subdomain": "pe577-uma-mw1h4su2-address",
+    "name": "pe577-uma-mw1h4su2",
+    "slug": "pe577-uma-mw1h4su2",
+    "timezone": "America/Puerto_Rico",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "city": "",
+    "state": "",
+    "owner_email": "delivered+pe577-uma-mw1h4su2@resend.dev",
+    "owner_first_name": "Prueba",
+    "owner_last_name": "PE577 Uma",
+    "locale": "es"
+  },
+  "request_key": "a0a524ca-911b-4f1e-8c70-e7e2fb807360",
+  "create_body": {
+    "action": "create",
+    "request_key": "a0a524ca-911b-4f1e-8c70-e7e2fb807360",
+    "locale": "es",
+    "venue": {
+      "platform_subdomain": "pe577-uma-mw1h4su2-address",
+      "name": "pe577-uma-mw1h4su2",
+      "slug": "pe577-uma-mw1h4su2",
+      "timezone": "America/Puerto_Rico"
+    },
+    "owner": {
+      "email": "delivered+pe577-uma-mw1h4su2@resend.dev",
+      "first_name": "Prueba",
+      "last_name": "PE577 Uma"
+    },
+    "billing": {}
+  },
+  "firstResult": {
+    "status": "completed",
+    "attempts": 1,
+    "venue_id": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+    "retryable": false,
+    "created_at": "2026-11-04T02:04:55.776498+00:00",
+    "last_error": null,
+    "request_id": "ff610791-f6d5-4184-b93c-bdf8a8cd8f82",
+    "updated_at": "2026-11-04T02:04:58.129522+00:00",
+    "venue_name": "pe577-uma-mw1h4su2",
+    "venue_slug": "pe577-uma-mw1h4su2",
+    "owner_email": "delivered+pe577-uma-mw1h4su2@resend.dev",
+    "request_key": "a0a524ca-911b-4f1e-8c70-e7e2fb807360",
+    "owner_user_id": "2b15a29e-b8dc-47b4-b99f-2a5470438a71",
+    "invite_sent_at": "2026-11-04T02:04:58.129522+00:00",
+    "platform_domain": "pe577-uma-mw1h4su2-address.playerp.dev.bmore.app",
+    "platform_subdomain": "pe577-uma-mw1h4su2-address",
+    "owner_account_created": true,
+    "email_sent": true,
+    "email_kind": "invite"
+  },
+  "venue_id": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+  "create_status": "completed",
+  "before": {
+    "slug": "pe577-uma-mw1h4su2",
+    "aliases": [],
+    "venue_id": "08d3d13a-8816-41f6-8fdc-811f67de40dc",
+    "venue_name": "pe577-uma-mw1h4su2",
+    "environment": {
+      "base": "playerp.dev.bmore.app",
+      "base_status": "pending_relocation",
+      "environment": "dev",
+      "current_app_url": "https://playerp.lovable.app",
+      "future_portal_url": "https://portal.playerp.dev.bmore.app",
+      "current_portal_url": "https://playerp.dev.bmore.app"
+    },
+    "venue_state": {
+      "is_active": false,
+      "lifecycle": "setup_incomplete"
+    },
+    "external_domains": [],
+    "external_primary": null,
+    "platform_subdomain": {
+      "label": "pe577-uma-mw1h4su2-address",
+      "domain": "pe577-uma-mw1h4su2-address.playerp.dev.bmore.app",
+      "source": "platform_record",
+      "candidates": [],
+      "public_url": null,
+      "operational": false,
+      "address_state": "configured",
+      "serving_state": "pending_verification",
+      "environment_state": "pending_relocation"
+    },
+    "unclassified_platform_like": [],
+    "primary_is_platform_address": false
+  }
+}

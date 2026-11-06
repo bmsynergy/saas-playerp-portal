@@ -1,0 +1,270 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "at": "2026-11-03T15:31:56.256Z",
+  "mocked": false,
+  "mutations": false,
+  "errors": [],
+  "requests": [
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": null,
+        "p_days": 14,
+        "p_page": 2,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": "QA-120 Sede 117",
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_list",
+      "request": {
+        "p_query": "QA-120 Sede 045",
+        "p_days": 14,
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_runs",
+      "request": {
+        "p_venue_id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+        "p_from": null,
+        "p_to": null,
+        "p_status": null,
+        "p_task": null,
+        "p_order": "desc",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_runs",
+      "request": {
+        "p_venue_id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+        "p_from": "2026-10-05",
+        "p_to": "2026-11-03",
+        "p_status": "error",
+        "p_task": null,
+        "p_order": "desc",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_runs",
+      "request": {
+        "p_venue_id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+        "p_from": "2026-10-05",
+        "p_to": "2026-11-03",
+        "p_status": "error",
+        "p_task": null,
+        "p_order": "asc",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_runs",
+      "request": {
+        "p_venue_id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+        "p_from": "2026-10-05",
+        "p_to": "2026-11-03",
+        "p_status": "error",
+        "p_task": "pos_card_stale",
+        "p_order": "asc",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    },
+    {
+      "rpc": "portal_maintenance_venue_runs",
+      "request": {
+        "p_venue_id": "d1be4f18-f263-46c0-b4c7-2927500275a7",
+        "p_from": "2026-10-05",
+        "p_to": "2026-11-03",
+        "p_status": "error",
+        "p_task": "pos_card_stale",
+        "p_order": "asc",
+        "p_page": 1,
+        "p_page_size": 25
+      },
+      "status": 200
+    }
+  ],
+  "criteria": {
+    "1": {
+      "total": 133,
+      "page_size": 25,
+      "firstProblemNights": 2,
+      "summary": {
+        "venues": 133,
+        "problem_nights": 9,
+        "alert_recipients": 1,
+        "venues_with_problems": 8,
+        "venues_last_night_problem": 0
+      },
+      "page2": 2,
+      "search": "QA-120 Sede 117",
+      "found": {
+        "timezone": "America/Puerto_Rico",
+        "venue_id": "086f4851-3e36-4209-b763-e81e4ef997a1",
+        "last_night": {
+          "status": "success",
+          "problem": null,
+          "local_date": "2026-11-03"
+        },
+        "venue_name": "QA-120 Sede 117",
+        "today_local": "2026-11-03",
+        "problem_nights": 0,
+        "required_since": "2026-10-31T14:44:11+00:00",
+        "last_success_date": "2026-11-03"
+      },
+      "screenshot": "criterion-1-list.png"
+    },
+    "2": {
+      "url": "https://playerp.dev.bmore.app/admin/tenants/d1be4f18-f263-46c0-b4c7-2927500275a7/maintenance?from=2026-10-05&to=2026-11-03&status=error&order=asc",
+      "venue": "QA-120 Sede 045",
+      "page_size": 25,
+      "total": 14,
+      "filteredTotal": 2,
+      "task_keys": [
+        "pos_card_stale",
+        "pos_quotes_expire"
+      ],
+      "expandedNight": "2026-11-01",
+      "attempts": 2,
+      "tasks": 3,
+      "screenshot": "criterion-2-detail.png"
+    },
+    "3": {
+      "searchPointer": {
+        "element": {
+          "tag": "INPUT",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "LABEL",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": true,
+        "nav": null,
+        "tabindex": null
+      },
+      "searchKeyboard": {
+        "element": {
+          "tag": "INPUT",
+          "outlineStyle": "solid",
+          "outlineWidth": "2px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "LABEL",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": true,
+        "nav": "keyboard",
+        "tabindex": null
+      },
+      "modalTitle": {
+        "element": {
+          "tag": "H2",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "DIV",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": true,
+        "nav": null,
+        "tabindex": "-1"
+      },
+      "buttonPointer": {
+        "element": {
+          "tag": "BUTTON",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "DIV",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": true,
+        "nav": null,
+        "tabindex": null
+      },
+      "buttonKeyboard": {
+        "element": {
+          "tag": "BUTTON",
+          "outlineStyle": "solid",
+          "outlineWidth": "2px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "DIV",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": true,
+        "nav": "keyboard",
+        "tabindex": null
+      },
+      "inventoryTitle": {
+        "element": {
+          "tag": "H2",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "container": {
+          "tag": "DIV",
+          "outlineStyle": "none",
+          "outlineWidth": "3px",
+          "boxShadow": "none"
+        },
+        "focused": false,
+        "nav": null,
+        "tabindex": null
+      }
+    }
+  },
+  "ok": true
+}

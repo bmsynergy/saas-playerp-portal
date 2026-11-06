@@ -1,0 +1,96 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "at": "2026-11-03T16:11:21.983Z",
+  "mocked": false,
+  "dataMutations": false,
+  "errors": [],
+  "criterion1": [
+    {
+      "locale": "es",
+      "fixture": "timeout",
+      "url": "https://playerp.dev.bmore.app/admin/tenants/ef3eb1c3-3999-4830-a904-189c151f1635/maintenance?lang=es&from=2026-11-03&to=2026-11-03",
+      "night": "2026-11-03",
+      "visibleText": "Ver detalle técnico\nEjecución 1Vigente\n3 nov 2026, 7:00\nError\n\nFalló 1 de 2 tareas: Cotizaciones sin cobrar caducadas\n\nDuración\n8,26 s\nResueltas\n0\nVer detalle técnico\nTareas\nCobros con tarjeta a medias\npos_card_stale\nCorrecta\nDuración\n210 ms\nResueltas\n0\nCotizaciones sin cobrar caducadas\npos_quotes_expire\nError\nDuración\n8,01 s\nResueltas\nNo aplica\n\nTardó demasiado y se canceló; no cambió nada\n\nVer detalle técnico",
+      "closedTechnicalDetails": 3,
+      "filterOptions": [
+        "Todas las tareas",
+        "Cobros con tarjeta a medias",
+        "Cotizaciones sin cobrar caducadas"
+      ],
+      "screenshot": "timeout-es.png"
+    },
+    {
+      "locale": "es",
+      "fixture": "pe5673",
+      "url": "https://playerp.dev.bmore.app/admin/tenants/d1be4f18-f263-46c0-b4c7-2927500275a7/maintenance?lang=es&from=2026-11-02&to=2026-11-02",
+      "night": "2026-11-02",
+      "visibleText": "Ver detalle técnico\nEjecución 1\n2 nov 2026, 7:00\nError\n\nFalló 1 de 1 tarea: Cobros con tarjeta a medias\n\nDuración\n0 ms\nResueltas\nNo aplica\nVer detalle técnico\nTareas\nCobros con tarjeta a medias\npos_card_stale\nError\nDuración\n240 ms\nResueltas\nNo aplica\n\nError inesperado\n\nVer detalle técnico\nEjecución 2Vigente\n2 nov 2026, 7:00\nError\n\nFalló 1 de 2 tareas: Cobros con tarjeta a medias\n\nDuración\n0 ms\nResueltas\n0\nVer detalle técnico\nTareas\nCobros con tarjeta a medias\npos_card_stale\nError\nDuración\n250 ms\nResueltas\nNo aplica\n\nError inesperado\n\nVer detalle técnico\nCotizaciones sin cobrar caducadas\npos_quotes_expire\nCorrecta\nDuración\n40 ms\nResueltas\n0",
+      "closedTechnicalDetails": 5,
+      "filterOptions": [
+        "Todas las tareas",
+        "Cobros con tarjeta a medias",
+        "Cotizaciones sin cobrar caducadas"
+      ],
+      "screenshot": "pe5673-es.png"
+    },
+    {
+      "locale": "en",
+      "fixture": "timeout",
+      "url": "https://playerp.dev.bmore.app/admin/tenants/ef3eb1c3-3999-4830-a904-189c151f1635/maintenance?lang=en&from=2026-11-03&to=2026-11-03",
+      "night": "2026-11-03",
+      "visibleText": "Show technical detail\nRun 1Current\nNov 3, 2026, 7:00 AM\nError\n\n1 of 2 tasks failed: Expired unpaid quotes\n\nDuration\n8.26 s\nResolved\n0\nShow technical detail\nTasks\nHalf-finished card payments\npos_card_stale\nSuccess\nDuration\n210 ms\nResolved\n0\nExpired unpaid quotes\npos_quotes_expire\nError\nDuration\n8.01 s\nResolved\nNot applicable\n\nIt took too long and was canceled; nothing changed\n\nShow technical detail",
+      "closedTechnicalDetails": 3,
+      "filterOptions": [
+        "All tasks",
+        "Half-finished card payments",
+        "Expired unpaid quotes"
+      ],
+      "screenshot": "timeout-en.png"
+    },
+    {
+      "locale": "en",
+      "fixture": "pe5673",
+      "url": "https://playerp.dev.bmore.app/admin/tenants/d1be4f18-f263-46c0-b4c7-2927500275a7/maintenance?lang=en&from=2026-11-02&to=2026-11-02",
+      "night": "2026-11-02",
+      "visibleText": "Show technical detail\nRun 1\nNov 2, 2026, 7:00 AM\nError\n\n1 of 1 task failed: Half-finished card payments\n\nDuration\n0 ms\nResolved\nNot applicable\nShow technical detail\nTasks\nHalf-finished card payments\npos_card_stale\nError\nDuration\n240 ms\nResolved\nNot applicable\n\nUnexpected error\n\nShow technical detail\nRun 2Current\nNov 2, 2026, 7:00 AM\nError\n\n1 of 2 tasks failed: Half-finished card payments\n\nDuration\n0 ms\nResolved\n0\nShow technical detail\nTasks\nHalf-finished card payments\npos_card_stale\nError\nDuration\n250 ms\nResolved\nNot applicable\n\nUnexpected error\n\nShow technical detail\nExpired unpaid quotes\npos_quotes_expire\nSuccess\nDuration\n40 ms\nResolved\n0",
+      "closedTechnicalDetails": 5,
+      "filterOptions": [
+        "All tasks",
+        "Half-finished card payments",
+        "Expired unpaid quotes"
+      ],
+      "screenshot": "pe5673-en.png"
+    }
+  ],
+  "criterion2": [
+    {
+      "locale": "es",
+      "last_night": {
+        "status": "error",
+        "problem": "error",
+        "local_date": "2026-11-03",
+        "tasks_total": 2,
+        "failed_tasks": [
+          "pos_quotes_expire"
+        ]
+      },
+      "visibleRow": "QA-120 Sede 120\nAmerica/Puerto_Rico\nÚltima noche\nError\n3 nov 2026\nFalló 1 de 2 tareas: Cotizaciones sin cobrar caducadas\nNoches con problema en el período\n1\nÚltima noche correcta\n2 nov 2026\nAbrir sede →",
+      "screenshot": "list-es.png"
+    },
+    {
+      "locale": "en",
+      "last_night": {
+        "status": "error",
+        "problem": "error",
+        "local_date": "2026-11-03",
+        "tasks_total": 2,
+        "failed_tasks": [
+          "pos_quotes_expire"
+        ]
+      },
+      "visibleRow": "QA-120 Sede 120\nAmerica/Puerto_Rico\nLatest night\nError\nNov 3, 2026\n1 of 2 tasks failed: Expired unpaid quotes\nProblem nights in period\n1\nLast successful night\nNov 2, 2026\nOpen venue →",
+      "screenshot": "list-en.png"
+    }
+  ],
+  "ok": true
+}

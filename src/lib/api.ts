@@ -28,7 +28,7 @@ export async function getAccess(signal?: AbortSignal): Promise<PortalAccess> {
   const [data, staff] = await Promise.all([rpc('portal_access', {}, signal), rpc('is_platform_staff', {}, signal)]);
   if (!data || typeof data.is_platform_staff !== 'boolean' || !Array.isArray(data.owner_venues)) throw new PortalError('genericError');
   if (typeof staff !== 'boolean') throw new PortalError('genericError');
-  return { ...platformAccess(staff, data.is_platform_staff, data.platform_role), owner_venues: data.owner_venues.map(ownerVenue) };
+  return { ...platformAccess(staff, data.is_platform_staff, data.platform_role), support_staff: data.support_staff === true, owner_venues: data.owner_venues.map(ownerVenue) };
 }
 export async function getDirectory(signal?: AbortSignal): Promise<OwnerVenue[]> {
   const data = await rpc('portal_tenant_directory', {}, signal);
