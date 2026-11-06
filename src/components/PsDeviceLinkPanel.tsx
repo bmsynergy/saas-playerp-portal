@@ -9,11 +9,11 @@ import { useLocale } from '../locales';
 import { PsLinkFacts } from './PsLinkStateBadge';
 import { PsDevicePreparation } from './PsDevicePreparation';
 
-type Props = { link: PsDeviceLink; isStaff: boolean; canEdit: boolean; onChanged: () => Promise<unknown>; compact?: boolean; preparationEntry?: { web: {url:string;required_version:string}; ssh:{command:string;required_version:string} }; installedVersion?: string | null };
+type Props = { link: PsDeviceLink; isStaff: boolean; canEdit: boolean; onChanged: () => Promise<unknown>; compact?: boolean; hidePreparation?: boolean; preparationEntry?: { web: {url:string;required_version:string}; ssh:{command:string;required_version:string} }; installedVersion?: string | null };
 
 // PE-462: link/identity block of the device sheet (admin and owner). The friendly name is the
 // only editable field; serial and hostname are read-only.
-export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact = false, preparationEntry, installedVersion }: Props) {
+export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact = false, hidePreparation = false, preparationEntry, installedVersion }: Props) {
   const { t } = useLocale();
   const { session } = useAuth();
   const [name, setName] = useState(link.label ?? '');
@@ -21,7 +21,7 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact =
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   // Stays mounted after "Prepare" so a refresh never hides the one-time code before it is read.
   const [prepOpen] = useState(link.state === 'pendiente_preparacion');
-  const showPrep = prepOpen || link.state === 'pendiente_preparacion';
+  const showPrep = !hidePreparation && isStaff && (prepOpen || link.state === 'pendiente_preparacion');
   useEffect(() => { setName(link.label ?? ''); }, [link.device_id, link.label]);
   // "Prepare" is staff-only and offered only when the backend allows it for this unit.
   const manage = useQuery({ queryKey: ['ps-admin-device-manage', session?.user.id, link.device_id], queryFn: ({ signal }) => getAdminDeviceManage(link.device_id, signal),

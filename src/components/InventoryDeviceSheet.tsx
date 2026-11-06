@@ -8,10 +8,10 @@ import { PsLinkStateBadge } from './PsLinkStateBadge';
 import { PS_LINK_STATES, type PsLinkState } from '../lib/psLink';
 import './InventoryDeviceSheet.css';
 
-type Props = { sheet: AdminDeviceSheet; compact?: boolean };
+type Props = { sheet: AdminDeviceSheet; compact?: boolean; hideLabel?: boolean };
 type Item = { key: string; primary: string; secondary?: string | null; date?: string | null; facts?: (string | null | undefined)[] };
 
-export function InventoryDeviceSheet({ sheet, compact = false }: Props) {
+export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false }: Props) {
   const { t, locale } = useLocale();
   const [showPsk, setShowPsk] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -113,7 +113,7 @@ export function InventoryDeviceSheet({ sheet, compact = false }: Props) {
       </dl>
       {sheet.credentials.pending_change && <p className="stock-sheet-lead">{t('stockSheet.pendingHidden')}</p>}
     </section>
-    <section className="stock-sheet-section" aria-labelledby="stock-label"><h2 id="stock-label">{t('stockSheet.label')}</h2>
+    {!hideLabel && <section className="stock-sheet-section" aria-labelledby="stock-label"><h2 id="stock-label">{t('stockSheet.label')}</h2>
       {label ? <><p className="stock-sheet-lead">{t('dev.label.lead')} {t('dev.label.printHint')}</p><div className="staff-actions dev-label-actions">
         <button type="button" className="button button-secondary" disabled={busy} onClick={() => void labelAction('preview')}><Eye size={15}/>{t('stockSheet.preview')}</button>
         <button type="button" className="button button-secondary" disabled={busy} onClick={() => void labelAction('download')}><Download size={15}/>{t('stockSheet.download')}</button>
@@ -121,7 +121,7 @@ export function InventoryDeviceSheet({ sheet, compact = false }: Props) {
       </div></> : <p className="stock-sheet-empty">{sheet.label.missing.length ? sheet.label.missing.map(reason).join(' ') : t('stockSheet.labelUnavailable')}</p>}
       {busy && <p role="status">{t('ps.working')}</p>}{labelError && <p role="alert">{t('stockSheet.labelError')}</p>}
       {preview && preview.identity === labelIdentity && label && <figure className="dev-label-preview"><img src={preview.url} alt={t('dev.label.previewAlt')} width={590} height={354}/><figcaption>{t('dev.label.printHint')}</figcaption><button type="button" className="button button-secondary" onClick={() => setPreview(null)}><EyeOff size={15}/>{t('stockSheet.hidePreview')}</button></figure>}
-    </section>
+    </section>}
     <div className="stock-sheet-grid">
       {historySection('printers', 'stockSheet.printers', printers, sheet.printers.reason)}
       {historySection('scans', 'stockSheet.scans', scans, sheet.scans.reason)}

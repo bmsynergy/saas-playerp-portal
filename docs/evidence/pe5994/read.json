@@ -1,0 +1,19 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "device": "87767ba2-7f02-4edb-9684-0cb0c6bee7dc",
+  "kind": "Real DEV backend, piece 1 simulated device; read-only UI",
+  "views": [
+    {
+      "width": 390,
+      "state": "Asignado a un local\nPrepara el correo de entrega tras la asignación.",
+      "path": "/admin/print-servers/devices/87767ba2-7f02-4edb-9684-0cb0c6bee7dc"
+    },
+    {
+      "width": 1440,
+      "state": "Asignado a un local\nPrepara el correo de entrega tras la asignación.",
+      "path": "/admin/print-servers/devices/87767ba2-7f02-4edb-9684-0cb0c6bee7dc"
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

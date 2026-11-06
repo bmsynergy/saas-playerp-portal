@@ -21,7 +21,9 @@ import { PrintServersListPage } from './pages/PrintServersListPage';
 import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
 import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
+import { getStockStatus } from './lib/psStock';
 import { PsDeviceSetup } from './components/PsDeviceSetup';
+import { PsStockPreparation } from './components/PsStockPreparation';
 import { DeviceAdminSummary } from './components/DeviceAdminSummary';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
@@ -471,6 +473,11 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   // PE-486: Setup only for platform super_admin in the admin scope; owners never read access for it.
   const access=useAccess(staff);
   const setup=staff&&canManageRings(access.data);
+  const {session}=useAuth();
+  const stock=useQuery({queryKey:['ps-stock-status',session?.user.id,device.device_id],queryFn:()=>getStockStatus(device.device_id),enabled:setup,retry:false,gcTime:0,refetchInterval:15_000});
+  // Existing prepared inventory is outside this migration. Legacy label stays available only after a positive server read.
+  const existingPrepared=setup&&!stock.isError&&!!stock.data&&stock.data.stock.file===null&&device.link.prepared;
+  const hideOldLabel=staff&&!existingPrepared;
   const [confirm,setConfirm]=useState<{deviceId:string;rev:number;venueName:string}|null>(null);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
@@ -516,7 +523,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
     {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
     {notice&&<p className="staff-notice" role="status">{notice}</p>}
-    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{!device.link.prepared&&<a href="#ps469-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}{setup&&<a href="#ps-setup">{t('psSetup.nav')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
+    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{setup&&!device.link.prepared&&<a href="#ps-stock-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}{setup&&<a href={existingPrepared?"#ps-setup":"#ps-stock-preparation"}>{t('psSetup.nav')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
     <section id="ps469-overview" className="ps469-overview" aria-label={t('ps469.summary')}>
       <div className="ps469-sync" data-testid="ps-link-sync"><strong>{sync?.confirmed?t(sync.scope==='unlinked'?'ps469.unlinkConfirmed':'ps469.syncConfirmed'):venue?t('ps469.syncPending'):t('ps469.stock')}</strong>
         {venue&&!sync?.confirmed&&<p>{ack.supported===false?t('ps469.compatNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',ack.required_version):t('ps469.waitAck')}{available&&` ${t('ps469.available')}: ${available}.`}</p>}
@@ -525,21 +532,21 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
         {!venue&&runtime&&sync&&!sync.confirmed&&<p>{unlinkAck.supported===false?t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version):t('ps469.waitAck')}</p>}
       </div>
       <section className="detail-panel ps469-compat" id={staff&&runtime&&venue?'ps469-compat':'ps469-firmware'} aria-labelledby="ps469-compat-title"><h2 id="ps469-compat-title">{t('ps469.compatibility')}</h2><dl className="dev-facts">{(!staff||!runtime||!venue)&&<div><dt>{t('ps469.installed')}</dt><dd className="ps-mono">{device.compat.installed_version??t('dash.unknownVersion')}</dd></div>}<div><dt>{t('ps469.requiredLinkAck')}</dt><dd className="ps-mono">{ack.required_version}</dd></div><div><dt>{t('ps469.requiredWeb')}</dt><dd className="ps-mono">{device.compat.capabilities.web_activation.required_version}</dd></div></dl><p className="ps-cert-small">{available?`${t('ps469.available')}: ${available}.`:t('ps469.noAvailable')}</p></section>
-      <PsDeviceLinkPanel key={device.device_id} link={device.link} isStaff={staff} canEdit={device.capabilities.set_label.allowed} compact preparationEntry={device.preparation_entry} installedVersion={device.compat.installed_version} onChanged={onChanged}/>
+      <PsDeviceLinkPanel key={device.device_id} link={device.link} isStaff={staff} hidePreparation canEdit={device.capabilities.set_label.allowed} compact preparationEntry={device.preparation_entry} installedVersion={device.compat.installed_version} onChanged={onChanged}/>
       {!venue&&staff&&<section className="detail-panel ps469-assign"><h2>{t('ps469.assignTitle')}</h2><p>{t('ps469.assignLead')}</p><div className="ps469-assign-controls"><VenueCombobox value={assignVenue} onChange={setAssignVenue} disabled={busy||!device.capabilities.assign.allowed} testId="ps469-assign-venue"/><button type="button" className="button button-primary" data-testid="ps469-assign" disabled={!assignVenue||busy||!device.capabilities.assign.allowed} onClick={()=>void assign()}>{t('inv.assign')}</button></div></section>}
       {venue&&staff&&<div className="detail-panel ps469-unlink"><h2>{t('ps469.unlinkTitle')}</h2><p>{t('ps469.unlinkLead')}</p><button type="button" className="button button-secondary ps-danger" data-testid="ps-unlink" disabled={!unlinkAllowed||busy} onClick={()=>setConfirm({deviceId:device.device_id,rev:device.capabilities.unlink.expected_rev!,venueName:venue.name})}><Unlink size={16}/>{t('ps469.unlink')}</button>
         {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):t('ps469.unlinkForbidden')}</p>}
         {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
     </section>
-    {setup&&<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>}
+    {setup&&(existingPrepared?<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>:<PsStockPreparation key={`stock:${device.device_id}`} deviceId={device.device_id} onChanged={onChanged}/>)}
     {/* PE-486: a new unit has no venue yet, so the existing firmware block (channel + eligible editions) is reused here. */}
     {setup&&runtime&&!venue&&<div id="ps-setup-firmware"><DeviceAdminSummary key={`fw:${device.device_id}`} deviceId={device.device_id}/></div>}
-    {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id}/>:null}
-    {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage}/></div>}
+    {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id} hideLabel={hideOldLabel}/>:null}
+    {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage} hideRecoveryLabel={hideOldLabel}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}
   </div>;
 }
-function InventoryDeviceSheetData({deviceId}:{deviceId:string}) {
+function InventoryDeviceSheetData({deviceId,hideLabel}:{deviceId:string;hideLabel:boolean}) {
   const {session}=useAuth(); const {t}=useLocale();
   const sheet=useQuery({queryKey:['ps-admin-device-sheet',session?.user.id,deviceId],
     queryFn:({signal})=>getAdminDeviceSheet(deviceId,signal),retry:false,gcTime:0,staleTime:0});
@@ -547,9 +554,9 @@ function InventoryDeviceSheetData({deviceId}:{deviceId:string}) {
   // Never retain an old credential view after a denied refresh.
   if(sheet.isError)return <StateView kind={psErrorKey(sheet.error)==='accessDenied'?'denied':'error'} onRetry={()=>void sheet.refetch()}/>;
   if(!sheet.data||sheet.isFetching)return <StateView kind="loading"/>;
-  return <div data-testid="ps-inventory-sheet"><InventoryDeviceSheet key={deviceId} sheet={sheet.data} compact/></div>;
+  return <div data-testid="ps-inventory-sheet"><InventoryDeviceSheet key={deviceId} sheet={sheet.data} compact hideLabel={hideLabel}/></div>;
 }
-function PrintServerSheetData({deviceId,printServerId,venueId,venueName,scope,back,canManage}:{deviceId:string;printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean}) {
+function PrintServerSheetData({deviceId,printServerId,venueId,venueName,scope,back,canManage,hideRecoveryLabel}:{deviceId:string;printServerId:string;venueId:string;venueName:string;scope:'owner'|'admin';back:{href:string;label:string};canManage:boolean;hideRecoveryLabel:boolean}) {
   const {session}=useAuth(); const {t}=useLocale();
   const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId,printServerId],
     queryFn:({signal})=>getPanelState(venueId,signal,scope,printServerId),refetchInterval:10_000});
@@ -559,7 +566,7 @@ function PrintServerSheetData({deviceId,printServerId,venueId,venueName,scope,ba
   if(state.error&&psErrorKey(state.error)==='accessDenied')return <StateView kind="denied"/>;
   if(state.error&&psErrorKey(state.error)==='sessionExpired')return <StateView kind="loading"/>;
   const refresh=()=>invalidatePsViews(queryClient);
-  if(state.data)return <PrintServerDetailPage scope={scope} embedded deviceId={deviceId} printServerId={printServerId} replaceTargets={[]}
+  if(state.data)return <PrintServerDetailPage scope={scope} hideRecoveryLabel={hideRecoveryLabel} embedded deviceId={deviceId} printServerId={printServerId} replaceTargets={[]}
     venue={{venue_id:venueId,venue_name:venueName,venue_slug:null,venue_is_active:null}}
     state={state.data} api={api} stale={state.isError} refresh={refresh}/>;
   if(state.isError)return <StateView kind="error" onRetry={()=>void state.refetch()}/>;

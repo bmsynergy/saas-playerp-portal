@@ -19,7 +19,7 @@ import { matchesUtcDay } from '../lib/adminLists';
 type Venue = Pick<FleetRow, 'venue_id' | 'venue_name' | 'venue_slug' | 'venue_is_active'>;
 // PE-443: printServerId binds the sheet to ONE device of the venue (the api passed in is bound too).
 type ReplaceTarget = { print_server_id: string; name: string; label: string | null };
-type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin';
+type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin'; hideRecoveryLabel?: boolean;
   printServerId?: string | null; deviceId?: string; backHref?: string; backLabel?: string; replaceTargets?: ReplaceTarget[] };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
 type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
@@ -34,7 +34,7 @@ function Item({ icon, label, children, testId }: { icon: ReactNode; label: strin
   return <div className="detail-item"><span className="detail-item-icon" aria-hidden="true">{icon}</span><div><span className="detail-item-label">{label}</span><strong data-testid={testId}>{children}</strong></div></div>;
 }
 
-export function PrintServerDetailPage({ venue, state: rawState, api, refresh, stale = false, embedded = false, scope = 'admin', printServerId = null, deviceId, backHref, backLabel, replaceTargets = [] }: Props) {
+export function PrintServerDetailPage({ venue, state: rawState, api, refresh, stale = false, embedded = false, scope = 'admin', hideRecoveryLabel = false, printServerId = null, deviceId, backHref, backLabel, replaceTargets = [] }: Props) {
   const { locale, t } = useLocale();
   // Only this device's printers: anything explicitly bound to another PS of the venue is left out.
   const state = printServerId ? { ...rawState, printers: rawState.printers.filter(printer => !printer.print_server_id || printer.print_server_id === printServerId) } : rawState;
@@ -318,7 +318,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     {scope === 'owner' && <PrintServerOtaBlock venueId={venueId} printServerId={sheetPsId}/>}
 
-    <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} deviceId={deviceId} adminScope={scope === 'admin'} compact={embedded} caContent={caContent}/>
+    <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} deviceId={deviceId} adminScope={scope === 'admin'} hideRecoveryLabel={hideRecoveryLabel} compact={embedded} caContent={caContent}/>
 
     <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <div className="detail-grid">
