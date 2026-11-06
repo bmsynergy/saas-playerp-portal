@@ -62,6 +62,13 @@ try{
  const storage=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));assert(!storage.includes(file.enrollment.code)&&!storage.includes(file.maintenance.admin_code)&&!storage.includes(file.setup_wifi.psk));record('No device secrets in browser persistent storage');
  report.url=page.url();report.imageAvailable=await page.getByTestId('ps-stock-download-image').count()>0;
  record('Image availability comes from compatible DEV catalogue',{available:report.imageAvailable});
+ const owner=await login(accounts.owner_uno);
+ try {
+  for(const name of ['ps_admin_stock_status','ps_admin_stock_label']){const denied=await rpc(name,{p_device_id:report.deviceId},owner.access_token);assert(denied.status===403||denied.data.error==='forbidden',name+' owner forbidden');}
+  const denied=await fetch(api+'/functions/v1/ps-firmware-admin',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+owner.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'delivery_email',id:report.deviceId,to:'delivered+pe5994-portal@resend.dev'})});assert.equal(denied.status,403);
+  record('Server rejects tenant owner for stock state, label and delivery email');
+ }finally{await fetch(api+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+owner.access_token}});}
+
  assert.deepEqual(report.errors,[]);report.pass=true;
 }catch(e){report.pass=false;report.failure=String(e.message).replace(/pse_[a-zA-Z0-9]+|pst_[a-zA-Z0-9]+/g,'[redacted]');throw e;}
 finally{await writeFile(out+'/live.json',JSON.stringify(report,null,2));await browser.close();await fetch(api+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+session.access_token}});console.log(JSON.stringify({...report,errors:report.errors.length}));}
