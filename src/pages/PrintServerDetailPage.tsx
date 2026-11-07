@@ -316,9 +316,9 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     {scope === 'admin' && <PrintServerLegacyReconcile venueId={venueId} printServerId={sheetPsId}/>}
 
-    {scope === 'owner' && <PrintServerOtaBlock venueId={venueId} printServerId={sheetPsId}/>}
 
     <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} deviceId={deviceId} adminScope={scope === 'admin'} hideRecoveryLabel={hideRecoveryLabel} compact={embedded} caContent={caContent}/>
+    {scope === 'owner' && <div id="ps469-firmware"><PrintServerOtaBlock venueId={venueId} printServerId={sheetPsId}/></div>}
 
 
 

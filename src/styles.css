@@ -790,3 +790,8 @@ html:not([data-nav="keyboard"]) :focus { outline: none !important; }
 .ps600-printers-group > .staff-panel:not(:first-child) { border-color: var(--line); }
 .ps600-printers-group h3 { font-size: 1rem; line-height: 1.3; }
 .ps600-network #ps469-certificates:target { outline: 2px solid var(--blue); outline-offset: 2px; }
+/* Printer tools share one section instead of competing with the six main sections. */
+.ps469-sheet .ps600-printers-group { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+.ps469-sheet .ps600-printers-group > .staff-panel { padding: 0; border: 0; box-shadow: none; }
+.ps469-sheet .ps600-printers-group > .staff-panel + .staff-panel { padding-top: 20px; border-top: 1px solid var(--line); }
+@media (max-width: 760px) { .ps469-sheet .ps600-printers-group { padding: 18px; } }

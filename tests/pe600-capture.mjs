@@ -17,13 +17,15 @@ try{const session=await login();for(const width of [1440,390]){
   await expect(page.getByTestId('ps-setup-limits')).toHaveCount(0);
   for(const step of ['download','flash','boot'])await expect(page.getByTestId('ps-setup-step-'+step)).toHaveAttribute('data-state','manual');
   await expect(page.getByTestId('dev-rotations-details')).not.toHaveAttribute('open');
+  await expect(page.getByTestId('dev-label-replacement-ready')).toHaveCount(1);
+  await expect(page.locator('#ps469-diagnostics details')).not.toHaveAttribute('open');
   await expect(page.getByTestId('ps-unlink')).toBeDisabled();
   await expect(page.locator('.ps469-unlink')).toContainText('Este equipo heredado no se puede desvincular.');
   await expect(page.locator('.ps469-unlink')).not.toContainText('permiso');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),'no horizontal overflow');
  }
  await page.screenshot({path:`${out}/${phase}-${width}.png`,fullPage:true});
- report.views.push({width,scroll:await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})),nav:await page.locator('.ps469-sections').innerText(),protection});
+ report.views.push({width,assets:await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('src'))),scroll:await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})),nav:await page.locator('.ps469-sections').innerText(),protection});
  if(phase==='after'){
   await page.goto(origin+'/admin/print-servers/devices/'+realId+'#ps469-certificates');
   await expect(page.locator('#ps469-certificates')).toHaveAttribute('open','');

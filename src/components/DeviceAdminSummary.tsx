@@ -39,7 +39,7 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
   const canUpdate = !!(target && update?.current_version && !update.active_update && !detail.isError && !detail.isFetching && update.can_update && !!selected);
   const stillCurrent = !!(confirm && canUpdate && target?.edition_id === confirm.editionId && target.version === confirm.version && update?.current_version === confirm.installed && update.effective_ring === confirm.ring);
   const status = firmwareStatus(update ? {...update, newer_blocked: ota?.newer_blocked} : null, detail.isError);
-  const statusText = t(`ps600.firmware.${status}`) + (status === 'unknown' ? ` (${update?.reason ?? 'unknown'})` : status === 'gated' ? ` (${ota?.newer_blocked?.detail ?? update?.reason})` : '');
+  const statusText = t(`ps600.firmware.${status}`) + (status === 'unknown' ? ` (${[update?.reason ?? 'unknown', ota?.newer_blocked?.detail].filter(Boolean).join(': ')})` : status === 'gated' ? ` (${ota?.newer_blocked?.detail ?? update?.reason})` : '');
   const serial = detail.data?.device.serial ?? '';
   const ringLabel = (ring: string | null) => ring ? t(`firmware.ring.${ring}`) : t('notProvided');
   const pickTarget = (u: AdminDeviceDetail['update'] | undefined) => {

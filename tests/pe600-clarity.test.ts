@@ -16,6 +16,8 @@ describe('PE-600 contract presentation',()=>{
   [{reason:'up_to_date',newest_signed:{version:'0.3.27'}},false,'up_to_date'],
   [{reason:'up_to_date',newest_signed:null},false,'none_offered'],
   [{reason:'future_reason',update_available:true},false,'unknown'],
+  [{reason:'newer_not_enabled',newer_blocked:{detail:'future_gate'}},false,'unknown'],
+  [{reason:'newer_not_enabled',newer_blocked:null},false,'unknown'],
  ] as const)('classifies %j / load error %s as %s',(u,failed,state)=>expect(firmwareStatus(u,failed)).toBe(state));
  it('does not infer status from counts or merely newer_blocked',()=>{
   for(const editions_total of [0,1,99])for(const newer_blocked of [null,{detail:'ring_disabled'}]){

@@ -5,7 +5,11 @@ export function firmwareStatus(update: Input | null | undefined, loadFailed = fa
   if (loadFailed || !update) return 'load_failed';
   switch (update.reason) {
     case null: return update.update_available === true ? 'update_available' : 'unknown';
-    case 'newer_not_enabled': return update.newer_blocked?.detail === 'ring_disabled' ? 'channel_restricted' : 'gated';
+    case 'newer_not_enabled': {
+      const detail = update.newer_blocked?.detail;
+      if (detail === 'ring_disabled') return 'channel_restricted';
+      return detail && ['edition_lab_only', 'lab_build', 'canary_not_confirmed', 'edition_not_signed', 'release_not_ready', 'canary_required', 'lab_required'].includes(detail) ? 'gated' : 'unknown';
+    }
     case 'newer_incompatible': return 'incompatible_newer';
     case 'up_to_date': return update.newest_signed ? 'up_to_date' : 'none_offered';
     default: return 'unknown';
