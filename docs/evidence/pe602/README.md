@@ -11,3 +11,5 @@ Reproduce browser check with `node tests/pe602-browser.mjs` against local Vite o
 Gaby independently reviewed the diff read-only in this session. The link issue was corrected to canonical PS resolution; a null PS shows “No Print Server”, remains `other_ps` per backend contract, and never offers moving. Gaby rechecked and reported no remaining findings. Primary integration review additionally clears cached scan results after successful movement.
 
 Physical printing at 100% and QR reading with a camera remain for Beny.
+
+Published DEV check completed successfully on 2026-11-07 against implementation commit `c549c593a15b4ac35b1153011403e1914f0f0512`: `published/report.json` has `pass:true`, no browser errors or unexpected requests. The PNG headers, sizes, pHYs and decoded payloads were checked from real browser downloads on all three surfaces. Published captures include assignment pending/synchronized and EN/ES form/scan at mobile/desktop sizes. This evidence-only commit does not change the tested application source.
