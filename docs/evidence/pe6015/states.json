@@ -1,0 +1,28 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "checks": [
+    {
+      "scenario": "confirmed",
+      "pass": true,
+      "kind": "real DEV simulated-device fixture"
+    },
+    {
+      "scenario": "denied-reservation",
+      "pass": true,
+      "kind": "synthetic RPC denial on published UI"
+    },
+    {
+      "role": "owner_varios",
+      "adminUiDenied": true,
+      "result": "redirect to owner home",
+      "reservationsAbsent": true
+    },
+    {
+      "role": "venue_frontdesk",
+      "adminUiDenied": true,
+      "result": "access denied",
+      "reservationsAbsent": true
+    }
+  ],
+  "pass": true
+}
