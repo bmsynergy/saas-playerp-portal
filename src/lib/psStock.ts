@@ -67,3 +67,30 @@ function emailResult(data:Raw):DeliveryEmailResult {
 }
 export async function previewDeliveryEmail(id:string,to:string,locale:string):Promise<DeliveryEmailResult>{return emailResult(await post({action:'delivery_email',id,to,locale}));}
 export async function sendDeliveryEmail(id:string,to:string,locale:string,serial:string):Promise<DeliveryEmailResult>{return emailResult(await post({action:'delivery_email',id,to,locale,send:true,confirm_serial:serial}));}
+
+export type StockReservedCredentials = {
+  device_id:string; serial:string; status:'reserved_pending_confirmation'|'confirmed_by_device';
+  confirmed_by_device:boolean; state:StockState; next_step:string|null; label_ready:boolean;
+  reserved:{ssid:string;psk:string;admin_code:string};
+  confirmed_at:{wifi:string;admin_code:string}|null;
+  file:{file_id:string;sha256:string;issued_at:string;expires_at:string};
+};
+export function projectStockReservedCredentials(value:unknown,id:string):StockReservedCredentials {
+  const d=checked(value);
+  const confirmed=d.status==='confirmed_by_device';
+  const text=(v:unknown):v is string=>typeof v==='string'&&v.length>0&&!/pse_|pst_|-----BEGIN .*PRIVATE KEY/.test(v);
+  if(d.device_id!==id||!text(d.serial)||!['reserved_pending_confirmation','confirmed_by_device'].includes(d.status)
+    ||d.confirmed_by_device!==confirmed||!states.includes(d.state)||typeof d.label_ready!=='boolean'
+    ||(!confirmed&&d.label_ready)||!(d.next_step===null||text(d.next_step))
+    ||!d.reserved||!['ssid','psk','admin_code'].every(k=>text(d.reserved[k]))
+    ||!d.file||!['file_id','sha256','issued_at','expires_at'].every(k=>text(d.file[k]))
+    ||(confirmed?(!d.confirmed_at||!text(d.confirmed_at.wifi)||!text(d.confirmed_at.admin_code)):d.confirmed_at!==null))throw new PortalError('genericError');
+  // Only human-facing setup credentials cross this boundary. Never retain a raw RPC response.
+  return {device_id:id,serial:d.serial,status:d.status,confirmed_by_device:confirmed,state:d.state,next_step:d.next_step,label_ready:d.label_ready,
+    reserved:{ssid:d.reserved.ssid,psk:d.reserved.psk,admin_code:d.reserved.admin_code},
+    confirmed_at:confirmed?{wifi:d.confirmed_at.wifi,admin_code:d.confirmed_at.admin_code}:null,
+    file:{file_id:d.file.file_id,sha256:d.file.sha256,issued_at:d.file.issued_at,expires_at:d.file.expires_at}};
+}
+export async function getStockReservedCredentials(id:string):Promise<StockReservedCredentials>{
+  return projectStockReservedCredentials(await rpc('ps_admin_stock_reserved_credentials',id),id);
+}

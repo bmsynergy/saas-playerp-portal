@@ -1,0 +1,94 @@
+{
+  "at": "2026-11-07T01:00:44.956Z",
+  "environment": "https://fzwzmwstxlsxdzdmphyq.supabase.co",
+  "fixture": {
+    "id": "72e06b4f-a63e-49e9-bd06-f02b8a9186a1",
+    "serial": "PS-CUHBV6EJ",
+    "state": "file_issued",
+    "label_ready": false,
+    "venue_id": null,
+    "file": {
+      "bytes": 864,
+      "sha256": "319ccd0a5359f624e2506f91a22f153c9652dbe3810dfcef8c9475a371d0bb95",
+      "file_id": "da283134-4d4b-4692-a9cf-e93a0f6d9a89",
+      "issued_at": "2026-11-07T00:23:36.707935+00:00",
+      "expires_at": "2026-12-07T00:23:36.707935+00:00",
+      "instance_id": "playerp-ps-cuhbv6ej-da2831344d4b",
+      "superseded_at": null,
+      "consumed_by_device": false
+    }
+  },
+  "permissions": [
+    {
+      "role": "owner_varios",
+      "rpc": "ps_admin_stock_reserved_credentials",
+      "http": 200,
+      "error": "forbidden"
+    },
+    {
+      "role": "owner_varios",
+      "rpc": "ps_admin_stock_status",
+      "http": 200,
+      "error": "forbidden"
+    },
+    {
+      "role": "owner_varios",
+      "rpc": "ps_admin_stock_label",
+      "http": 200,
+      "error": "forbidden"
+    },
+    {
+      "role": "venue_frontdesk",
+      "rpc": "ps_admin_stock_reserved_credentials",
+      "http": 200,
+      "error": "forbidden"
+    },
+    {
+      "role": "venue_frontdesk",
+      "rpc": "ps_admin_stock_status",
+      "http": 200,
+      "error": "forbidden"
+    },
+    {
+      "role": "venue_frontdesk",
+      "rpc": "ps_admin_stock_label",
+      "http": 200,
+      "error": "forbidden"
+    }
+  ],
+  "hardware": "not validated",
+  "beny": {
+    "id": "34fd3ff8-f558-4d39-a805-834264d8f6bc",
+    "serial": "PS-5EASG93M",
+    "state": "file_issued",
+    "label_ready": false,
+    "venue_id": null,
+    "file": {
+      "bytes": 862,
+      "sha256": "2ef0885f5c6005be7ac5f40829663a7261f594343f2fc6ddf3e71097805a7a27",
+      "file_id": "006ff192-9079-4dbe-8b30-8a7b32236033",
+      "issued_at": "2026-11-06T23:28:08.47247+00:00",
+      "expires_at": "2026-12-06T23:28:08.47247+00:00",
+      "instance_id": "playerp-ps-5easg93m-006ff1929079",
+      "superseded_at": null,
+      "consumed_by_device": false
+    }
+  },
+  "reservations": {
+    "status": "reserved_pending_confirmation",
+    "confirmed_at": null,
+    "label_ready": false,
+    "repeatMatches": true,
+    "technicalSecretsAbsent": true
+  },
+  "labelDenied": "device_not_confirmed",
+  "image": {
+    "id": "b1cb8a2f-53bf-48c0-9df4-e43516bd5917",
+    "file_name": "playerp-ps-image-0.3.28-dev.img.xz",
+    "sha256": "e4f702c8d57c656e1e6195bfcc45fbc889f1192c12da6dbf85dd3074d4381e0e",
+    "bytes": 615589060,
+    "release_id": "fa97a02b-8503-4e39-8a17-822e796e01e4",
+    "profile": "dev"
+  },
+  "pass": true
+}

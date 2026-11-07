@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Download, Mail, Printer, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Check, Copy, Download, Mail, Printer, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { errorCode } from '../lib/errors';
 import { getFirmwares, getInstallKitDownload, listInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
-import { downloadStockFile, getStockLabel, getStockStatus, previewDeliveryEmail, sendDeliveryEmail, type StockLabel, type DeliveryEmailResult } from '../lib/psStock';
+import { downloadStockFile, getStockLabel, getStockReservedCredentials, getStockStatus, previewDeliveryEmail, sendDeliveryEmail, type StockLabel, type DeliveryEmailResult } from '../lib/psStock';
 import { useLocale, type Locale } from '../locales';
 import './PsStockPreparation.css';
 
@@ -18,7 +18,7 @@ const versionAtLeast = (version: string): boolean => {
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
   if (!match) return false;
   const [major, minor, patch] = match.slice(1).map(Number);
-  return major > 0 || minor > 3 || (minor === 3 && patch >= 27);
+  return major > 0 || minor > 3 || (minor === 3 && patch >= 28);
 };
 
 // Kit metadata must explicitly match this device. An untagged generic kit is not assumed compatible.
@@ -65,19 +65,36 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
   const [preview, setPreview] = useState<DeliveryEmailResult | null>(null);
   const [previewKey, setPreviewKey] = useState('');
   const [serialConfirmation, setSerialConfirmation] = useState('');
+  const [copied, setCopied] = useState<'ssid' | 'psk' | 'admin_code' | null>(null);
   const data = status.isError ? null : status.data;
   const stock = data?.stock;
+  const reservation = useQuery({
+    queryKey: ['ps-stock-reservation', session?.user.id, deviceId, stock?.file?.file_id],
+    queryFn: () => getStockReservedCredentials(deviceId),
+    enabled: !!session && !!stock?.file?.file_id && !status.isError,
+    refetchInterval: 15_000,
+    refetchOnMount: 'always',
+    retry: false,
+    gcTime: 0,
+  });
+  const reserved = !reservation.isError && !stock?.checks.credentials_confirmed_by_device && reservation.data?.file?.file_id === stock?.file?.file_id && reservation.data?.status === 'reserved_pending_confirmation' ? reservation.data : null;
   const image = data && firmwares.data?.complete ? matchingImage(kits.data ?? [], firmwares.data.releases, data.model, data.arch) : null;
   const key = data ? `${data.device_id}|${data.serial}|${data.venue_id}|${stock?.state}|${to.trim()}|${emailLocale}` : '';
   const canFile = !!stock && !data?.legacy && ['not_prepared', 'file_issued', 'file_expired', 'file_invalid'].includes(stock.state) && !data?.venue_id;
-  const canLabel = !!stock?.label_ready && ['validated_in_stock', 'validated_assigned'].includes(stock.state);
+  const canLabel = !!stock?.label_ready && !!stock.checks.credentials_confirmed_by_device && ['validated_in_stock', 'validated_assigned'].includes(stock.state);
   const canEmail = stock?.state === 'validated_assigned';
 
-  useEffect(() => { setLabel(null); setPreview(null); setPreviewKey(''); setSha(''); setReplaceFile(false); }, [deviceId]);
+  useEffect(() => { setLabel(null); setPreview(null); setPreviewKey(''); setSha(''); setReplaceFile(false); setCopied(null); }, [deviceId]);
   useEffect(() => { setLabel(null); }, [stock?.reported.last_status_at, stock?.state, canLabel]);
   useEffect(() => { if (!canEmail || previewKey !== key) setPreview(null); }, [canEmail, key, previewKey]);
 
-  async function refresh() { setError(''); setNotice(''); setLabel(null); setPreview(null); await status.refetch(); }
+  async function refresh() { setError(''); setNotice(''); setLabel(null); setPreview(null); await status.refetch(); if (stock?.file) await reservation.refetch(); }
+  async function copyReserved(field: 'ssid' | 'psk' | 'admin_code', value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(field);
+    } catch { setCopied(null); setError(t('psStock.reserved.copyError')); }
+  }
   async function issueFile() {
     if (!canFile || busy || (stock?.file && !replaceFile)) return;
     setBusy('file'); setError(''); setNotice(''); setSha('');
@@ -157,13 +174,27 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
         <h3>{t('psStock.fileTitle')}</h3>
         <p>{t(data.legacy ? 'adminDevice.error.legacy_device' : 'psStock.fileLead')}</p>
         {stock.file?.sha256 && <p className="ps-mono ps-stock-hash">SHA-256 {stock.file.sha256}</p>}
-        {sha && <p className="ps-mono ps-stock-hash" role="status">SHA-256 {sha}</p>}
+        {sha && sha !== stock.file?.sha256 && <p className="ps-mono ps-stock-hash" role="status">SHA-256 {sha}</p>}
         {canFile && <>{stock.file && <label className="ps-stock-confirm"><input type="checkbox" checked={replaceFile} onChange={e => setReplaceFile(e.target.checked)}/>{t('psStock.replaceFile')}</label>}<button type="button" className="button button-primary" data-testid="ps-stock-download-file" onClick={() => void issueFile()} disabled={!!busy || (!!stock.file && !replaceFile)}><Download size={15}/>{t('psStock.downloadFile')}</button></>}
       </div>
+      {stock.file && !stock.checks.credentials_confirmed_by_device && (reservation.isLoading || reservation.isError || reserved) && <div className="ps-stock-block ps-stock-reserved" data-testid="ps-stock-reserved">
+        <div className="ps-stock-reserved-heading"><h3>{t('psStock.reserved.title')}</h3>{reserved && <span className="ps-stock-reserved-badge">{t('psStock.reserved.pending')}</span>}</div>
+        {reservation.isLoading && <p role="status">{t('psStock.reserved.loading')}</p>}
+        {reservation.isError && <p role="alert" className="form-error">{t('psStock.reserved.error')}</p>}
+        {reserved && <><p>{t('psStock.reserved.lead')}</p>
+          <dl className="ps-stock-reserved-list">
+            {(['ssid', 'psk', 'admin_code'] as const).map(field => <div key={field}>
+              <dt>{t(`psStock.reserved.${field}`)}</dt>
+              <dd><span className="ps-stock-reserved-value">{reserved.reserved[field]}</span><button type="button" className="button button-secondary ps-stock-copy" aria-label={t('psStock.reserved.copy').replace('{field}', t(`psStock.reserved.${field}`))} onClick={() => void copyReserved(field, reserved.reserved[field])}>{copied === field ? <Check size={15}/> : <Copy size={15}/>}<span>{copied === field ? t('psStock.reserved.copied') : t('psStock.reserved.copyShort')}</span></button></dd>
+            </div>)}
+          </dl>
+          <p className="ps-stock-reserved-note">{t('psStock.reserved.notConfirmed')}</p>
+        </>}
+      </div>}
       <div className="ps-stock-block">
         <h3>{t('psStock.labelTitle')}</h3>
         <p>{canLabel ? t('psStock.labelReady') : t('psStock.labelPending')}</p>
-        {canLabel && <button type="button" className="button button-secondary" data-testid="ps-stock-get-label" onClick={() => void loadLabel()} disabled={!!busy}><Printer size={15}/>{t('psStock.getLabel')}</button>}
+        <button type="button" className="button button-secondary" data-testid="ps-stock-get-label" onClick={() => void loadLabel()} disabled={!!busy || !canLabel}><Printer size={15}/>{t('psStock.getLabel')}</button>
         {label && canLabel && <div className="ps-stock-label" data-testid="ps-stock-label"><dl><div><dt>Serial</dt><dd>{label.serial}</dd></div><div><dt>SSID</dt><dd>{label.ssid}</dd></div><div><dt>Wi-Fi</dt><dd>{label.psk}</dd></div><div><dt>{t('psStock.localAddress')}</dt><dd>{label.local_address}</dd></div></dl><button type="button" className="button button-primary" data-testid="ps-stock-print-label" disabled={!!busy} onClick={() => { void (async () => { setBusy('label'); setLabel(null); try { const fresh = await getStockLabel(deviceId); printLabel(fresh, t('psStock.labelTitle')); } catch (e) { setError(errorText(e)); } finally { setBusy(null); } })(); }}><Printer size={15}/>{t('psStock.print')}</button></div>}
       </div>
       {canEmail && <div className="ps-stock-block" data-testid="ps-stock-email">
