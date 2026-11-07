@@ -1,0 +1,59 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "backend": "All backend/auth requests intercepted; zero real mutations or device operations",
+  "checks": [
+    "Stock PNG download header+decode and confirmation gate; saved assignment survives failed read; retry only reads; sync only after fixture ACK",
+    "en 390px: scan registered; local validation/duplicate/permission/network errors preserve draft and focus; authorized cross venue link only; no details no leak; move confirmation existing action; retry creates new MAC and clears error",
+    "es 390px: scan registered; local validation/duplicate/permission/network errors preserve draft and focus; authorized cross venue link only; no details no leak; move confirmation existing action; retry creates new MAC and clears error",
+    "en 1440px: scan registered; local validation/duplicate/permission/network errors preserve draft and focus; authorized cross venue link only; no details no leak; move confirmation existing action; retry creates new MAC and clears error",
+    "es 1440px: scan registered; local validation/duplicate/permission/network errors preserve draft and focus; authorized cross venue link only; no details no leak; move confirmation existing action; retry creates new MAC and clears error",
+    "Same PS normalized MAC caught without RPC; scan same/other venue authorized and hidden, absent PS, read-only manager, scan-prefill error at form",
+    "inventory legacy surface: PNG download, disabled without confirmed Wi-Fi",
+    "assigned legacy surface: PNG download, disabled without confirmed Wi-Fi",
+    "Failed assignment mutation displays real error without success"
+  ],
+  "downloads": [
+    {
+      "file": "download-stock.png",
+      "filename": "PS-TEST602A-50x30mm.png",
+      "header": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "qr": "exact Wi-Fi fixture payload decoded"
+    },
+    {
+      "file": "download-inventory.png",
+      "filename": "PS-TEST602A-50x30mm.png",
+      "header": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "qr": "exact Wi-Fi fixture payload decoded"
+    },
+    {
+      "file": "download-assigned.png",
+      "filename": "PS-TEST602A-50x30mm.png",
+      "header": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "qr": "exact Wi-Fi fixture payload decoded"
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "pass": true
+}

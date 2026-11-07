@@ -4,7 +4,7 @@ import { VenueMaintenancePage } from './pages/VenueMaintenancePage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { getMaintenanceVenueList, maintenanceVenueStatus, type MaintenanceVenueStatus, getMaintenanceVenueRuns, maintenanceRunFilters, type MaintenanceRunFilters, getMaintenanceRecipients, setMaintenanceRecipient } from './lib/maintenance';
 import { channelsReturnTo } from './lib/channelNavigation';
-import { invalidatePsViews } from './lib/psInvalidation';
+import { invalidatePsViews, PS_RELATED_QUERIES } from './lib/psInvalidation';
 import { PrintDashboardPage } from './pages/PrintDashboardPage';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
@@ -39,6 +39,7 @@ import { PrintChannelsPage } from './pages/PrintChannelsPage';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
 import { getInventoryDevices } from './lib/psDevice';
 import { assignDevice } from './lib/psDevice';
+import { saveAssignment, assignedDeviceSnapshot } from './lib/psAssignment';
 import { VenueCombobox } from './components/VenueCombobox';
 import type { AdminVenueOption } from './lib/psAdminDevice';
 import { PrintUpdatesPage } from './pages/PrintUpdatesPage';
@@ -561,6 +562,16 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
+  const [readFailed,setReadFailed]=useState(false);
+  // A later successful poll clears the read warning without another mutation.
+  useEffect(() => {
+    if (!readFailed) return;
+    return queryClient.getQueryCache().subscribe(() => {
+      const reads = queryClient.getQueryCache().findAll({ predicate: query => query.isActive() && (PS_RELATED_QUERIES as readonly unknown[]).includes(query.queryKey[0]) });
+      if (reads.length && reads.every(query => query.state.status === 'success' && query.state.fetchStatus === 'idle')) setReadFailed(false);
+    });
+  }, [readFailed]);
+  async function retryRead(){setBusy(true);try{await onChanged();setReadFailed(false);}catch{setReadFailed(true);}finally{setBusy(false);}}
   const alive=useRef(true);
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [assignVenue,setAssignVenue]=useState<AdminVenueOption|null>(null);
@@ -590,8 +601,16 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   async function assign(){
     if(!assignVenue||!device.capabilities.assign.allowed||busy||device.venue)return;
     setBusy(true);setError('');setNotice('');
-    try {await assignDevice(device.device_id,assignVenue.id);setNotice(t('ps469.assigned').replace('{venue}',assignVenue.name));await onChanged();}
-    catch(err){setError(psLinkErrorText(err,t,t(errorCode(err)))+' '+t('ps469.reloadNext'));await onChanged().catch(()=>undefined);}
+    setReadFailed(false);
+    try {
+      const result = await saveAssignment(() => assignDevice(device.device_id,assignVenue.id), output => {
+        const snapshot = assignedDeviceSnapshot(device, output, assignVenue.name);
+        queryClient.setQueriesData<ResolvedDevice>({queryKey:['ps-device-resolve']}, current => current?.device_id === device.device_id ? snapshot : current);
+        setNotice(t('ps469.assigned').replace('{venue}',assignVenue.name));
+      }, onChanged);
+      setReadFailed(result.readFailed);
+    }
+    catch(err){setError(psLinkErrorText(err,t,t(errorCode(err))));}
     finally {setBusy(false);}
   }
   return <div className="page-stack staff-page ps469-sheet" data-testid="ps-device-sheet" data-device-id={device.device_id}>
@@ -599,7 +618,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     <header className="page-heading detail-heading ps469-header"><div><p className="eyebrow">{t('printServer')}</p><h1 data-testid="ps-device-title">{device.display_name}</h1><p className="ps469-subtitle"><span className="ps-mono">{device.serial}</span><span aria-hidden="true">·</span>{venue?venue.name:t('inv.unassigned')}</p></div>
       <div className="ps469-statuses"><span className={`server-status ${runtime?(runtime.online?'server-online':'server-offline'):'server-pending'}`} data-testid="ps-connection-state"><span className="badge-dot"/>{runtime?t(runtime.online?'ps.state.online':'ps.state.offline'):t('ps469.noRuntime')}</span><PsLinkStateBadge state={device.link.state}/></div>
     </header>
-    {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
+    {(readFailed||stale)&&<div className="staff-notice ps-read-warning" role="status" data-testid="ps-assignment-read-warning"><span>{t('psAssignment.readWarning')}</span><button type="button" className="button button-secondary" disabled={busy} onClick={()=>void retryRead()}>{t('psAssignment.readRetry')}</button></div>}
     {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
     {notice&&<p className="staff-notice" role="status">{notice}</p>}
     <nav className="ps469-sections" aria-label={t('ps469.sections')}>

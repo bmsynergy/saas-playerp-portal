@@ -19,7 +19,11 @@ export type PanelPrinter = {
   last_report: PrinterReport | null; last_report_at: string | null; pending_jobs: number; workstations: Workstation[]; created_at: string | null;
   print_server_id?: string | null;
 };
-export type ScanCandidate = { mac_address: string | null; local_address: string | null; model: string | null; hostname: string | null; port: number | null; reachable: boolean | null; printer_id: string | null };
+export type RegisteredPrinterInfo = {
+  scope?: 'same_ps' | 'other_ps' | 'other_venue';
+  existing?: { printer_id: string; printer_label: string | null; venue_id: string; venue_name: string | null; print_server_id: string | null; print_server_label: string | null };
+};
+export type ScanCandidate = RegisteredPrinterInfo & { registered_elsewhere?: boolean; other_print_server_id?: string | null; mac_address: string | null; local_address: string | null; model: string | null; hostname: string | null; port: number | null; reachable: boolean | null; printer_id: string | null };
 export type ScanResult = { candidates: ScanCandidate[]; count: number; scanned_at: string | null; network: string | null };
 export type PanelScan = {
   command_id: string; status: string; created_at: string | null; expires_at: string | null; completed_at: string | null;
@@ -40,6 +44,11 @@ export type PrinterJobsPage = { jobs: PrinterJob[]; total: number; limit: number
 
 export class PsError extends Error {
   constructor(public key: string) { super(key); }
+}
+export class RegisteredPrinterError extends PsError implements RegisteredPrinterInfo {
+  scope?: RegisteredPrinterInfo['scope'];
+  existing?: RegisteredPrinterInfo['existing'];
+  constructor(info: RegisteredPrinterInfo) { super('ps.error.macAlreadyRegistered'); this.scope = info.scope; this.existing = info.existing; }
 }
 const codes: Record<string, string> = {
   label_required: 'ps.error.labelRequired', invalid_mac: 'ps.error.invalidMac', no_active_print_server: 'ps.error.noActivePrintServer',
@@ -70,6 +79,17 @@ const count = (v: unknown) => Math.max(0, num(v) ?? 0);
 const bool = (v: unknown) => typeof v === 'boolean' ? v : null;
 const obj = (v: unknown): Raw | null => v && typeof v === 'object' && !Array.isArray(v) ? v as Raw : null;
 const list = (v: unknown): unknown[] => Array.isArray(v) ? v : [];
+
+// Only explicitly authorized identifying fields supplied by the backend enter state.
+export function projectRegisteredPrinter(value: unknown): RegisteredPrinterInfo {
+  const raw = obj(value) ?? {}, e = obj(raw.existing);
+  const scope = ['same_ps', 'other_ps', 'other_venue'].includes(String(raw.scope)) ? raw.scope as RegisteredPrinterInfo['scope'] : undefined;
+  const existing = e && str(e.printer_id) && str(e.venue_id) ? {
+    printer_id: str(e.printer_id)!, printer_label: str(e.printer_label), venue_id: str(e.venue_id)!, venue_name: str(e.venue_name),
+    print_server_id: str(e.print_server_id), print_server_label: str(e.print_server_label),
+  } : undefined;
+  return { ...(scope ? { scope } : {}), ...(existing ? { existing } : {}) };
+}
 
 function lastStatus(v: unknown): PsLastStatus | null {
   const s = obj(v);
@@ -116,7 +136,7 @@ function scanResult(v: unknown): ScanResult | null {
   if (!r) return null;
   const candidates = list(r.candidates).map(item => {
     const c = obj(item) ?? bad();
-    return { mac_address: str(c.mac_address), local_address: str(c.local_address), model: str(c.model), hostname: str(c.hostname), port: num(c.port), reachable: bool(c.reachable), printer_id: str(c.printer_id) };
+    return { mac_address: str(c.mac_address), local_address: str(c.local_address), model: str(c.model), hostname: str(c.hostname), port: num(c.port), reachable: bool(c.reachable), printer_id: str(c.printer_id), ...(c.registered_elsewhere === true ? { registered_elsewhere: true } : {}), ...(c.other_print_server_id !== undefined ? { other_print_server_id: str(c.other_print_server_id) } : {}), ...projectRegisteredPrinter(c) };
   });
   return { candidates, count: num(r.count) ?? candidates.length, scanned_at: str(r.scanned_at), network: str(r.network) };
 }
@@ -179,7 +199,10 @@ async function action(name: string, params: Record<string, unknown>): Promise<Ra
   const data = obj(await rpc(name, params)) ?? bad();
   const selection = selectionRequired(data);
   if (selection) throw selection;
-  if (data.ok !== true) throw psErrorFromCode(data.error);
+  if (data.ok !== true) {
+    if (data.error === 'mac_already_registered') throw new RegisteredPrinterError(projectRegisteredPrinter(data));
+    throw psErrorFromCode(data.error);
+  }
   return data;
 }
 export async function getInventory(signal?: AbortSignal): Promise<Inventory> {

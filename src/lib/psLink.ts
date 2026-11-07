@@ -41,7 +41,8 @@ export function projectPsLink(value: unknown): PsDeviceLink | null {
   const serial = str(l.serial) ?? '', label = str(l.label);
   const sync=obj(l.sync);
   const confirmed=!!sync && sync.confirmed===true && num(sync.rev)!==null && (sync.scope==='unlinked'||num(sync.rev)===num(l.rev)) && num(sync.ack_rev)===num(sync.rev) && !!str(sync.ack_at) && ((sync.scope==='venue'&&!!str(l.venue_id))||(sync.scope==='unlinked'&&!str(l.venue_id)));
-  const effectiveState=state==='sincronizado'&&sync&&!confirmed?'asignado_pendiente_sync':state;
+  const acknowledged = sync ? confirmed : num(l.rev) !== null && num(l.ack_rev) === num(l.rev) && !!str(l.ack_at);
+  const effectiveState=state==='sincronizado'&&!acknowledged?'asignado_pendiente_sync':state;
   return {
     device_id: l.device_id as string, serial, label, display_name: str(l.display_name) ?? label ?? serial, model: str(l.model) ?? '', model_label: str(l.model_label),
     venue_id: str(l.venue_id), venue_name: str(l.venue_name),

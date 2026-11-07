@@ -1,0 +1,51 @@
+{
+  "pass": true,
+  "physicalCamera": "Pending Beny",
+  "results": [
+    {
+      "file": "label-0.png",
+      "signature": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded": "WIFI:T:WPA;S:PlayERP-Setup-TEST602A;P:0123456789;;",
+      "integerScale": 6,
+      "textLeft": true,
+      "quietZone": 4
+    },
+    {
+      "file": "label-1.png",
+      "signature": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWW\\\\\\;\\,\\:\\\";P:0123456789;;",
+      "integerScale": 6,
+      "textLeft": true,
+      "quietZone": 4
+    },
+    {
+      "file": "label-2.png",
+      "signature": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "integerScale": 6,
+      "textLeft": true,
+      "quietZone": 4
+    }
+  ]
+}

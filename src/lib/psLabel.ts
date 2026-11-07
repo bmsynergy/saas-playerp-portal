@@ -1,20 +1,20 @@
 import QRCode from 'qrcode';
 import { confirmedAt, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from './psDevice';
 
-export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string };
+export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string | null; confirmation?: 'stock_rpc' };
 export const LABEL_WIDTH = 590;
 export const LABEL_HEIGHT = 354;
 export const LABEL_PPM = 11811; // 300 dpi; raster rounds to 49.95 × 29.97 mm.
 export const LABEL_MARGIN = 18; // 1.524 mm at 300 dpi, at least 1.5 mm on each edge.
 export const LABEL_STEPS = [
   '1 Power off/on',
-  '2 Connect to Wi-Fi above',
-  'within 90 s',
-  '3 Open http://10.77.0.1',
+  '2 Join Wi-Fi within 90 s',
+  '3 Open in browser:',
+  'http://10.77.0.1',
 ] as const;
 
 function validLabel(d: LabelData): boolean {
-  return !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && !!confirmedAt(d.appliedAt);
+  return !/pse_|pst_|PRIVATE\s+KEY/i.test(d.ssid + d.password) && !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && (d.confirmation === 'stock_rpc' || !!confirmedAt(d.appliedAt));
 }
 export function labelDataFromSheet(sheet: DeviceSheet): LabelData | null {
   const d = sheet.device, w = sheet.appliedWifi;
@@ -24,7 +24,7 @@ export function labelDataFromSheet(sheet: DeviceSheet): LabelData | null {
 }
 // In-memory comparison only. Never persist or log this value: it contains the human Wi-Fi secret.
 export function labelFingerprint(data: LabelData): string {
-  return JSON.stringify([data.deviceId, data.serial, data.ssid, data.password, data.appliedAt]);
+  return JSON.stringify([data.deviceId, data.serial, data.ssid, data.password, data.appliedAt, data.confirmation]);
 }
 export function labelFilename(data: LabelData): string {
   if (!validLabel(data)) throw new Error('label_unavailable');
@@ -79,27 +79,31 @@ export async function generateLabelPng(data: LabelData): Promise<Blob> {
     if (ctx!.measureText(value).width > max) throw new Error('label_does_not_fit');
     ctx!.fillText(value, x, y);
   }
-  line('PlayERP', 41, 'bold 28px Arial, sans-serif');
-  ctx.font = 'bold 24px monospace';
-  const serialWidth = ctx.measureText(data.serial).width;
-  line(data.serial, 40, 'bold 24px monospace', LABEL_WIDTH - left - serialWidth, serialWidth + 1);
-  ctx.fillRect(left, 54, width, 2);
-  line('Wi-Fi (SSID)', 80, '20px Arial, sans-serif');
-  line(data.ssid, 110, 'bold 25px monospace');
-  line(`Password: ${data.password}`, 147, 'bold 26px monospace');
-  ctx.fillRect(left, 166, width, 2);
-  // Two columns. The QR uses the largest integer scale that fits with a full
-  // four-module quiet zone. Never resample a QR or sacrifice module readability.
+  // Entire left half holds text; the right half is reserved for an undistorted QR.
+  const textWidth = LABEL_WIDTH / 2 - left - 12;
+  line('PlayERP', 43, 'bold 28px Arial, sans-serif', left, textWidth);
+  line(data.serial, 74, 'bold 24px monospace', left, textWidth);
+  line('Wi-Fi (SSID)', 108, '18px Arial, sans-serif', left, textWidth);
+  ctx.font = 'bold 19px monospace';
+  const ssidLines: string[] = []; let current = '';
+  for (const char of data.ssid) {
+    if (ctx.measureText(current + char).width > textWidth) { ssidLines.push(current); current = ''; }
+    current += char;
+  }
+  ssidLines.push(current);
+  if (ssidLines.length > 2) throw new Error('label_does_not_fit');
+  ssidLines.forEach((value, i) => line(value, 134 + i * 24, 'bold 19px monospace', left, textWidth));
+  line('Password', 190, '18px Arial, sans-serif', left, textWidth);
+  line(data.password, 219, 'bold 25px monospace', left, textWidth);
+  LABEL_STEPS.forEach((value, i) => line(value, 253 + i * 24, 'bold 17px Arial, sans-serif', left, textWidth));
   const qr = QRCode.create(wifiQrPayload(data.ssid, data.password), { errorCorrectionLevel: 'M' });
-  const quiet = 4, qrArea = 166, qrLeft = LABEL_WIDTH - left - qrArea, qrTop = 170;
+  const quiet = 4, qrArea = LABEL_WIDTH / 2 - LABEL_MARGIN, qrLeft = LABEL_WIDTH / 2;
   const scale = Math.floor(qrArea / (qr.modules.size + quiet * 2));
   if (scale < 3) throw new Error('label_does_not_fit');
   const qrSize = (qr.modules.size + quiet * 2) * scale;
   const qrX = qrLeft + Math.floor((qrArea - qrSize) / 2);
-  const qrY = qrTop + Math.floor((qrArea - qrSize) / 2);
+  const qrY = Math.floor((LABEL_HEIGHT - qrSize) / 2);
   ctx.imageSmoothingEnabled = false;
-  const textWidth = qrLeft - left - 12;
-  LABEL_STEPS.forEach((value, i) => line(value, [199, 241, 269, 315][i], 'bold 22px Arial, sans-serif', i === 2 ? left + 18 : left, i === 2 ? textWidth - 18 : textWidth));
   for (let row = 0; row < qr.modules.size; row++) {
     for (let col = 0; col < qr.modules.size; col++) {
       if (qr.modules.get(row, col)) ctx.fillRect(qrX + (col + quiet) * scale, qrY + (row + quiet) * scale, scale, scale);

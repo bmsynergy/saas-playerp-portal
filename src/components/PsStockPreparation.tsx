@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Check, Copy, Download, Mail, Printer, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -6,6 +6,7 @@ import { errorCode } from '../lib/errors';
 import { getFirmwares, getInstallKitDownload, listInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
 import { downloadStockFile, getStockLabel, getStockReservedCredentials, getStockStatus, previewDeliveryEmail, sendDeliveryEmail, type StockLabel, type DeliveryEmailResult } from '../lib/psStock';
 import { useLocale, type Locale } from '../locales';
+import { generateLabelPng, labelFilename, printLabel as printLabelPng, type LabelData } from '../lib/psLabel';
 import './PsStockPreparation.css';
 
 type Props = { deviceId: string; onChanged: () => Promise<unknown> };
@@ -28,25 +29,6 @@ function matchingImage(kits: InstallKit[], releases: FirmwareRelease[], model: s
     .sort((a, b) => (Date.parse(b.created_at ?? '') || 0) - (Date.parse(a.created_at ?? '') || 0))[0] ?? null;
 }
 
-function printLabel(label: StockLabel, heading: string): void {
-  const frame = document.createElement('iframe');
-  frame.title = heading;
-  frame.style.position = 'fixed'; frame.style.width = '0'; frame.style.height = '0'; frame.style.border = '0';
-  document.body.appendChild(frame);
-  const doc = frame.contentDocument;
-  if (!doc) { frame.remove(); throw new Error('print_unavailable'); }
-  const style = doc.createElement('style');
-  style.textContent = '@page{size:50mm 30mm;margin:2mm}body{font:9pt Arial,sans-serif;margin:0;color:#000}h1{font-size:10pt;margin:0 0 2mm}p{margin:1mm 0;overflow-wrap:anywhere}strong{display:inline-block;min-width:10mm}';
-  doc.head.appendChild(style);
-  const title = doc.createElement('h1'); title.textContent = heading; doc.body.appendChild(title);
-  for (const [name, value] of [['Serial', label.serial], ['SSID', label.ssid], ['Wi-Fi', label.psk], ['Local', label.local_address]]) {
-    const row = doc.createElement('p'); const key = doc.createElement('strong'); key.textContent = name;
-    row.appendChild(key); row.appendChild(doc.createTextNode(String(value ?? ''))); doc.body.appendChild(row);
-  }
-  frame.onload = () => undefined;
-  window.setTimeout(() => { frame.contentWindow?.focus(); frame.contentWindow?.print(); window.setTimeout(() => frame.remove(), 1500); }, 100);
-}
-
 export function PsStockPreparation({ deviceId, onChanged }: Props) {
   const { t, locale } = useLocale();
   const { session } = useAuth();
@@ -60,6 +42,10 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
   const [replaceFile, setReplaceFile] = useState(false);
   const [sha, setSha] = useState('');
   const [label, setLabel] = useState<StockLabel | null>(null);
+  const [labelUrl, setLabelUrl] = useState<string | null>(null);
+  const labelUrlRef = useRef<string | null>(null);
+  const labelPrintRef = useRef<AbortController | null>(null);
+  const labelGeneration = useRef(0);
   const [to, setTo] = useState('');
   const [emailLocale, setEmailLocale] = useState<Locale>(locale);
   const [preview, setPreview] = useState<DeliveryEmailResult | null>(null);
@@ -84,8 +70,9 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
   const canLabel = !!stock?.label_ready && !!stock.checks.credentials_confirmed_by_device && ['validated_in_stock', 'validated_assigned'].includes(stock.state);
   const canEmail = stock?.state === 'validated_assigned';
 
-  useEffect(() => { setLabel(null); setPreview(null); setPreviewKey(''); setSha(''); setReplaceFile(false); setCopied(null); }, [deviceId]);
-  useEffect(() => { setLabel(null); }, [stock?.reported.last_status_at, stock?.state, canLabel]);
+  useEffect(() => { labelGeneration.current++; labelPrintRef.current?.abort(); if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); labelUrlRef.current = null; setLabelUrl(null); setLabel(null); setPreview(null); setPreviewKey(''); setSha(''); setReplaceFile(false); setCopied(null); }, [deviceId]);
+  useEffect(() => { if (!canLabel) { labelGeneration.current++; labelPrintRef.current?.abort(); } if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); labelUrlRef.current = null; setLabelUrl(null); setLabel(null); }, [stock?.reported.last_status_at, stock?.state, canLabel]);
+  useEffect(() => () => { labelGeneration.current++; labelPrintRef.current?.abort(); if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); }, []);
   useEffect(() => { if (!canEmail || previewKey !== key) setPreview(null); }, [canEmail, key, previewKey]);
 
   async function refresh() { setError(''); setNotice(''); setLabel(null); setPreview(null); await status.refetch(); if (stock?.file) await reservation.refetch(); }
@@ -113,10 +100,28 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
       document.body.appendChild(a); a.click(); a.remove();
     } catch (e) { setError(errorText(e)); } finally { setBusy(null); }
   }
-  async function loadLabel() {
+  async function labelImage(action: 'view' | 'download' | 'print') {
     if (!canLabel || busy) return;
-    setBusy('label'); setError(''); setLabel(null);
-    try { setLabel(await getStockLabel(deviceId)); } catch (e) { setError(errorText(e)); } finally { setBusy(null); }
+    const generation = labelGeneration.current, requestedDevice = deviceId;
+    setBusy('label'); setError('');
+    try {
+      const freshStatus = await status.refetch();
+      const fresh = freshStatus.data?.stock;
+      if (freshStatus.isError || !fresh?.label_ready || !fresh.checks.credentials_confirmed_by_device || !['validated_in_stock', 'validated_assigned'].includes(fresh.state)) throw new Error('label_unavailable');
+      const current = await getStockLabel(requestedDevice);
+      const data: LabelData = { deviceId: requestedDevice, serial: current.serial, ssid: current.ssid, password: current.psk, appliedAt: null, confirmation: 'stock_rpc' };
+      const blob = await generateLabelPng(data);
+      if (generation !== labelGeneration.current || requestedDevice !== deviceId) return;
+      if (action === 'view') {
+        if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current);
+        const url = URL.createObjectURL(blob); labelUrlRef.current = url; setLabelUrl(url); setLabel(current);
+      } else if (action === 'download') {
+        const url = URL.createObjectURL(blob);
+        try { const anchor = document.createElement('a'); anchor.href = url; anchor.download = labelFilename(data); document.body.appendChild(anchor); anchor.click(); anchor.remove(); }
+        finally { window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
+      } else { const controller = new AbortController(); labelPrintRef.current = controller; await printLabelPng(blob, controller.signal); }
+    } catch (e) { if (generation === labelGeneration.current) setError(errorText(e)); }
+    finally { setBusy(current => current === 'label' ? null : current); }
   }
   async function prepareEmail() {
     if (!canEmail || !to.trim() || busy) return;
@@ -191,11 +196,16 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
           <p className="ps-stock-reserved-note">{t('psStock.reserved.notConfirmed')}</p>
         </>}
       </div>}
-      <div className="ps-stock-block">
+      <div className="ps-stock-block" data-testid="ps-stock-label-actions">
         <h3>{t('psStock.labelTitle')}</h3>
         <p>{canLabel ? t('psStock.labelReady') : t('psStock.labelPending')}</p>
-        <button type="button" className="button button-secondary" data-testid="ps-stock-get-label" onClick={() => void loadLabel()} disabled={!!busy || !canLabel}><Printer size={15}/>{t('psStock.getLabel')}</button>
-        {label && canLabel && <div className="ps-stock-label" data-testid="ps-stock-label"><dl><div><dt>Serial</dt><dd>{label.serial}</dd></div><div><dt>SSID</dt><dd>{label.ssid}</dd></div><div><dt>Wi-Fi</dt><dd>{label.psk}</dd></div><div><dt>{t('psStock.localAddress')}</dt><dd>{label.local_address}</dd></div></dl><button type="button" className="button button-primary" data-testid="ps-stock-print-label" disabled={!!busy} onClick={() => { void (async () => { setBusy('label'); setLabel(null); try { const fresh = await getStockLabel(deviceId); printLabel(fresh, t('psStock.labelTitle')); } catch (e) { setError(errorText(e)); } finally { setBusy(null); } })(); }}><Printer size={15}/>{t('psStock.print')}</button></div>}
+        <div className="ps-stock-label-actions">
+          <button type="button" className="button button-secondary" data-testid="ps-stock-get-label" onClick={() => void labelImage('view')} disabled={!!busy || !canLabel}><Printer size={15}/>{t('psStock.getLabel')}</button>
+          <button type="button" className="button button-secondary" data-testid="ps-stock-download-label" onClick={() => void labelImage('download')} disabled={!!busy || !canLabel}><Download size={15}/>{t('psStock.downloadLabel')}</button>
+          <button type="button" className="button button-primary" data-testid="ps-stock-print-label" onClick={() => void labelImage('print')} disabled={!!busy || !canLabel}><Printer size={15}/>{t('psStock.print')}</button>
+        </div>
+        <p className="ps-stock-print-guide">{t('psStock.printGuide')}</p>
+        {label && labelUrl && canLabel && <div className="ps-stock-label" data-testid="ps-stock-label"><img src={labelUrl} alt={t('psStock.labelPreviewAlt').replace('{serial}', label.serial)} width="590" height="354"/><p>{t('psStock.labelDimensions')}</p></div>}
       </div>
       {canEmail && <div className="ps-stock-block" data-testid="ps-stock-email">
         <h3>{t('psStock.emailTitle')}</h3><p>{t('psStock.emailDevRule')}</p>

@@ -1,0 +1,13 @@
+# PE-602.6 · Portal · DEV only
+
+Backend prerequisite verified on GitHub: `bmsynergy/saas-playerp-backend`, main `5b4ec090858def3e54c62eb7c25b4561f8b4a48d`. Accepted piece 1 reports migration `20261107040706` applied in DEV. This portal work makes no database, firmware or credential changes.
+
+1. **Label** — `node tests/pe602-label.mjs` passed on the full generated PNG: signature, 590×354, pHYs 11811×11811 pixels/metre (300 dpi), exact Wi-Fi decode for standard, escaped and UTF-8 SSIDs; every QR module and four-module quiet zone checked, all text within left half. `label-report.json` and `label-*.png`. Browser report also verifies the actual downloaded bytes from stock, inventory and assigned surfaces. Print is exercised by a browser stub checking 50×30 mm page CSS; no physical print or camera test was performed.
+2. **Assignment** — `tests/pe602.test.ts` reproduces the former green+red sequence, verifies separate mutation/read failures and retry without another mutation, and rejects synchronization without matching ACK. Browser fixtures capture `assignment-pending.png` and `assignment-synced.png`, including an unsuccessful refresh after successful assignment and read-only retry.
+3. **Duplicate/local errors** — browser fixtures cover same PS, another PS in venue, cross-venue authorized link, no identifying data, no PS, normalized MAC, no management permission, confirmation before existing move action, network/permission/validation failures, preserved fields and focused local error, successful retry and cleared error. `duplicate-{en,es}-{390,1440}.png`, `scan-*`, `other-venue-*`; full suite in `unit-summary.log` (441/441), build in `build.log` (exit 0). Existing OTA, stock without venue, reserved/confirmed credentials, owner/admin and rings restrictions remain green.
+
+Reproduce browser check with `node tests/pe602-browser.mjs` against local Vite on port 18799, or `PORTAL_TEST_ORIGIN=https://playerp.dev.bmore.app PS_TEST_EVIDENCE=docs/evidence/pe602/published node tests/pe602-browser.mjs`. All backend/auth requests are intercepted with isolated synthetic fixtures; even on published DEV no real printer/device/assignment/credential is read or mutated and no email is sent. These are UI/contract tests on the actual served portal, not a claim of a new physical device test.
+
+Gaby independently reviewed the diff read-only in this session. The link issue was corrected to canonical PS resolution; a null PS shows “No Print Server”, remains `other_ps` per backend contract, and never offers moving. Gaby rechecked and reported no remaining findings. Primary integration review additionally clears cached scan results after successful movement.
+
+Physical printing at 100% and QR reading with a camera remain for Beny.

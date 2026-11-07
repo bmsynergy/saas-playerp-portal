@@ -2,8 +2,9 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import { Link } from 'react-router-dom';
 import { Activity, AlertTriangle, ArrowLeft, Check, ChevronDown, Clock3, Copy, Download, FileKey2, Gauge, Globe2, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Search, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
 import { fleetState, formatUptime, normalizeMac, relativeTime, sameMac, type FleetRow } from '../lib/printFleet';
-import { psErrorKey, type PanelPrinter, type PanelScan, type PanelState, type PrintServerApi } from '../lib/printServerApi';
+import { psErrorKey, setPrinterPrintServer, type PanelPrinter, type PanelScan, type PanelState, type PrintServerApi, type RegisteredPrinterInfo } from '../lib/printServerApi';
 import { slugLabel } from '../lib/venueUsers';
+import { adminSheetHref, ownerSheetHref } from '../lib/psVenueDevices';
 import { useLocale } from '../locales';
 import { fleetStateClass } from './PrintFleetPage';
 import { PortalDialog } from '../components/PortalDialog';
@@ -22,8 +23,10 @@ type ReplaceTarget = { print_server_id: string; name: string; label: string | nu
 type Props = { venue: Venue; state: PanelState; api: PrintServerApi; refresh: () => Promise<unknown>; stale?: boolean; embedded?: boolean; scope?: 'owner' | 'admin'; hideRecoveryLabel?: boolean;
   printServerId?: string | null; deviceId?: string; backHref?: string; backLabel?: string; replaceTargets?: ReplaceTarget[] };
 // A confirmed step answers with its result message, or with a follow-up confirmation.
-type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm> };
+type Confirm = { title: string; body: string; detail?: ReactNode; danger?: boolean; run: () => Promise<string | Confirm>; onError?: (error: unknown) => void };
 type Result = { ok: boolean; text: string };
+type RegisteredInfo = RegisteredPrinterInfo;
+type PrinterFormError = { text: string; registered?: RegisteredInfo };
 type PrinterForm = { label: string; mac_address: string; model: string; location: string };
 const EMPTY_FORM: PrinterForm = { label: '', mac_address: '', model: '', location: '' };
 const FINAL = ['done', 'failed', 'expired'];
@@ -58,6 +61,9 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
   const [scanTimedOut, setScanTimedOut] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<PrinterForm>(EMPTY_FORM);
+  const [formError, setFormError] = useState<PrinterFormError | null>(null);
+  const formErrorRef = useRef<HTMLDivElement>(null);
+  const [scanActionError, setScanActionError] = useState<{ key: string; text: string } | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const alive = useRef(true);
   const labelInput = useRef<HTMLInputElement>(null);
@@ -71,8 +77,10 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => setNow(Date.now()), [state]);
+  useEffect(() => { setScan(null); setScanActionError(null); setFormError(null); setFormOpen(false); setForm(EMPTY_FORM); setResult(null); }, [venueId, sheetPsId]);
   useEffect(() => { setCertMissing(false); setDownloadedFingerprint(null); }, [server?.id, server?.ca_cert_status, server?.ca_cert_der_sha256]);
   useEffect(() => { if (formOpen) labelInput.current?.focus(); }, [formOpen]);
+  useEffect(() => { if (!formError || confirm || busy) return; const frame = requestAnimationFrame(() => { formErrorRef.current?.scrollIntoView({ block: 'nearest' }); formErrorRef.current?.focus(); }); return () => cancelAnimationFrame(frame); }, [formError, confirm, busy]);
 
   function date(value: string | null, empty = t('notProvided')) {
     const time = value ? new Date(value) : null;
@@ -92,7 +100,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
     try {
       const out = await current.run();
       if (typeof out === 'string') setResult({ ok: true, text: out }); else next = out;
-    } catch (error) { setResult({ ok: false, text: t(psErrorKey(error)) }); }
+    } catch (error) { if (current.onError) current.onError(error); else setResult({ ok: false, text: t(psErrorKey(error)) }); }
     if (!alive.current) return;
     await reload();
     if (alive.current) setQueueKey(key => key + 1);
@@ -174,7 +182,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
     ask({ title: t('ps.scan.request'), body: fill(t('ps.confirm.scan'), { venue: venueName }),
       run: async () => {
         const requested = await api.requestScan(venueId);
-        setScanTimedOut(false); setPolling(true);
+        setScanActionError(null); setScanTimedOut(false); setPolling(true);
         setScan({ command_id: requested.command_id, status: requested.status, created_at: null, expires_at: requested.expires_at, completed_at: null, result: null, error_code: null, error_detail: null });
         void poll(requested.command_id);
         return t(requested.already ? 'ps.result.scanAlready' : requested.ps_online ? 'ps.result.scanRequested' : 'ps.result.scanRequestedOffline');
@@ -182,21 +190,56 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
   }
 
   // --- Printers ---------------------------------------------------------------
+  function knownRegistration(mac: string): RegisteredInfo | null {
+    const scanned = (scan ?? state.last_scan)?.result?.candidates.find(item => sameMac(item.mac_address, mac) && (item.scope || item.existing || item.printer_id || item.registered_elsewhere));
+    if (scanned?.scope || scanned?.existing) return { scope: scanned.scope, existing: scanned.existing };
+    const printer = rawState.printers.find(item => sameMac(item.mac_address, mac));
+    if (!printer) return scanned ? {} : null;
+    const psId = printer.print_server_id ?? null;
+    return { scope: psId === sheetPsId && psId !== null ? 'same_ps' : 'other_ps', existing: {
+      printer_id: printer.id, printer_label: printer.label, venue_id: venueId, venue_name: venueName,
+      print_server_id: psId, print_server_label: psId ? (psId === sheetPsId ? server?.label || server?.hostname || null : replaceTargets.find(item => item.print_server_id === psId)?.label ?? null) : null,
+    } };
+  }
   function submitPrinter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input = { label: form.label.trim(), mac_address: form.mac_address.trim(), model: form.model.trim(), location: form.location.trim() };
-    if (!input.label) { setResult({ ok: false, text: t('ps.error.labelRequired') }); return; }
-    if (!normalizeMac(input.mac_address)) { setResult({ ok: false, text: t('ps.error.invalidMac') }); return; }
+    if (!input.label) { setFormError({ text: t('ps.error.labelRequired') }); return; }
+    if (!normalizeMac(input.mac_address)) { setFormError({ text: t('ps.error.invalidMac') }); return; }
+    const known = knownRegistration(input.mac_address);
+    if (known) { setFormError({ text: t('ps.printers.duplicateManual'), registered: known }); return; }
+    setFormError(null);
     ask({ title: t('ps.printers.add'), body: fill(t('ps.confirm.addPrinter'), { venue: venueName, name: input.label, mac: input.mac_address }),
       run: async () => {
         await api.addPrinter(venueId, input);
-        setForm(EMPTY_FORM); setFormOpen(false);
+        setForm(EMPTY_FORM); setFormOpen(false); setFormError(null);
         return fill(t('ps.result.printerAdded'), { name: input.label });
+      }, onError: error => {
+        const duplicate = psErrorKey(error) === 'ps.error.macAlreadyRegistered';
+        const info = error as RegisteredInfo;
+        setFormError({ text: t(duplicate ? 'ps.printers.duplicateManual' : psErrorKey(error)), registered: duplicate ? { scope: info.scope, existing: info.existing } : undefined });
       } });
   }
   function prefill(mac: string | null, model: string | null) {
-    setPrintersOpen(true); setForm({ ...EMPTY_FORM, mac_address: mac ?? '', model: model ?? '' }); setFormOpen(true); setResult(null);
+    setPrintersOpen(true); setForm({ ...EMPTY_FORM, mac_address: mac ?? '', model: model ?? '' }); setFormOpen(true); setFormError(null); setResult(null);
     labelInput.current?.focus();
+  }
+  function registeredNotice(info: RegisteredInfo | undefined, reachable: boolean, key: string) {
+    const existing = info?.existing;
+    const managementHref = existing ? existing.print_server_id
+      ? scope === 'admin' ? `${adminSheetHref(existing.print_server_id)}?fromVenue=${encodeURIComponent(existing.venue_id)}` : ownerSheetHref(existing.venue_id, existing.print_server_id)
+      : scope === 'admin' ? `/admin/tenants/${encodeURIComponent(existing.venue_id)}/print-servers` : `/?venue=${encodeURIComponent(existing.venue_id)}&section=print-servers`
+      : null;
+    const sameVenueOtherPs = info?.scope === 'other_ps' && existing?.venue_id === venueId && !!sheetPsId && !!existing.print_server_id && existing.print_server_id !== sheetPsId;
+    return <div className="ps-registered-notice" data-testid={key}>
+      <strong>{t('ps.scan.alreadyRegistered')}</strong>
+      <span>{existing ? t(!existing.print_server_id ? 'ps.printers.noPs' : `ps.printers.scope.${info?.scope ?? 'other_ps'}`) : t('ps.printers.registeredElsewhere')}</span>
+      {existing && <span>{fill(t('ps.printers.registeredAt'), { name: existing.printer_label || t('notProvided'), venue: existing.venue_name || t('notProvided'), ps: existing.print_server_label || existing.print_server_id || t('ps.printers.noPs') })}</span>}
+      {reachable && <small>{t('ps.printers.scanWorked')}</small>}
+      {managementHref && <Link className="staff-action-link" to={managementHref}>{t('ps.printers.openExisting')}</Link>}
+      {sameVenueOtherPs && canManage && <button type="button" className="staff-action-link" disabled={busy} onClick={() => ask({ title: t('ps.printers.moveTitle'), body: fill(t('ps.printers.moveConfirm'), { name: existing.printer_label || t('notProvided'), ps: server?.label || server?.hostname || t('printServer') }), run: async () => { await setPrinterPrintServer(existing.printer_id, sheetPsId); setFormError(null); setScanActionError(null); setScan(null); return t('ps.printers.moved'); }, onError: error => { const text = t(psErrorKey(error)); if (key.startsWith('scan-')) setScanActionError({ key, text }); else setFormError({ text, registered: info }); } })}>{t('ps.printers.move')}</button>}
+      {scanActionError?.key === key && <span className="ps-registered-action-error" role="alert">{scanActionError.text}</span>}
+    </div>;
   }
   function askRename(printer: PanelPrinter) {
     const label = (drafts[printer.id] ?? printer.label).trim();
@@ -243,6 +286,7 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
   const certFile = certificateFilename(venueId);
   const yesNo = (value: boolean | null) => value === null ? t('notProvided') : t(value ? 'ps.yes' : 'ps.no');
   const matchingPrinters = state.printers.filter(printer => [printer.label, printer.mac_address, printer.model, printer.location].some(value => value?.toLocaleLowerCase().includes(printerSearch.trim().toLocaleLowerCase())) && (!printerStatus || (printerStatus === 'active') === printer.is_active) && matchesUtcDay(printer.last_report?.reported_at ?? printer.last_report_at, printerDates.from, printerDates.to));
+  const knownFormRegistration = normalizeMac(form.mac_address) ? knownRegistration(form.mac_address) : null;
   const printerPagination = usePrintListPagination(matchingPrinters.length);
 
   const caContent = <div className="ps-cert-ca" aria-labelledby="ps-cert-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.cert.eyebrow')}</p><h2 id="ps-cert-title">{t('ps.cert.sectionTitle')}</h2></div><span className="section-icon"><FileKey2 size={20}/></span></div>
@@ -329,13 +373,15 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       <button type="button" className="ps-printers-toggle" data-testid="printers-toggle" aria-expanded={printersOpen} aria-controls={printersRegionId} onClick={() => setPrintersOpen(value => !value)}><span>{t(printersOpen ? 'ps.printers.closeList' : 'ps.printers.openList')}</span><ChevronDown size={18} aria-hidden="true"/></button>
       <div id={printersRegionId} hidden={!printersOpen}>
       {state.printers.length > 0 && <div className="admin-list-toolbar ps-printers-filters"><label className="field ps-printers-search"><span>{t('ps.printers.search')}</span><span className="field-control"><Search size={17} aria-hidden="true"/><input type="search" data-testid="printers-search" value={printerSearch} onChange={event => { setPrinterSearch(event.target.value); printerPagination.reset(); }} placeholder={t('ps.printers.searchPlaceholder')}/></span></label><label className="admin-assignment-filter"><span>{t('state')}</span><select value={printerStatus} onChange={event => { setPrinterStatus(event.target.value); printerPagination.reset(); }}><option value="">{t('list.allStates')}</option><option value="active">{t('ps.printers.active')}</option><option value="paused">{t('ps.printers.paused')}</option></select></label><AdminDateFilters id="printers" label={t('ps.printers.lastReport')} from={printerDates.from} to={printerDates.to} onChange={(key, value) => { setPrinterDates(current => ({ ...current, [key]: value })); printerPagination.reset(); }}/><span className="directory-count">{matchingPrinters.length} / {state.printers.length}</span></div>}
-      {canManage && <div className="staff-actions ps-actions"><button type="button" className="button button-secondary" data-testid="printer-add" aria-expanded={formOpen} disabled={busy} onClick={() => { setFormOpen(!formOpen); if (formOpen) setForm(EMPTY_FORM); }}>{formOpen ? <X size={17}/> : <Plus size={17}/>}{t(formOpen ? 'ps.printers.cancelAdd' : 'ps.printers.add')}</button></div>}
+      {canManage && <div className="staff-actions ps-actions"><button type="button" className="button button-secondary" data-testid="printer-add" aria-expanded={formOpen} disabled={busy} onClick={() => { setFormOpen(!formOpen); setFormError(null); setResult(null); if (formOpen) setForm(EMPTY_FORM); }}>{formOpen ? <X size={17}/> : <Plus size={17}/>}{t(formOpen ? 'ps.printers.cancelAdd' : 'ps.printers.add')}</button></div>}
       {canManage && formOpen && <form className="staff-invite-form ps-printer-form" data-testid="printer-form" onSubmit={submitPrinter} noValidate>
-        <label className="field"><span>{t('ps.printers.name')} *</span><div className="field-control"><input ref={labelInput} type="text" data-testid="printer-form-label" autoComplete="off" maxLength={80} value={form.label} onChange={event => setForm({ ...form, label: event.target.value })} disabled={busy} required/></div></label>
-        <label className="field"><span>{t('ps.printers.mac')} *</span><div className="field-control"><input type="text" data-testid="printer-form-mac" autoComplete="off" maxLength={17} value={form.mac_address} onChange={event => setForm({ ...form, mac_address: event.target.value })} placeholder="AA:BB:CC:DD:EE:FF" disabled={busy} required/></div></label>
+        <label className="field"><span>{t('ps.printers.name')} *</span><div className="field-control"><input ref={labelInput} type="text" data-testid="printer-form-label" autoComplete="off" maxLength={80} value={form.label} onChange={event => { setForm({ ...form, label: event.target.value }); setFormError(null); }} disabled={busy} required/></div></label>
+        <label className="field"><span>{t('ps.printers.mac')} *</span><div className="field-control"><input type="text" data-testid="printer-form-mac" autoComplete="off" maxLength={17} value={form.mac_address} onChange={event => { setForm({ ...form, mac_address: event.target.value }); setFormError(null); }} placeholder="AA:BB:CC:DD:EE:FF" disabled={busy} required/></div></label>
         <label className="field"><span>{t('ps.printers.model')}</span><div className="field-control"><input type="text" data-testid="printer-form-model" autoComplete="off" maxLength={80} value={form.model} onChange={event => setForm({ ...form, model: event.target.value })} disabled={busy}/></div></label>
         <label className="field"><span>{t('ps.printers.location')}</span><div className="field-control"><input type="text" data-testid="printer-form-location" autoComplete="off" maxLength={80} value={form.location} onChange={event => setForm({ ...form, location: event.target.value })} disabled={busy}/></div></label>
-        <button type="submit" className="button button-primary" data-testid="printer-form-submit" disabled={busy}><Plus size={17}/>{t('ps.printers.addSubmit')}</button>
+      {formOpen && formError && <div className="ps-printer-form-error form-error" role="alert" tabIndex={-1} ref={formErrorRef} data-testid="printer-form-error"><AlertTriangle size={19} aria-hidden="true"/><div><p>{formError.text}</p>{formError.registered && registeredNotice(formError.registered, false, "printer-form-registered")}</div></div>}
+        {knownFormRegistration && !formError?.registered && registeredNotice(knownFormRegistration, false, "printer-form-known-registered")}
+        <button type="submit" className="button button-primary" data-testid="printer-form-submit" disabled={busy || !!knownFormRegistration || !!formError?.registered}><Plus size={17}/>{t(knownFormRegistration || formError?.registered ? 'ps.scan.alreadyRegistered' : 'ps.printers.addSubmit')}</button>
       </form>}
       <div data-pagination-list="printers" />
       {state.printers.length === 0 ? <div className="staff-empty" data-testid="printers-empty"><Printer size={27}/><strong>{t('ps.printers.empty')}</strong></div> : matchingPrinters.length === 0 ? <div className="staff-empty" data-testid="printers-no-results"><Search size={27}/><strong>{t('ps.printers.noResults')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-printers-table"><thead><tr><th>{t('ps.printers.name')}</th><th>{t('ps.printers.mac')}</th><th>{t('state')}</th><th>{t('ps.printers.lastReport')}</th><th>{t('ps.printers.lastError')}</th><th>{t('ps.pendingJobs')}</th><th>{t('ps.printers.workstations')}</th>{canManage && <th>{t('staff.actions')}</th>}</tr></thead><tbody>{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => {
@@ -373,13 +419,13 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       {shownScan && (shownScan.error_code || shownScan.error_detail) && <div className="form-error ps-scan-error" data-testid="ps-scan-error"><AlertTriangle size={19}/><span>{[shownScan.error_code, shownScan.error_detail].filter(Boolean).join(' — ')}</span></div>}
       {shownScan?.result && (shownScan.result.candidates.length === 0 ? <div className="staff-empty" data-testid="scan-empty"><Radar size={27}/><span>{t('ps.scan.noCandidates')}</span></div> : <div className="staff-table-wrap"><table className="staff-table ps-scan-table"><thead><tr><th>{t('ps.printers.model')}</th><th>{t('ps.printers.mac')}</th><th>{t('ps.localAddress')}</th><th>{t('ps.scan.reachable')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{shownScan.result.candidates.map((candidate, index) => {
         const mac = candidate.mac_address; const key = mac ?? `unknown-${index}`;
-        const registered = !!candidate.printer_id || state.printers.some(printer => sameMac(printer.mac_address, mac));
+        const registered = !!candidate.printer_id || !!candidate.registered_elsewhere || !!candidate.scope || !!candidate.existing || state.printers.some(printer => sameMac(printer.mac_address, mac));
         return <tr key={key} data-testid={`scan-candidate-${key}`}>
           <td data-label={t('ps.printers.model')} className="staff-identity"><strong>{candidate.model || t('ps.scan.unknownModel')}</strong>{candidate.hostname && <small>{candidate.hostname}</small>}</td>
           <td data-label={t('ps.printers.mac')}><span className="ps-mono">{mac || t('notProvided')}</span></td>
           <td data-label={t('ps.localAddress')}><span className="ps-mono">{candidate.local_address ? `${candidate.local_address}${candidate.port !== null ? `:${candidate.port}` : ''}` : t('notProvided')}</span></td>
           <td data-label={t('ps.scan.reachable')}>{yesNo(candidate.reachable)}</td>
-          <td data-label={t('staff.actions')}>{registered ? <span className="staff-self-note" data-testid={`scan-registered-${key}`}>{t('ps.scan.alreadyRegistered')}</span> : canManage && mac ? <button type="button" className="staff-action-link" data-testid={`scan-add-${mac}`} disabled={busy} onClick={() => prefill(mac, candidate.model)}><Plus size={14}/>{t('ps.scan.add')}</button> : null}</td>
+          <td data-label={t('staff.actions')}>{registered ? registeredNotice(candidate.scope || candidate.existing ? { scope: candidate.scope, existing: candidate.existing } : knownRegistration(mac ?? '') ?? undefined, candidate.reachable === true, `scan-registered-${key}`) : canManage && mac ? <button type="button" className="staff-action-link" data-testid={`scan-add-${mac}`} disabled={busy} onClick={() => prefill(mac, candidate.model)}><Plus size={14}/>{t('ps.scan.add')}</button> : null}</td>
         </tr>;
       })}</tbody></table></div>)}
     </section>

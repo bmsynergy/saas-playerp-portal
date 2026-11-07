@@ -21,6 +21,8 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [readFailed, setReadFailed] = useState(false);
+  async function retryRead() { setBusy(true); try { await onChanged(); setReadFailed(false); } catch { setReadFailed(true); } finally { setBusy(false); } }
   const [mode, setMode] = useState<Mode>('manage');
   const [typedSerial, setTypedSerial] = useState('');
   const [venue, setVenue] = useState<AdminVenueOption | null>(null);
@@ -62,7 +64,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
       setOutcome({ ...output, venue: output.link?.venue_name ?? venue.name });
       if (output.link) setLink(output.link);
       setMode('assigned');
-      try { await onChanged(); } catch { setError(t('fw.refreshFailed')); }
+      try { await onChanged(); setReadFailed(false); } catch { setReadFailed(true); }
     } catch (err) { setError(psLinkErrorText(err, t, t(currentId ? adminDeviceErrorKey(err) : psErrorKey(err)))); }
     finally { setBusy(false); }
   }
@@ -129,6 +131,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
         : mode === 'unassign' ? <p>{t('inv.revokeConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p>
           : <><p>{t(mode === 'delete' ? 'adminDevice.deleteWarning' : 'inv.retireConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}', device.serial)}</span><input data-testid="inv-confirm-serial" autoComplete="off" spellCheck={false} value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}
     </>}
-    {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{error}</p>}
+    {readFailed && <p role="status" className="staff-notice ps-read-warning"><span>{t('psAssignment.readWarning')}</span><button type="button" className="button button-secondary" disabled={busy} onClick={() => void retryRead()}>{t('psAssignment.readRetry')}</button></p>}
+      {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{error}</p>}
   </PortalDialog>;
 }

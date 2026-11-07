@@ -114,11 +114,11 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
       {sheet.credentials.pending_change && <p className="stock-sheet-lead">{t('stockSheet.pendingHidden')}</p>}
     </section>
     {!hideLabel && <section className="stock-sheet-section" aria-labelledby="stock-label"><h2 id="stock-label">{t('stockSheet.label')}</h2>
-      {label ? <><p className="stock-sheet-lead">{t('dev.label.lead')} {t('dev.label.printHint')}</p><div className="staff-actions dev-label-actions">
-        <button type="button" className="button button-secondary" disabled={busy} onClick={() => void labelAction('preview')}><Eye size={15}/>{t('stockSheet.preview')}</button>
-        <button type="button" className="button button-secondary" disabled={busy} onClick={() => void labelAction('download')}><Download size={15}/>{t('stockSheet.download')}</button>
-        <button type="button" className="button button-secondary" disabled={busy} onClick={() => void labelAction('print')}><Printer size={15}/>{t('stockSheet.print')}</button>
-      </div></> : <p className="stock-sheet-empty">{sheet.label.missing.length ? sheet.label.missing.map(reason).join(' ') : t('stockSheet.labelUnavailable')}</p>}
+      <><p className="stock-sheet-lead">{t('dev.label.lead')} {t('dev.label.printHint')}</p><div className="staff-actions dev-label-actions">
+        <button type="button" className="button button-secondary" disabled={busy || !label} onClick={() => void labelAction('preview')}><Eye size={15}/>{t('stockSheet.preview')}</button>
+        <button type="button" className="button button-secondary" disabled={busy || !label} onClick={() => void labelAction('download')}><Download size={15}/>{t('stockSheet.download')}</button>
+        <button type="button" className="button button-secondary" disabled={busy || !label} onClick={() => void labelAction('print')}><Printer size={15}/>{t('stockSheet.print')}</button>
+      </div></>{!label && <p className="stock-sheet-empty">{sheet.label.missing.length ? sheet.label.missing.map(reason).join(' ') : t('stockSheet.labelUnavailable')}</p>}
       {busy && <p role="status">{t('ps.working')}</p>}{labelError && <p role="alert">{t('stockSheet.labelError')}</p>}
       {preview && preview.identity === labelIdentity && label && <figure className="dev-label-preview"><img src={preview.url} alt={t('dev.label.previewAlt')} width={590} height={354}/><figcaption>{t('dev.label.printHint')}</figcaption><button type="button" className="button button-secondary" onClick={() => setPreview(null)}><EyeOff size={15}/>{t('stockSheet.hidePreview')}</button></figure>}
     </section>}
