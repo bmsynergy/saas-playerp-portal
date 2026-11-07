@@ -1,0 +1,89 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "device": "PS-MWAG9DH2",
+  "deviceId": "82cfc31c-2044-48ff-a9c1-f7772be7e346",
+  "kind": "Real read-only catalog and device; synthetic image/file/assignment/email actions",
+  "checks": [
+    {
+      "name": "Guardian self-test aborts unlink and real kit_download before network access",
+      "aborted": 2,
+      "realMutations": 0
+    },
+    {
+      "name": "Real QA device and image catalog read without actions",
+      "kits": 5,
+      "compatible": 2,
+      "noImage": false
+    },
+    {
+      "name": "Synthetic kit_download requests the selected kit; downloads a small file preserving name, SHA and bytes",
+      "kitId": "f6000000-0000-4000-8000-000000000002",
+      "filename": "pe600-synthetic.img.xz",
+      "sha256": "7ef09f8179215c17a7c201cf94448583f09389b09e6c48a87a6a2fd3ed4f576f",
+      "bytes": 60,
+      "realImageDownloaded": false
+    },
+    {
+      "name": "Synthetic individual file emission downloads exact bytes without displaying enrollment code"
+    },
+    {
+      "name": "Synthetic label renders SSID and local address without maintenance key"
+    },
+    {
+      "name": "Assignment action uses synthetic reply for the selected venue"
+    },
+    {
+      "name": "Synthetic delivery email preview; no send request or email"
+    },
+    {
+      "name": "Legacy anchors resolve on the QA sheet"
+    },
+    {
+      "name": "Mutation guardian: 0 real mutations, 0 unexpected requests",
+      "mutations": 0
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "mutations": 0,
+  "reads": [
+    "portal_access",
+    "is_platform_staff",
+    "portal_tenant_directory",
+    "portal_access",
+    "is_platform_staff",
+    "ps_admin_device_detail",
+    "portal_access",
+    "is_platform_staff",
+    "portal_tenant_directory",
+    "portal_access",
+    "is_platform_staff",
+    "ps_admin_device_detail",
+    "ps_admin_device_detail"
+  ],
+  "realReads": [
+    "portal_access",
+    "is_platform_staff",
+    "portal_tenant_directory",
+    "ps_device_resolve",
+    "portal_access",
+    "is_platform_staff",
+    "ps-firmware-admin:kit_list",
+    "ps_admin_stock_status",
+    "ps_firmware_list",
+    "ps_panel_state",
+    "ps_admin_legacy_credentials_context",
+    "ps_panel_device",
+    "portal_access",
+    "is_platform_staff",
+    "ps_admin_device_detail"
+  ],
+  "synthetic": [
+    "kit_download",
+    "stock_file",
+    "label_read_synthetic",
+    "assign",
+    "email_preview"
+  ],
+  "pass": true
+}

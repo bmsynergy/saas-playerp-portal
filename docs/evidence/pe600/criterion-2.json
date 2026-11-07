@@ -1,0 +1,112 @@
+{
+  "criterion": 2,
+  "implementation_commit": "511f676b380660de63f35ac5c5ae3d650d1ce31e",
+  "url": "https://playerp.dev.bmore.app/admin/print-servers/devices/59a41440-8536-4045-aed1-3fcc5adaf193",
+  "device": "PS-JHG77BM7",
+  "role": "super_admin",
+  "before": "before.json",
+  "after": "after.json",
+  "screenshots": [
+    "before-1440.png",
+    "before-390.png",
+    "after-1440.png",
+    "after-390.png"
+  ],
+  "certificates": [
+    "after-certificates-1440.png",
+    "after-certificates-390.png"
+  ],
+  "views": [
+    {
+      "width": 1440,
+      "assets": [
+        "/assets/index-BNs5Tqxm.js"
+      ],
+      "scroll": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "nav": "Resumen\nInstalación y entrega\nRed y acceso\nFirmware\nImpresoras\nDiagnóstico",
+      "protection": {
+        "blocked": [],
+        "mutations": 0,
+        "reads": [
+          "portal_access",
+          "is_platform_staff",
+          "portal_tenant_directory",
+          "ps_device_resolve",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "ps_admin_stock_status",
+          "ps_firmware_list",
+          "ps_panel_state",
+          "ps_admin_legacy_credentials_context",
+          "ps_panel_device",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps-firmware-admin:kit_list",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_panel_recovery_label",
+          "ps_admin_legacy_credentials_context"
+        ]
+      },
+      "oldCertificateAnchor": {
+        "hash": "#ps469-certificates",
+        "open": true
+      }
+    },
+    {
+      "width": 390,
+      "assets": [
+        "/assets/index-BNs5Tqxm.js"
+      ],
+      "scroll": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "nav": "Resumen\nInstalación y entrega\nRed y acceso\nFirmware\nImpresoras\nDiagnóstico",
+      "protection": {
+        "blocked": [],
+        "mutations": 0,
+        "reads": [
+          "portal_access",
+          "is_platform_staff",
+          "portal_tenant_directory",
+          "ps_device_resolve",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "ps_admin_stock_status",
+          "ps_firmware_list",
+          "ps_panel_state",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_admin_legacy_credentials_context",
+          "ps_panel_recovery_label",
+          "ps_panel_device",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_recovery_label",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_admin_legacy_credentials_context"
+        ]
+      },
+      "oldCertificateAnchor": {
+        "hash": "#ps469-certificates",
+        "open": true
+      }
+    }
+  ],
+  "pass": true
+}

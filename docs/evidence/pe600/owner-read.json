@@ -1,0 +1,56 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "account": "owner_varios",
+  "views": [
+    {
+      "url": "https://playerp.dev.bmore.app/?venue=f4430000-0000-4000-8000-0000000000f1&section=print-servers&device=4a738466-52b2-4a38-a418-9ea8a46a2525",
+      "channel": false,
+      "setup": false,
+      "unlink": "absent"
+    }
+  ],
+  "blocked": [],
+  "mutations": 0,
+  "reads": [
+    "portal_access",
+    "is_platform_staff",
+    "support_venue_counts",
+    "portal_access",
+    "is_platform_staff",
+    "portal_access",
+    "is_platform_staff",
+    "portal_access",
+    "is_platform_staff",
+    "portal_owner_venues",
+    "ps_panel_devices",
+    "portal_access",
+    "is_platform_staff",
+    "portal_access",
+    "is_platform_staff",
+    "portal_owner_venues",
+    "ps_device_resolve",
+    "ps_panel_state",
+    "ps_panel_recovery_label",
+    "ps_panel_device",
+    "ps_panel_ota",
+    "ps_panel_recovery_label"
+  ],
+  "venues": [
+    {
+      "id": "f4430000-0000-4000-8000-0000000000f1",
+      "name": "PE443 fixture · dos Print Servers"
+    },
+    {
+      "id": "7c0f986f-2f28-4238-9080-279be48a0cc1",
+      "name": "US Test Venue (Florida)"
+    },
+    {
+      "id": "c1700000-0000-0000-0000-0000000000a0",
+      "name": "WI170P1 Venue"
+    }
+  ],
+  "unlinkReason": "forbidden",
+  "serial": "PS-PE462ASG",
+  "deviceUrl": "https://playerp.dev.bmore.app/?venue=f4430000-0000-4000-8000-0000000000f1&section=print-servers&device=4a738466-52b2-4a38-a418-9ea8a46a2525",
+  "pass": true
+}

@@ -1,0 +1,23 @@
+{
+  "criterion": 1,
+  "implementation_commit": "511f676b380660de63f35ac5c5ae3d650d1ce31e",
+  "build": {
+    "command": "npm run build",
+    "exit": 0,
+    "log": "build.txt"
+  },
+  "tests": {
+    "command": "npm test",
+    "exit": 0,
+    "files": 47,
+    "passed": 429,
+    "log": "tests.txt",
+    "new_contract_tests": "tests/pe600-clarity.test.ts"
+  },
+  "checks": [
+    "seven firmware states, unknown reason/detail fail closed",
+    "counts/newer_blocked presence do not determine verdict",
+    "download/flash/boot always manual",
+    "new EN/ES keys present"
+  ]
+}

@@ -1,0 +1,10 @@
+PASS Guardian self-test aborts unlink and real kit_download before network access
+PASS Real QA device and image catalog read without actions
+PASS Synthetic kit_download requests the selected kit; downloads a small file preserving name, SHA and bytes
+PASS Synthetic individual file emission downloads exact bytes without displaying enrollment code
+PASS Synthetic label renders SSID and local address without maintenance key
+PASS Assignment action uses synthetic reply for the selected venue
+PASS Synthetic delivery email preview; no send request or email
+PASS Legacy anchors resolve on the QA sheet
+PASS Mutation guardian: 0 real mutations, 0 unexpected requests
+{"pass":true,"mutations":0,"blocked":[]}

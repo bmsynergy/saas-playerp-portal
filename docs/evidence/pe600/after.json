@@ -1,0 +1,229 @@
+{
+  "phase": "after",
+  "origin": "https://playerp.dev.bmore.app",
+  "views": [
+    {
+      "width": 1440,
+      "assets": [
+        "/assets/index-BNs5Tqxm.js"
+      ],
+      "scroll": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "nav": "Resumen\nInstalación y entrega\nRed y acceso\nFirmware\nImpresoras\nDiagnóstico",
+      "protection": {
+        "blocked": [],
+        "mutations": 0,
+        "reads": [
+          "portal_access",
+          "is_platform_staff",
+          "portal_tenant_directory",
+          "ps_device_resolve",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "ps_admin_stock_status",
+          "ps_firmware_list",
+          "ps_panel_state",
+          "ps_admin_legacy_credentials_context",
+          "ps_panel_device",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps-firmware-admin:kit_list",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_panel_recovery_label",
+          "ps_admin_legacy_credentials_context"
+        ]
+      },
+      "oldCertificateAnchor": {
+        "hash": "#ps469-certificates",
+        "open": true
+      }
+    },
+    {
+      "width": 390,
+      "assets": [
+        "/assets/index-BNs5Tqxm.js"
+      ],
+      "scroll": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "nav": "Resumen\nInstalación y entrega\nRed y acceso\nFirmware\nImpresoras\nDiagnóstico",
+      "protection": {
+        "blocked": [],
+        "mutations": 0,
+        "reads": [
+          "portal_access",
+          "is_platform_staff",
+          "portal_tenant_directory",
+          "ps_device_resolve",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "ps_admin_stock_status",
+          "ps_firmware_list",
+          "ps_panel_state",
+          "portal_access",
+          "is_platform_staff",
+          "ps-firmware-admin:kit_list",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_admin_legacy_credentials_context",
+          "ps_panel_recovery_label",
+          "ps_panel_device",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_printer_jobs",
+          "ps_panel_recovery_label",
+          "portal_access",
+          "is_platform_staff",
+          "ps_admin_device_detail",
+          "ps_admin_legacy_credentials_context"
+        ]
+      },
+      "oldCertificateAnchor": {
+        "hash": "#ps469-certificates",
+        "open": true
+      }
+    }
+  ],
+  "contracts": {
+    "is_platform_staff": true,
+    "portal_access": {
+      "owner_venues": [],
+      "platform_role": "super_admin",
+      "support_staff": true,
+      "is_platform_staff": true
+    },
+    "ps_device_resolve": {
+      "serial": "PS-JHG77BM7",
+      "capabilities": {
+        "move": {
+          "allowed": false
+        },
+        "assign": {
+          "allowed": false
+        },
+        "revoke": {
+          "allowed": false,
+          "semantics": "revokes_credential_needs_new_preparation"
+        },
+        "unlink": {
+          "reason": "legacy_device",
+          "allowed": false,
+          "removes": [
+            "venue_link",
+            "venue_access",
+            "pending_jobs",
+            "pending_attempts",
+            "printer_bindings",
+            "pending_scan_commands"
+          ],
+          "preserves": [
+            "credential",
+            "identity",
+            "certificates",
+            "preparation",
+            "history",
+            "audit",
+            "pending_credential_and_cert_commands",
+            "other_print_servers"
+          ],
+          "semantics": "unlink_keeps_preparation",
+          "device_ack": {
+            "capability": "unlink_ack",
+            "required_version": "0.3.23"
+          },
+          "expected_rev": null
+        },
+        "prepare": {
+          "allowed": false
+        },
+        "set_label": {
+          "allowed": true
+        }
+      },
+      "venue": {
+        "id": "a0000000-0000-0000-0000-000000000001",
+        "name": "Dynamic Park"
+      },
+      "legacy": true
+    },
+    "ps_admin_device_detail": {
+      "update": {
+        "reason": "up_to_date",
+        "channel": {
+          "href": "/admin/print-servers/channels",
+          "ring": "lab",
+          "source": "admin",
+          "revision": 2,
+          "can_change": true,
+          "updated_at": "2026-11-06T22:54:16.604913+00:00",
+          "blocked_reason": null,
+          "deployment_groups": [
+            {
+              "id": "397fea40-1f77-44de-a810-c8fb18f7ebc1",
+              "name": "lab ps",
+              "ring": "lab"
+            }
+          ]
+        },
+        "editions": [],
+        "candidate": null,
+        "device_id": "59a41440-8536-4045-aed1-3fcc5adaf193",
+        "installed": {
+          "version": "0.3.27",
+          "edition_id": "37582368-54a8-45ca-8313-c29fc9330260",
+          "sha256_short": "dc3bb50e91d9",
+          "receipt_target_id": "85faa811-1826-47a7-948f-92c82dcad0e4"
+        },
+        "can_update": false,
+        "validation": {
+          "required": false
+        },
+        "active_update": null,
+        "current_known": true,
+        "latest_stable": {
+          "arch": "arm64",
+          "model": "rpi4-2gb",
+          "version": "0.3.23",
+          "signed_at": "2026-10-17T00:07:56.286541+00:00",
+          "edition_id": "a0dd09df-7b40-4a08-8a26-6407ff3a3190"
+        },
+        "newer_blocked": null,
+        "newest_signed": {
+          "arch": "arm64",
+          "ring": "general",
+          "model": "rpi4-2gb",
+          "version": "0.3.27",
+          "admitted": true,
+          "lab_only": false,
+          "signed_at": "2026-11-06T22:54:09.618421+00:00",
+          "edition_id": "37582368-54a8-45ca-8313-c29fc9330260",
+          "sha256_short": "dc3bb50e91d9",
+          "admitted_ring": "lab",
+          "general_eligible": true,
+          "eligibility_reason": "general",
+          "unavailable_reason": null,
+          "canary_confirmed_at": null
+        },
+        "editions_limit": 20,
+        "editions_total": 0,
+        "effective_ring": "lab",
+        "general_reason": "up_to_date",
+        "current_version": "0.3.27",
+        "print_server_id": "78d05113-78f1-47e4-b558-c1b19451fa33",
+        "update_available": false,
+        "newer_signed_unpromoted": false,
+        "general_update_available": false
+      }
+    }
+  },
+  "pass": true
+}

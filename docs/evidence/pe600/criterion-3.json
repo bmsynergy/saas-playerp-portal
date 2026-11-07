@@ -1,0 +1,51 @@
+{
+  "criterion": 3,
+  "implementation_commit": "511f676b380660de63f35ac5c5ae3d650d1ce31e",
+  "admin": {
+    "device": "PS-JHG77BM7",
+    "role": "super_admin",
+    "unlink": {
+      "reason": "legacy_device",
+      "allowed": false,
+      "removes": [
+        "venue_link",
+        "venue_access",
+        "pending_jobs",
+        "pending_attempts",
+        "printer_bindings",
+        "pending_scan_commands"
+      ],
+      "preserves": [
+        "credential",
+        "identity",
+        "certificates",
+        "preparation",
+        "history",
+        "audit",
+        "pending_credential_and_cert_commands",
+        "other_print_servers"
+      ],
+      "semantics": "unlink_keeps_preparation",
+      "device_ack": {
+        "capability": "unlink_ack",
+        "required_version": "0.3.23"
+      },
+      "expected_rev": null
+    },
+    "shown_reason": "Este equipo heredado no se puede desvincular.",
+    "source": "after.json"
+  },
+  "owner": {
+    "account": "owner_varios",
+    "device": "PS-PE462ASG",
+    "url": "https://playerp.dev.bmore.app/?venue=f4430000-0000-4000-8000-0000000000f1&section=print-servers&device=4a738466-52b2-4a38-a418-9ea8a46a2525",
+    "unlink_reason": "forbidden",
+    "unlink_visible": false,
+    "setup_visible": false,
+    "channel_visible": false,
+    "source": "owner-read.json",
+    "screenshot": "owner-read.png"
+  },
+  "mutations": 0,
+  "pass": true
+}

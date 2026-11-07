@@ -1,0 +1,50 @@
+{
+  "criterion": 4,
+  "implementation_commit": "511f676b380660de63f35ac5c5ae3d650d1ce31e",
+  "command": "node tests/pe600-ui-regression.mjs",
+  "output": "ui-regression.txt",
+  "report": "ui-regression.json",
+  "pass": true,
+  "mutations": 0,
+  "kind": "Real read-only catalog and device; synthetic image/file/assignment/email actions",
+  "checks": [
+    {
+      "name": "Guardian self-test aborts unlink and real kit_download before network access",
+      "aborted": 2,
+      "realMutations": 0
+    },
+    {
+      "name": "Real QA device and image catalog read without actions",
+      "kits": 5,
+      "compatible": 2,
+      "noImage": false
+    },
+    {
+      "name": "Synthetic kit_download requests the selected kit; downloads a small file preserving name, SHA and bytes",
+      "kitId": "f6000000-0000-4000-8000-000000000002",
+      "filename": "pe600-synthetic.img.xz",
+      "sha256": "7ef09f8179215c17a7c201cf94448583f09389b09e6c48a87a6a2fd3ed4f576f",
+      "bytes": 60,
+      "realImageDownloaded": false
+    },
+    {
+      "name": "Synthetic individual file emission downloads exact bytes without displaying enrollment code"
+    },
+    {
+      "name": "Synthetic label renders SSID and local address without maintenance key"
+    },
+    {
+      "name": "Assignment action uses synthetic reply for the selected venue"
+    },
+    {
+      "name": "Synthetic delivery email preview; no send request or email"
+    },
+    {
+      "name": "Legacy anchors resolve on the QA sheet"
+    },
+    {
+      "name": "Mutation guardian: 0 real mutations, 0 unexpected requests",
+      "mutations": 0
+    }
+  ]
+}
