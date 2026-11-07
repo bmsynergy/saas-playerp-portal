@@ -6,7 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { getAdminDeviceDetail, updateAdminDevice, setAdminDeviceChannel, adminDeviceErrorKey, type AdminDeviceDetail } from '../lib/psAdminDevice';
-import { defaultEditionId, firmwareHeadline, updateReasonKey } from '../lib/psOtaDevice';
+import { defaultEditionId } from '../lib/psOtaDevice';
+import { firmwareStatus } from '../lib/psFirmwareStatus';
 import type { FirmwareRing } from '../lib/firmwareEligibility';
 import { ChannelBlock, ChannelDialog, EditionPicker } from './DeviceOtaBlocks';
 import { useLocale } from '../locales';
@@ -37,15 +38,10 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
   const target = editions ? (selected ? { edition_id: selected.edition_id, version: selected.version } : null) : update?.candidate ? { edition_id: update.candidate.edition_id, version: update.candidate.version } : null;
   const canUpdate = !!(target && update?.current_version && !update.active_update && !detail.isError && !detail.isFetching && update.can_update && !!selected);
   const stillCurrent = !!(confirm && canUpdate && target?.edition_id === confirm.editionId && target.version === confirm.version && update?.current_version === confirm.installed && update.effective_ring === confirm.ring);
-  const headline = update ? firmwareHeadline(update.current_version, ota?.canary ?? null, update.reason) : null;
+  const status = firmwareStatus(update ? {...update, newer_blocked: ota?.newer_blocked} : null, detail.isError);
+  const statusText = t(`ps600.firmware.${status}`) + (status === 'unknown' ? ` (${update?.reason ?? 'unknown'})` : status === 'gated' ? ` (${ota?.newer_blocked?.detail ?? update?.reason})` : '');
   const serial = detail.data?.device.serial ?? '';
   const ringLabel = (ring: string | null) => ring ? t(`firmware.ring.${ring}`) : t('notProvided');
-  const blockedReason = (reason: string | null) => {
-    const key = updateReasonKey(reason, ota?.canary ?? null);
-    if (!key) return null;
-    const n=ota?.newer_blocked;
-    return (t(key) === key ? t('adminDevice.reason.not_authorized') : t(key)).replace('{version}',n?.version??'—').replace('{channel}',ringLabel(n?.channel??update?.effective_ring??null));
-  };
   const pickTarget = (u: AdminDeviceDetail['update'] | undefined) => {
     if (!u) return null;
     if (u.ota.editions) { const e = u.ota.editions.find(x => x.edition_id === confirmTargetId() && x.selectable); return e ? { edition_id: e.edition_id, version: e.version } : null; }
@@ -104,18 +100,16 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
 
   return <section className="staff-panel admin-device-summary" aria-labelledby={`admin-device-${deviceId}`} data-testid="admin-device-summary">
     <div className="section-heading"><div><p className="eyebrow">{t('adminDevice.firmwareEyebrow')}</p><h3 id={`admin-device-${deviceId}`}>{t('adminDevice.firmwareTitle')}</h3></div><button type="button" className="button button-secondary" onClick={() => void detail.refetch()} disabled={detail.isFetching}><RefreshCw size={15} aria-hidden="true"/>{t('refresh')}</button></div>
-    {detail.isPending ? <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p> : detail.isError ? <p role="alert" className="form-error">{t(adminDeviceErrorKey(detail.error))}</p> : update ? <>
+    {detail.isPending ? <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p> : detail.isError ? <p role="alert" className="form-error" data-testid="admin-device-headline" data-state="load_failed">{t('ps600.firmware.load_failed')} {t(adminDeviceErrorKey(detail.error))}</p> : update ? <>
       {showIdentity && detail.data && <InventoryDeviceIdentity device={detail.data.device}/>}
       <div className="admin-device-firmware-grid">
         <div><small>{t('adminDevice.currentFirmware')}</small><strong>{update.current_version ?? t('dash.unknownVersion')}</strong></div>
-        <div><small>{t('firmware.adminCandidate')}</small><strong>{update.candidate?.version ?? t('adminDevice.noStable')}</strong></div>
+        {ringAdmin && !ota?.channel && <div><small>{t('firmware.effectiveRing')}</small><strong>{ringLabel(update.effective_ring)}</strong></div>}
       </div>
-      <p className="ps-cert-small">{detail.data?.device.model} · {detail.data?.device.arch} · {t('firmware.effectiveRing')}: {ringLabel(update.effective_ring)}</p>
-      {headline && <p role="status" data-testid="admin-device-headline"><strong>{t(headline.key).replace('{version}', headline.version ?? '')}</strong></p>}
-      {canUpdate && <p role="status">{t('adminDevice.updateAvailable')}</p>}
+      <p role="status" data-testid="admin-device-headline" data-state={status}><strong>{statusText}</strong></p>
       {update.active_update && <p className="owner-section-lead" role="status">{t('adminDevice.updateInProgress')}: {update.active_update.stage ?? update.active_update.status}{update.active_update.progress !== null ? ` · ${update.active_update.progress}%` : ''}</p>}
-      {editions && <EditionPicker editionsTotal={ota?.editions_total} reason={update.reason} newerBlocked={ota?.newer_blocked} editions={editions} value={selected?.edition_id ?? null} onChange={id => { setPicked(id); setConfirm(null); }} disabled={busy || !!update.active_update}/>}
-      <FirmwareUpdateAction testId="admin-device-update" disabled={!canUpdate || busy} onClick={() => void review()} reason={!editions && !canUpdate && !detail.isFetching && !update.active_update ? blockedReason(update.reason) : null} loading={busy}/>
+      {!!editions?.length && <EditionPicker editionsTotal={ota?.editions_total} reason={update.reason} newerBlocked={ota?.newer_blocked} editions={editions} value={selected?.edition_id ?? null} onChange={id => { setPicked(id); setConfirm(null); }} disabled={busy || !!update.active_update}/>}
+      <FirmwareUpdateAction testId="admin-device-update" disabled={!canUpdate || busy} onClick={() => void review()} reason={null} loading={busy}/>
       {ringAdmin && ota?.channel && <ChannelBlock deviceId={deviceId} channel={ota.channel} onChange={openChannel}/>}
     </> : null}
     {detail.isFetching && !detail.isPending && <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p>}

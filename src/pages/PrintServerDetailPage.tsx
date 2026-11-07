@@ -320,41 +320,11 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     <PrintServerDevicePanel venueId={venueId} printServerId={sheetPsId} deviceId={deviceId} adminScope={scope === 'admin'} hideRecoveryLabel={hideRecoveryLabel} compact={embedded} caContent={caContent}/>
 
-    <section className="detail-panel" aria-labelledby="ps-diag-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
-      <div className="detail-grid">
-        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.lastStatusAt')}>{date(server?.last_status_at ?? null)}</Item>
-        <Item icon={<Activity size={19}/>} label={t('ps.diag.uptime')}>{formatUptime(lastStatus?.uptime_seconds ?? null) ?? t('notProvided')}</Item>
-        <Item icon={<ListOrdered size={19}/>} label={t('ps.queueDepth')} testId="ps-queue-depth">{lastStatus?.queue_depth ?? t('notProvided')}</Item>
-        <Item icon={<ListOrdered size={19}/>} label={t('ps.pendingJobs')} testId="ps-pending-jobs">{totalPending}</Item>
-        <Item icon={<Globe2 size={19}/>} label={t('ps.diag.portalUrl')}><span className="ps-mono">{lastStatus?.portal_url || t('notProvided')}</span></Item>
-        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.channelOpenedAt')}>{date(server?.channel_opened_at ?? null)}</Item>
-        {scope === 'admin' && <Item icon={<StickyNote size={19}/>} label={t('ps.diag.note')}>{lastStatus?.note || t('notProvided')}</Item>}
-      </div>
-      {state.printers.length > 0 && <div className="ps-section-body"><p className="detail-item-label">{t('ps.diag.pendingByPrinter')}</p><ul className="ps-queue-list">{state.printers.map(printer => <li key={printer.id} data-testid={`printer-queue-${printer.id}`}><span>{printer.label}</span><strong>{printer.pending_jobs}</strong></li>)}</ul></div>}
-    </section>
 
-    <section className="staff-panel" aria-labelledby="ps-scan-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.scan.eyebrow')}</p><h2 id="ps-scan-title">{t('ps.scan.title')}</h2></div><span className="section-icon"><Radar size={20}/></span></div>
-      <p className="staff-panel-lead">{t('ps.scan.lead')}</p>
-      <div className="staff-actions ps-actions">
-        {canManage && <button type="button" className="button button-primary" data-testid="ps-scan" disabled={busy || polling || !server} onClick={askScan}><Radar size={17}/>{t(polling ? 'ps.scan.running' : 'ps.scan.request')}</button>}
-        <span className="staff-role" data-testid="ps-scan-status" data-status={scanStatus ?? 'none'}>{polling && !scanTimedOut && <span className="spinner ps-spinner"/>}{t('ps.scan.statusLabel')}: {scanStatus ? slugLabel(t, 'ps.scan.status', scanStatus) : t('ps.scan.status.none')}</span>
-        {shownScan && <span className="staff-self-note">{date(shownScan.result?.scanned_at ?? shownScan.completed_at ?? shownScan.created_at, '')}{shownScan.result?.network ? ` · ${shownScan.result.network}` : ''}</span>}
-      </div>
-      {shownScan && (shownScan.error_code || shownScan.error_detail) && <div className="form-error ps-scan-error" data-testid="ps-scan-error"><AlertTriangle size={19}/><span>{[shownScan.error_code, shownScan.error_detail].filter(Boolean).join(' — ')}</span></div>}
-      {shownScan?.result && (shownScan.result.candidates.length === 0 ? <div className="staff-empty" data-testid="scan-empty"><Radar size={27}/><span>{t('ps.scan.noCandidates')}</span></div> : <div className="staff-table-wrap"><table className="staff-table ps-scan-table"><thead><tr><th>{t('ps.printers.model')}</th><th>{t('ps.printers.mac')}</th><th>{t('ps.localAddress')}</th><th>{t('ps.scan.reachable')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{shownScan.result.candidates.map((candidate, index) => {
-        const mac = candidate.mac_address; const key = mac ?? `unknown-${index}`;
-        const registered = !!candidate.printer_id || state.printers.some(printer => sameMac(printer.mac_address, mac));
-        return <tr key={key} data-testid={`scan-candidate-${key}`}>
-          <td data-label={t('ps.printers.model')} className="staff-identity"><strong>{candidate.model || t('ps.scan.unknownModel')}</strong>{candidate.hostname && <small>{candidate.hostname}</small>}</td>
-          <td data-label={t('ps.printers.mac')}><span className="ps-mono">{mac || t('notProvided')}</span></td>
-          <td data-label={t('ps.localAddress')}><span className="ps-mono">{candidate.local_address ? `${candidate.local_address}${candidate.port !== null ? `:${candidate.port}` : ''}` : t('notProvided')}</span></td>
-          <td data-label={t('ps.scan.reachable')}>{yesNo(candidate.reachable)}</td>
-          <td data-label={t('staff.actions')}>{registered ? <span className="staff-self-note" data-testid={`scan-registered-${key}`}>{t('ps.scan.alreadyRegistered')}</span> : canManage && mac ? <button type="button" className="staff-action-link" data-testid={`scan-add-${mac}`} disabled={busy} onClick={() => prefill(mac, candidate.model)}><Plus size={14}/>{t('ps.scan.add')}</button> : null}</td>
-        </tr>;
-      })}</tbody></table></div>)}
-    </section>
 
-    <section className="staff-panel" id="ps469-printers" aria-labelledby="ps-printers-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="ps-printers-title">{t('ps.printers.title')}</h2></div><span className="count-pill">{state.printers.length}</span></div>
+
+    <section className="ps600-printers-group" id="ps469-printers" aria-labelledby="ps-printers-title" data-testid="ps-printers-group">
+    <section className="staff-panel" aria-labelledby="ps-printers-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="ps-printers-title">{t('ps.printers.title')}</h2></div><span className="count-pill">{state.printers.length}</span></div>
       <p className="staff-panel-lead">{t('ps.printers.lead')}</p>
       <button type="button" className="ps-printers-toggle" data-testid="printers-toggle" aria-expanded={printersOpen} aria-controls={printersRegionId} onClick={() => setPrintersOpen(value => !value)}><span>{t(printersOpen ? 'ps.printers.closeList' : 'ps.printers.openList')}</span><ChevronDown size={18} aria-hidden="true"/></button>
       <div id={printersRegionId} hidden={!printersOpen}>
@@ -393,9 +363,47 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
       </div>
     </section>
 
-    <section className="staff-panel" id="ps469-queue" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h2 id="ps-jobs-title">{t('ps.jobs.title')}</h2></div><span className="section-icon"><ListOrdered size={20}/></span></div>
+    <section className="staff-panel" aria-labelledby="ps-scan-title"><div className="section-heading"><div><p className="eyebrow">{t('ps.scan.eyebrow')}</p><h3 id="ps-scan-title">{t('ps.scan.title')}</h3></div><span className="section-icon"><Radar size={20}/></span></div>
+      <p className="staff-panel-lead">{t('ps.scan.lead')}</p>
+      <div className="staff-actions ps-actions">
+        {canManage && <button type="button" className="button button-primary" data-testid="ps-scan" disabled={busy || polling || !server} onClick={askScan}><Radar size={17}/>{t(polling ? 'ps.scan.running' : 'ps.scan.request')}</button>}
+        <span className="staff-role" data-testid="ps-scan-status" data-status={scanStatus ?? 'none'}>{polling && !scanTimedOut && <span className="spinner ps-spinner"/>}{t('ps.scan.statusLabel')}: {scanStatus ? slugLabel(t, 'ps.scan.status', scanStatus) : t('ps.scan.status.none')}</span>
+        {shownScan && <span className="staff-self-note">{date(shownScan.result?.scanned_at ?? shownScan.completed_at ?? shownScan.created_at, '')}{shownScan.result?.network ? ` · ${shownScan.result.network}` : ''}</span>}
+      </div>
+      {shownScan && (shownScan.error_code || shownScan.error_detail) && <div className="form-error ps-scan-error" data-testid="ps-scan-error"><AlertTriangle size={19}/><span>{[shownScan.error_code, shownScan.error_detail].filter(Boolean).join(' — ')}</span></div>}
+      {shownScan?.result && (shownScan.result.candidates.length === 0 ? <div className="staff-empty" data-testid="scan-empty"><Radar size={27}/><span>{t('ps.scan.noCandidates')}</span></div> : <div className="staff-table-wrap"><table className="staff-table ps-scan-table"><thead><tr><th>{t('ps.printers.model')}</th><th>{t('ps.printers.mac')}</th><th>{t('ps.localAddress')}</th><th>{t('ps.scan.reachable')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{shownScan.result.candidates.map((candidate, index) => {
+        const mac = candidate.mac_address; const key = mac ?? `unknown-${index}`;
+        const registered = !!candidate.printer_id || state.printers.some(printer => sameMac(printer.mac_address, mac));
+        return <tr key={key} data-testid={`scan-candidate-${key}`}>
+          <td data-label={t('ps.printers.model')} className="staff-identity"><strong>{candidate.model || t('ps.scan.unknownModel')}</strong>{candidate.hostname && <small>{candidate.hostname}</small>}</td>
+          <td data-label={t('ps.printers.mac')}><span className="ps-mono">{mac || t('notProvided')}</span></td>
+          <td data-label={t('ps.localAddress')}><span className="ps-mono">{candidate.local_address ? `${candidate.local_address}${candidate.port !== null ? `:${candidate.port}` : ''}` : t('notProvided')}</span></td>
+          <td data-label={t('ps.scan.reachable')}>{yesNo(candidate.reachable)}</td>
+          <td data-label={t('staff.actions')}>{registered ? <span className="staff-self-note" data-testid={`scan-registered-${key}`}>{t('ps.scan.alreadyRegistered')}</span> : canManage && mac ? <button type="button" className="staff-action-link" data-testid={`scan-add-${mac}`} disabled={busy} onClick={() => prefill(mac, candidate.model)}><Plus size={14}/>{t('ps.scan.add')}</button> : null}</td>
+        </tr>;
+      })}</tbody></table></div>)}
+    </section>
+
+    <section className="staff-panel" id="ps469-queue" aria-labelledby="ps-jobs-title" data-testid="ps-jobs"><div className="section-heading"><div><p className="eyebrow">{t('ps.jobs.eyebrow')}</p><h3 id="ps-jobs-title">{t('ps.jobs.title')}</h3></div><span className="section-icon"><ListOrdered size={20}/></span></div>
       <p className="staff-panel-lead">{t('ps.jobs.lead')}</p>
       {state.printers.length ? <><div data-pagination-list="queues" /><div className="ps-queues">{matchingPrinters.slice(printerPagination.start, printerPagination.end).map(printer => <PrinterQueue key={`${sheetPsId ?? ''}:${printer.id}`} venueId={venueId} printer={printer} api={api} reloadKey={queueKey}/>)}</div><PrintListPagination pagination={printerPagination} id="queues"/></> : <p className="inline-empty">{t('ps469.noQueue')}</p>}
+    </section>
+
+    </section>
+
+    <section className="detail-panel ps600-diagnostics" id="ps469-diagnostics" aria-labelledby="ps-diag-title" data-testid="ps-diagnostics"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
+      <p className="ps600-operational-summary" data-testid="ps-diagnostics-summary">{server?.last_status_at ? t('ps600.diagReported').replace('{date}', date(server.last_status_at)) : t('ps600.diagNoReport')} · {t('ps.pendingJobs')}: {totalPending}</p>
+      <div className="detail-grid ps600-diag-primary">
+        {lastStatus?.uptime_seconds != null && <Item icon={<Activity size={19}/>} label={t('ps.diag.uptime')}>{formatUptime(lastStatus.uptime_seconds)}</Item>}
+        {lastStatus?.queue_depth != null && <Item icon={<ListOrdered size={19}/>} label={t('ps.queueDepth')} testId="ps-queue-depth">{lastStatus.queue_depth}</Item>}
+      </div>
+      <details className="ps600-technical" data-testid="ps-diagnostics-details"><summary>{t('ps600.technicalDetails')}</summary><div className="detail-grid">
+        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.lastStatusAt')}>{date(server?.last_status_at ?? null)}</Item>
+        <Item icon={<Globe2 size={19}/>} label={t('ps.diag.portalUrl')}><span className="ps-mono">{lastStatus?.portal_url || t('notProvided')}</span></Item>
+        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.channelOpenedAt')}>{date(server?.channel_opened_at ?? null)}</Item>
+        {scope === 'admin' && <Item icon={<StickyNote size={19}/>} label={t('ps.diag.note')}>{lastStatus?.note || t('notProvided')}</Item>}
+      </div></details>
+      {state.printers.length > 0 && <div className="ps-section-body"><p className="detail-item-label">{t('ps.diag.pendingByPrinter')}</p><ul className="ps-queue-list">{state.printers.map(printer => <li key={printer.id} data-testid={`printer-queue-${printer.id}`}><span>{printer.label}</span><strong>{printer.pending_jobs}</strong></li>)}</ul></div>}
     </section>
 
     {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>

@@ -738,3 +738,55 @@ html[data-nav="keyboard"] .channels-ring-card:focus-visible,html[data-nav="keybo
 
 /* Native focus stays available; pointer input never paints a ring. */
 html:not([data-nav="keyboard"]) :focus { outline: none !important; }
+
+/* PE-600: Print Server detail rhythm and optional technical information. */
+.ps469-sheet { gap: clamp(14px, 1.5vw, 22px); max-width: 1240px; width: 100%; }
+.ps469-sheet > *, .ps469-sheet .detail-panel, .ps469-sheet .staff-panel { min-width: 0; }
+.ps469-sheet .detail-panel, .ps469-sheet .staff-panel { overflow-wrap: anywhere; }
+.ps469-sheet .section-heading { margin-bottom: 14px; }
+.ps469-sheet .section-heading h2 { line-height: 1.25; }
+.ps469-sheet .section-heading + p { margin-top: 0; }
+.ps469-sheet .ps-cert-small, .ps469-sheet .owner-section-lead, .ps469-sheet .staff-panel-lead { font-size: .82rem; line-height: 1.55; }
+.ps469-sheet .staff-actions, .ps469-sheet .ps-actions { gap: 10px; margin-top: 14px; }
+.ps469-sheet .dev-facts, .ps469-sheet .fw-release-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ps469-sheet .dev-facts dd, .ps469-sheet .fw-release-facts dd, .ps469-sheet .detail-item strong { overflow-wrap: anywhere; }
+.ps469-sections { position: sticky; top: 0; z-index: 4; background: var(--surface, #fff); padding: 8px 0 10px; gap: 8px; }
+.ps469-sections a { line-height: 1.35; white-space: nowrap; }
+.ps600-section, .ps469-sheet [id^="ps469-"], .ps469-sheet #ps-setup, .ps469-sheet #ps-stock-preparation { scroll-margin-top: 74px; }
+.ps600-section { min-width: 0; }
+.ps600-technical { border: 1px solid var(--line); border-radius: 10px; background: var(--surface, #fff); padding: 12px 16px; min-width: 0; }
+.ps600-technical summary { cursor: pointer; font-size: .84rem; font-weight: 700; line-height: 1.45; color: var(--blue-text, var(--ink)); }
+.ps600-technical[open] summary { margin-bottom: 14px; }
+.ps600-technical .dev-facts { margin: 0; }
+.ps469-overview .ps600-technical { grid-column: 1 / -1; }
+.ps600-operational-summary { margin: 0 0 14px; font-size: .87rem; line-height: 1.5; font-weight: 600; }
+.ps600-diag-primary { margin-bottom: 14px; }
+.ps600-diagnostics .ps600-technical { margin-top: 10px; }
+.ps-stock-technical { margin: 14px 0 4px; }
+.ps-setup-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-left: 0; list-style: none; counter-reset: setup-step; }
+.ps-setup-steps > li { min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; counter-increment: setup-step; }
+.ps-setup-steps > li > p:first-child { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 7px; margin: 0 0 8px; }
+.ps-setup-steps > li > p:first-child strong::before { content: counter(setup-step) '. '; color: var(--muted); }
+.ps-stock-block { padding: 16px 0; }
+.ps-stock-block p { margin: 8px 0; }
+.ps-stock-block ol { margin: 10px 0 0; }
+.ps-stock-block li + li { margin-top: 6px; }
+@media (max-width: 760px) {
+  .ps469-sections { position: static; flex-wrap: wrap; overflow-x: visible; }
+  .ps469-sections a { flex: 0 1 auto; white-space: normal; font-size: .8rem; }
+  .ps469-sheet .dev-facts, .ps469-sheet .fw-release-facts, .ps-setup-steps, .ps469-overview { grid-template-columns: minmax(0, 1fr); }
+  .ps469-sheet .button { max-width: 100%; white-space: normal; text-align: center; }
+}
+@media (max-width: 430px) {
+  .ps469-sections a { padding: 7px 10px; }
+  .ps600-technical { padding: 11px 13px; }
+  .ps-setup-steps > li { padding: 12px 13px; }
+}
+.ps600-section-title { grid-column: 1 / -1; margin: 0; font-size: 1.16rem; line-height: 1.3; }
+.ps600-network, .ps600-printers-group { display: grid; gap: clamp(14px, 1.5vw, 22px); min-width: 0; }
+.ps600-network > *, .ps600-printers-group > * { min-width: 0; }
+.ps600-network > .ps-cert-panel { margin-top: 0; }
+.ps600-printers-group > .staff-panel { margin: 0; }
+.ps600-printers-group > .staff-panel:not(:first-child) { border-color: var(--line); }
+.ps600-printers-group h3 { font-size: 1rem; line-height: 1.3; }
+.ps600-network #ps469-certificates:target { outline: 2px solid var(--blue); outline-offset: 2px; }

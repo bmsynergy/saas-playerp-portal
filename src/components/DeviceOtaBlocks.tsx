@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { channelsReturnTo } from '../lib/channelNavigation';
 import { Link, useLocation } from 'react-router-dom';
+import { capabilityReason } from '../lib/psFirmwareStatus';
 import { useLocale } from '../locales';
 import type { FirmwareRing } from '../lib/firmwareLifecycle';
 import { type NewerBlocked, type OtaChannel, type OtaEdition } from '../lib/psOtaDevice';
@@ -18,7 +19,7 @@ export function ChannelBlock({ deviceId, channel, onChange }: {deviceId:string;c
     <p className="ps-cert-small">{t('pe474.channels.deviceRule')}</p>
     {channel.deployment_groups.length>0&&<p className="ps-cert-small">{t('pe474.channels.deploymentGroups')}: {channel.deployment_groups.map(g=>g.name).join(', ')}</p>}
     <div className="staff-actions"><button type="button" className="button button-secondary" data-testid="admin-device-change-channel" disabled={!channel.can_change} onClick={onChange}>{t('otaDevice.channel.change')}</button><Link className="staff-action-link" to={href}>{t('pe474.channels.manage')}</Link></div>
-    {!channel.can_change&&channel.blocked_reason&&<p className="ps-cert-small">{t(`adminDevice.reason.${channel.blocked_reason}`)}</p>}
+    {!channel.can_change&&channel.blocked_reason&&<p className="ps-cert-small">{capabilityReason(channel.blocked_reason,t)}</p>}
   </div>;
 }
 export function ChannelDialog({channel,serial,busy,error,onCancel,onConfirm}:{channel:OtaChannel;serial:string;busy:boolean;error:string;onCancel:()=>void;onConfirm:(ring:FirmwareRing)=>void}) {

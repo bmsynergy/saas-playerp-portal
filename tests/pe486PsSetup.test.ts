@@ -46,20 +46,20 @@ beforeEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); mocks.getSession.m
 
 describe('PE-486 setup step states (server data only)', () => {
   it('new device: local steps and prepare current, nothing else started', () => {
-    expect(states(base())).toEqual({ download: 'current', flash: 'current', boot: 'current', prepare: 'current', link: 'pending', online: 'pending', channel: 'pending' });
+    expect(states(base())).toEqual({ download: 'manual', flash: 'manual', boot: 'manual', prepare: 'current', link: 'pending', online: 'pending', channel: 'pending' });
     expect(setupProgress(base())).toMatchObject({ done: 0, total: 4, codeExpired: false });
   });
-  it('code_issued: prepare done, link current', () => {
-    expect(states(base({ preparation: 'code_issued' }))).toMatchObject({ prepare: 'done', link: 'current', online: 'pending', download: 'current' });
-    expect(setupProgress(base({ preparation: 'code_issued' })).done).toBe(1);
+  it('code_issued: preparation not yet confirmed, link current', () => {
+    expect(states(base({ preparation: 'code_issued' }))).toMatchObject({ prepare: 'current', link: 'current', online: 'pending', download: 'manual' });
+    expect(setupProgress(base({ preparation: 'code_issued' })).done).toBe(0);
   });
-  it('prepared: link done, online current, local steps done', () => {
+  it('prepared: link done, online current, local steps unverified', () => {
     for (const input of [base({ preparation: 'prepared' }), base({ preparation: 'code_issued', prepared: true })])
-      expect(states(input)).toEqual({ download: 'done', flash: 'done', boot: 'done', prepare: 'done', link: 'done', online: 'current', channel: 'pending' });
+      expect(states(input)).toEqual({ download: 'manual', flash: 'manual', boot: 'manual', prepare: 'done', link: 'done', online: 'current', channel: 'pending' });
   });
-  it('online with a known channel: everything done', () => {
+  it('online with a known channel: server checks done, manual steps unverified', () => {
     const p = setupProgress(base({ preparation: 'prepared', prepared: true, online: true, ring: 'canary' }));
-    expect(p.steps.every(s => s.state === 'done')).toBe(true); expect(p.done).toBe(4);
+    expect(p.steps.filter(s => !['download','flash','boot'].includes(s.key)).every(s => s.state === 'done')).toBe(true); expect(p.done).toBe(4);
     expect(states(base({ preparation: 'prepared', prepared: true, online: true }))).toMatchObject({ online: 'done', channel: 'current' });
     expect(states(base({ preparation: 'prepared', prepared: true, ring: 'general' }))).toMatchObject({ channel: 'pending' });
   });
@@ -90,25 +90,25 @@ describe('PE-486 PsDeviceSetup', () => {
   it('super_admin sees steps, full SHA-256, verification command, troubleshooting and limits — never a pse_ code', () => {
     const d = device({ prepared: false, state: 'pendiente_preparacion', preparation: { state: 'code_issued', code_expires_at: null, prepared_at: null } }, null);
     const { html } = render(superAdmin, d, { kits: [kit('img', 'bootable_image', '2026-10-12T00:00:00Z'), kit('zip', 'initial_install', '2026-10-13T00:00:00Z')], ring: null });
-    expect(html).toContain('Setup del Print Server'); expect(html).toContain('id="ps-setup"');
+    expect(html).toContain('Instalación y entrega'); expect(html).toContain('id="ps-setup"');
     expect(html).toContain(`data-testid="ps-setup-sha">${SHA}</code>`); expect(html).toContain('shasum -a 256 playerp-ps-img.img.xz'); expect(html).not.toContain('playerp-ps-zip');
     expect(html).toContain('data-testid="ps-setup-download"'); expect(html).toContain('500.0 MB'); expect(html).toContain('0.3.21'); expect(html).toContain('raspios-bookworm-arm64-lite.img.xz');
-    expect(html).toContain('1 de 4 comprobaciones del servidor');
-    expect(stepState(html, 'prepare')).toBe('done'); expect(stepState(html, 'link')).toBe('current'); expect(stepState(html, 'download')).toBe('current');
-    expect(html).toContain(`PlayERP-Setup-${d.serial.replace(/^PS-/, '')}`);
+    expect(html).toContain('0 de 4 comprobaciones del servidor');
+    expect(stepState(html, 'prepare')).toBe('current'); expect(stepState(html, 'link')).toBe('current'); expect(stepState(html, 'download')).toBe('manual');
+    expect(html).toContain('bootfs'); expect(html).toContain('Ethernet');
     expect(html).toContain('href="#ps469-preparation"'); expect(html).toContain('href="#ps469-firmware"');
-    expect(html).toContain('data-testid="ps-setup-troubleshooting"'); expect(html).toContain('data-testid="ps-setup-limits"'); expect(html).not.toContain('data-testid="ps-setup-error"');
+    expect(html).toContain('data-testid="ps-setup-troubleshooting"'); expect(html).not.toContain('data-testid="ps-setup-limits"'); expect(html).not.toContain('data-testid="ps-setup-error"');
     expect(html).not.toMatch(/pse_[A-Za-z0-9]/);
   });
   it('code_expired shows the recovery alert', () => {
     const { html } = render(superAdmin, device({ prepared: false, preparation: { state: 'code_expired', code_expires_at: null, prepared_at: null } }, null), { kits: [], ring: null });
-    expect(html).toMatch(/role="alert" data-testid="ps-setup-error"/); expect(html).toContain('El código pse_ caducó.'); expect(html).toContain('el anterior deja de valer');
+    expect(html).toMatch(/role="alert" data-testid="ps-setup-error"/); expect(html).toContain(es['psSetup.error.codeExpired']); expect(html).not.toContain('pse_');
     expect(stepState(html, 'prepare')).toBe('error'); expect(html).toContain('data-testid="ps-setup-no-image"');
   });
   it('online device with a channel: all checks done and the channel label is shown', () => {
     const { html } = render(superAdmin, device({ prepared: true, preparation: { state: 'prepared', code_expires_at: null, prepared_at: null }, reported: { firmware_version: '0.3.21', hostname: null, last_seen_at: '2026-10-18T10:00:00Z' } }, true), { kits: [], ring: 'canary' });
     expect(html).toContain('4 de 4 comprobaciones del servidor'); expect(stepState(html, 'channel')).toBe('done');
-    expect(html).toContain('data-testid="ps-setup-channel"'); expect(html).toContain('Canary'); expect(html).toContain('0.3.21');
+    expect(html).not.toContain('data-testid="ps-setup-channel"'); expect(html).not.toContain('Canary'); expect(html).not.toContain('0.3.21');
     expect(html).not.toContain('ps-setup-open-preparation'); expect(html).not.toContain('admin-device-change-channel');
   });
   it.each([['owner', owner], ['support staff', support]])('%s gets nothing and no admin call is made', async (_, access) => {

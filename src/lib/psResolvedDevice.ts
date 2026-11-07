@@ -14,7 +14,7 @@ export type ResolvedDevice = {
   link:PsDeviceLink; compat:PsCompat; is_staff:boolean; can_manage:boolean;
   capabilities:{
     unlink:{allowed:boolean;reason:string|null;expected_rev:number|null;semantics:string;removes:string[];preserves:string[];device_ack:{capability:string;required_version:string}};
-    revoke:{allowed:boolean;semantics:string}; prepare:{allowed:boolean}; assign:{allowed:boolean}; move:{allowed:boolean}; set_label:{allowed:boolean};
+    revoke:{allowed:boolean;reason?:string|null;semantics:string}; prepare:{allowed:boolean;reason?:string|null}; assign:{allowed:boolean;reason?:string|null}; move:{allowed:boolean;reason?:string|null}; set_label:{allowed:boolean;reason?:string|null};
   };
   preparation_entry:{web:{url:string;section:string;field:string;endpoint:string;required_version:string;requires:string[]};ssh:{command:string;required_version:string;requires:string[]}};
 };
@@ -56,9 +56,9 @@ export function projectResolvedDevice(value:unknown,requestedId:string):Resolved
     requested_runtime:requested?{print_server_id:required(requested.print_server_id),status:required(requested.status),is_current:requested.is_current===true}:null,
     link,compat:{installed_version:str(c.installed_version),capabilities:{link_ack:capability('link_ack'),unlink_ack:capability('unlink_ack'),web_activation:capability('web_activation')}},
     is_staff:r.is_staff===true,can_manage:r.can_manage===true,
-    capabilities:{unlink:{allowed:unlink.allowed===true,reason:str(unlink.reason),expected_rev:number(unlink.expected_rev),semantics:required(unlink.semantics),removes:strings(unlink.removes),preserves:strings(unlink.preserves),device_ack:{capability:required(ack.capability),required_version:required(ack.required_version)}},
-      revoke:{allowed:obj(actions.revoke).allowed===true,semantics:required(obj(actions.revoke).semantics)},
-      prepare:{allowed:obj(actions.prepare).allowed===true},assign:{allowed:obj(actions.assign).allowed===true},move:{allowed:obj(actions.move).allowed===true},set_label:{allowed:obj(actions.set_label).allowed===true}},
+    capabilities:{unlink:{allowed:unlink.allowed===true&&!str(unlink.reason),reason:str(unlink.reason),expected_rev:number(unlink.expected_rev),semantics:required(unlink.semantics),removes:strings(unlink.removes),preserves:strings(unlink.preserves),device_ack:{capability:required(ack.capability),required_version:required(ack.required_version)}},
+      revoke:{allowed:obj(actions.revoke).allowed===true&&!str(obj(actions.revoke).reason),reason:str(obj(actions.revoke).reason),semantics:required(obj(actions.revoke).semantics)},
+      prepare:{allowed:obj(actions.prepare).allowed===true&&!str(obj(actions.prepare).reason),reason:str(obj(actions.prepare).reason)},assign:{allowed:obj(actions.assign).allowed===true&&!str(obj(actions.assign).reason),reason:str(obj(actions.assign).reason)},move:{allowed:obj(actions.move).allowed===true&&!str(obj(actions.move).reason),reason:str(obj(actions.move).reason)},set_label:{allowed:obj(actions.set_label).allowed===true&&!str(obj(actions.set_label).reason),reason:str(obj(actions.set_label).reason)}},
     preparation_entry:{web:{url:required(web.url),section:required(web.section),field:required(web.field),endpoint:required(web.endpoint),required_version:required(web.required_version),requires:strings(web.requires)},ssh:{command:required(ssh.command),required_version:required(ssh.required_version),requires:strings(ssh.requires)}},
   };
 }

@@ -27,6 +27,7 @@ import { getPsVenueOverview } from './lib/psVenueOverview';
 import { InventoryDeviceSheet } from './components/InventoryDeviceSheet';
 import { PsDeviceLinkPanel } from './components/PsDeviceLinkPanel';
 import { getStockStatus } from './lib/psStock';
+import { capabilityReason } from './lib/psFirmwareStatus';
 import { PsDeviceSetup } from './components/PsDeviceSetup';
 import { PsStockPreparation } from './components/PsStockPreparation';
 import { DeviceAdminSummary } from './components/DeviceAdminSummary';
@@ -601,25 +602,32 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     {stale&&<PsRefreshWarning onRetry={()=>invalidatePsViews(queryClient)}/>}
     {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
     {notice&&<p className="staff-notice" role="status">{notice}</p>}
-    <nav className="ps469-sections" aria-label={t('ps469.sections')}><a href="#ps469-overview">{t('ps469.summary')}</a>{setup&&!device.link.prepared&&<a href="#ps-stock-preparation">{t('psLink.prep.title')}</a>}<a href="#ps469-wifi">{t('ps469.wifi')}</a>{staff&&runtime&&venue&&<a href="#ps469-compat">{t('ps469.compatibility')}</a>}{setup&&<a href={existingPrepared?"#ps-setup":"#ps-stock-preparation"}>{t('psSetup.nav')}</a>}<a href="#ps469-firmware">{t('stockSheet.firmware')}</a>{runtime&&venue&&<><a href="#ps469-certificates">{t('ps469.certificates')}</a><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-queue">{t('ps469.queue')}</a></>}</nav>
+    <nav className="ps469-sections" aria-label={t('ps469.sections')}>
+      <a href="#ps469-overview">{t('ps469.summary')}</a>
+      {setup&&<a href="#ps469-installation">{t('ps600.installation')}</a>}
+      <a href="#ps469-wifi">{t('ps600.network')}</a>
+      <a href="#ps469-firmware">{t('stockSheet.firmware')}</a>
+      {runtime&&venue&&<><a href="#ps469-printers">{t('ps469.printers')}</a><a href="#ps469-diagnostics">{t('ps600.diagnostics')}</a></>}
+    </nav>
     <section id="ps469-overview" className="ps469-overview" aria-label={t('ps469.summary')}>
+      <h2 className="ps600-section-title">{t('ps469.summary')}</h2>
       <div className="ps469-sync" data-testid="ps-link-sync"><strong>{sync?.confirmed?t(sync.scope==='unlinked'?'ps469.unlinkConfirmed':'ps469.syncConfirmed'):venue?t('ps469.syncPending'):t('ps469.stock')}</strong>
         {venue&&!sync?.confirmed&&<p>{ack.supported===false?t('ps469.compatNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',ack.required_version):t('ps469.waitAck')}{available&&` ${t('ps469.available')}: ${available}.`}</p>}
         {venue&&sync?.confirmed&&<p>{t('ps469.ackAt').replace('{rev}',String(sync.rev))}</p>}
         {!venue&&<p>{device.link.prepared?t('ps469.preparedStock'):t('ps469.unpreparedStock')}</p>}
         {!venue&&runtime&&sync&&!sync.confirmed&&<p>{unlinkAck.supported===false?t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version):t('ps469.waitAck')}</p>}
       </div>
-      <section className="detail-panel ps469-compat" id={staff&&runtime&&venue?'ps469-compat':'ps469-firmware'} aria-labelledby="ps469-compat-title"><h2 id="ps469-compat-title">{t('ps469.compatibility')}</h2><dl className="dev-facts">{(!staff||!runtime||!venue)&&<div><dt>{t('ps469.installed')}</dt><dd className="ps-mono">{device.compat.installed_version??t('dash.unknownVersion')}</dd></div>}<div><dt>{t('ps469.requiredLinkAck')}</dt><dd className="ps-mono">{ack.required_version}</dd></div><div><dt>{t('ps469.requiredWeb')}</dt><dd className="ps-mono">{device.compat.capabilities.web_activation.required_version}</dd></div></dl><p className="ps-cert-small">{available?`${t('ps469.available')}: ${available}.`:t('ps469.noAvailable')}</p></section>
+      <details className="detail-panel ps469-compat ps600-technical" id="ps469-compat" data-testid="ps-technical-details"><summary>{t('ps600.technicalDetails')}</summary><dl className="dev-facts"><div><dt>{t('ps469.requiredLinkAck')}</dt><dd className="ps-mono">{ack.required_version}</dd></div><div><dt>{t('ps469.requiredWeb')}</dt><dd className="ps-mono">{device.compat.capabilities.web_activation.required_version}</dd></div></dl><p className="ps-cert-small">{t('ps600.featureThresholds')}</p></details>
       <PsDeviceLinkPanel key={device.device_id} link={device.link} isStaff={staff} hidePreparation canEdit={device.capabilities.set_label.allowed} compact preparationEntry={device.preparation_entry} installedVersion={device.compat.installed_version} onChanged={onChanged}/>
-      {!venue&&staff&&<section className="detail-panel ps469-assign"><h2>{t('ps469.assignTitle')}</h2><p>{t('ps469.assignLead')}</p><div className="ps469-assign-controls"><VenueCombobox value={assignVenue} onChange={setAssignVenue} disabled={busy||!device.capabilities.assign.allowed} testId="ps469-assign-venue"/><button type="button" className="button button-primary" data-testid="ps469-assign" disabled={!assignVenue||busy||!device.capabilities.assign.allowed} onClick={()=>void assign()}>{t('inv.assign')}</button></div></section>}
+      {!venue&&staff&&<section className="detail-panel ps469-assign"><h2>{t('ps469.assignTitle')}</h2><p>{t('ps469.assignLead')}</p><div className="ps469-assign-controls"><VenueCombobox value={assignVenue} onChange={setAssignVenue} disabled={busy||!device.capabilities.assign.allowed} testId="ps469-assign-venue"/><button type="button" className="button button-primary" data-testid="ps469-assign" disabled={!assignVenue||busy||!device.capabilities.assign.allowed} onClick={()=>void assign()}>{t('inv.assign')}</button></div>{!device.capabilities.assign.allowed&&<p className="ps-cert-small" role="status">{capabilityReason(device.capabilities.assign.reason,t)}</p>}</section>}
       {venue&&staff&&<div className="detail-panel ps469-unlink"><h2>{t('ps469.unlinkTitle')}</h2><p>{t('ps469.unlinkLead')}</p><button type="button" className="button button-secondary ps-danger" data-testid="ps-unlink" disabled={!unlinkAllowed||busy} onClick={()=>setConfirm({deviceId:device.device_id,rev:device.capabilities.unlink.expected_rev!,venueName:venue.name})}><Unlink size={16}/>{t('ps469.unlink')}</button>
-        {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):t('ps469.unlinkForbidden')}</p>}
+        {!unlinkAllowed&&<p className="ps-cert-small">{stale?t('ps469.reloadNext'):capabilityReason(device.capabilities.unlink.reason,t)}</p>}
         {unlinkAck.supported===false&&<p className="ps-cert-small">{t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version)}</p>}</div>}
     </section>
-    {setup&&(existingPrepared?<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>:<PsStockPreparation key={`stock:${device.device_id}`} deviceId={device.device_id} onChanged={onChanged}/>)}
+    {setup&&<div id="ps469-installation" className="ps600-section">{existingPrepared?<PsDeviceSetup key={`setup:${device.device_id}`} device={device}/>:<PsStockPreparation key={`stock:${device.device_id}`} deviceId={device.device_id} onChanged={onChanged}/>}</div>}
     {/* PE-486: a new unit has no venue yet, so the existing firmware block (channel + eligible editions) is reused here. */}
-    {setup&&runtime&&!venue&&<div id="ps-setup-firmware"><DeviceAdminSummary key={`fw:${device.device_id}`} deviceId={device.device_id}/></div>}
-    {staff&&(!runtime||!venue)?<InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id} hideLabel={hideOldLabel}/>:null}
+    {setup&&(!runtime||!venue)&&<section id="ps469-firmware"><div id="ps-setup-firmware"><DeviceAdminSummary key={`fw:${device.device_id}`} deviceId={device.device_id}/></div></section>}
+    {staff&&(!runtime||!venue)?<div><InventoryDeviceSheetData key={device.device_id} deviceId={device.device_id} hideLabel={hideOldLabel}/></div>:null}
     {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage} hideRecoveryLabel={hideOldLabel}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}
   </div>;

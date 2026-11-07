@@ -9,7 +9,7 @@ export type DeviceModel = { model: string; label: string; archs: string[]; defau
 export type AdminDeviceDetail = {
   device: { id: string; serial: string; hostname: string; model: string; arch: string; label: string | null; status: string; legacy: boolean; venue_id: string | null; venue_name: string | null };
   update: { current_version: string | null; latest_stable: { edition_id: string; version: string; model: string; arch: string } | null;
-    candidate: {edition_id:string;version:string;signed_at:string|null;sha256_short:string|null} | null; newest_signed: null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
+    candidate: {edition_id:string;version:string;signed_at:string|null;sha256_short:string|null} | null; newest_signed: { edition_id: string; version: string } | null; effective_ring: FirmwareRing | null; can_update: boolean; newer_signed_unpromoted: boolean;
     update_available: boolean; reason: string | null; active_update: { deployment_id: string; status: string; stage: string | null; progress: number | null } | null;
     ota: AdminOtaExtras };
   delete: { allowed: boolean; blockers: string[] };
@@ -83,7 +83,7 @@ export function projectAdminDeviceDetail(value: unknown): AdminDeviceDetail {
   const canUpdate=metadataValid && u.can_update===true && u.update_available===true && !active && !reason && !!str(u.current_version) &&
     !!candidate && ota.editions!.some(e=>e.edition_id===candidate.edition_id&&e.selectable);
   return { device, update: { current_version: str(u.current_version), latest_stable: latest,
-    candidate, newest_signed:null, effective_ring, can_update:canUpdate, newer_signed_unpromoted:u.newer_signed_unpromoted===true,
+    candidate, newest_signed: u.newest_signed && typeof u.newest_signed === 'object' && str((u.newest_signed as Raw).edition_id) && str((u.newest_signed as Raw).version) ? { edition_id: str((u.newest_signed as Raw).edition_id)!, version: str((u.newest_signed as Raw).version)! } : null, effective_ring, can_update:canUpdate, newer_signed_unpromoted:u.newer_signed_unpromoted===true,
     update_available:canUpdate,
     reason, active_update: active ? { deployment_id: required(active.deployment_id), status: required(active.status), stage: str(active.phase),
       progress: typeof active.progress === 'number' && Number.isFinite(active.progress) && active.progress >= 0 && active.progress <= 100 ? active.progress : null } : null,

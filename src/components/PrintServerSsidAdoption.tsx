@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, ArrowRight, Check, Printer, Wifi } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Wifi } from 'lucide-react';
 import { AdoptError, adoptWifiSsid, type SsidAdoption, type SsidAdoptResult } from '../lib/psDevice';
 import { useLocale } from '../locales';
 import { PortalDialog } from './PortalDialog';
@@ -45,8 +45,6 @@ export function PrintServerSsidAdoption({ venueId, printServerId = null, adoptio
         {state === 'failed' && <small>{adoption.error_code ? ` · ${adoption.error_code}` : ''}{adoption.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small>}</dd></div>
     </dl>
     {state === 'pending' && <p className="dev-tracking-warning" role="status" data-testid="adopt-pending-note"><AlertTriangle size={16}/><span>{t('adopt.pendingNote')}</span></p>}
-    {(state === 'pending' || canAdopt) && <p className="ps-cert-small" data-testid="adopt-reprint-after"><Printer size={14}/> {t('adopt.reprintAfter')}</p>}
-    {state === 'applied' && adoption.reprint_label && <p className="dev-copy-notice dev-copy-ok" role="status" data-testid="adopt-reprint"><Printer size={16}/><span>{t('adopt.reprintNow')}</span></p>}
     {canAdopt && <div className="staff-actions">
       <button type="button" className="button button-secondary" data-testid="adopt-open" onClick={() => void open()}><Wifi size={15}/>{t('adopt.button')}</button>
     </div>}

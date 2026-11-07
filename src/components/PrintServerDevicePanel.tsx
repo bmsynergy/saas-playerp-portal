@@ -22,6 +22,7 @@ type Result = { ok: boolean; text: string };
 export function PrintServerDevicePanel({ venueId, printServerId, deviceId, adminScope = false, hideRecoveryLabel = false, compact = false, caContent }: Props) {
   const { t, locale } = useLocale();
   const {session} = useAuth();
+  const certDetails = useRef<HTMLDetailsElement>(null);
   const localPending = useRef(false);
   const inFlight = useRef<string | null>(null);
   const sheet = useQuery({ queryKey: ['ps-device', session?.user.id, deviceId, venueId, printServerId], queryFn: ({ signal }) => getDeviceSheet(venueId, signal, printServerId, deviceId),
@@ -40,6 +41,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
   const [certPem, setCertPem] = useState(''); const [chainPem, setChainPem] = useState('');
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v && Number.isFinite(Date.parse(v)) ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const data = sheet.data;
+  useEffect(() => { const openCert = () => { if (window.location.hash === '#ps469-certificates' && certDetails.current) { certDetails.current.open = true; requestAnimationFrame(() => certDetails.current?.scrollIntoView({ block: 'start' })); } }; openCert(); window.addEventListener('hashchange', openCert); return () => window.removeEventListener('hashchange', openCert); }, [data]);
   const accessError = sheet.isError ? psErrorKey(sheet.error) : null;
   const accessLost = accessError === 'accessDenied' || accessError === 'sessionExpired';
   const trackingUnavailable = sheet.isError && !accessLost;
@@ -160,15 +162,16 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
   const errorText = (code: string | null) => { const key = credentialErrorKey(code); return t(key) === key ? t('dev.progress.rotationErrorUnknown') : t(key); };
   const rotationStatus = (kind: CredentialKind) => {
     const operation = progressFor(kind);
-    return operation ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref} onReconcile={focusReconciliation}/> : null;
+    return operation && operation.phase !== 'applied' ? <CredentialProgress key={kind} operation={operation} onRetry={() => void sheet.refetch()} reconcileHref={reconcileHref} onReconcile={focusReconciliation}/> : null;
   };
   // PE-438: a PS enrolled with 0.3.21+ confirms by itself; conciliation is only for legacy units.
   const newEnroll = !!data.enroll && !data.device?.legacy && ['pending', 'applied', 'failed'].includes(data.enroll.state);
   const fp = data.cert.der_sha256 ? formatFingerprint(data.cert.der_sha256) ?? data.cert.der_sha256 : null;
 
   return <>
+    <div className="ps600-network" data-testid="ps-network">
     <section className="detail-panel ps-device-panel" id="ps469-wifi" aria-labelledby="ps-device-title" data-testid="ps-device-panel">
-      <div className="section-heading"><div><p className="eyebrow">{t(compact?'ps469.wifiEyebrow':'dev.eyebrow')}</p><h2 id="ps-device-title">{t(compact?'ps469.wifi':'dev.title')}</h2></div><span className="section-icon"><Wifi size={20}/></span></div>
+      <div className="section-heading"><div><p className="eyebrow">{t(compact?'ps469.wifiEyebrow':'dev.eyebrow')}</p><h2 id="ps-device-title">{t('ps600.network')}</h2></div><span className="section-icon"><Wifi size={20}/></span></div>
       {trackingUnavailable && <p className="dev-tracking-warning" role="status" data-testid="dev-tracking-warning"><AlertTriangle size={16}/><span>{t('dev.trackingUnavailable')}</span></p>}
       {!data.device ? <div className="inline-empty" data-testid="ps-device-none">{t('dev.noDevice')}</div> : <>
         <dl className="dev-facts">
@@ -200,16 +203,14 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
         {!data.credentialAccess && <div className="dev-rotation-status" data-testid="dev-rotation-status">{(['wifi', 'admin_code'] as const).map(rotationStatus)}</div>}
         {adminScope && data.is_platform_admin && data.ssidAdoption && (['available', 'pending', 'failed'].includes(data.ssidAdoption.state) || (data.ssidAdoption.state === 'applied' && data.ssidAdoption.reprint_label))
           && <PrintServerSsidAdoption venueId={venueId} printServerId={printServerId} adoption={data.ssidAdoption} onChanged={() => void sheet.refetch()}/>}
-        {data.rotations.length > 0 && <div className="dev-ops"><h3>{t('dev.rotations')}</h3><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t(`dev.waitReason.${pendingReason(o, data.ps_online)}`)}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}{o.status === 'failed' && o.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small></li>)}</ul></div>}
+        {data.rotations.length > 0 && <details className="dev-ops ps600-technical" data-testid="dev-rotations-details"><summary>{t('dev.rotations')}</summary><ul data-testid="dev-rotations">{data.rotations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t(`dev.waitReason.${pendingReason(o, data.ps_online)}`)}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}{o.status === 'failed' && o.previous_kept ? ` · ${t('dev.rotation.previousKept')}` : ''}</small></li>)}</ul></details>}
       </>}
       {label}
       {help}
       <p className="ps-cert-small">{t('dev.tokensNote')}</p>
     </section>
 
-    {adminScope && data.is_platform_admin && data.device && <div id="ps469-firmware"><DeviceAdminSummary deviceId={data.device.id}/></div>}
-
-    <section className="detail-panel ps-cert-panel" id="ps469-certificates" aria-labelledby="ps-cert-title" data-testid="ps-https-panel">
+    <details className="detail-panel ps-cert-panel ps600-technical" id="ps469-certificates" ref={certDetails} data-testid="ps-https-panel"><summary>{t('ps469.certificates')}</summary>
       {caContent}
       <div className="ps-cert-server"><h3 id="ps-https-title" className="ps-cert-subtitle">{t('dev.https.title')}</h3>
       <p className="owner-section-lead">{t('dev.https.lead')}</p>
@@ -218,7 +219,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
         <div><dt>{t('dev.https.validity')}</dt><dd data-testid="https-validity">{date(data.cert.not_before)} → {date(data.cert.not_after)} <span className={`server-status ${data.cert.status === 'valid' ? 'server-online' : 'server-revoked'}`}><span className="badge-dot"/>{t(`dev.https.${data.cert.status}`)}</span></dd></div>
         <div className="dev-wide"><dt>{t('dev.https.fingerprint')}</dt><dd className="ps-mono fw-hash" data-testid="https-fingerprint">{fp ?? t('notProvided')}</dd></div>
       </dl>}
-      {data.cert_operations.length > 0 && <div className="dev-ops"><h3>{t('dev.https.operations')}</h3><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}</small></li>)}</ul></div>}
+      {data.cert_operations.length > 0 && <details className="dev-ops ps600-technical" data-testid="https-operations-details"><summary>{t('dev.https.operations')}</summary><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}</small></li>)}</ul></details>}
       {data.is_platform_admin && printServerId && <div className="dev-cert-admin">
         <button type="button" className="button button-secondary" data-testid="https-renew" disabled={busy || data.cert_operations.some(o => o.status === 'pending')} onClick={() => setConfirm('renew')}><RefreshCw size={15}/>{t('dev.https.renew')}</button>
         {(busy || data.cert_operations.some(o => o.status === 'pending')) && <p className="ps-cert-small" role="status">{t(busy ? 'ps.working' : 'dev.waitingPs')}</p>}
@@ -231,7 +232,10 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
         </details>
       </div>}
       </div>
-    </section>
+    </details>
+    </div>
+
+    {adminScope && data.is_platform_admin && data.device && <div id="ps469-firmware"><DeviceAdminSummary deviceId={data.device.id}/></div>}
 
     <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="dev-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
     {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}

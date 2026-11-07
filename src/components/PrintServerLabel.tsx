@@ -130,7 +130,7 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
   return <section className="dev-label" aria-labelledby="dev-label-title" data-testid="dev-label">
     <h3 id="dev-label-title">{t('dev.label.title')}</h3>
     <p className="ps-cert-small">{t('dev.label.lead')}</p>
-    <p className="ps-cert-small">{t('dev.label.reprintHint')} {t('dev.label.printHint')}</p>
+    <p className="ps-cert-small">{t('dev.label.printHint')}</p>
     {replacementReady && <div className="dev-label-replacement" role="status" data-testid="dev-label-replacement-ready">
       <p>{t('dev.label.replaceReady')}</p>
     </div>}

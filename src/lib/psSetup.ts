@@ -5,7 +5,7 @@ import type { PsPreparationState } from './psLink';
 // PE-486: guided Setup of a Print Server from the generic bootable image. Every state comes
 // only from server data: the browser cannot know whether the image was downloaded or flashed.
 export type SetupStepKey = 'download' | 'flash' | 'boot' | 'prepare' | 'link' | 'online' | 'channel';
-export type SetupStepState = 'done' | 'current' | 'pending' | 'error';
+export type SetupStepState = 'done' | 'current' | 'pending' | 'error' | 'manual';
 export type SetupStep = { key: SetupStepKey; state: SetupStepState };
 export type SetupInput = { preparation: PsPreparationState; prepared: boolean; online: boolean; ring: FirmwareRing | null };
 export type SetupProgress = { steps: SetupStep[]; done: number; total: number; codeExpired: boolean };
@@ -14,10 +14,10 @@ export const SETUP_CHECKS: readonly SetupStepKey[] = ['prepare', 'link', 'online
 export function setupProgress({ preparation, prepared: flag, online, ring }: SetupInput): SetupProgress {
   const prepared = flag || preparation === 'prepared', codeExpired = !prepared && preparation === 'code_expired';
   const issued = prepared || preparation === 'code_issued';
-  const local: SetupStepState = prepared ? 'done' : 'current';
+  const local: SetupStepState = 'manual';
   const state: Record<SetupStepKey, SetupStepState> = {
     download: local, flash: local, boot: local,
-    prepare: issued ? 'done' : codeExpired ? 'error' : 'current',
+    prepare: prepared ? 'done' : codeExpired ? 'error' : 'current',
     link: prepared ? 'done' : issued ? 'current' : 'pending',
     online: online ? 'done' : prepared ? 'current' : 'pending',
     channel: online && ring ? 'done' : online ? 'current' : 'pending',

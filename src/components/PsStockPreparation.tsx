@@ -119,7 +119,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
   }
 
   return <section className="detail-panel ps-stock" id="ps-stock-preparation" aria-labelledby="ps-stock-title" data-testid="ps-stock">
-    <div className="section-heading"><div><p className="eyebrow">{t('psStock.eyebrow')}</p><h2 id="ps-stock-title">{t('psStock.title')}</h2></div></div>
+    <div className="section-heading"><div><p className="eyebrow">{t('psStock.eyebrow')}</p><h2 id="ps-stock-title">{t('ps600.installation')}</h2></div></div>
     <p className="owner-section-lead">{t('psStock.lead')}</p>
     <div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => void refresh()} disabled={!!busy || status.isFetching}><RefreshCw size={15}/>{t('psStock.refresh')}</button></div>
     {status.isLoading && <p role="status">{t('psStock.loading')}</p>}
@@ -131,6 +131,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
         <strong>{t(`psStock.state.${stock.state}`)}</strong>
         <span>{t(`psStock.next.${stock.next_step ?? 'none'}`)}</span>
       </div>
+<details className="ps600-technical ps-stock-technical" data-testid="ps-stock-technical"><summary>{t('ps600.stockTechnical')}</summary>
       <dl className="fw-release-facts ps-stock-facts">
         <div><dt>{t('psStock.serial')}</dt><dd className="ps-mono">{data.serial}</dd></div>
         <div><dt>{t('psStock.model')}</dt><dd>{data.model} · {data.arch}</dd></div>
@@ -145,6 +146,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
         {(['enrolled', 'credentials_confirmed_by_device', 'status_reported_after_enroll', 'setup_url_reported', 'in_stock_without_venue'] as const).map(check =>
           <span key={check} className={stock.checks[check] ? 'ps-stock-check-ok' : ''}>{stock.checks[check] ? '✓' : '○'} {t(`psStock.check.${check}`)}</span>)}
       </div>
+      </details>
       <div className="ps-stock-block">
         <h3>{t('psStock.imageTitle')}</h3>
         <p>{t('psStock.imageLead')}</p>
