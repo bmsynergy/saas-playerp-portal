@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, AlertTriangle, ArrowLeft, Check, ChevronDown, Clock3, Copy, Download, FileKey2, Gauge, Globe2, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Search, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, Check, ChevronDown, Clock3, Copy, Download, FileKey2, Gauge, Hash, KeyRound, ListOrdered, Network, Pause, Pencil, Play, Plus, Printer, Radar, Search, Server, StickyNote, Tag, Trash2, X } from 'lucide-react';
 import { fleetState, formatUptime, normalizeMac, relativeTime, sameMac, type FleetRow } from '../lib/printFleet';
 import { psErrorKey, setPrinterPrintServer, type PanelPrinter, type PanelScan, type PanelState, type PrintServerApi, type RegisteredPrinterInfo } from '../lib/printServerApi';
 import { slugLabel } from '../lib/venueUsers';
@@ -439,17 +439,12 @@ export function PrintServerDetailPage({ venue, state: rawState, api, refresh, st
 
     <section className="detail-panel ps600-diagnostics" id="ps469-diagnostics" aria-labelledby="ps-diag-title" data-testid="ps-diagnostics"><div className="section-heading"><div><p className="eyebrow">{t('ps.diag.eyebrow')}</p><h2 id="ps-diag-title">{t('ps.diag.title')}</h2></div><span className="section-icon"><Gauge size={20}/></span></div>
       <p className="ps600-operational-summary" data-testid="ps-diagnostics-summary">{server?.last_status_at ? t('ps600.diagReported').replace('{date}', date(server.last_status_at)) : t('ps600.diagNoReport')} · {t('ps.pendingJobs')}: {totalPending}</p>
-      <div className="detail-grid ps600-diag-primary">
+      <details className="ps600-technical" data-testid="ps-diagnostics-details"><summary>{t('psAbout.showDiagnostics')}</summary><div className="detail-grid">
         {lastStatus?.uptime_seconds != null && <Item icon={<Activity size={19}/>} label={t('ps.diag.uptime')}>{formatUptime(lastStatus.uptime_seconds)}</Item>}
         {lastStatus?.queue_depth != null && <Item icon={<ListOrdered size={19}/>} label={t('ps.queueDepth')} testId="ps-queue-depth">{lastStatus.queue_depth}</Item>}
       </div>
-      <details className="ps600-technical" data-testid="ps-diagnostics-details"><summary>{t('ps600.technicalDetails')}</summary><div className="detail-grid">
-        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.lastStatusAt')}>{date(server?.last_status_at ?? null)}</Item>
-        <Item icon={<Globe2 size={19}/>} label={t('ps.diag.portalUrl')}><span className="ps-mono">{lastStatus?.portal_url || t('notProvided')}</span></Item>
-        <Item icon={<Clock3 size={19}/>} label={t('ps.diag.channelOpenedAt')}>{date(server?.channel_opened_at ?? null)}</Item>
-        {scope === 'admin' && <Item icon={<StickyNote size={19}/>} label={t('ps.diag.note')}>{lastStatus?.note || t('notProvided')}</Item>}
-      </div></details>
       {state.printers.length > 0 && <div className="ps-section-body"><p className="detail-item-label">{t('ps.diag.pendingByPrinter')}</p><ul className="ps-queue-list">{state.printers.map(printer => <li key={printer.id} data-testid={`printer-queue-${printer.id}`}><span>{printer.label}</span><strong>{printer.pending_jobs}</strong></li>)}</ul></div>}
+      </details>
     </section>
 
     {confirm && <PortalDialog title={confirm.title} titleId="ps-confirm-title" descriptionId="ps-confirm-body" testId="confirm-dialog" alert onClose={() => setConfirm(null)} dismissible={!busy} actions={<>

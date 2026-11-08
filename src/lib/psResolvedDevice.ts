@@ -7,7 +7,7 @@ export type PsCapability = { required_version: string; supported: boolean | null
 export type PsCompat = {installed_version:string|null; capabilities:Record<'link_ack'|'unlink_ack'|'web_activation',PsCapability>};
 export type ResolvedDevice = {
   requested_id:string; resolved_via:'device_id'|'runtime_id'; device_id:string; canonical_path:string;
-  serial:string; display_name:string; label:string|null; model:string; legacy:boolean; lifecycle:string;
+  serial:string; display_name:string; label:string|null; model:string; arch:string|null; legacy:boolean; lifecycle:string;
   venue:{id:string;name:string}|null;
   runtime:{print_server_id:string;status:string;venue_id:string|null;hostname:string|null;firmware_version:string|null;last_seen_at:string|null;online:boolean}|null;
   requested_runtime:{print_server_id:string;status:string;is_current:boolean}|null;
@@ -50,7 +50,7 @@ export function projectResolvedDevice(value:unknown,requestedId:string):Resolved
   if(r.canonical_path!==canonical)throw new PortalError('accessDenied');
   return {
     requested_id:requestedId,resolved_via:r.resolved_via==='runtime_id'?'runtime_id':'device_id',device_id:id,canonical_path:canonical,
-    serial:required(r.serial),display_name:required(r.display_name),label:str(r.label),model:required(r.model),legacy:r.legacy===true,lifecycle:required(r.lifecycle),
+    serial:required(r.serial),display_name:required(r.display_name),label:str(r.label),model:required(r.model),arch:str(r.arch),legacy:r.legacy===true,lifecycle:required(r.lifecycle),
     venue:v?{id:required(v.id),name:required(v.name)}:null,
     runtime:rt?{print_server_id:required(rt.print_server_id),status:required(rt.status),venue_id:str(rt.venue_id),hostname:str(rt.hostname),firmware_version:str(rt.firmware_version),last_seen_at:str(rt.last_seen_at),online:rt.online===true}:null,
     requested_runtime:requested?{print_server_id:required(requested.print_server_id),status:required(requested.status),is_current:requested.is_current===true}:null,

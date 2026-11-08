@@ -220,7 +220,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
         <div className="dev-wide"><dt>{t('dev.https.fingerprint')}</dt><dd className="ps-mono fw-hash" data-testid="https-fingerprint">{fp ?? t('notProvided')}</dd></div>
       </dl>}
       {data.cert_operations.length > 0 && <details className="dev-ops ps600-technical" data-testid="https-operations-details"><summary>{t('dev.https.operations')}</summary><ul data-testid="https-operations">{data.cert_operations.map(o => <li key={o.command_id} data-status={o.status} data-kind={o.kind}><span className={`server-status ${o.status === 'applied' ? 'server-online' : o.status === 'failed' ? 'server-revoked' : 'server-pending'}`}><span className="badge-dot"/>{opLabel(o)}</span><small>{date(o.requested_at)}{o.completed_at ? ` → ${date(o.completed_at)}` : ` · ${t('dev.waitingPs')}`}{o.error_code ? ` · ${errorText(o.error_code)}` : ''}</small></li>)}</ul></details>}
-      {data.is_platform_admin && printServerId && <div className="dev-cert-admin">
+      {adminScope && data.is_platform_admin && printServerId && <div className="dev-cert-admin">
         <button type="button" className="button button-secondary" data-testid="https-renew" disabled={busy || data.cert_operations.some(o => o.status === 'pending')} onClick={() => setConfirm('renew')}><RefreshCw size={15}/>{t('dev.https.renew')}</button>
         {(busy || data.cert_operations.some(o => o.status === 'pending')) && <p className="ps-cert-small" role="status">{t(busy ? 'ps.working' : 'dev.waitingPs')}</p>}
         <details className="dev-upload"><summary>{t('dev.https.uploadTitle')}</summary>

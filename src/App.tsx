@@ -34,6 +34,8 @@ import { DeviceAdminSummary } from './components/DeviceAdminSummary';
 import { getAdminDeviceSheet } from './lib/psAdminDeviceSheet';
 import { PortalDialog } from './components/PortalDialog';
 import { PrintServerDetailPage } from './pages/PrintServerDetailPage';
+import { PrintServerAbout } from './components/PrintServerAbout';
+import { validatedPsPortalUrl } from './lib/psPortalUrl';
 import { PrintFirmwaresPage } from './pages/PrintFirmwaresPage';
 import { PrintChannelsPage } from './pages/PrintChannelsPage';
 import { PrintDevicesPage } from './pages/PrintDevicesPage';
@@ -581,7 +583,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   const ack=device.compat.capabilities.link_ack;
   const unlinkAck=device.compat.capabilities.unlink_ack;
   const unlinkAllowed=staff&&device.capabilities.unlink.allowed&&device.capabilities.unlink.expected_rev!==null&&!stale;
-  const available=ack.available.filter(item=>!item.retired).map(item=>`${item.version}${item.enabled_rings.length?` (${item.enabled_rings.join(', ')})`: ` (${t('ps469.noRing')})`}`).join(', ');
+  const available=(staff?ack.available:[]).filter(item=>!item.retired).map(item=>`${item.version}${item.enabled_rings.length?` (${item.enabled_rings.join(', ')})`: ` (${t('ps469.noRing')})`}`).join(', ');
   async function unlink(){
     if(!confirm||busy||confirm.deviceId!==device.device_id)return;
     setBusy(true);setError('');setNotice('');
@@ -636,7 +638,7 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
         {!venue&&<p>{device.link.prepared?t('ps469.preparedStock'):t('ps469.unpreparedStock')}</p>}
         {!venue&&runtime&&sync&&!sync.confirmed&&<p>{unlinkAck.supported===false?t('ps469.unlinkAckNeeded').replace('{installed}',device.compat.installed_version??t('notProvided')).replace('{required}',unlinkAck.required_version):t('ps469.waitAck')}</p>}
       </div>
-      <details className="detail-panel ps469-compat ps600-technical" id="ps469-compat" data-testid="ps-technical-details"><summary>{t('ps600.technicalDetails')}</summary><dl className="dev-facts"><div><dt>{t('ps469.requiredLinkAck')}</dt><dd className="ps-mono">{ack.required_version}</dd></div><div><dt>{t('ps469.requiredWeb')}</dt><dd className="ps-mono">{device.compat.capabilities.web_activation.required_version}</dd></div></dl><p className="ps-cert-small">{t('ps600.featureThresholds')}</p></details>
+      {runtime&&venue&&<PrintServerAboutData device={device} scope={scope} venueId={venue.id} printServerId={runtime.print_server_id}/>}
       <PsDeviceLinkPanel key={device.device_id} link={device.link} isStaff={staff} hidePreparation canEdit={device.capabilities.set_label.allowed} compact preparationEntry={device.preparation_entry} installedVersion={device.compat.installed_version} onChanged={onChanged}/>
       {!venue&&staff&&<section className="detail-panel ps469-assign"><h2>{t('ps469.assignTitle')}</h2><p>{t('ps469.assignLead')}</p><div className="ps469-assign-controls"><VenueCombobox value={assignVenue} onChange={setAssignVenue} disabled={busy||!device.capabilities.assign.allowed} testId="ps469-assign-venue"/><button type="button" className="button button-primary" data-testid="ps469-assign" disabled={!assignVenue||busy||!device.capabilities.assign.allowed} onClick={()=>void assign()}>{t('inv.assign')}</button></div>{!device.capabilities.assign.allowed&&<p className="ps-cert-small" role="status">{capabilityReason(device.capabilities.assign.reason,t)}</p>}</section>}
       {venue&&staff&&<div className="detail-panel ps469-unlink"><h2>{t('ps469.unlinkTitle')}</h2><p>{t('ps469.unlinkLead')}</p><button type="button" className="button button-secondary ps-danger" data-testid="ps-unlink" disabled={!unlinkAllowed||busy} onClick={()=>setConfirm({deviceId:device.device_id,rev:device.capabilities.unlink.expected_rev!,venueName:venue.name})}><Unlink size={16}/>{t('ps469.unlink')}</button>
@@ -650,6 +652,17 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
     {runtime&&venue&&<div id="ps469-operations"><PrintServerSheetData key={`${device.device_id}:${runtime.print_server_id}`} deviceId={device.device_id} printServerId={runtime.print_server_id} venueId={venue.id} venueName={venue.name} scope={scope} back={back} canManage={device.can_manage} hideRecoveryLabel={hideOldLabel}/></div>}
     {confirm&&<PortalDialog title={t('ps469.unlinkTitle')} titleId="ps469-unlink-title" descriptionId="ps469-unlink-body" testId="ps-unlink-confirm" alert dismissible={!busy} onClose={()=>setConfirm(null)} actions={<><button type="button" className="button button-primary ps-danger-solid" data-testid="ps-unlink-submit" disabled={busy} onClick={()=>void unlink()}>{t(busy?'ps.working':'ps469.unlink')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={()=>setConfirm(null)}>{t('staff.cancel')}</button></>}><p id="ps469-unlink-body">{t('ps469.unlinkConfirm').replace('{name}',device.display_name).replace('{serial}',device.serial).replace('{venue}',confirm.venueName)}</p></PortalDialog>}
   </div>;
+}
+function PrintServerAboutData({device,scope,venueId,printServerId}:{device:ResolvedDevice;scope:'owner'|'admin';venueId:string;printServerId:string}) {
+  const {session}=useAuth();
+  const state=useQuery({queryKey:['ps-state',scope,session?.user.id,venueId,printServerId],
+    queryFn:({signal})=>getPanelState(venueId,signal,scope,printServerId),refetchInterval:10_000});
+  const server=state.data?.print_server;
+  // Runtime identity is resolved above. server.device_id is a hardware UUID,
+  // NOT the inventory device_id returned by ps_device_resolve.
+  const matched=server?.id===printServerId&&device.runtime?.print_server_id===printServerId;
+  const current=matched&&!state.isError&&state.isFetchedAfterMount?server:null;
+  return <PrintServerAbout device={device} server={current} portalUrl={current?validatedPsPortalUrl(current):null}/>;
 }
 function InventoryDeviceSheetData({deviceId,hideLabel}:{deviceId:string;hideLabel:boolean}) {
   const {session}=useAuth(); const {t}=useLocale();

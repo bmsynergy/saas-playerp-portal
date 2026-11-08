@@ -15,6 +15,11 @@ describe('PE-469 canonical device integration',()=>{
   for(const r of live.resolved)expect(projectResolvedDevice(r,r.requested_id).device_id).toBe(r.device_id);
   const r=fresh();expect(projectResolvedDevice({...r,requested_id:r.device_id},r.device_id).canonical_path).toContain(r.device_id);
  });
+ it('projects reported architecture without inventing it for older responses',()=>{
+  const r=fresh();expect(projectResolvedDevice({...r,arch:'arm64'},r.requested_id).arch).toBe('arm64');
+  delete r.arch;expect(projectResolvedDevice(r,r.requested_id).arch).toBeNull();
+  expect(projectResolvedDevice({...r,arch:123},r.requested_id).arch).toBeNull();
+ });
  it('rejects cross-device, runtime, venue and arbitrary canonical destinations',()=>{
   for(const mutate of [(r:any)=>r.link.device_id='other',(r:any)=>r.runtime.print_server_id='other',(r:any)=>r.venue.id='other',(r:any)=>r.canonical_path='https://evil.invalid',(r:any)=>r.requested_runtime.print_server_id='other']){
    const r=fresh();mutate(r);expect(()=>projectResolvedDevice(r,r.requested_id)).toThrow();

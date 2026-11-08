@@ -759,6 +759,17 @@ html:not([data-nav="keyboard"]) :focus { outline: none !important; }
 .ps600-technical[open] summary { margin-bottom: 14px; }
 .ps600-technical .dev-facts { margin: 0; }
 .ps469-overview .ps600-technical { grid-column: 1 / -1; }
+.ps469-overview .ps-about { grid-column: 1 / -1; }
+.ps-about { min-width: 0; }
+.ps-about .section-heading { margin-bottom: 18px; }
+.ps-about-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px 25px; margin: 0; }
+.ps-about-facts > div { min-width: 0; }
+.ps-about-facts dt { color: var(--muted); font-size: .73rem; font-weight: 700; margin-bottom: 5px; }
+.ps-about-facts dd { margin: 0; font-size: .87rem; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+.ps-about-address { grid-column: 1 / -1; }
+.ps-about-portal { display: grid; justify-items: start; gap: 8px; margin-top: 18px; }
+.ps-about-portal .button { display: inline-flex; align-items: center; gap: 8px; }
+.ps-about-portal p { color: var(--muted); font-size: .77rem; line-height: 1.5; margin: 0; }
 .ps600-operational-summary { margin: 0 0 14px; font-size: .87rem; line-height: 1.5; font-weight: 600; }
 .ps600-diag-primary { margin-bottom: 14px; }
 .ps600-diagnostics .ps600-technical { margin-top: 10px; }
@@ -778,6 +789,9 @@ html:not([data-nav="keyboard"]) :focus { outline: none !important; }
   .ps469-sheet .button { max-width: 100%; white-space: normal; text-align: center; }
 }
 @media (max-width: 430px) {
+  .ps-about-facts { grid-template-columns: minmax(0,1fr); }
+  .ps-about-portal, .ps-about-portal .button { width: 100%; }
+  .ps-about-portal .button { justify-content: center; }
   .ps469-sections a { padding: 7px 10px; }
   .ps600-technical { padding: 11px 13px; }
   .ps-setup-steps > li { padding: 12px 13px; }

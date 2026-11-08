@@ -1,0 +1,31 @@
+{
+  "device": {
+    "id": "34fd3ff8-f558-4d39-a805-834264d8f6bc",
+    "serial": "PS-5EASG93M",
+    "model": "rpi4-2gb",
+    "arch": "arm64",
+    "runtime": {
+      "online": true,
+      "status": "active",
+      "hostname": "playerp-ps-5easg93m",
+      "venue_id": "a0000000-0000-0000-0000-000000000001",
+      "last_seen_at": "2026-11-08T16:08:03.315987+00:00",
+      "print_server_id": "3ccbc021-29bc-4d5c-b349-1e0adc0fab70",
+      "firmware_version": "0.3.28"
+    }
+  },
+  "panel": {
+    "id": "3ccbc021-29bc-4d5c-b349-1e0adc0fab70",
+    "hostname": "playerp-ps-5easg93m",
+    "device_id": "dcd93c3f-23ae-45bf-831b-f68afec20bda",
+    "local_port": 8443,
+    "last_status": {
+      "setup_url": "http://10.77.0.1",
+      "portal_url": "https://playerp-ps-5easg93m.local:8443/",
+      "queue_depth": 0
+    },
+    "last_seen_at": "2026-11-08T16:08:03.315987+00:00",
+    "local_address": "10.0.0.128",
+    "software_version": "0.3.28"
+  }
+}
