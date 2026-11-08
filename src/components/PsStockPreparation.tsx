@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Check, Copy, Download, Mail, Printer, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { config } from '../lib/config';
 import { errorCode } from '../lib/errors';
 import { getFirmwares, getInstallKitDownload, listInstallKits, type FirmwareRelease, type InstallKit } from '../lib/firmware';
 import { downloadStockFile, getStockLabel, getStockReservedCredentials, getStockStatus, previewDeliveryEmail, sendDeliveryEmail, type StockLabel, type DeliveryEmailResult } from '../lib/psStock';
@@ -25,7 +26,7 @@ const versionAtLeast = (version: string): boolean => {
 // Kit metadata must explicitly match this device. An untagged generic kit is not assumed compatible.
 function matchingImage(kits: InstallKit[], releases: FirmwareRelease[], model: string, arch: string): InstallKit | null {
   const compatible = new Set(releases.filter(r => r.status === 'ready' && r.model === model && r.arch === arch && versionAtLeast(r.version)).map(r => r.id));
-  return kits.filter(kit => kit.kind === 'bootable_image' && kit.profile === 'dev' && compatible.has(kit.release_id))
+  return kits.filter(kit => kit.kind === 'bootable_image' && kit.profile === config.environment && compatible.has(kit.release_id))
     .sort((a, b) => (Date.parse(b.created_at ?? '') || 0) - (Date.parse(a.created_at ?? '') || 0))[0] ?? null;
 }
 
