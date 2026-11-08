@@ -1,11 +1,11 @@
-PASS en/canonical: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS en/ascii32: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS en/escaped32: 590x354 pHYs=11811; QR M v6 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS en/utf8-2byte: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS en/utf8-3byte: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS es/canonical: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS es/ascii32: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS es/escaped32: 590x354 pHYs=11811; QR M v6 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS es/utf8-2byte: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
-PASS es/utf8-3byte: 590x354 pHYs=11811; QR M v4 6px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, >=30px/44px, margin18.
+PASS en/canonical: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS en/ascii32: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS en/escaped32: 590x354 pHYs=11800; QR M v6 4px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS en/utf8-2byte: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS en/utf8-3byte: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS es/canonical: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS es/ascii32: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS es/escaped32: 590x354 pHYs=11800; QR M v6 4px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS es/utf8-2byte: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
+PASS es/utf8-3byte: 590x354 pHYs=11800; QR M v4 5px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.
 PASS overflow label_does_not_fit; nominal CSS 50x30mm. 10 synthetic PNGs; physical print/camera still pending Beny.

@@ -4,11 +4,11 @@ import { confirmedAt, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from 
 export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string | null; confirmation?: 'stock_rpc' };
 export const LABEL_WIDTH = 590;
 export const LABEL_HEIGHT = 354;
-export const LABEL_PPM = 11811; // 300 dpi; raster rounds to 49.95 × 29.97 mm.
-export const LABEL_MARGIN = 18; // 1.524 mm at 300 dpi, at least 1.5 mm on each edge.
+export const LABEL_PPM = 11800; // 590 × 354 pixels are exactly 50 × 30 mm.
+export const LABEL_MARGIN = 20;
 export const LABEL_STEPS = {
-  en: { wifi: 'Wi-Fi name', password: 'Password', instructions: 'Power off/on. Join within 90 s after Wi-Fi appears. Open:' },
-  es: { wifi: 'Nombre Wi-Fi', password: 'Clave', instructions: 'Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:' },
+  en: { wifi: 'Wi-Fi', password: 'Password', connect: 'Connect to Wi-Fi', open: 'Open in browser' },
+  es: { wifi: 'Wi-Fi', password: 'Clave', connect: 'Conéctate al Wi-Fi', open: 'Abre en el navegador' },
 } as const;
 
 function validLabel(d: LabelData): boolean {
@@ -73,48 +73,49 @@ export async function generateLabelPng(data: LabelData, language: 'en' | 'es' = 
   const left = LABEL_MARGIN, width = LABEL_WIDTH - left * 2;
   function line(value: string, y: number, font: string, x = left, max = width) {
     ctx!.font = font;
-    // No shrinking, clipping or ellipses: unexpected font metrics block the export.
-    if (ctx!.measureText(value).width > max) throw new Error('label_does_not_fit');
+    // Reject text that would cross its allotted column or the printable margin.
+    const metrics = ctx!.measureText(value);
+    if (metrics.width > max || x + metrics.actualBoundingBoxRight > LABEL_WIDTH - LABEL_MARGIN) throw new Error('label_does_not_fit');
     ctx!.fillText(value, x, y);
   }
   const copy = LABEL_STEPS[language];
-  // Header spans the full label. The QR lives below it in a 246 px right-hand box.
-  line('PlayERP', 42, 'bold 28px Arial, sans-serif', left, 190);
-  ctx.font = 'bold 24px monospace';
+  line('PlayERP', 43, 'bold 26px Arial, sans-serif', left, 190);
+  ctx.font = 'bold 22px monospace';
   const serialWidth = ctx.measureText(data.serial).width;
-  line(data.serial, 42, 'bold 24px monospace', LABEL_WIDTH - left - serialWidth - 2, 230);
+  line(data.serial, 43, 'bold 22px monospace', LABEL_WIDTH - left - serialWidth, 230);
 
-  const textWidth = 290;
-  line(copy.wifi, 82, '16px Arial, sans-serif', left, textWidth);
-  ctx.font = 'bold 30px monospace';
-  const ssidLines: string[] = []; let current = '';
-  for (const char of data.ssid) {
-    if (ctx.measureText(current + char).width > textWidth) {
-      if (!current) throw new Error('label_does_not_fit');
-      ssidLines.push(current); current = '';
-    }
-    current += char;
+  line(copy.wifi, 68, '16px Arial, sans-serif');
+  let ssidFont = 38;
+  for (; ssidFont >= 24; ssidFont--) {
+    ctx.font = `bold ${ssidFont}px monospace`;
+    if (ctx.measureText(data.ssid).width <= width) break;
   }
-  ssidLines.push(current);
-  if (ssidLines.length > 3) throw new Error('label_does_not_fit');
-  ssidLines.forEach((value, i) => line(value, 119 + i * 35, 'bold 30px monospace', left, textWidth));
-  line(copy.password, 228, '16px Arial, sans-serif', left, textWidth);
-  line(data.password, 279, 'bold 44px monospace', left, textWidth);
+  if (ssidFont < 24) throw new Error('label_does_not_fit');
+  line(data.ssid, 110, `bold ${ssidFont}px monospace`);
+
   const qr = QRCode.create(wifiQrPayload(data.ssid, data.password), { errorCorrectionLevel: 'M' });
-  const quiet = 4, qrArea = 246;
-  const scale = qr.version <= 4 ? 6 : 5;
-  const qrSize = (qr.modules.size + quiet * 2) * scale;
-  if (qrSize > qrArea) throw new Error('label_does_not_fit');
-  const qrX = LABEL_WIDTH - LABEL_MARGIN - qrArea + Math.floor((qrArea - qrSize) / 2);
-  const qrY = 50 + Math.floor((qrArea - qrSize) / 2);
+  const quiet = 4;
+  const scale = qr.modules.size * 5 <= width * 0.3 ? 5 : 4;
+  const blackSize = qr.modules.size * scale;
+  const blackX = LABEL_WIDTH - LABEL_MARGIN - blackSize;
+  const blackY = LABEL_HEIGHT - LABEL_MARGIN - blackSize;
+  const quietX = blackX - quiet * scale;
+  const quietY = blackY - quiet * scale;
+  if (quietX < left || quietY < left) throw new Error('label_does_not_fit');
+  // Text stays clear of the four-module quiet zone, which reaches the right/bottom edge.
+  const textWidth = quietX - left - 12;
+  if (textWidth <= 0) throw new Error('label_does_not_fit');
+  line(copy.password, 146, '16px Arial, sans-serif', left, textWidth);
+  line(data.password, 205, 'bold 52px monospace', left, textWidth);
+  line(copy.connect, 256, '16px Arial, sans-serif', left, textWidth);
+  line(copy.open, 278, '16px Arial, sans-serif', left, textWidth);
+  line('http://10.77.0.1', 329, 'bold 26px Arial, sans-serif', left, textWidth);
   ctx.imageSmoothingEnabled = false;
   for (let row = 0; row < qr.modules.size; row++) {
     for (let col = 0; col < qr.modules.size; col++) {
-      if (qr.modules.get(row, col)) ctx.fillRect(qrX + (col + quiet) * scale, qrY + (row + quiet) * scale, scale, scale);
+      if (qr.modules.get(row, col)) ctx.fillRect(blackX + col * scale, blackY + row * scale, scale, scale);
     }
   }
-  line(copy.instructions, 310, 'bold 16px Arial, sans-serif');
-  line('http://10.77.0.1', 331, 'bold 22px Arial, sans-serif');
   // Thermal label: only opaque pure black/white, no antialiasing gray or color pixels.
   const pixels = ctx.getImageData(0, 0, LABEL_WIDTH, LABEL_HEIGHT);
   for (let i = 0; i < pixels.data.length; i += 4) {
