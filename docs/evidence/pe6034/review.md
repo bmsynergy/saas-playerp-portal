@@ -8,3 +8,5 @@ Gaby reviewed the implementation and fixture evidence read-only, against PE-603.
 - Integration review additionally restricted certificate admin controls to admin scope when the account also has an admin role. This does not change backend authorization. Owner fixture intentionally reports the platform-admin flag to cover this case.
 
 No review or simulated test establishes mDNS resolution or login on Beny's physical LAN.
+
+Gaby also reviewed the final admin-scope certificate guard and the scoped badge wrapping correction; no findings. Real DEV data exposed a 390→398 px overflow in the English enrollment-confirmed badge. The fixture now includes that state and the sheet's badge wraps within its facts grid.

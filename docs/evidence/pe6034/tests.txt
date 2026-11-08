@@ -5,7 +5,6 @@
 
  RUN  v3.2.4 /home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal
 
- ✓ tests/core.test.ts (7 tests) 113ms
 stderr | tests/pe485InstallKit.test.ts > PE-485 firmwares page kit block > renders the kit only for the matching release with full SHA-256, base image and the non-OTA warning
 Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
@@ -482,7 +481,36 @@ Warning: useLayoutEffect does nothing on the server, because its effect cannot b
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
     at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
 
- ✓ tests/pe485InstallKit.test.ts (11 tests) 333ms
+ ✓ tests/pe485InstallKit.test.ts (11 tests) 277ms
+ ✓ tests/core.test.ts (7 tests) 89ms
+stderr | tests/maintenancePage.test.ts > maintenance page presentation > uses server-wide counts and a searchable venue input with server pagination
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at div
+    at div
+    at section
+    at div
+    at MaintenancePage (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/src/pages/MaintenancePage.tsx:13:28)
+    at Router (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+
+stderr | tests/maintenancePage.test.ts > maintenance page presentation > marks both problem summary buttons and the selected status option
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
+    at div
+    at div
+    at section
+    at div
+    at MaintenancePage (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/src/pages/MaintenancePage.tsx:13:28)
+    at Router (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+
+ ✓ tests/maintenancePage.test.ts (3 tests) 60ms
+ ✓ tests/pe602.test.ts (8 tests) 48ms
 stderr | tests/psAboutRoles.test.ts > PE-603.4 full device sheet role boundary > owner sees About; administrative actions remain scoped
 Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
@@ -724,7 +752,8 @@ Warning: useLayoutEffect does nothing on the server, because its effect cannot b
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
     at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
 
- ✓ tests/psAboutRoles.test.ts (2 tests) 89ms
+ ✓ tests/psAboutRoles.test.ts (2 tests) 67ms
+ ✓ tests/printFleet.test.ts (14 tests) 28ms
 stderr | tests/pe486PsSetup.test.ts > PE-486 PsDeviceSetup > super_admin sees steps, full SHA-256, verification command, troubleshooting and limits — never a pse_ code
 Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
@@ -750,83 +779,54 @@ Warning: useLayoutEffect does nothing on the server, because its effect cannot b
     at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
     at QueryClientProvider (file:///home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
 
- ✓ tests/pe486PsSetup.test.ts (15 tests) 73ms
- ✓ tests/firmwareLifecycleApi.test.ts (11 tests) 16ms
-stderr | tests/maintenancePage.test.ts > maintenance page presentation > uses server-wide counts and a searchable venue input with server pagination
-Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
-    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
-Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
-    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
-    at div
-    at div
-    at section
-    at div
-    at MaintenancePage (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/src/pages/MaintenancePage.tsx:13:28)
-    at Router (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
-    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
-
-stderr | tests/maintenancePage.test.ts > maintenance page presentation > marks both problem summary buttons and the selected status option
-Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
-    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
-Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
-    at LinkWithRef (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:807:9)
-    at div
-    at div
-    at section
-    at div
-    at MaintenancePage (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/src/pages/MaintenancePage.tsx:13:28)
-    at Router (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
-    at MemoryRouter (/home/coredev/coredeva/sandbox/.runs/840e2c19-863b-4546-93ea-ac597aa2ceee/portal/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
-
- ✓ tests/maintenancePage.test.ts (3 tests) 93ms
- ✓ tests/pe602.test.ts (8 tests) 89ms
- ✓ tests/firmwareDelete.test.ts (9 tests) 20ms
- ✓ tests/environment.test.ts (6 tests) 57ms
+ ✓ tests/pe486PsSetup.test.ts (15 tests) 65ms
+ ✓ tests/tenantOnboarding.test.ts (5 tests) 30ms
+ ✓ tests/pe473OtaDevice.test.ts (11 tests) 20ms
+ ✓ tests/environment.test.ts (6 tests) 34ms
+ ✓ tests/printServerApi.test.ts (15 tests) 33ms
+ ✓ tests/pe5994-stock.test.ts (3 tests) 7ms
+ ✓ tests/printInventory.test.ts (5 tests) 19ms
+ ✓ tests/pe458Mcp.test.ts (8 tests) 8ms
+ ✓ tests/legacyEvidence.test.ts (32 tests) 17ms
+ ✓ tests/psAdminDevice.test.ts (17 tests) 21ms
+ ✓ tests/otaDeviceModels.test.ts (3 tests) 7ms
+ ✓ tests/pe601-reservations.test.ts (4 tests) 11ms
+ ✓ tests/platformSubdomain.test.ts (5 tests) 11ms
+ ✓ tests/venueUsers.test.ts (8 tests) 25ms
+ ✓ tests/psVenueOverview.test.ts (4 tests) 10ms
+ ✓ tests/pe443MultiPs.test.ts (6 tests) 9ms
  ✓ tests/ownerUsers.test.ts (6 tests) 25ms
- ✓ tests/printFleet.test.ts (14 tests) 86ms
- ✓ tests/tenantOnboarding.test.ts (5 tests) 72ms
- ✓ tests/venueUsers.test.ts (8 tests) 28ms
+ ✓ tests/psInvalidation.test.ts (1 test) 11ms
+ ✓ tests/firmwareDelete.test.ts (9 tests) 14ms
+ ✓ tests/access.test.ts (18 tests) 14ms
+ ✓ tests/pe474Pagination.test.ts (8 tests) 20ms
+ ✓ tests/support.test.ts (5 tests) 8ms
  ✓ tests/pe441FirmwareRoles.test.ts (15 tests) 17ms
- ✓ tests/pe601-reservations.test.ts (4 tests) 30ms
  ✓ tests/psAdminCode.test.ts (24 tests) 17ms
- ✓ tests/pe473OtaDevice.test.ts (11 tests) 64ms
- ✓ tests/psAdminDevice.test.ts (17 tests) 32ms
- ✓ tests/printServerApi.test.ts (15 tests) 55ms
- ✓ tests/firmwareLifecycle.test.ts (22 tests) 15ms
- ✓ tests/legacyEvidence.test.ts (32 tests) 32ms
- ✓ tests/firmwareEligibility.test.ts (13 tests) 13ms
- ✓ tests/psAdminDeviceSheet.test.ts (4 tests) 12ms
- ✓ tests/psLink.test.ts (13 tests) 14ms
- ✓ tests/printInventory.test.ts (5 tests) 39ms
- ✓ tests/access.test.ts (18 tests) 19ms
- ✓ tests/pe474Pagination.test.ts (8 tests) 18ms
- ✓ tests/pe443MultiPs.test.ts (6 tests) 25ms
- ✓ tests/psResolvedDevice.test.ts (9 tests) 16ms
- ✓ tests/psInvalidation.test.ts (1 test) 22ms
- ✓ tests/support.test.ts (5 tests) 18ms
+ ✓ tests/firmwareLifecycleApi.test.ts (11 tests) 12ms
+ ✓ tests/psResolvedDevice.test.ts (9 tests) 14ms
+ ✓ tests/firmwareLifecycle.test.ts (22 tests) 8ms
+ ✓ tests/maintenance.test.ts (16 tests) 11ms
+ ✓ tests/psLink.test.ts (13 tests) 15ms
+ ✓ tests/firmwareEligibility.test.ts (13 tests) 15ms
+ ✓ tests/pe600-clarity.test.ts (14 tests) 8ms
+ ✓ tests/channelNavigation.test.ts (4 tests) 5ms
+ ✓ tests/psAdminDeviceSheet.test.ts (4 tests) 8ms
+ ✓ tests/psSsidAdoption.test.ts (4 tests) 7ms
+ ✓ tests/invitation.test.ts (9 tests) 9ms
+ ✓ tests/otaEvents.test.ts (2 tests) 6ms
  ✓ tests/psRecoveryLabel.test.ts (7 tests) 8ms
- ✓ tests/psVenueOverview.test.ts (4 tests) 27ms
- ✓ tests/maintenance.test.ts (16 tests) 15ms
- ✓ tests/pe458Mcp.test.ts (8 tests) 36ms
+ ✓ tests/psRotationStatus.test.ts (4 tests) 6ms
+ ✓ tests/adminLists.test.ts (5 tests) 7ms
+ ✓ tests/psLabel.test.ts (5 tests) 14ms
+ ✓ tests/oauthConsent.test.ts (5 tests) 6ms
  ✓ tests/tenantReadinessList.test.ts (2 tests) 7ms
  ✓ tests/psCredentialOperation.test.ts (14 tests) 7ms
- ✓ tests/adminLists.test.ts (5 tests) 8ms
- ✓ tests/psLabel.test.ts (5 tests) 8ms
- ✓ tests/invitation.test.ts (9 tests) 9ms
- ✓ tests/otaDeviceModels.test.ts (3 tests) 30ms
- ✓ tests/pe600-clarity.test.ts (14 tests) 13ms
  ✓ tests/psPortalUrl.test.ts (18 tests) 6ms
- ✓ tests/channelNavigation.test.ts (4 tests) 13ms
- ✓ tests/otaEvents.test.ts (2 tests) 9ms
- ✓ tests/psSsidAdoption.test.ts (4 tests) 10ms
- ✓ tests/oauthConsent.test.ts (5 tests) 7ms
- ✓ tests/platformSubdomain.test.ts (5 tests) 29ms
- ✓ tests/psRotationStatus.test.ts (4 tests) 8ms
- ✓ tests/pe5994-stock.test.ts (3 tests) 42ms
  ✓ tests/psEnroll.test.ts (3 tests) 5ms
 
  Test Files  51 passed (51)
       Tests  462 passed (462)
-   Start at  16:10:41
-   Duration  33.97s (transform 3.93s, setup 0ms, collect 9.80s, tests 1.85s, environment 20ms, prepare 7.76s)
+   Start at  16:17:26
+   Duration  22.00s (transform 4.33s, setup 0ms, collect 9.18s, tests 1.21s, environment 10ms, prepare 3.62s)
 

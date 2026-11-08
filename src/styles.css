@@ -813,3 +813,6 @@ html:not([data-nav="keyboard"]) :focus { outline: none !important; }
 .ps-registered-action-error{color:var(--danger);font-weight:700}
 
 .ps-read-warning{color:var(--warning);background:var(--warning-soft);border-color:var(--warning);flex-wrap:wrap}.ps-read-warning>span{flex:1 1 240px}
+/* PE-603.4: reported enrollment messages must wrap inside the mobile sheet. */
+.ps469-sheet .dev-facts > div { min-width: 0; }
+.ps469-sheet .dev-facts .server-status { max-width: 100%; white-space: normal; }
