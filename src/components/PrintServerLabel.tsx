@@ -11,7 +11,7 @@ type Action = 'preview' | 'download' | 'print';
 
 // A preview is opt-in because its image contains the confirmed recovery password.
 export function PrintServerLabel({ venueId, printServerId = null, userId, sheet, pendingWifi = false, accessLost = false, sheetUnavailable = false }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const queryClient = useQueryClient();
   const queryKey = ['ps-recovery-label', userId, venueId, printServerId] as const;
   const labelQuery = useQuery({ queryKey, queryFn: ({ signal }) => getRecoveryLabel(venueId, signal, printServerId), refetchInterval: query => pendingWifi || query.state.data?.wifiRotationPending || sheet?.enroll?.state === 'pending' ? 5_000 : false, gcTime: 0, enabled: !!userId && !!venueId });
@@ -24,7 +24,7 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
   const data = state?.ready && state.label ? state.label : null;
   const fingerprint = data ? labelFingerprint(data) : null;
   // A sheet update or rotation hides a preview during render, before effects run.
-  const scope = JSON.stringify([userId, venueId, printServerId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable]);
+  const scope = JSON.stringify([userId, venueId, printServerId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable, locale]);
   const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
     && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
   const ready = !!data && !accessLost && !sheetUnavailable && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
@@ -88,7 +88,7 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
         await queryClient.invalidateQueries({ queryKey });
         return;
       }
-      const blob = await generateLabelPng(current);
+      const blob = await generateLabelPng(current, locale);
       if (!currentRun()) return;
       if (kind === 'print') {
         await printLabel(blob, abort.signal);

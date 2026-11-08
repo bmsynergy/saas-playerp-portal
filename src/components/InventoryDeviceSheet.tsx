@@ -29,7 +29,7 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
     sheet.label.label.wifi_applied_at === wifi.applied_at
     ? { deviceId: device.id, serial: device.serial, ssid: wifi.ssid, password: wifi.psk, appliedAt: wifi.applied_at }
     : null;
-  const labelIdentity = label ? JSON.stringify([label.deviceId, label.serial, label.ssid, label.password, label.appliedAt]) : null;
+  const labelIdentity = label ? JSON.stringify([label.deviceId, label.serial, label.ssid, label.password, label.appliedAt, locale]) : null;
   currentIdentity.current = labelIdentity;
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
     labelRequest.current?.abort(); labelRequest.current = controller;
     setBusy(true); setLabelError(false);
     try {
-      const blob = await generateLabelPng(label);
+      const blob = await generateLabelPng(label, locale);
       if (controller.signal.aborted || currentIdentity.current !== actionIdentity) return;
       if (action === 'print') await printLabel(blob, controller.signal);
       else if (action === 'download') {

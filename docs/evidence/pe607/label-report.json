@@ -1,0 +1,1195 @@
+{
+  "pass": true,
+  "physicalCamera": "Pending Beny: digital decode and 203dpi resampling do not prove thermal scanning",
+  "overflowBlocks": true,
+  "results": [
+    {
+      "file": "label-en-canonical.png",
+      "locale": "en",
+      "ssidBytes": 22,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Wi-Fi name",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 81.78125,
+          "left": 18,
+          "right": 99.8828125,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "PlayERP-Setup-TE",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 20,
+          "right": 305.9228515625,
+          "top": 96,
+          "bottom": 125
+        },
+        {
+          "value": "ST607A",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 108.369140625,
+          "left": 19,
+          "right": 126.3076171875,
+          "top": 132,
+          "bottom": 154
+        },
+        {
+          "value": "Password",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 19,
+          "right": 87.3515625,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Power off/on. Join within 90 s after Wi-Fi appears. Open:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 428.3515625,
+          "left": 19,
+          "right": 445.0234375,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-en-ascii32.png",
+      "locale": "en",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Wi-Fi name",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 81.78125,
+          "left": 18,
+          "right": 99.8828125,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWW",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 18,
+          "right": 307.9228515625,
+          "top": 97,
+          "bottom": 119
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWW",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 18,
+          "right": 307.9228515625,
+          "top": 132,
+          "bottom": 154
+        },
+        {
+          "value": "Password",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 19,
+          "right": 87.3515625,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Power off/on. Join within 90 s after Wi-Fi appears. Open:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 428.3515625,
+          "left": 19,
+          "right": 445.0234375,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-en-escaped32.png",
+      "locale": "en",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "qrVersion": 6,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Wi-Fi name",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 81.78125,
+          "left": 18,
+          "right": 99.8828125,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "\\;,:\"\\;,:\"\\;,:\"\\",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 19,
+          "right": 305.9228515625,
+          "top": 97,
+          "bottom": 123
+        },
+        {
+          "value": ";,:\"\\;,:\"\\;,:\"\\;",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 23,
+          "right": 300.9228515625,
+          "top": 132,
+          "bottom": 158
+        },
+        {
+          "value": "Password",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 19,
+          "right": 87.3515625,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Power off/on. Join within 90 s after Wi-Fi appears. Open:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 428.3515625,
+          "left": 19,
+          "right": 445.0234375,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-en-utf8-2byte.png",
+      "locale": "en",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Wi-Fi name",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 81.78125,
+          "left": 18,
+          "right": 99.8828125,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "éééééééééééééééé",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 19,
+          "right": 305.9228515625,
+          "top": 94,
+          "bottom": 119
+        },
+        {
+          "value": "Password",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 19,
+          "right": 87.3515625,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Power off/on. Join within 90 s after Wi-Fi appears. Open:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 428.3515625,
+          "left": 19,
+          "right": 445.0234375,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-en-utf8-3byte.png",
+      "locale": "en",
+      "ssidBytes": 30,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Wi-Fi name",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 81.78125,
+          "left": 18,
+          "right": 99.8828125,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "中中中中中中中中中",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 270,
+          "left": 19,
+          "right": 285,
+          "top": 93,
+          "bottom": 123
+        },
+        {
+          "value": "中",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 30,
+          "left": 19,
+          "right": 45,
+          "top": 128,
+          "bottom": 158
+        },
+        {
+          "value": "Password",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 19,
+          "right": 87.3515625,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Power off/on. Join within 90 s after Wi-Fi appears. Open:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 428.3515625,
+          "left": 19,
+          "right": 445.0234375,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-es-canonical.png",
+      "locale": "es",
+      "ssidBytes": 22,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Nombre Wi-Fi",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 98.6640625,
+          "left": 19,
+          "right": 116.109375,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "PlayERP-Setup-TE",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 20,
+          "right": 305.9228515625,
+          "top": 96,
+          "bottom": 125
+        },
+        {
+          "value": "ST607A",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 108.369140625,
+          "left": 19,
+          "right": 126.3076171875,
+          "top": 132,
+          "bottom": 154
+        },
+        {
+          "value": "Clave",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 18,
+          "right": 59.0078125,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 510.234375,
+          "left": 18,
+          "right": 526.90625,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-es-ascii32.png",
+      "locale": "es",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Nombre Wi-Fi",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 98.6640625,
+          "left": 19,
+          "right": 116.109375,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWW",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 18,
+          "right": 307.9228515625,
+          "top": 97,
+          "bottom": 119
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWW",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 18,
+          "right": 307.9228515625,
+          "top": 132,
+          "bottom": 154
+        },
+        {
+          "value": "Clave",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 18,
+          "right": 59.0078125,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 510.234375,
+          "left": 18,
+          "right": 526.90625,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-es-escaped32.png",
+      "locale": "es",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "qrVersion": 6,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Nombre Wi-Fi",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 98.6640625,
+          "left": 19,
+          "right": 116.109375,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "\\;,:\"\\;,:\"\\;,:\"\\",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 19,
+          "right": 305.9228515625,
+          "top": 97,
+          "bottom": 123
+        },
+        {
+          "value": ";,:\"\\;,:\"\\;,:\"\\;",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 23,
+          "right": 300.9228515625,
+          "top": 132,
+          "bottom": 158
+        },
+        {
+          "value": "Clave",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 18,
+          "right": 59.0078125,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 510.234375,
+          "left": 18,
+          "right": 526.90625,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-es-utf8-2byte.png",
+      "locale": "es",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Nombre Wi-Fi",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 98.6640625,
+          "left": 19,
+          "right": 116.109375,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "éééééééééééééééé",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 288.984375,
+          "left": 19,
+          "right": 305.9228515625,
+          "top": 94,
+          "bottom": 119
+        },
+        {
+          "value": "Clave",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 18,
+          "right": 59.0078125,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 510.234375,
+          "left": 18,
+          "right": 526.90625,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    },
+    {
+      "file": "label-es-utf8-3byte.png",
+      "locale": "es",
+      "ssidBytes": 30,
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11811,
+        11811,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 6,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 18,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 18,
+          "y": 42,
+          "font": "bold 28px Arial, sans-serif",
+          "width": 115.171875,
+          "left": 19,
+          "right": 132.49609375,
+          "top": 22,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 411.05859375,
+          "y": 42,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 412.05859375,
+          "right": 570.55078125,
+          "top": 24,
+          "bottom": 42
+        },
+        {
+          "value": "Nombre Wi-Fi",
+          "x": 18,
+          "y": 82,
+          "font": "16px Arial, sans-serif",
+          "width": 98.6640625,
+          "left": 19,
+          "right": 116.109375,
+          "top": 70,
+          "bottom": 82
+        },
+        {
+          "value": "中中中中中中中中中",
+          "x": 18,
+          "y": 119,
+          "font": "bold 30px monospace",
+          "width": 270,
+          "left": 19,
+          "right": 285,
+          "top": 93,
+          "bottom": 123
+        },
+        {
+          "value": "中",
+          "x": 18,
+          "y": 154,
+          "font": "bold 30px monospace",
+          "width": 30,
+          "left": 19,
+          "right": 45,
+          "top": 128,
+          "bottom": 158
+        },
+        {
+          "value": "Clave",
+          "x": 18,
+          "y": 228,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 18,
+          "right": 59.0078125,
+          "top": 216,
+          "bottom": 228
+        },
+        {
+          "value": "0123456789",
+          "x": 18,
+          "y": 279,
+          "font": "bold 44px monospace",
+          "width": 264.90234375,
+          "left": 20,
+          "right": 280.412109375,
+          "top": 245,
+          "bottom": 280
+        },
+        {
+          "value": "Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:",
+          "x": 18,
+          "y": 310,
+          "font": "bold 16px Arial, sans-serif",
+          "width": 510.234375,
+          "left": 18,
+          "right": 526.90625,
+          "top": 298,
+          "bottom": 313
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 18,
+          "y": 331,
+          "font": "bold 22px Arial, sans-serif",
+          "width": 152.8291015625,
+          "left": 19,
+          "right": 170.59375,
+          "top": 315,
+          "bottom": 336
+        }
+      ]
+    }
+  ]
+}

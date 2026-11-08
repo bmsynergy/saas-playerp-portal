@@ -73,6 +73,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
 
   useEffect(() => { labelGeneration.current++; labelPrintRef.current?.abort(); if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); labelUrlRef.current = null; setLabelUrl(null); setLabel(null); setPreview(null); setPreviewKey(''); setSha(''); setReplaceFile(false); setCopied(null); }, [deviceId]);
   useEffect(() => { if (!canLabel) { labelGeneration.current++; labelPrintRef.current?.abort(); } if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); labelUrlRef.current = null; setLabelUrl(null); setLabel(null); }, [stock?.reported.last_status_at, stock?.state, canLabel]);
+  useEffect(() => { labelGeneration.current++; labelPrintRef.current?.abort(); if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); labelUrlRef.current = null; setLabelUrl(null); setLabel(null); }, [locale]);
   useEffect(() => () => { labelGeneration.current++; labelPrintRef.current?.abort(); if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current); }, []);
   useEffect(() => { if (!canEmail || previewKey !== key) setPreview(null); }, [canEmail, key, previewKey]);
 
@@ -111,7 +112,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
       if (freshStatus.isError || !fresh?.label_ready || !fresh.checks.credentials_confirmed_by_device || !['validated_in_stock', 'validated_assigned'].includes(fresh.state)) throw new Error('label_unavailable');
       const current = await getStockLabel(requestedDevice);
       const data: LabelData = { deviceId: requestedDevice, serial: current.serial, ssid: current.ssid, password: current.psk, appliedAt: null, confirmation: 'stock_rpc' };
-      const blob = await generateLabelPng(data);
+      const blob = await generateLabelPng(data, locale);
       if (generation !== labelGeneration.current || requestedDevice !== deviceId) return;
       if (action === 'view') {
         if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current);

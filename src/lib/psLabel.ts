@@ -6,12 +6,10 @@ export const LABEL_WIDTH = 590;
 export const LABEL_HEIGHT = 354;
 export const LABEL_PPM = 11811; // 300 dpi; raster rounds to 49.95 × 29.97 mm.
 export const LABEL_MARGIN = 18; // 1.524 mm at 300 dpi, at least 1.5 mm on each edge.
-export const LABEL_STEPS = [
-  '1 Power off/on',
-  '2 Join Wi-Fi within 90 s',
-  '3 Open in browser:',
-  'http://10.77.0.1',
-] as const;
+export const LABEL_STEPS = {
+  en: { wifi: 'Wi-Fi name', password: 'Password', instructions: 'Power off/on. Join within 90 s after Wi-Fi appears. Open:' },
+  es: { wifi: 'Nombre Wi-Fi', password: 'Clave', instructions: 'Apaga/enciende. Conéctate en 90 s desde que aparece Wi-Fi. Abre:' },
+} as const;
 
 function validLabel(d: LabelData): boolean {
   return !/pse_|pst_|PRIVATE\s+KEY/i.test(d.ssid + d.password) && !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && (d.confirmation === 'stock_rpc' || !!confirmedAt(d.appliedAt));
@@ -65,7 +63,7 @@ export function withPhysicalResolution(png: Uint8Array): Uint8Array {
 }
 
 /** A single raster serves preview, download and print. The QR contains only applied Wi-Fi. */
-export async function generateLabelPng(data: LabelData): Promise<Blob> {
+export async function generateLabelPng(data: LabelData, language: 'en' | 'es' = 'en'): Promise<Blob> {
   if (!validLabel(data)) throw new Error('label_unavailable');
   const canvas = document.createElement('canvas'); canvas.width = LABEL_WIDTH; canvas.height = LABEL_HEIGHT;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -79,36 +77,44 @@ export async function generateLabelPng(data: LabelData): Promise<Blob> {
     if (ctx!.measureText(value).width > max) throw new Error('label_does_not_fit');
     ctx!.fillText(value, x, y);
   }
-  // Entire left half holds text; the right half is reserved for an undistorted QR.
-  const textWidth = LABEL_WIDTH / 2 - left - 12;
-  line('PlayERP', 43, 'bold 28px Arial, sans-serif', left, textWidth);
-  line(data.serial, 74, 'bold 24px monospace', left, textWidth);
-  line('Wi-Fi (SSID)', 108, '18px Arial, sans-serif', left, textWidth);
-  ctx.font = 'bold 19px monospace';
+  const copy = LABEL_STEPS[language];
+  // Header spans the full label. The QR lives below it in a 246 px right-hand box.
+  line('PlayERP', 42, 'bold 28px Arial, sans-serif', left, 190);
+  ctx.font = 'bold 24px monospace';
+  const serialWidth = ctx.measureText(data.serial).width;
+  line(data.serial, 42, 'bold 24px monospace', LABEL_WIDTH - left - serialWidth - 2, 230);
+
+  const textWidth = 290;
+  line(copy.wifi, 82, '16px Arial, sans-serif', left, textWidth);
+  ctx.font = 'bold 30px monospace';
   const ssidLines: string[] = []; let current = '';
   for (const char of data.ssid) {
-    if (ctx.measureText(current + char).width > textWidth) { ssidLines.push(current); current = ''; }
+    if (ctx.measureText(current + char).width > textWidth) {
+      if (!current) throw new Error('label_does_not_fit');
+      ssidLines.push(current); current = '';
+    }
     current += char;
   }
   ssidLines.push(current);
-  if (ssidLines.length > 2) throw new Error('label_does_not_fit');
-  ssidLines.forEach((value, i) => line(value, 134 + i * 24, 'bold 19px monospace', left, textWidth));
-  line('Password', 190, '18px Arial, sans-serif', left, textWidth);
-  line(data.password, 219, 'bold 25px monospace', left, textWidth);
-  LABEL_STEPS.forEach((value, i) => line(value, 253 + i * 24, 'bold 17px Arial, sans-serif', left, textWidth));
+  if (ssidLines.length > 3) throw new Error('label_does_not_fit');
+  ssidLines.forEach((value, i) => line(value, 119 + i * 35, 'bold 30px monospace', left, textWidth));
+  line(copy.password, 228, '16px Arial, sans-serif', left, textWidth);
+  line(data.password, 279, 'bold 44px monospace', left, textWidth);
   const qr = QRCode.create(wifiQrPayload(data.ssid, data.password), { errorCorrectionLevel: 'M' });
-  const quiet = 4, qrArea = LABEL_WIDTH / 2 - LABEL_MARGIN, qrLeft = LABEL_WIDTH / 2;
-  const scale = Math.floor(qrArea / (qr.modules.size + quiet * 2));
-  if (scale < 3) throw new Error('label_does_not_fit');
+  const quiet = 4, qrArea = 246;
+  const scale = qr.version <= 4 ? 6 : 5;
   const qrSize = (qr.modules.size + quiet * 2) * scale;
-  const qrX = qrLeft + Math.floor((qrArea - qrSize) / 2);
-  const qrY = Math.floor((LABEL_HEIGHT - qrSize) / 2);
+  if (qrSize > qrArea) throw new Error('label_does_not_fit');
+  const qrX = LABEL_WIDTH - LABEL_MARGIN - qrArea + Math.floor((qrArea - qrSize) / 2);
+  const qrY = 50 + Math.floor((qrArea - qrSize) / 2);
   ctx.imageSmoothingEnabled = false;
   for (let row = 0; row < qr.modules.size; row++) {
     for (let col = 0; col < qr.modules.size; col++) {
       if (qr.modules.get(row, col)) ctx.fillRect(qrX + (col + quiet) * scale, qrY + (row + quiet) * scale, scale, scale);
     }
   }
+  line(copy.instructions, 310, 'bold 16px Arial, sans-serif');
+  line('http://10.77.0.1', 331, 'bold 22px Arial, sans-serif');
   // Thermal label: only opaque pure black/white, no antialiasing gray or color pixels.
   const pixels = ctx.getImageData(0, 0, LABEL_WIDTH, LABEL_HEIGHT);
   for (let i = 0; i < pixels.data.length; i += 4) {

@@ -1,0 +1,5 @@
+Gaby — revisión independiente, solo lectura, en la misma sesión PE607.
+Alcance: diff contra fbb562d; generador, tres componentes de idioma, prueba PNG y evidencia. Criterios 1–4 y riesgos de credenciales, clipping, paridad e invalidación.
+Resultado: «no se encontraron problemas verificables en el diff revisado».
+Verificó 10 casos sintéticos, QR M, quiet zone4, decode300/203 simulado, SSID completo y márgenes; npm test52archivos/467pruebas y build verdes; printLabel/@page intactos. Escaneo físico pendiente de Beny.
+La revisión precede al push/publicación; GitHub y DEV se verifican por el agente principal tras ella.
