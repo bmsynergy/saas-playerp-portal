@@ -1,0 +1,120 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "kind": "Live DEV read-only; QA account is platform admin; owner scope is covered separately with intercepted role fixtures; no physical LAN access",
+  "views": [
+    {
+      "scope": "admin",
+      "lang": "es",
+      "width": 390,
+      "scrollWidth": 390,
+      "url": "https://playerp.dev.bmore.app/admin/print-servers/devices/34fd3ff8-f558-4d39-a805-834264d8f6bc",
+      "screenshot": "admin-es-390.png",
+      "href": "https://playerp-ps-5easg93m.local:8443/",
+      "assets": [
+        "/assets/index-BiCxdbhB.js"
+      ],
+      "blocked": [],
+      "auditedCredentialReadSuppressed": 1,
+      "readEndpoints": [
+        "portal_access",
+        "is_platform_staff",
+        "portal_tenant_directory",
+        "ps_device_resolve",
+        "ps-firmware-admin:kit_list",
+        "ps_panel_state",
+        "ps_admin_stock_status",
+        "ps_firmware_list",
+        "ps_admin_legacy_credentials_context",
+        "ps_panel_device",
+        "ps_panel_printer_jobs",
+        "ps_admin_device_detail"
+      ]
+    },
+    {
+      "scope": "admin",
+      "lang": "es",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "url": "https://playerp.dev.bmore.app/admin/print-servers/devices/34fd3ff8-f558-4d39-a805-834264d8f6bc",
+      "screenshot": "admin-es-1440.png",
+      "href": "https://playerp-ps-5easg93m.local:8443/",
+      "assets": [
+        "/assets/index-BiCxdbhB.js"
+      ],
+      "blocked": [],
+      "auditedCredentialReadSuppressed": 1,
+      "readEndpoints": [
+        "portal_access",
+        "is_platform_staff",
+        "portal_tenant_directory",
+        "ps_device_resolve",
+        "ps-firmware-admin:kit_list",
+        "ps_panel_state",
+        "ps_admin_stock_status",
+        "ps_firmware_list",
+        "ps_admin_legacy_credentials_context",
+        "ps_panel_device",
+        "ps_panel_printer_jobs",
+        "ps_admin_device_detail"
+      ]
+    },
+    {
+      "scope": "admin",
+      "lang": "en",
+      "width": 390,
+      "scrollWidth": 390,
+      "url": "https://playerp.dev.bmore.app/admin/print-servers/devices/34fd3ff8-f558-4d39-a805-834264d8f6bc",
+      "screenshot": "admin-en-390.png",
+      "href": "https://playerp-ps-5easg93m.local:8443/",
+      "assets": [
+        "/assets/index-BiCxdbhB.js"
+      ],
+      "blocked": [],
+      "auditedCredentialReadSuppressed": 1,
+      "readEndpoints": [
+        "portal_access",
+        "is_platform_staff",
+        "portal_tenant_directory",
+        "ps_device_resolve",
+        "ps-firmware-admin:kit_list",
+        "ps_panel_state",
+        "ps_admin_stock_status",
+        "ps_firmware_list",
+        "ps_admin_legacy_credentials_context",
+        "ps_panel_device",
+        "ps_panel_printer_jobs",
+        "ps_admin_device_detail"
+      ]
+    },
+    {
+      "scope": "admin",
+      "lang": "en",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "url": "https://playerp.dev.bmore.app/admin/print-servers/devices/34fd3ff8-f558-4d39-a805-834264d8f6bc",
+      "screenshot": "admin-en-1440.png",
+      "href": "https://playerp-ps-5easg93m.local:8443/",
+      "assets": [
+        "/assets/index-BiCxdbhB.js"
+      ],
+      "blocked": [],
+      "auditedCredentialReadSuppressed": 1,
+      "readEndpoints": [
+        "portal_access",
+        "is_platform_staff",
+        "portal_tenant_directory",
+        "ps_device_resolve",
+        "ps-firmware-admin:kit_list",
+        "ps_panel_state",
+        "ps_admin_stock_status",
+        "ps_firmware_list",
+        "ps_admin_legacy_credentials_context",
+        "ps_panel_device",
+        "ps_panel_printer_jobs",
+        "ps_admin_device_detail"
+      ]
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
