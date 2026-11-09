@@ -36,7 +36,7 @@ export function PrintServersTabs() {
 
 const MODELS = [{ value: 'rpi4-2gb', label: 'Raspberry Pi 4 2GB' }];
 const ARCHS = ['arm64', 'armhf'];
-type Result = { ok: boolean; text: string; release?: FirmwareRelease; localSha?: string };
+type Result = { ok: boolean; key: string; release?: FirmwareRelease; localSha?: string };
 
 export function PrintFirmwaresPage() {
   const { t, locale } = useLocale();
@@ -60,7 +60,7 @@ export function PrintFirmwaresPage() {
   const [availabilityTarget, setAvailabilityTarget] = useState<{ release: FirmwareRelease; ring?: FirmwareRing; retire?: boolean } | null>(null);
   const [busyAction, setBusyAction] = useState(false);
   const [actionError, setActionError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState<{ key: string; secondKey?: string } | null>(null);
   const [noticeError,setNoticeError]=useState(false);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }), [locale]);
   const formatDate = (v: string | null) => v && !Number.isNaN(Date.parse(v)) ? dateFormatter.format(new Date(v)) : t('notProvided');
@@ -81,18 +81,18 @@ export function PrintFirmwaresPage() {
       setStage('hash'); const localSha = await sha256OfFile(file);
       const release = await uploadFirmware({ file, ...form }, next => setStage(next));
       const matches = release.sha256 === localSha;
-      setResult({ ok: matches, text: t(matches ? 'fw.result.ok' : 'fw.result.mismatch'), release, localSha });
+      setResult({ ok: matches, key: matches ? 'fw.result.ok' : 'fw.result.mismatch', release, localSha });
       setFile(null); setForm(current => ({ ...current, version: '', revision: '', notes: '' })); setFileKey(key => key + 1);
-    } catch (error) { setResult({ok:false,text:t(error instanceof FirmwareError ? error.key : errorCode(error)),release:error instanceof FirmwareError ? error.release : undefined}); }
-    finally { setStage('idle'); await refresh().catch(() => {setNoticeError(true);setNotice(t('fw.refreshFailed'));}); }
+    } catch (error) { setResult({ok:false,key:error instanceof FirmwareError ? error.key : errorCode(error),release:error instanceof FirmwareError ? error.release : undefined}); }
+    finally { setStage('idle'); await refresh().catch(() => {setNoticeError(true);setNotice({key:'fw.refreshFailed'});}); }
   }
-  const kitError = (error: unknown) => { setNoticeError(true); setNotice(t(error instanceof FirmwareError ? error.key : errorCode(error))); };
-  async function download(id: string) { try { window.location.assign(await firmwareDownloadUrl(id)); } catch (error) { setNotice(t(error instanceof FirmwareError ? error.key : errorCode(error))); } }
+  const kitError = (error: unknown) => { setNoticeError(true); setNotice({key:error instanceof FirmwareError ? error.key : errorCode(error)}); };
+  async function download(id: string) { try { window.location.assign(await firmwareDownloadUrl(id)); } catch (error) { setNotice({key:error instanceof FirmwareError ? error.key : errorCode(error)}); } }
   async function perform(action: () => Promise<void>, success: string, close: () => void) {
     if (busyAction || page.query.isError || page.query.isFetching) return;
     setBusyAction(true); setActionError('');
-    try { await action(); close(); setNoticeError(false);setNotice(t(success)); try { await refresh(); } catch {setNoticeError(true);setNotice(`${t(success)} ${t('fw.refreshFailed')}`);} }
-    catch (error) { const key = error instanceof FirmwareError ? error.key : psErrorKey(error); const message=t(key) === key ? (reasonText(key) ?? t('genericError')) : t(key); setActionError(message);setNoticeError(true);setNotice(message); if(key==='fw.lifecycle.error.availabilityChanged'||key==='pe474.reason.availability_changed'){close();} await refresh().catch(() => {}); }
+    try { await action(); close(); setNoticeError(false);setNotice({key:success}); try { await refresh(); } catch {setNoticeError(true);setNotice({key:success,secondKey:'fw.refreshFailed'});} }
+    catch (error) { const key = error instanceof FirmwareError ? error.key : psErrorKey(error); const messageKey=t(key) === key ? 'genericError' : key; setActionError(messageKey);setNoticeError(true);setNotice({key:messageKey}); if(key==='fw.lifecycle.error.availabilityChanged'||key==='pe474.reason.availability_changed'){close();} await refresh().catch(() => {}); }
     finally { setBusyAction(false); }
   }
   const sign = () => {
@@ -104,7 +104,7 @@ export function PrintFirmwaresPage() {
   const changeAvailability = () => {
     const target = availabilityTarget, lifecycle = target?.release.lifecycle;
     const current=page.query.data?.items.find(item=>item.id===target?.release.id)?.lifecycle;
-    if (!current || current.revision!==lifecycle?.revision) {setAvailabilityTarget(null);setNoticeError(true);setNotice(t('pe474.reason.availability_changed'));return;}
+    if (!current || current.revision!==lifecycle?.revision) {setAvailabilityTarget(null);setNoticeError(true);setNotice({key:'pe474.reason.availability_changed'});return;}
     if (!target || !lifecycle?.edition_id || !lifecycle.can_manage) return;
     if (target.retire) {
       if (!lifecycle.can_retire) return;
@@ -132,14 +132,14 @@ export function PrintFirmwaresPage() {
         <label className="field fw-notes"><span>{t('fw.notes')}</span><textarea value={form.notes} maxLength={4000} rows={3} disabled={stageBusy} data-testid="fw-notes" onChange={e => formSet('notes',e.target.value)}/></label>
         <div className="fw-actions"><button className="button button-primary" type="submit" disabled={!file || stageBusy} data-testid="fw-submit"><Upload size={17}/>{stageBusy ? t(`fw.stage.${stage}`) : t('fw.submit')}</button></div>
       </form>
-      {result && <div className={`ps-result ${result.ok ? 'ps-result-ok' : 'ps-result-error'}`} role="status" data-testid="fw-result">{result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>}<span>{result.text}</span></div>}
+      {result && <div className={`ps-result ${result.ok ? 'ps-result-ok' : 'ps-result-error'}`} role="status" data-testid="fw-result">{result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>}<span>{t(result.key)}</span></div>}
       {result?.release && <dl className="fw-hashes"><div><dt>{t('fw.serverHash')}</dt><dd className="fw-hash">{result.release.sha256 ?? t('notProvided')}</dd></div>{result.localSha && <div><dt>{t('fw.localHash')}</dt><dd className="fw-hash">{result.localSha}</dd></div>}</dl>}
     </section>
     <section className="servers-panel" aria-labelledby="fw-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t('fw.listEyebrow')}</p><h2 id="fw-list-title">{t('fw.listTitle')}</h2></div><button type="button" className="button button-secondary" onClick={() => void page.query.refetch()} disabled={page.query.isFetching}><RefreshCw size={15}/>{t('refresh')}</button></div>
       <div className="admin-list-toolbar"><AdminListFilters id="fw-releases" filters={page.filters} set={page.set} clear={page.clear} statuses={[{value:'ready',label:t('fw.loaded')},{value:'signed',label:t('fw.lifecycle.signed')},{value:'unsigned',label:t('fw.lifecycle.unsigned')},{value:'retired',label:t('fw.lifecycle.retired')},{value:'rejected',label:t('fw.rejected')}]} afterStatus={<><label><span>{t('ota.ring')}</span><select value={page.filters.ring ?? ''} onChange={e => page.set('ring',e.target.value)} data-testid="fw-ring-filter"><option value="">{t('list.allStates')}</option>{[...FIRMWARE_RINGS,'none'].map(r => <option key={r} value={r}>{r === 'none' ? t('pe474.firmware.noChannels') : t(`ota.ring.${r}`)}</option>)}</select></label><label><span>{t('fw.model')}</span><input value={page.filters.model ?? ''} onChange={e => page.set('model',e.target.value)}/></label><label><span>{t('fw.arch')}</span><input value={page.filters.arch ?? ''} onChange={e => page.set('arch',e.target.value)}/></label></>}/><span className="directory-count">{page.pagination.total}</span></div>
       {kits.isError && <p className="fw-notice" role="status" data-testid="fw-kit-list-error"><AlertTriangle size={15}/>{t('fw.kit.listError')}</p>}
-      {notice && <div role={noticeError?'alert':'status'} className={`ps-result ${noticeError?'ps-result-error':'ps-result-ok'}`}>{notice}</div>}
+      {notice && <div role={noticeError?'alert':'status'} className={`ps-result ${noticeError?'ps-result-error':'ps-result-ok'}`}>{t(notice.key)}{notice.secondKey ? ` ${t(notice.secondKey)}` : ''}</div>}
       <div data-pagination-list="fw-releases" />
       {page.query.isError ? <div role="alert" className="form-error">{t(psErrorKey(page.query.error))}<button className="button button-secondary" onClick={() => void page.query.refetch()}>{t('refresh')}</button></div> : page.query.isPending ? <p className="inline-empty" role="status">{t('dev.loading')}</p> : releases.length === 0 ? <p className="inline-empty">{t('list.noMatches')}</p> : <ul className="fw-release-list" data-testid="fw-release-list">{releases.map(r => {
         const lifecycle = r.lifecycle, expanded = focused?.id === r.id;
@@ -149,7 +149,7 @@ export function PrintFirmwaresPage() {
           {kitsByRelease.get(r.id)?.map(kit => <FirmwareInstallKit key={kit.id} kit={kit} t={t} onError={kitError}/>)}
           {expanded && <div className="pe474-firmware-detail" data-testid={`fw-detail-${r.id}`}>
             <div className="fw-focus-toolbar"><strong>{t('pe474.firmware.details')}</strong><button type="button" className="button button-secondary" onClick={() => setSearchParams({})}>{t('pe474.firmware.closeDetails')}</button></div>
-            <dl className="fw-release-facts"><div><dt>{t('fw.col.file')}</dt><dd>{r.filename}</dd></div><div><dt>{t('fw.fileSize')}</dt><dd>{r.size_bytes === null?t('notProvided'):`${(r.size_bytes/1048576).toFixed(1)} MB`}</dd></div><div><dt>SHA-256</dt><dd className="fw-hash">{r.sha256??t('notProvided')}</dd></div><div><dt>{t('fw.uploadedBy')}</dt><dd>{r.uploaded_by_email??t('notProvided')}</dd></div>{r.notes&&<div><dt>{t('fw.notes')}</dt><dd>{r.notes}</dd></div>}{r.errors.length>0&&<div><dt>{t('fw.validation')}</dt><dd>{r.errors.map(e=>t(`fw.check.${e}`)).join(' · ')}</dd></div>}{lifecycle?.edition_id&&<div><dt>{t('fw.lifecycle.editionId')}</dt><dd className="fw-hash">{lifecycle.edition_id}</dd></div>}{lifecycle?.signed_at&&<div><dt>{t('fw.lifecycle.signedAt')}</dt><dd>{formatDate(lifecycle.signed_at)}</dd></div>}{lifecycle?.key_id&&<div><dt>{t('fw.lifecycle.signature')}</dt><dd className="fw-hash">{lifecycle.key_id}</dd></div>}</dl>
+            <dl className="fw-release-facts"><div><dt>{t('fw.col.file')}</dt><dd>{r.filename}</dd></div><div><dt>{t('fw.fileSize')}</dt><dd>{r.size_bytes === null?t('notProvided'):`${new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r.size_bytes / 1048576)} MB`}</dd></div><div><dt>SHA-256</dt><dd className="fw-hash">{r.sha256??t('notProvided')}</dd></div><div><dt>{t('fw.uploadedBy')}</dt><dd>{r.uploaded_by_email??t('notProvided')}</dd></div>{r.notes&&<div><dt>{t('fw.notes')}</dt><dd>{r.notes}</dd></div>}{r.errors.length>0&&<div><dt>{t('fw.validation')}</dt><dd>{r.errors.map(e=>t(`fw.check.${e}`)).join(' · ')}</dd></div>}{lifecycle?.edition_id&&<div><dt>{t('fw.lifecycle.editionId')}</dt><dd className="fw-hash">{lifecycle.edition_id}</dd></div>}{lifecycle?.signed_at&&<div><dt>{t('fw.lifecycle.signedAt')}</dt><dd>{formatDate(lifecycle.signed_at)}</dd></div>}{lifecycle?.key_id&&<div><dt>{t('fw.lifecycle.signature')}</dt><dd className="fw-hash">{lifecycle.key_id}</dd></div>}</dl>
             {!lifecycle ? <p className="form-error" role="alert">{t('fw.lifecycle.unavailable')}</p> : <>
               <p className="fw-lifecycle-explain"><ShieldCheck size={17}/>{t('pe474.firmware.sameArtifact')}</p>
               {lifecycle.edition_status==='signed'&&lifecycle.enabled_rings.length===0&&<p className="fw-lifecycle-note fw-lifecycle-alert" data-testid={`fw-no-rings-${r.id}`}>{t('pe474.firmware.legacyNoChannels')}</p>}
@@ -163,8 +163,8 @@ export function PrintFirmwaresPage() {
       {focusedId&&!focused&&!page.query.isPending&&<p className="fw-notice" role="status">{t('pe474.firmware.detailOnPage')}</p>}
       <PrintListPagination pagination={page.pagination} id="fw-releases" disabled={page.query.isFetching}/>
     </section>
-    {deleteTarget&&<PortalDialog title={t('fw.deleteTitle')} titleId="fw-delete-title" descriptionId="fw-delete-description" alert dismissible={!busyAction} onClose={() => setDeleteTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setDeleteTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary ps-danger-solid" disabled={busyAction} onClick={remove}>{t('fw.confirmDelete')}</button></>}><p id="fw-delete-description">{t('fw.deletePrompt').replace('{version}',deleteTarget.version)}</p>{actionError&&<p role="alert" className="form-error">{actionError}</p>}</PortalDialog>}
-    {signTarget&&<PortalDialog title={t('fw.lifecycle.sign')} titleId="fw-sign-title" descriptionId="fw-sign-description" alert dismissible={!busyAction} onClose={() => setSignTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setSignTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary" disabled={busyAction||!signConfirmed} onClick={sign}>{t('fw.lifecycle.sign')}</button></>}><p id="fw-sign-description">{t('pe474.firmware.signPrompt')}</p><dl className="fw-confirm-facts"><div><dt>SHA-256</dt><dd className="fw-hash">{signTarget.sha256??t('notProvided')}</dd></div><div><dt>{t('fw.version')}</dt><dd>{signTarget.version}</dd></div><div><dt>{t('fw.model')}</dt><dd>{signTarget.model}</dd></div><div><dt>{t('fw.arch')}</dt><dd>{signTarget.arch}</dd></div></dl><label className="fw-confirm-check"><input type="checkbox" checked={signConfirmed} onChange={e => setSignConfirmed(e.target.checked)}/>{t('fw.lifecycle.confirmFacts')}</label>{actionError&&<p role="alert" className="form-error">{actionError}</p>}</PortalDialog>}
-    {availabilityTarget&&<PortalDialog title={t(availabilityTarget.retire?'fw.lifecycle.retire':`pe474.firmware.enable.${availabilityTarget.ring}`)} titleId="fw-availability-title" descriptionId="fw-availability-description" alert dismissible={!busyAction} onClose={() => setAvailabilityTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setAvailabilityTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary" disabled={busyAction||page.query.isFetching||page.query.isError} onClick={changeAvailability}>{t('staff.confirm')}</button></>}><p id="fw-availability-description">{availabilityTarget.retire?t('fw.lifecycle.retirePrompt'):t(`pe474.firmware.confirm.${availabilityTarget.ring}`).replace('{version}',availabilityTarget.release.version)}</p>{actionError&&<p role="alert" className="form-error">{actionError}</p>}</PortalDialog>}
+    {deleteTarget&&<PortalDialog title={t('fw.deleteTitle')} titleId="fw-delete-title" descriptionId="fw-delete-description" alert dismissible={!busyAction} onClose={() => setDeleteTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setDeleteTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary ps-danger-solid" disabled={busyAction} onClick={remove}>{t('fw.confirmDelete')}</button></>}><p id="fw-delete-description">{t('fw.deletePrompt').replace('{version}',deleteTarget.version)}</p>{actionError&&<p role="alert" className="form-error">{t(actionError)}</p>}</PortalDialog>}
+    {signTarget&&<PortalDialog title={t('fw.lifecycle.sign')} titleId="fw-sign-title" descriptionId="fw-sign-description" alert dismissible={!busyAction} onClose={() => setSignTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setSignTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary" disabled={busyAction||!signConfirmed} onClick={sign}>{t('fw.lifecycle.sign')}</button></>}><p id="fw-sign-description">{t('pe474.firmware.signPrompt')}</p><dl className="fw-confirm-facts"><div><dt>SHA-256</dt><dd className="fw-hash">{signTarget.sha256??t('notProvided')}</dd></div><div><dt>{t('fw.version')}</dt><dd>{signTarget.version}</dd></div><div><dt>{t('fw.model')}</dt><dd>{signTarget.model}</dd></div><div><dt>{t('fw.arch')}</dt><dd>{signTarget.arch}</dd></div></dl><label className="fw-confirm-check"><input type="checkbox" checked={signConfirmed} onChange={e => setSignConfirmed(e.target.checked)}/>{t('fw.lifecycle.confirmFacts')}</label>{actionError&&<p role="alert" className="form-error">{t(actionError)}</p>}</PortalDialog>}
+    {availabilityTarget&&<PortalDialog title={t(availabilityTarget.retire?'fw.lifecycle.retire':`pe474.firmware.enable.${availabilityTarget.ring}`)} titleId="fw-availability-title" descriptionId="fw-availability-description" alert dismissible={!busyAction} onClose={() => setAvailabilityTarget(null)} actions={<><button className="button button-secondary" disabled={busyAction} onClick={() => setAvailabilityTarget(null)}>{t('staff.cancel')}</button><button className="button button-primary" disabled={busyAction||page.query.isFetching||page.query.isError} onClick={changeAvailability}>{t('staff.confirm')}</button></>}><p id="fw-availability-description">{availabilityTarget.retire?t('fw.lifecycle.retirePrompt'):t(`pe474.firmware.confirm.${availabilityTarget.ring}`).replace('{version}',availabilityTarget.release.version)}</p>{actionError&&<p role="alert" className="form-error">{t(actionError)}</p>}</PortalDialog>}
   </div>;
 }

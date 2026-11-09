@@ -72,7 +72,7 @@ describe('venue users requests', () => {
 describe('venue users labels', () => {
   it('labels venue roles apart from platform roles and keeps unknown slugs visible', () => {
     expect(venueRoleLabel(t(es), 'front_desk')).toBe('Recepción');
-    expect(venueRoleLabel(t(es), 'super_admin')).toBe('Superadmin de venue (heredado)');
+    expect(venueRoleLabel(t(es), 'super_admin')).toBe('Superadmin del local (heredado)');
     expect(venueRoleLabel(t(en), 'super_admin')).toBe('Venue super admin (legacy)');
     expect(venueRoleLabel(t(en), 'night_auditor')).toBe('night_auditor');
     expect([slugLabel(t(es), 'staff.role', 'super_admin'), slugLabel(t(es), 'staff.role', 'support'), slugLabel(t(es), 'staff.role', 'operations')]).toEqual(['Admin', 'Soporte', 'Operaciones']);

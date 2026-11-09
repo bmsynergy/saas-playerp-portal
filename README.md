@@ -25,6 +25,8 @@ npm run build
 npm test
 ```
 
+`npm run build` runs the EN/ES dictionary and UI-literal gate first. See [internationalization checks](docs/I18N.md) for translation conventions and browser acceptance.
+
 `dist/` is the publication artifact. Public browser configuration is pinned to DEV in `src/lib/config.ts`; no environment override or service-role key is accepted. COREdevA builds a clean committed copy and publishes via `coredeva-publish playerp.dev <SHA>`; no manual service commands are needed.
 
 ## Venue Print Servers (PE-333)

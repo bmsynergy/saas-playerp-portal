@@ -18,7 +18,7 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact =
   const { session } = useAuth();
   const [name, setName] = useState(link.label ?? '');
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; key?: string; secondKey?: string; cause?: unknown } | null>(null);
   // Stays mounted after "Prepare" so a refresh never hides the one-time code before it is read.
   const [prepOpen] = useState(link.state === 'pendiente_preparacion');
   const showPrep = !hidePreparation && isStaff && (prepOpen || link.state === 'pendiente_preparacion');
@@ -33,8 +33,8 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact =
   async function save() {
     if (!editable || busy || !check.ok || unchanged) return;
     setBusy(true); setResult(null);
-    try { const out = await setDeviceLabel(link.device_id, check.value); setResult({ ok: true, text: t(out.changed ? 'psLink.nameSaved' : 'psLink.nameUnchanged') }); try { await onChanged(); } catch { setResult({ ok: false, text: `${t('psLink.nameSaved')} ${t('fw.refreshFailed')}` }); } }
-    catch (error) { setResult({ ok: false, text: psLinkErrorText(error, t, t(errorCode(error))) }); }
+    try { const out = await setDeviceLabel(link.device_id, check.value); setResult({ ok: true, key: out.changed ? 'psLink.nameSaved' : 'psLink.nameUnchanged' }); try { await onChanged(); } catch { setResult({ ok: false, key: 'psLink.nameSaved', secondKey: 'fw.refreshFailed' }); } }
+    catch (error) { setResult({ ok: false, cause: error }); }
     finally { setBusy(false); }
   }
   return <section className={`detail-panel ps-link-panel${showPrep?' ps-link-panel-preparing':''}`} aria-labelledby={`ps-link-${link.device_id}`} data-testid="ps-link-panel">
@@ -47,7 +47,7 @@ export function PsDeviceLinkPanel({ link, isStaff, canEdit, onChanged, compact =
       <button type="button" className="button button-primary" data-testid="ps-link-name-save" disabled={busy || !check.ok || unchanged} onClick={() => void save()}>{t('psLink.nameSave')}</button>
       <p className="ps-cert-small">{check.ok ? t('psLink.nameHint') : <span role="alert">{t(`psLink.nameInvalid.${check.reason}`)}</span>}</p>
     </div>}
-    {result && <p className={`ps-result ${result.ok ? 'ps-result-ok' : 'ps-result-error'}`} role="status" data-testid="ps-link-name-result">{result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>}<span>{result.text}</span></p>}
+    {result && <p className={`ps-result ${result.ok ? 'ps-result-ok' : 'ps-result-error'}`} role="status" data-testid="ps-link-name-result">{result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>}<span>{result.cause ? psLinkErrorText(result.cause, t, t(errorCode(result.cause))) : `${result.key ? t(result.key) : ''}${result.secondKey ? ` ${t(result.secondKey)}` : ''}`}</span></p>}
     {showPrep && <PsDevicePreparation link={link} preparationEntry={preparationEntry} installedVersion={installedVersion} canPrepare={isStaff && !!manage.data?.actions.prepare.allowed}
       blockedReason={!isStaff ? t('psLink.prep.staffOnly') : manage.isPending ? t('dev.loading') : t('psLink.prep.notAllowed')} onPrepared={() => onChanged()}/>}
   </section>;

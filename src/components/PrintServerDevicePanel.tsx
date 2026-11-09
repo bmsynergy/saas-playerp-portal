@@ -17,7 +17,7 @@ import { DeviceAdminSummary } from './DeviceAdminSummary';
 
 // Operational facts and confirmed human credentials are kept separate by the server DTO.
 type Props = { venueId: string; printServerId: string | null; deviceId?: string; adminScope?: boolean; hideRecoveryLabel?: boolean; compact?: boolean; caContent?: ReactNode };
-type Result = { ok: boolean; text: string };
+type Result = { ok: boolean; key: string };
 
 export function PrintServerDevicePanel({ venueId, printServerId, deviceId, adminScope = false, hideRecoveryLabel = false, compact = false, caContent }: Props) {
   const { t, locale } = useLocale();
@@ -37,7 +37,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
   const [confirm, setConfirm] = useState<'renew' | null>(null);
   const [credentialDialog, setCredentialDialog] = useState<{ scope: string; kind: CredentialKind; phase: 'confirm' | 'progress' } | null>(null);
   const [credentialOperations, setCredentialOperations] = useState<Partial<Record<CredentialKind, CredentialOperation & { scope: string; credentialSnapshot?: string }>>>({});
-  const [copyNotice, setCopyNotice] = useState<{ scope: string; ok: boolean; text: string } | null>(null);
+  const [copyNotice, setCopyNotice] = useState<{ scope: string; ok: boolean; key: string } | null>(null);
   const [certPem, setCertPem] = useState(''); const [chainPem, setChainPem] = useState('');
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v && Number.isFinite(Date.parse(v)) ? f.format(new Date(v)) : t('notProvided'); }, [locale, t]);
   const data = sheet.data;
@@ -111,8 +111,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
 
   async function copy(value: string) {
     const scope = operationScope;
-    try { await navigator.clipboard.writeText(value); if (scopeRef.current === scope) setCopyNotice({ scope, ok: true, text: t('dev.copied') }); }
-    catch { if (scopeRef.current === scope) setCopyNotice({ scope, ok: false, text: t('dev.copyFailed') }); }
+    try { await navigator.clipboard.writeText(value); if (scopeRef.current === scope) setCopyNotice({ scope, ok: true, key: 'dev.copied' }); }
+    catch { if (scopeRef.current === scope) setCopyNotice({ scope, ok: false, key: 'dev.copyFailed' }); }
   }
 
   async function requestCredential(kind: CredentialKind) {
@@ -149,8 +149,8 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
 
   async function run(fn: () => Promise<unknown>, okKey: string) {
     setBusy(true); setResult(null);
-    try { await fn(); setResult({ ok: true, text: t(okKey) }); await sheet.refetch(); }
-    catch (error) { const key = psErrorKey(error); setResult({ ok: false, text: t(key) === key ? t('dev.error.other') : t(key) }); }
+    try { await fn(); setResult({ ok: true, key: okKey }); await sheet.refetch(); }
+    catch (error) { const key = psErrorKey(error); setResult({ ok: false, key: t(key) === key ? 'dev.error.other' : key }); }
     finally { setBusy(false); setConfirm(null); }
   }
 
@@ -191,7 +191,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
               <div className="dev-credential-field dev-credential-full"><dt>{t('dev.applied')}</dt><dd className="dev-confirmations" data-testid="dev-applied-at"><span>{t('dev.psk')}: {wifi ? date(wifi.applied_at) : t('dev.credentialAbsent')}{wifi && data.wifiMethod ? ` · ${t(`dev.method.${data.wifiMethod}`) === `dev.method.${data.wifiMethod}` ? data.wifiMethod : t(`dev.method.${data.wifiMethod}`)}` : ''}</span><span>{t('dev.adminCode')}: {adminCode ? date(adminCode.applied_at) : t('dev.credentialAbsent')}{adminCode && data.adminCodeMethod ? ` · ${t(`dev.method.${data.adminCodeMethod}`) === `dev.method.${data.adminCodeMethod}` ? data.adminCodeMethod : t(`dev.method.${data.adminCodeMethod}`)}` : ''}</span></dd></div>
             </dl>
             <p className="dev-code-format-hint">{t('dev.adminCodeFormatHint')}</p>
-            {copyNotice?.scope === operationScope && <p className={`dev-copy-notice ${copyNotice.ok ? 'dev-copy-ok' : 'dev-copy-error'}`} role="status" aria-live="polite" data-testid="dev-copy-result">{copyNotice.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{copyNotice.text}</span></p>}
+            {copyNotice?.scope === operationScope && <p className={`dev-copy-notice ${copyNotice.ok ? 'dev-copy-ok' : 'dev-copy-error'}`} role="status" aria-live="polite" data-testid="dev-copy-result">{copyNotice.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{t(copyNotice.key)}</span></p>}
             {data.can_manage_credentials && <div className="staff-actions">
               <button type="button" className="button button-secondary" data-testid="dev-rotate-wifi" disabled={blocked('wifi')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'wifi', phase: 'confirm' })}><RefreshCw size={15}/>{t('dev.rotateWifi')}</button>
               <button type="button" className="button button-secondary" data-testid="dev-rotate-code" disabled={blocked('admin_code')} onClick={() => setCredentialDialog({ scope: operationScope, kind: 'admin_code', phase: 'confirm' })}><KeyRound size={15}/>{t('dev.rotateCode')}</button>
@@ -237,7 +237,7 @@ export function PrintServerDevicePanel({ venueId, printServerId, deviceId, admin
 
     {adminScope && data.is_platform_admin && data.device && <div id="ps469-firmware"><DeviceAdminSummary deviceId={data.device.id}/></div>}
 
-    <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="dev-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+    <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="dev-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result ? t(result.key) : ''}</span></div>
     {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
 
     {confirm && <div className="dev-confirm" role="alertdialog" aria-labelledby="dev-confirm-title" data-testid="dev-confirm">

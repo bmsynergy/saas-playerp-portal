@@ -59,7 +59,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
     </header>
     <PrintServersTabs/>
 
-    <div className="print-dashboard-meta" aria-live="polite"><Clock3 size={15}/><span>{t('dash.updated')} <time dateTime={inventory.generated_at}>{formatDate(inventory.generated_at)}</time></span><span className="print-dashboard-meta-separator" aria-hidden="true">·</span><span>{t('dash.window').replace('{n}', String(Math.round(inventory.online_window_seconds / 60)))}</span></div>
+    <div className="print-dashboard-meta" aria-live="polite"><Clock3 size={15}/><span>{t('dash.updated')} <time dateTime={inventory.generated_at}>{formatDate(inventory.generated_at)}</time></span><span className="print-dashboard-meta-separator" aria-hidden="true">·</span><span>{t('dash.window').replace('{n}', numberFormatter.format(Math.round(inventory.online_window_seconds / 60)))}</span></div>
     {stale && <div className="print-dashboard-alert" role="status" data-testid="dashboard-stale"><AlertCircle size={17}/><span>{t('dash.stale')}</span><button type="button" onClick={onRefresh} disabled={refreshing}>{t('retry')}</button></div>}
 
     <section className="print-dashboard-filter-panel" aria-label={t('dash.filters')}>
@@ -75,7 +75,7 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
     </section>
 
     <section className="print-dashboard-metrics" aria-label={t('dash.metrics')} data-testid="dashboard-metrics">
-      {metrics.map(metric => <button type="button" key={metric.key} className={`print-dashboard-metric print-dashboard-${metric.tone}`} onClick={() => focusList(metric.key === 'total' ? null : metric.state)} data-testid={`dashboard-metric-${metric.key}`} aria-label={`${t(`dash.${metric.key}`)}: ${metric.count}`}>
+      {metrics.map(metric => <button type="button" key={metric.key} className={`print-dashboard-metric print-dashboard-${metric.tone}`} onClick={() => focusList(metric.key === 'total' ? null : metric.state)} data-testid={`dashboard-metric-${metric.key}`} aria-label={`${t(`dash.${metric.key}`)}: ${numberFormatter.format(metric.count)}`}>
         <span className="print-dashboard-metric-label">{t(`dash.${metric.key}`)}</span><strong>{numberFormatter.format(metric.count)}</strong><span className="print-dashboard-metric-action">{t('dash.viewInList')} <ArrowRight size={14}/></span>
       </button>)}
     </section>
@@ -92,23 +92,24 @@ export function PrintDashboardPage({ inventory, refreshing, stale, onRefresh }: 
     <section className="print-dashboard-inventory" aria-labelledby="dashboard-list-title" ref={listRef} data-testid="dashboard-inventory">
       <div className="print-dashboard-section-title print-dashboard-list-heading"><div><p className="eyebrow">{t('dash.inventoryEyebrow')}</p><h2 id="dashboard-list-title">{t('dash.inventory')}</h2><p>{t('dash.sameFilter')}</p></div><span className="count-pill">{numberFormatter.format(filtered.length)}</span></div>
       <div data-pagination-list="dashboard" />
-      {filtered.length === 0 ? <div className="print-dashboard-empty" data-testid="dashboard-empty"><Server size={27}/><strong>{inventory.items.length ? t('dash.noMatches') : t('dash.empty')}</strong><p>{inventory.items.length ? t('dash.noMatchesHint') : t('dash.emptyHint')}</p></div> : <div className="print-dashboard-table-wrap"><table className="print-dashboard-table"><thead><tr><th>{t('dash.device')}</th><th>{t('dash.venue')}</th><th>{t('dash.state')}</th><th>{t('dash.version')}</th><th>{t('dash.lastContact')}</th><th>{t('dash.notices')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{visible.map(item => <InventoryRow key={item.id} item={item} t={t} formatDate={formatDate}/>)}</tbody></table></div>}
+      {filtered.length === 0 ? <div className="print-dashboard-empty" data-testid="dashboard-empty"><Server size={27}/><strong>{inventory.items.length ? t('dash.noMatches') : t('dash.empty')}</strong><p>{inventory.items.length ? t('dash.noMatchesHint') : t('dash.emptyHint')}</p></div> : <div className="print-dashboard-table-wrap"><table className="print-dashboard-table"><thead><tr><th>{t('dash.device')}</th><th>{t('dash.venue')}</th><th>{t('dash.state')}</th><th>{t('dash.version')}</th><th>{t('dash.lastContact')}</th><th>{t('dash.notices')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{visible.map(item => <InventoryRow key={item.id} item={item} t={t} formatDate={formatDate} formatNumber={numberFormatter.format}/>)}</tbody></table></div>}
       <PrintListPagination pagination={pagination} id="dashboard"/>
     </section>
   </div>;
 }
 
-function InventoryRow({ item, t, formatDate }: { item: InventoryItem; t: (key: string) => string; formatDate: (value: string | null | undefined) => string }) {
+function InventoryRow({ item, t, formatDate, formatNumber }: { item: InventoryItem; t: (key: string) => string; formatDate: (value: string | null | undefined) => string; formatNumber: (value: number) => string }) {
   const status = item.assignment === 'unassigned' ? 'unassigned' : item.connection;
   const venue = item.assignment === 'unassigned' ? t('dash.unassigned') : item.venue_name || item.venue_id || t('dash.unknownVenue');
-  const notice = item.issues.length ? item.issues.map(issue => `${t(issue.level === 'error' ? 'dash.issueError' : issue.level === 'warning' ? 'dash.issueWarning' : 'dash.issueOther')}: ${issue.code} (${issue.count})`).join(' · ') : item.error_count ? t('dash.errorsCount').replace('{n}', String(item.error_count)) : item.warning_count ? t('dash.warningsCount').replace('{n}', String(item.warning_count)) : t('dash.noNotices');
+  const issueText = (code: string) => { const key = `dash.issueCode.${code}`; const value = t(key); return value === key ? t('dash.issueCode.unknown') : value; };
+  const notice = item.issues.length ? item.issues.map(issue => `${t(issue.level === 'error' ? 'dash.issueError' : issue.level === 'warning' ? 'dash.issueWarning' : 'dash.issueOther')}: ${issueText(issue.code)} (${formatNumber(issue.count)})`).join(' · ') : item.error_count ? t('dash.errorsCount').replace('{n}', formatNumber(item.error_count)) : item.warning_count ? t('dash.warningsCount').replace('{n}', formatNumber(item.warning_count)) : t('dash.noNotices');
   return <tr data-testid={`inventory-row-${item.id}`} key={item.id}>
     <td data-label={t('dash.device')}><strong>{item.label || item.hostname || item.serial || item.device_id}</strong><small>{item.serial || item.device_id}</small></td>
     <td data-label={t('dash.venue')}><strong>{venue}</strong>{item.assignment === 'unassigned' && item.last_venue_name && <small>{t('dash.previousVenue')}: {item.last_venue_name}</small>}</td>
     <td data-label={t('dash.state')}><span className={`print-dashboard-status print-dashboard-status-${status}`}><span aria-hidden="true"/>{t(`dash.${status}`)}</span></td>
     <td data-label={t('dash.version')}>{item.firmware_known && item.firmware_version ? item.firmware_version : t('dash.unknownVersion')}</td>
     <td data-label={t('dash.lastContact')}><time dateTime={item.last_seen_at || undefined}>{formatDate(item.last_seen_at)}</time></td>
-    <td data-label={t('dash.notices')}><span className={item.error_count ? 'print-dashboard-issue-error' : ''}>{notice}</span>{item.last_issue_at && <small>{formatDate(item.last_issue_at)}</small>}</td>
+    <td data-label={t('dash.notices')}><span className={item.error_count ? 'print-dashboard-issue-error' : ''}>{notice}</span>{item.last_issue_at && <small>{formatDate(item.last_issue_at)}</small>}{item.issues.length > 0 && <details><summary>{t('dash.diagnosticDetails')}</summary><ul>{item.issues.map((issue, index) => <li key={`${issue.code}-${index}`}><code>{issue.code}</code> · {formatNumber(issue.count)}</li>)}</ul></details>}</td>
     <td data-label={t('staff.actions')}><Link to={adminSheetHref(item.id)} className="staff-action-link" data-testid={`inventory-open-${item.id}`}>{t('ps.open')}<span className="sr-only"> {item.label || item.hostname || item.serial || venue}</span><ArrowRight size={14}/></Link></td>
   </tr>;
 }

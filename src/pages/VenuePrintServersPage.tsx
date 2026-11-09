@@ -28,10 +28,11 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
   const selectedId=new URLSearchParams(useLocation().search).get('selected');
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; key: string; name?: string; ps?: string } | null>(null);
   const now = Date.now();
   const active = data.devices.filter(device => device.print_server_id);
   const dateFormatter = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
 
   async function assign(printerId: string, label: string) {
     const psId = selected[printerId];
@@ -40,14 +41,14 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
     setBusy(true); setResult(null);
     try {
       await onAssignPrinter(printerId, psId);
-      setResult({ ok: true, text: t('psm.assigned.ok').replace('{name}', label).replace('{ps}', deviceName(target)) });
-    } catch (error) { setResult({ ok: false, text: t(psErrorKey(error)) }); }
+      setResult({ ok: true, key: 'psm.assigned.ok', name: label, ps: deviceName(target) });
+    } catch (error) { setResult({ ok: false, key: psErrorKey(error) }); }
     finally { setBusy(false); }
   }
 
   return <div className="page-stack staff-page" data-testid="venue-print-servers">
     <section className="staff-panel" aria-labelledby="venue-ps-title">
-      <div className="section-heading venue-ps-heading"><div><p className="eyebrow">{t('psm.venueEyebrow')}</p><h2 id="venue-ps-title">{t(choose ? 'psm.chooseTitle' : 'psm.venueTitle')}</h2></div><div className="venue-ps-heading-actions"><span className="count-pill">{data.devices.length}</span>{extra}</div></div>
+      <div className="section-heading venue-ps-heading"><div><p className="eyebrow">{t('psm.venueEyebrow')}</p><h2 id="venue-ps-title">{t(choose ? 'psm.chooseTitle' : 'psm.venueTitle')}</h2></div><div className="venue-ps-heading-actions"><span className="count-pill">{number.format(data.devices.length)}</span>{extra}</div></div>
       <p className="staff-panel-lead">{t(choose ? 'psm.chooseLead' : 'psm.venueLead')}</p>
       {choose && <div className="staff-notice" role="status" data-testid="ps-selection-required"><AlertTriangle size={18}/><span>{t('ps.error.selectionRequired')}</span></div>}
       {data.devices.length === 0 ? <div className="staff-empty" data-testid="venue-ps-empty"><Server size={27}/><strong>{t('psm.venueEmpty')}</strong></div> : <div className="staff-table-wrap"><table className="staff-table ps-fleet-table"><thead><tr><th>{t('psm.col.device')}</th><th>{t('psm.col.serial')}</th><th>{t('psm.col.connection')}</th><th>{t('psm.col.firmware')}</th><th>{t('lastSignal')}</th><th>{t('psm.col.printers')}</th><th>{t('staff.actions')}</th></tr></thead><tbody>{data.devices.map(device => {
@@ -60,16 +61,16 @@ export function VenuePrintServersPage({ data, hrefFor, choose = false, onAssignP
           <td data-label={t('psm.col.connection')}><div className="ps469-list-states">{l && <PsLinkStateBadge state={l.state}/>}<span className={`server-status ${fleetStateClass[state]}`}><span className="badge-dot"/>{state === 'pending' ? t('psm.status.pending') : t(`ps.state.${state}`)}</span></div></td>
           <td data-label={t('psm.col.firmware')}><span className="version-text">{l ? reportedOr(l.reported.firmware_version, t('psLink.pending')) : device.software_version || t('notProvided')}</span></td>
           <td data-label={t('lastSignal')}>{relative && lastSeen ? <span className="ps-signal"><span className="staff-date"><Clock3 size={14}/>{relative}</span><small className="ps-sub">{dateFormatter.format(new Date(lastSeen))}</small></span> : <span className="staff-self-note">{t(l ? 'psLink.pending' : 'ps.never')}</span>}</td>
-          <td data-label={t('psm.col.printers')}><span className="staff-role"><Printer size={15}/>{device.printers_total}</span></td>
+          <td data-label={t('psm.col.printers')}><span className="staff-role"><Printer size={15}/>{number.format(device.printers_total)}</span></td>
           <td data-label={t('staff.actions')}><Link className="staff-action-link" data-testid={`venue-ps-open-${device.id}`} to={hrefFor(device)}>{t('psm.openSheet')}<span className="sr-only"> {deviceName(device)}</span><ArrowRight size={14}/></Link></td>
         </tr>;
       })}</tbody></table></div>}
     </section>
 
     {data.unassigned_printers.length > 0 && <section className="staff-panel" aria-labelledby="venue-ps-unassigned-title" data-testid="venue-ps-unassigned">
-      <div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="venue-ps-unassigned-title">{t('psm.unassignedPrinters')}</h2></div><span className="count-pill">{data.unassigned_printers.length}</span></div>
+      <div className="section-heading"><div><p className="eyebrow">{t('ps.printers.eyebrow')}</p><h2 id="venue-ps-unassigned-title">{t('psm.unassignedPrinters')}</h2></div><span className="count-pill">{number.format(data.unassigned_printers.length)}</span></div>
       <p className="staff-panel-lead">{t('psm.unassignedPrintersLead')}</p>
-      <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite">{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+      <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite">{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result ? t(result.key).replace('{name}', result.name ?? '').replace('{ps}', result.ps ?? '') : ''}</span></div>
       <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th>{t('ps.printers.name')}</th><th>{t('ps.printers.mac')}</th>{data.can_manage && onAssignPrinter && active.length > 0 && <th>{t('psm.assignTo')}</th>}</tr></thead><tbody>{data.unassigned_printers.map(printer => <tr key={printer.id} data-testid={`venue-ps-unassigned-${printer.id}`}>
         <td data-label={t('ps.printers.name')} className="staff-identity"><strong>{printer.label || t('notProvided')}</strong><small>{printer.model || t('ps.scan.unknownModel')}{printer.location ? ` · ${printer.location}` : ''}</small></td>
         <td data-label={t('ps.printers.mac')}><span className="ps-mono">{printer.mac_address || t('notProvided')}</span></td>

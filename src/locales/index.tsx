@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { en } from './en';
 import { es } from './es';
 
@@ -18,7 +18,17 @@ function initialLocale(): Locale {
 }
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [locale, updateLocale] = useState<Locale>(initialLocale);
+  const setLocale = useCallback((next: Locale) => {
+    // An explicit language in an invitation/recovery URL must not undo a later
+    // user choice on reload. Preserve the route, router state and auth fragment.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('lang')) {
+      url.searchParams.set('lang', next);
+      window.history.replaceState(window.history.state, '', url);
+    }
+    updateLocale(next);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = locale;
     try { window.localStorage.setItem(storageKey, locale); } catch { /* Continue without persistence. */ }
@@ -26,7 +36,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const value = useMemo<LocaleContextValue>(() => ({
     locale, setLocale,
     t: (key) => (locale === 'es' ? es : en)[key as keyof typeof en] ?? en[key as keyof typeof en] ?? key,
-  }), [locale]);
+  }), [locale, setLocale]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 

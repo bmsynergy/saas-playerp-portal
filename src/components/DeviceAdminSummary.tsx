@@ -39,7 +39,7 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
   const canUpdate = !!(target && update?.current_version && !update.active_update && !detail.isError && !detail.isFetching && update.can_update && !!selected);
   const stillCurrent = !!(confirm && canUpdate && target?.edition_id === confirm.editionId && target.version === confirm.version && update?.current_version === confirm.installed && update.effective_ring === confirm.ring);
   const status = firmwareStatus(update ? {...update, newer_blocked: ota?.newer_blocked} : null, detail.isError);
-  const statusText = t(`ps600.firmware.${status}`) + (status === 'unknown' ? ` (${[update?.reason ?? 'unknown', ota?.newer_blocked?.detail].filter(Boolean).join(': ')})` : status === 'gated' ? ` (${ota?.newer_blocked?.detail ?? update?.reason})` : '');
+  const statusText = t(`ps600.firmware.${status}`);
   const serial = detail.data?.device.serial ?? '';
   const ringLabel = (ring: string | null) => ring ? t(`firmware.ring.${ring}`) : t('notProvided');
   const pickTarget = (u: AdminDeviceDetail['update'] | undefined) => {
@@ -58,12 +58,12 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
     try {
       const refreshed = await detail.refetch();
       const fresh = refreshed.data?.update.ota.channel;
-      if (refreshed.isError || !fresh?.can_change || fresh.ring !== channel.ring || fresh.revision !== channel.revision) { setDialog(null); setNotice(t('adminDevice.error.channel_changed')); return; }
+      if (refreshed.isError || !fresh?.can_change || fresh.ring !== channel.ring || fresh.revision !== channel.revision) { setDialog(null); setNotice('adminDevice.error.channel_changed'); return; }
       const result = await setAdminDeviceChannel(deviceId, ring, channel.ring, channel.revision);
-      setDialog(null); setNotice(t(result.changed ? 'otaDevice.channel.changed' : 'otaDevice.channel.unchanged'));
+      setDialog(null); setNotice(result.changed ? 'otaDevice.channel.changed' : 'otaDevice.channel.unchanged');
       await detail.refetch();
       await onChanged?.();
-    } catch (error) { setDialog(null); setNotice(t(adminDeviceErrorKey(error))); await detail.refetch(); await onChanged?.(); }
+    } catch (error) { setDialog(null); setNotice(adminDeviceErrorKey(error)); await detail.refetch(); await onChanged?.(); }
     finally { setBusy(false); }
   }
 
@@ -75,7 +75,7 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
     const fresh = refreshed.data?.update;
     const freshTarget = pickTarget(fresh);
     if (refreshed.isError || !fresh || !freshTarget || !fresh.current_version || fresh.active_update || freshTarget.edition_id !== previous.editionId || freshTarget.version !== previous.version || fresh.current_version !== previous.installed || fresh.effective_ring !== previous.ring) {
-      setConfirm(null); setNotice(t('adminDevice.updateChanged')); return;
+      setConfirm(null); setNotice('adminDevice.updateChanged'); return;
     }
     setConfirm({ editionId: freshTarget.edition_id, version: freshTarget.version, installed: fresh.current_version, ring: fresh.effective_ring ?? '' });
   }
@@ -88,13 +88,13 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
       const fresh = refreshed.data?.update;
       const freshTarget = pickTarget(fresh);
       if (refreshed.isError || !fresh || !freshTarget || fresh.active_update || freshTarget.edition_id !== confirm.editionId || freshTarget.version !== confirm.version || fresh.current_version !== confirm.installed || fresh.effective_ring !== confirm.ring) {
-        setConfirm(null); setNotice(t('adminDevice.updateChanged')); return;
+        setConfirm(null); setNotice('adminDevice.updateChanged'); return;
       }
       await updateAdminDevice(deviceId, confirm.editionId, confirm.installed);
-      setConfirm(null); setNotice(t('adminDevice.updateQueued'));
+      setConfirm(null); setNotice('adminDevice.updateQueued');
       await detail.refetch();
       await onChanged?.();
-    } catch (error) { setNotice(t(adminDeviceErrorKey(error))); }
+    } catch (error) { setNotice(adminDeviceErrorKey(error)); }
     finally { setBusy(false); }
   }
 
@@ -107,13 +107,13 @@ export function DeviceAdminSummary({ deviceId, onChanged, showIdentity = false }
         {ringAdmin && !ota?.channel && <div><small>{t('firmware.effectiveRing')}</small><strong>{ringLabel(update.effective_ring)}</strong></div>}
       </div>
       <p role="status" data-testid="admin-device-headline" data-state={status}><strong>{statusText}</strong></p>
-      {update.active_update && <p className="owner-section-lead" role="status">{t('adminDevice.updateInProgress')}: {update.active_update.stage ?? update.active_update.status}{update.active_update.progress !== null ? ` · ${update.active_update.progress}%` : ''}</p>}
+      {update.active_update && <p className="owner-section-lead" role="status">{t('adminDevice.updateInProgress')}{update.active_update.progress !== null ? ` · ${update.active_update.progress}%` : ''}</p>}
       {!!editions?.length && <EditionPicker editionsTotal={ota?.editions_total} reason={update.reason} newerBlocked={ota?.newer_blocked} editions={editions} value={selected?.edition_id ?? null} onChange={id => { setPicked(id); setConfirm(null); }} disabled={busy || !!update.active_update}/>}
       <FirmwareUpdateAction testId="admin-device-update" disabled={!canUpdate || busy} onClick={() => void review()} reason={null} loading={busy}/>
       {ringAdmin && ota?.channel && <ChannelBlock deviceId={deviceId} channel={ota.channel} onChange={openChannel}/>}
     </> : null}
     {detail.isFetching && !detail.isPending && <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p>}
-    {notice && <p role="status" className="ps-result">{notice}</p>}
+    {notice && <p role="status" className="ps-result">{t(notice)}</p>}
     {confirm && <div className="admin-device-confirm" role="group" aria-label={t('adminDevice.confirmUpdateTitle')}>
       <p>{t('adminDevice.confirmUpdate').replace('{version}', confirm.version).replace('{serial}', detail.data?.device.serial ?? '').replace('{installed}', confirm.installed)}</p>
       <p className="ps-cert-small">{t('firmware.effectiveRing')}: {ringLabel(confirm.ring)}</p>

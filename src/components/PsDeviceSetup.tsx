@@ -45,18 +45,18 @@ export function PsDeviceSetup({ device }: { device: ResolvedDevice }) {
   async function download() {
     if (!kit || busy) return;
     setBusy(true); setDownloadError('');
-    try { await downloadBootableImage(kit); } catch (error) { setDownloadError(t('psSetup.error.download').replace('{reason}', t(failure(error)))); } finally { setBusy(false); }
+    try { await downloadBootableImage(kit); } catch (error) { setDownloadError(failure(error)); } finally { setBusy(false); }
   }
   const errors = [
     progress.codeExpired && <li key="code" data-error="code_expired"><strong>{t('psSetup.error.codeExpired')}</strong> {t('psSetup.error.codeExpiredFix')} {toPreparation}</li>,
     kits.isError && <li key="kits" data-error="kit_list">{t('psSetup.error.kits').replace('{reason}', t(failure(kits.error)))}</li>,
-    downloadError && <li key="download" data-error="download">{downloadError}</li>,
+    downloadError && <li key="download" data-error="download">{t('psSetup.error.download').replace('{reason}', t(downloadError))}</li>,
   ].filter(Boolean);
   const body: Record<SetupStepKey, ReactNode> = {
     download: <>
       <p className="ps-cert-small">{t('psSetup.step.download.body')}</p>
       {kits.isPending ? <p className="ps-cert-small" role="status">{t('psSetup.kit.loading')}</p> : !kit ? !kits.isError && <p className="ps-cert-small" data-testid="ps-setup-no-image">{t('psSetup.kit.none')}</p> : <>
-        <dl className="fw-release-facts" data-testid="ps-setup-image"><div><dt>{t('psSetup.kit.file')}</dt><dd className="ps-mono">{kit.file_name}</dd></div><div><dt>{t('psSetup.kit.size')}</dt><dd>{setupFileSize(kit.bytes, missing)}</dd></div><div><dt>{t('psSetup.kit.release')}</dt><dd className="ps-mono">{kit.release_version ?? missing}</dd></div><div><dt>{t('psSetup.kit.profile')}</dt><dd>{kit.profile || missing}</dd></div><div><dt>{t('psSetup.kit.baseImage')}</dt><dd>{kit.base_image_name ?? missing}</dd></div><div><dt>SHA-256</dt><dd><code className="ps-mono fw-hash" data-testid="ps-setup-sha">{kit.sha256}</code></dd></div></dl>
+        <dl className="fw-release-facts" data-testid="ps-setup-image"><div><dt>{t('psSetup.kit.file')}</dt><dd className="ps-mono">{kit.file_name}</dd></div><div><dt>{t('psSetup.kit.size')}</dt><dd>{setupFileSize(kit.bytes, missing, locale)}</dd></div><div><dt>{t('psSetup.kit.release')}</dt><dd className="ps-mono">{kit.release_version ?? missing}</dd></div><div><dt>{t('psSetup.kit.profile')}</dt><dd>{kit.profile || missing}</dd></div><div><dt>{t('psSetup.kit.baseImage')}</dt><dd>{kit.base_image_name ?? missing}</dd></div><div><dt>SHA-256</dt><dd><code className="ps-mono fw-hash" data-testid="ps-setup-sha">{kit.sha256}</code></dd></div></dl>
         <p className="ps-cert-small">{t('psSetup.kit.verify')} <code className="ps-mono" data-testid="ps-setup-sha-command">{shaCommand(kit.file_name)}</code> {t('psSetup.kit.verifyHelp')}</p>
       </>}
       <div className="staff-actions"><button type="button" className="button button-primary" data-testid="ps-setup-download" disabled={!kit || busy} onClick={() => void download()}><Download size={15}/>{t(busy ? 'psSetup.downloading' : 'psSetup.download')}</button></div>

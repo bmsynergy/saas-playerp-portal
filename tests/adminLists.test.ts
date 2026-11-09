@@ -35,7 +35,7 @@ describe('PE-409 calendar filters and read contracts',()=>{
   expect(eventDetail(e.detail).human).toBe('health check failed');
   expect(eventDetail('{"updater_version":"1.0.0"}')).toEqual({human:null,technical:true});
   expect(eventDetail('Disk is full').human).toBe('Disk is full');
-  for(const locale of [en,es]){const t=(k:string)=>(locale as Record<string,string>)[k]??k;expect(eventPhase(t,'Future Phase!')).toBe(t('list.unknownPhase')+': Future Phase!');}
+  for(const locale of [en,es]){const t=(k:string)=>(locale as Record<string,string>)[k]??k;expect(eventPhase(t,'Future Phase!')).toBe(t('list.unknownPhase'));}
  });
  it('keeps queue venue/printer scope while passing complete-day filters',async()=>{
   rpc.mockResolvedValue({data:{ok:true,total:0,limit:10,offset:0,jobs:[]},error:null});

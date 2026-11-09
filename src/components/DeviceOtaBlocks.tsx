@@ -33,7 +33,9 @@ export function ChannelDialog({channel,serial,busy,error,onCancel,onConfirm}:{ch
   </PortalDialog>;
 }
 export function EditionPicker({editions,value,onChange,disabled,editionsTotal,reason,newerBlocked}:{editions:OtaEdition[];value:string|null;onChange:(id:string)=>void;disabled:boolean;editionsTotal?:number;reason?:string|null;newerBlocked?:NewerBlocked|null}) {
-  const {t}=useLocale();
+  const {t,locale}=useLocale();
+  const editionReason=(code:string)=>{const key=`adminDevice.reason.${code}`;const translated=t(key);return translated===key?t('otaDevice.edition.reason.unknown').replace('{code}',code):translated;};
+  const formatNumber=(value:number)=>new Intl.NumberFormat(locale==='es'?'es-ES':'en-US').format(value);
   const textReason=()=>{
     if(reason==='newer_not_enabled'&&newerBlocked)return t('pe474.device.newerNotEnabled').replace('{version}',newerBlocked.version).replace('{channel}',newerBlocked.channel?t(`ota.ring.${newerBlocked.channel}`):t('notProvided'));
     if(reason==='newer_incompatible'&&newerBlocked)return t('pe474.device.newerIncompatible').replace('{version}',newerBlocked.version);
@@ -41,7 +43,7 @@ export function EditionPicker({editions,value,onChange,disabled,editionsTotal,re
   };
   if(!editions.length)return <p className="ps-cert-small" data-testid="admin-device-editions">{textReason()}</p>;
   return <fieldset className="ota-editions" data-testid="admin-device-editions"><legend>{t('otaDevice.edition.title')}</legend>
-    {editions.map(e=><label key={e.edition_id} className="ota-radio"><input type="radio" name="ota-edition" value={e.edition_id} checked={value===e.edition_id} disabled={disabled||!e.selectable} onChange={()=>onChange(e.edition_id)}/><span><strong>{e.version}</strong> · <span className="ps-mono">{e.sha256_short??'—'}</span>{e.reason&&<small className="ota-reason"> · {t(`adminDevice.reason.${e.reason}`)}</small>}</span></label>)}
-    {editionsTotal!==undefined&&<small className="ps-cert-small">{t('pe474.device.editionsCount').replace('{shown}',String(editions.length)).replace('{total}',String(editionsTotal))}</small>}
+    {editions.map(e=><label key={e.edition_id} className="ota-radio"><input type="radio" name="ota-edition" value={e.edition_id} checked={value===e.edition_id} disabled={disabled||!e.selectable} onChange={()=>onChange(e.edition_id)}/><span><strong>{e.version}</strong> · <span className="ps-mono">{e.sha256_short??'—'}</span>{e.reason&&<small className="ota-reason"> · {editionReason(e.reason)}</small>}</span></label>)}
+    {editionsTotal!==undefined&&<small className="ps-cert-small">{t('pe474.device.editionsCount').replace('{shown}',formatNumber(editions.length)).replace('{total}',formatNumber(editionsTotal))}</small>}
   </fieldset>;
 }

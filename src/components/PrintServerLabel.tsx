@@ -84,7 +84,7 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
       if (!current || labelFingerprint(current) !== fingerprint) {
         setPreview(null);
         setStale({ fingerprint, updatedAt: labelQuery.dataUpdatedAt });
-        setNotice(t('dev.label.reprint'));
+        setNotice('dev.label.reprint');
         await queryClient.invalidateQueries({ queryKey });
         return;
       }
@@ -107,7 +107,7 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
       if (!currentRun()) return;
       setPreview(null);
       setStale({ fingerprint, updatedAt: labelQuery.dataUpdatedAt });
-      setNotice(t('dev.label.unavailable'));
+      setNotice('dev.label.unavailable');
       await queryClient.invalidateQueries({ queryKey });
     } finally { if (mounted.current && generation.current === run) setBusy(false); if (controller.current === abort) controller.current = null; }
   }
@@ -142,6 +142,6 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
     {busy && <p className="ps-action-progress" role="status"><span className="spinner" aria-hidden="true"/>{t('ps.working')}</p>}
     {reasons.length > 0 && <div className="inline-empty" data-testid="dev-label-disabled" role="status"><p>{t('dev.label.blocked')}</p><ul>{reasons.map((reason, index) => <li key={`${index}-${reason}`}>{reason}</li>)}</ul><a href="#ps-recovery-help" onClick={() => { const help = document.getElementById('ps-recovery-help') as HTMLDetailsElement | null; if (help) help.open = true; }}>{t('dev.help.link')}</a></div>}
     {visiblePreview && <figure className="dev-label-preview"><img src={visiblePreview.url} data-testid="dev-label-preview-image" alt={t('dev.label.previewAlt')} width={590} height={354}/><figcaption>{t('dev.label.printHint')}</figcaption><button type="button" className="button button-secondary" data-testid="dev-label-hide" onClick={() => setPreview(null)}><EyeOff size={15}/>{t('dev.label.hide')}</button></figure>}
-    {notice && <p className="dev-label-notice" role="status"><RefreshCw size={16}/>{notice}</p>}
+    {notice && <p className="dev-label-notice" role="status"><RefreshCw size={16}/>{t(notice)}</p>}
   </section>;
 }

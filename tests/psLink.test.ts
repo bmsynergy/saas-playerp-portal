@@ -93,11 +93,11 @@ describe('PE-462 RPCs', () => {
     expect(JSON.stringify(out)).not.toContain('pse_');
     expect(rpc).toHaveBeenCalledWith('ps_admin_device_assign', { p_device_id: 'device-1', p_venue_id: 'venue-1' });
   });
-  it('surfaces the server message and next step on refusal', () => {
+  it('localizes the server code and next step without displaying raw server copy', () => {
     let error: unknown;
     try { projectAssignResult({ ok: false, error: 'device_assigned_elsewhere', message: 'Está asignado a Otro local.', next_step: 'move' }); } catch (e) { error = e; }
     expect(error).toBeInstanceOf(PsLinkError);
-    expect(psLinkErrorText(error, t, 'x')).toBe(`Está asignado a Otro local. ${es['psLink.next.move']}`);
+    expect(psLinkErrorText(error, t, 'x')).toBe(`${es['psLink.error.device_assigned_elsewhere']} ${es['psLink.next.move']}`);
     expect(psLinkErrorText(new PsLinkError('device_not_prepared', null, 'prepare'), t, 'x')).toBe(`${es['psLink.error.device_not_prepared']} ${es['psLink.next.prepare']}`);
     expect(psLinkErrorText(new PsLinkError('weird', null, null), t, 'x')).toBe(es['psLink.error.other']);
     expect(psLinkErrorText(new Error('net'), t, 'fallback')).toBe('fallback');

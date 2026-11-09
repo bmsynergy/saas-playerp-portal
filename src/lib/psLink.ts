@@ -130,11 +130,11 @@ export async function getDeviceLinkStatus(deviceId: string, signal?: AbortSignal
 }
 // Name of the Raspberry's Wi-Fi setup assistant (canonical PlayERP-Setup-<serial without "PS-">).
 export const setupSsid = (serial: string) => `PlayERP-Setup-${serial.trim().replace(/^PS-/i, '')}`;
-// Message for a rejected link RPC: the server's clear text first, then a known code, then generic.
+// Localize known server codes at render time; raw server messages have no locale contract.
 export function psLinkErrorText(error: unknown, t: (key: string) => string, fallback: string): string {
   if (!(error instanceof PsLinkError)) return fallback;
   const key = `psLink.error.${error.code}`;
-  const text = error.serverMessage ?? (t(key) !== key ? t(key) : t('psLink.error.other'));
+  const text = t(key) !== key ? t(key) : t('psLink.error.other');
   const nextKey=error.nextStep?`psLink.next.${error.nextStep}`:'';
   return nextKey&&t(nextKey)!==nextKey ? `${text} ${t(nextKey)}` : text;
 }

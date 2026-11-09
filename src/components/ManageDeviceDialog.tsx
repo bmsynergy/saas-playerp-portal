@@ -10,7 +10,8 @@ import { useLocale } from '../locales';
 import { PortalDialog } from './PortalDialog';
 import { VenueCombobox } from './VenueCombobox';
 
-type Props = { device: InventoryDevice; onClose: () => void; onChanged: () => Promise<unknown>; onResult: (result: { ok: boolean; text: string }) => void };
+export type DeviceActionResult = { ok: boolean; key: string; serial?: string; secondKey?: string };
+type Props = { device: InventoryDevice; onClose: () => void; onChanged: () => Promise<unknown>; onResult: (result: DeviceActionResult) => void };
 type Mode = 'manage' | 'assign' | 'unassign' | 'retire' | 'delete' | 'assigned';
 
 // PE-462: assigning only selects a venue and confirms; no code is shown or requested here.
@@ -20,7 +21,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
   const [detail, setDetail] = useState<AdminDeviceManage | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | { key: string; cause?: unknown; blockers?: string[] }>('');
   const [readFailed, setReadFailed] = useState(false);
   async function retryRead() { setBusy(true); try { await onChanged(); setReadFailed(false); } catch { setReadFailed(true); } finally { setBusy(false); } }
   const [mode, setMode] = useState<Mode>('manage');
@@ -37,10 +38,10 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
       setDetail(value);
       if (value.link) setLink(value.link);
       setVenue(value.device.venue_id ? { id: value.device.venue_id, name: value.device.venue_name ?? value.device.venue_id, slug: '', city: null, state: null, is_active: true, assigned_device: null } : null);
-    }).catch(err => { if (!controller.signal.aborted) setError(t(adminDeviceErrorKey(err))); })
+    }).catch(err => { if (!controller.signal.aborted) setError(adminDeviceErrorKey(err)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [device.id, t]);
+  }, [device.id]);
 
   const currentId = detail?.device.venue_id ?? null;
   const currentVenue = detail?.device.venue_name ?? t('inv.unassigned');
@@ -65,7 +66,7 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
       if (output.link) setLink(output.link);
       setMode('assigned');
       try { await onChanged(); setReadFailed(false); } catch { setReadFailed(true); }
-    } catch (err) { setError(psLinkErrorText(err, t, t(currentId ? adminDeviceErrorKey(err) : psErrorKey(err)))); }
+    } catch (err) { setError({ key: currentId ? adminDeviceErrorKey(err) : psErrorKey(err), cause: err }); }
     finally { setBusy(false); }
   }
   async function revoke(retire: boolean) {
@@ -73,10 +74,10 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
     setBusy(true); setError('');
     try {
       await revokeDevice(device.id, retire);
-      const text = t(retire ? 'inv.retired' : 'inv.revoked').replace('{serial}', device.serial);
-      onResult({ ok: true, text }); onClose();
-      try { await onChanged(); } catch { onResult({ ok: false, text: `${text} ${t('fw.refreshFailed')}` }); }
-    } catch (err) { setError(t(psErrorKey(err))); }
+      const key = retire ? 'inv.retired' : 'inv.revoked';
+      onResult({ ok: true, key, serial: device.serial }); onClose();
+      try { await onChanged(); } catch { onResult({ ok: false, key, serial: device.serial, secondKey: 'fw.refreshFailed' }); }
+    } catch (err) { setError(psErrorKey(err)); }
     finally { setBusy(false); }
   }
   async function remove() {
@@ -84,11 +85,11 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
     setBusy(true); setError('');
     try {
       await deleteAdminDevice(device.id, typedSerial);
-      const text = t('adminDevice.deleted').replace('{serial}', device.serial);
-      onResult({ ok: true, text }); onClose();
-      try { await onChanged(); } catch { onResult({ ok: false, text: `${text} ${t('fw.refreshFailed')}` }); }
+      const key = 'adminDevice.deleted';
+      onResult({ ok: true, key, serial: device.serial }); onClose();
+      try { await onChanged(); } catch { onResult({ ok: false, key, serial: device.serial, secondKey: 'fw.refreshFailed' }); }
     } catch (err) {
-      setError([t(adminDeviceErrorKey(err)), ...(err instanceof AdminDeviceError ? err.blockers.map(reason) : [])].join(' '));
+      setError({ key: adminDeviceErrorKey(err), blockers: err instanceof AdminDeviceError ? err.blockers : [] });
       if (err instanceof AdminDeviceError && err.key === 'adminDevice.error.delete_blocked') {
         // A new operation may have appeared since opening the dialog. Close the
         // destructive gate immediately; refresh to explain the authoritative state.
@@ -132,6 +133,6 @@ export function ManageDeviceDialog({ device, onClose, onChanged, onResult }: Pro
           : <><p>{t(mode === 'delete' ? 'adminDevice.deleteWarning' : 'inv.retireConfirm').replace('{serial}', device.serial).replace('{venue}', currentVenue)}</p><label className="field"><span>{t('adminDevice.typeSerial').replace('{serial}', device.serial)}</span><input data-testid="inv-confirm-serial" autoComplete="off" spellCheck={false} value={typedSerial} onChange={e => setTypedSerial(e.target.value)}/></label></>}
     </>}
     {readFailed && <p role="status" className="staff-notice ps-read-warning"><span>{t('psAssignment.readWarning')}</span><button type="button" className="button button-secondary" disabled={busy} onClick={() => void retryRead()}>{t('psAssignment.readRetry')}</button></p>}
-      {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{error}</p>}
+      {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{typeof error === 'string' ? t(error) : error.cause ? psLinkErrorText(error.cause, t, t(error.key)) : <>{t(error.key)} {error.blockers?.map(reason).join(' ')}</>}</p>}
   </PortalDialog>;
 }

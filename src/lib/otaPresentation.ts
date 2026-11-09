@@ -15,7 +15,7 @@ export function eventDetail(detail: string | null): { human: string | null; tech
 export function eventPhase(t:(key:string)=>string,phase:OtaEvent['phase']) {
   if (!phase) return t('notProvided');
   const key=`ota.phase.${phase}`,label=t(key);
-  return label===key ? `${t('list.unknownPhase')}: ${phase}` : label;
+  return label===key ? t('list.unknownPhase') : label;
 }
 
 export function auditFacts(metadata:string|null) {

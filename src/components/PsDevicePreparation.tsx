@@ -19,7 +19,7 @@ const supports = (installed:string,required:string) => {
 export function PsDevicePreparation({ link, canPrepare, blockedReason, onPrepared, preparationEntry, installedVersion }: Props) {
   const { t, locale } = useLocale();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | { cause: unknown }>('');
   const [copied, setCopied] = useState(false);
   const [result, setResult] = useState<PsPrepareResult | null>(null);
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
@@ -41,8 +41,8 @@ export function PsDevicePreparation({ link, canPrepare, blockedReason, onPrepare
     try {
       const out = await prepareDevice(link.device_id, regenerate);
       setResult(out);
-      try { await onPrepared?.(out.link); } catch { setError(t('fw.refreshFailed')); }
-    } catch (err) { setError(psLinkErrorText(err, t, t(errorCode(err)))); }
+      try { await onPrepared?.(out.link); } catch { setError('fw.refreshFailed'); }
+    } catch (err) { setError({ cause: err }); }
     finally { setBusy(false); }
   }
   const missing = link.onboarding.missing;
@@ -67,7 +67,7 @@ export function PsDevicePreparation({ link, canPrepare, blockedReason, onPrepare
     {result?.enrollment_code ? <div className="inv-code" data-testid="ps-preparation-code">
       <p className="owner-section-lead">{t('psLink.prep.codeOnce').replace('{time}', date(result.expires_at))}</p>
       <p className="ps-mono fw-hash inv-code-value" data-testid="ps-preparation-code-value">{result.enrollment_code}</p>
-      <div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => { void navigator.clipboard.writeText(result.enrollment_code!).then(() => setCopied(true)).catch(() => setError(t('dev.copyFailed'))); }}><Copy size={15}/>{t(copied ? 'inv.copied' : 'inv.copy')}</button></div>
+      <div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => { void navigator.clipboard.writeText(result.enrollment_code!).then(() => setCopied(true)).catch(() => setError('dev.copyFailed')); }}><Copy size={15}/>{t(copied ? 'inv.copied' : 'inv.copy')}</button></div>
     </div> : result?.already_prepared ? <p role="status">{t('psLink.prep.alreadyPrepared')}</p> : null}
     {issued && result && <p role="status">{t('psLink.prep.codeIssued')}</p>}
     {canPrepare ? <div className="staff-actions">
@@ -78,6 +78,6 @@ export function PsDevicePreparation({ link, canPrepare, blockedReason, onPrepare
     </div> : blockedReason ? <p className="ps-cert-small">{blockedReason}</p> : null}
     {confirmRegenerate && <p className="ps-cert-small" role="status"><AlertTriangle size={14}/> {t('psLink.prep.regenerateWarn')}</p>}
     {busy && <p role="status">{t('ps.working')}</p>}
-    {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{error}</p>}
+    {error && <p role="alert" className="form-error"><AlertTriangle size={16}/>{typeof error === 'string' ? t(error) : psLinkErrorText(error.cause, t, t(errorCode(error.cause)))}</p>}
   </section>;
 }

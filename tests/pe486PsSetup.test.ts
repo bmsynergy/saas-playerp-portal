@@ -92,7 +92,7 @@ describe('PE-486 PsDeviceSetup', () => {
     const { html } = render(superAdmin, d, { kits: [kit('img', 'bootable_image', '2026-10-12T00:00:00Z'), kit('zip', 'initial_install', '2026-10-13T00:00:00Z')], ring: null });
     expect(html).toContain('Instalación y entrega'); expect(html).toContain('id="ps-setup"');
     expect(html).toContain(`data-testid="ps-setup-sha">${SHA}</code>`); expect(html).toContain('shasum -a 256 playerp-ps-img.img.xz'); expect(html).not.toContain('playerp-ps-zip');
-    expect(html).toContain('data-testid="ps-setup-download"'); expect(html).toContain('500.0 MB'); expect(html).toContain('0.3.21'); expect(html).toContain('raspios-bookworm-arm64-lite.img.xz');
+    expect(html).toContain('data-testid="ps-setup-download"'); expect(html).toContain('500,0 MB'); expect(html).toContain('0.3.21'); expect(html).toContain('raspios-bookworm-arm64-lite.img.xz');
     expect(html).toContain('0 de 4 comprobaciones del servidor');
     expect(stepState(html, 'prepare')).toBe('current'); expect(stepState(html, 'link')).toBe('current'); expect(stepState(html, 'download')).toBe('manual');
     expect(html).toContain('bootfs'); expect(html).not.toContain('Ethernet'); expect(html).toContain('hotspot');

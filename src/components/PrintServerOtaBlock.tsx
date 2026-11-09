@@ -17,7 +17,7 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
   const [notice, setNotice] = useState('');
   const q = useQuery({ queryKey: ['ps-panel-ota', session?.user.id, venueId, printServerId], queryFn: async ({ signal }) => (await getPanelOta(venueId, signal, printServerId)).filter(item => !printServerId || item.print_server_id === printServerId), refetchInterval: 10_000 });
   const date = useMemo(() => { const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }); return (v: string | null) => v ? f.format(new Date(v)) : null; }, [locale]);
-  const label = (prefix: string, v: string | null) => { if (!v) return null; const k = `${prefix}.${v}`; const out = t(k); return out === k ? v : out; };
+  const label = (prefix: string, v: string | null) => { if (!v) return null; const k = `${prefix}.${v}`; const out = t(k); return out === k ? t('notProvided') : out; };
   const canOffer = (p: PanelOta) => !!(p.can_update && p.device_id && p.candidate?.edition_id && p.installed_version && !q.isFetching && !q.isError);
   const matches = (p: PanelOta | undefined, c: Confirmation | null) => !!(p && c && canOffer(p) && p.print_server_id === c.printServerId && p.device_id === c.deviceId && p.candidate?.edition_id === c.editionId && p.candidate.version === c.version && p.installed_version === c.installed);
   const reasonText = (reason: string | null) => {
@@ -33,7 +33,7 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
     const refreshed = await q.refetch();
     const fresh = refreshed.data?.find(item => item.print_server_id === p.print_server_id);
     if (refreshed.isError || !fresh || !canOffer(fresh) || fresh.device_id !== p.device_id || fresh.installed_version !== p.installed_version || fresh.candidate?.edition_id !== p.candidate?.edition_id) {
-      setConfirm(null); setNotice(t('adminDevice.updateChanged')); return;
+      setConfirm(null); setNotice('adminDevice.updateChanged'); return;
     }
     setConfirm({ printServerId: fresh.print_server_id, deviceId: fresh.device_id!, editionId: fresh.candidate!.edition_id, version: fresh.candidate!.version, installed: fresh.installed_version! });
   }
@@ -44,13 +44,13 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
     try {
       const refreshed = await q.refetch();
       const fresh = refreshed.data?.find(item => item.print_server_id === confirm.printServerId);
-      if (refreshed.isError || !matches(fresh, confirm)) { setConfirm(null); setNotice(t('adminDevice.updateChanged')); return; }
+      if (refreshed.isError || !matches(fresh, confirm)) { setConfirm(null); setNotice('adminDevice.updateChanged'); return; }
       await updateOwnedDevice(venueId, confirm.deviceId, confirm.editionId, confirm.installed, printServerId);
-      setConfirm(null); setNotice(t('adminDevice.updateQueued'));
+      setConfirm(null); setNotice('adminDevice.updateQueued');
       await q.refetch();
     } catch (error) {
       const key = psErrorKey(error);
-      setNotice(t(key) === key ? t('genericError') : t(key));
+      setNotice(t(key) === key ? 'genericError' : key);
     } finally { setBusy(false); }
   }
 
@@ -72,7 +72,7 @@ export function PrintServerOtaBlock({ venueId, printServerId = null }: { venueId
         <div className="dev-wide"><dt>{t('state')}</dt><dd><span className={`server-status ${p.status === 'none' ? 'server-pending' : statusClass(p.status)}`} data-testid="ps-ota-status" data-status={p.status}><span className="badge-dot"/>{p.status === 'none' ? t('ota.owner.noUpdate') : label('ota.status', p.status)}{p.status === 'in_progress' && p.phase ? ` · ${label('ota.phase', p.phase)}` : ''}{p.status === 'in_progress' && p.progress !== null ? ` · ${t('list.generalProgress')}: ${p.progress}%` : ''}</span>{p.updated_at && p.status !== 'none' && <small className="ps-sub">{date(p.updated_at)}</small>}</dd></div>
       </dl>)}
     {q.isFetching && q.data && <p className="firmware-loading-status" role="status"><span className="spinner" aria-hidden="true"/>{t('dev.loading')}</p>}
-    {notice && <p role="status" className="ps-result">{notice}</p>}
+    {notice && <p role="status" className="ps-result">{t(notice)}</p>}
     {confirm && <div className="admin-device-confirm" role="group" aria-label={t('adminDevice.confirmUpdateTitle')}>
       <p>{t('adminDevice.confirmUpdate').replace('{version}', confirm.version).replace('{serial}', q.data?.find(item => item.print_server_id === confirm.printServerId)?.hostname ?? confirm.deviceId).replace('{installed}', confirm.installed)}</p>
       {!matches(q.data?.find(item => item.print_server_id === confirm.printServerId), confirm) && <p role="status">{t('adminDevice.updateChanged')}</p>}

@@ -16,13 +16,14 @@ function VenueStatus({ venue }: { venue: OwnerVenue }) {
 }
 
 export function OwnerPage({ venues, selectedId, section, onSelect, users, printServers, integrations, support, supportOverview }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
   const selected = venues.find((venue) => venue.id === selectedId);
 
   return <div className="page-stack owner-workspace">
     <div className="page-heading"><div><p className="eyebrow">{t('ownerArea')}</p><h1>{t('ownerWelcome')}</h1><p>{t('ownerLead')}</p></div><div className="heading-accent" aria-hidden="true"><Building2 size={28}/></div></div>
     {section === 'support' ? support : !selectedId ? <section className="owner-overview" data-testid="owner-overview" aria-labelledby="owner-venues-title">
-      <div className="section-heading"><div><h2 id="owner-venues-title">{t('venues')}</h2><p className="owner-section-lead">{venues.length === 1 ? t('oneVenue') : `${venues.length} ${t('manyVenues')}`}</p></div></div>
+      <div className="section-heading"><div><h2 id="owner-venues-title">{t('venues')}</h2><p className="owner-section-lead">{venues.length === 1 ? t('oneVenue') : `${number.format(venues.length)} ${t('manyVenues')}`}</p></div></div>
       {venues.length === 0 ? <StateView kind="empty" message="emptyDirectory" /> : <div className="owner-overview-grid">
         {venues.map((venue) => <button type="button" key={venue.id} className="owner-overview-card" data-testid={`owner-venue-tile-${venue.id}`} onClick={() => onSelect(venue.id)} aria-label={`${t('viewVenue')}: ${venue.name}`}>
           <span className="owner-card-icon" aria-hidden="true"><Building2 size={22}/></span>

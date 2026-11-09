@@ -15,7 +15,8 @@ type Props<T> = {
 // Both views search only the users already returned for their current venue.
 // Row actions stay with each view, because their permission contracts differ.
 export function VenueUsersList<T>({ venueId, scope, users, name, email, headers, row, toolbar, beforeToolbar, className = '', lead, status, memberSince }: Props<T>) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
   const [search, setSearch] = useState('');
   const { filters, set, clear } = useAdminListFilters();
   const shown = scope === 'admin' ? users.filter(user => matchesText(filters.query, name(user), email(user)) && (!filters.status || status?.(user) === filters.status) && matchesUtcDay(memberSince?.(user), filters.from, filters.to)) : users.filter(user => matchesText(search, name(user), email(user)));
@@ -25,7 +26,7 @@ export function VenueUsersList<T>({ venueId, scope, users, name, email, headers,
   const isOwner = scope === 'owner';
   const titleId = isOwner ? 'owner-users-title' : 'venue-users-title';
   return <section className={`staff-panel ${className}`} aria-labelledby={titleId} data-testid={isOwner ? 'owner-users' : undefined}>
-    <div className="section-heading"><div><p className="eyebrow">{t(isOwner ? 'ownerUsers.eyebrow' : 'identity.eyebrow')}</p><h2 id={titleId}>{t(isOwner ? 'ownerUsers.title' : 'identity.listTitle')}</h2></div><span className="count-pill" data-testid={isOwner ? 'owner-users-count' : 'venue-users-count'}>{isOwner ? users.length : `${shown.length} / ${users.length}`}</span></div>
+    <div className="section-heading"><div><p className="eyebrow">{t(isOwner ? 'ownerUsers.eyebrow' : 'identity.eyebrow')}</p><h2 id={titleId}>{t(isOwner ? 'ownerUsers.title' : 'identity.listTitle')}</h2></div><span className="count-pill" data-testid={isOwner ? 'owner-users-count' : 'venue-users-count'}>{isOwner ? number.format(users.length) : `${number.format(shown.length)} / ${number.format(users.length)}`}</span></div>
     <p className="staff-panel-lead">{lead}</p>
     {beforeToolbar}
     <div className="venue-users-controls">{isOwner ? <label className="field venue-users-search"><span>{t('identity.searchAtVenue')}</span><span className="field-control"><Search size={17} aria-hidden="true"/><input type="search" data-testid="venue-users-search" value={search} onChange={event => { setSearch(event.target.value); pagination.reset(); }} placeholder={t('identity.searchPlaceholder')}/></span></label> : <AdminListFilters id="venue-users" filters={filters} set={(key, value) => { set(key, value); pagination.reset(); }} clear={() => { clear(); pagination.reset(); }} statuses={statuses} dateLabel={memberSince ? t('list.memberSince') : undefined} searchPlaceholder={t('identity.searchPlaceholder')}/>}<div className="staff-actions venue-users-toolbar">{toolbar}</div></div>

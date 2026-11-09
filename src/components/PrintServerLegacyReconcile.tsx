@@ -10,7 +10,7 @@ import { useLocale } from '../locales';
 // PE-428 — /admin only. Platform staff confirm, separately, the Wi-Fi and the administrative code a
 // legacy Print Server already uses, after checking them physically on the device. Values typed here
 // go straight to the RPC, are never logged or cached, and the inputs are cleared after each submit.
-type Result = { ok: boolean; text: string };
+type Result = { ok: boolean; key: string };
 
 
 export function PrintServerLegacyReconcile({ venueId, printServerId = null }: { venueId: string; printServerId?: string | null }) {
@@ -75,11 +75,11 @@ function ReconcileForm({ kind, ctx, date, onDone }: { kind: LegacyKind; ctx: Leg
     setSsid(''); setPsk(''); setCode(''); setChecked(false); setFingerprint('');
     try {
       await reconcileLegacy(ctx, kind, values, checked, fingerprint);
-      setResult({ ok: true, text: t(`legacy.${kind}.done`) });
+      setResult({ ok: true, key: `legacy.${kind}.done` });
       onDone();
     } catch (error) {
       const key = error instanceof LegacyError ? error.key : psErrorKey(error);
-      setResult({ ok: false, text: tr(t, key) });
+      setResult({ ok: false, key });
       if (key === 'legacy.error.already_confirmed') onDone();
     } finally { setBusy(false); }
   }
@@ -102,6 +102,6 @@ function ReconcileForm({ kind, ctx, date, onDone }: { kind: LegacyKind; ctx: Leg
     </fieldset>}
     {!confirmed && !busy && <p className="ps-cert-small">{t(!identityOk ? 'legacy.error.device_not_linked' : 'legacy.requirements')}</p>}
     {busy && <p role="status">{t('legacy.sending')}</p>}
-    {result && <p className={`dev-operation-notice ${result.ok ? 'dev-operation-applied' : 'dev-operation-failed'}`} role="status" aria-live="polite" data-testid={`${id}-result`} data-ok={String(result.ok)}>{result.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{result.text}</span></p>}
+    {result && <p className={`dev-operation-notice ${result.ok ? 'dev-operation-applied' : 'dev-operation-failed'}`} role="status" aria-live="polite" data-testid={`${id}-result`} data-ok={String(result.ok)}>{result.ok ? <Check size={16}/> : <AlertTriangle size={16}/>}<span>{tr(t, result.key)}</span></p>}
   </form>;
 }

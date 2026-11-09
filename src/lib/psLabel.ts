@@ -1,3 +1,4 @@
+import { labelText } from '../locales/label';
 import QRCode from 'qrcode';
 import { confirmedAt, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from './psDevice';
 
@@ -6,10 +7,7 @@ export const LABEL_WIDTH = 590;
 export const LABEL_HEIGHT = 354;
 export const LABEL_PPM = 11800; // 590 × 354 pixels are exactly 50 × 30 mm.
 export const LABEL_MARGIN = 20;
-export const LABEL_STEPS = {
-  en: { wifi: 'Wi-Fi', password: 'Password', connect: 'Connect to Wi-Fi', open: 'Open in browser' },
-  es: { wifi: 'Wi-Fi', password: 'Clave', connect: 'Conéctate al Wi-Fi', open: 'Abre en el navegador' },
-} as const;
+export const LABEL_STEPS = labelText;
 
 function validLabel(d: LabelData): boolean {
   return !/pse_|pst_|PRIVATE\s+KEY/i.test(d.ssid + d.password) && !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && (d.confirmation === 'stock_rpc' || !!confirmedAt(d.appliedAt));
@@ -127,10 +125,11 @@ export async function generateLabelPng(data: LabelData, language: 'en' | 'es' = 
   return new Blob([withPhysicalResolution(new Uint8Array(await png.arrayBuffer())) as Uint8Array<ArrayBuffer>], { type: 'image/png' });
 }
 
-export async function printLabel(blob: Blob, signal?: AbortSignal): Promise<void> {
+export async function printLabel(blob: Blob, signal?: AbortSignal, language?: 'en' | 'es'): Promise<void> {
   if (signal?.aborted) return;
+  const copy = labelText[language ?? (document.documentElement.lang === 'es' ? 'es' : 'en')];
   const url = URL.createObjectURL(blob), frame = document.createElement('iframe');
-  frame.title = 'Print Server label'; frame.style.cssText = 'position:fixed;width:0;height:0;border:0;';
+  frame.title = copy.title; frame.style.cssText = 'position:fixed;width:0;height:0;border:0;';
   document.body.appendChild(frame);
   const cleanup = () => { URL.revokeObjectURL(url); frame.remove(); signal?.removeEventListener('abort', cleanup); };
   signal?.addEventListener('abort', cleanup, { once: true });
@@ -139,8 +138,8 @@ export async function printLabel(blob: Blob, signal?: AbortSignal): Promise<void
     if (!doc || !win) throw new Error('label_unavailable');
     const style = doc.createElement('style');
     style.textContent = '@page{size:50mm 30mm;margin:0}html,body{margin:0;padding:0;width:50mm;height:30mm}img{display:block;width:50mm;height:30mm}';
-    doc.head.appendChild(style); doc.title = 'Print Server label';
-    const img = doc.createElement('img'); img.alt = 'Print Server recovery Wi-Fi label';
+    doc.head.appendChild(style); doc.title = copy.title;
+    const img = doc.createElement('img'); img.alt = copy.image;
     await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(new Error('label_unavailable')); img.src = url; doc.body.appendChild(img); });
     if (signal?.aborted) { cleanup(); return; }
     win.addEventListener('afterprint', cleanup, { once: true });

@@ -44,6 +44,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
   const [searchVersion, setSearchVersion] = useState(0);
   const recipientSearchRef = useRef<HTMLInputElement>(null);
   const dateLocale = locale === 'es' ? 'es-ES' : 'en-US';
+  const count = (value: number) => new Intl.NumberFormat(dateLocale).format(value);
   const pagination = { page: data.page, pageCount: data.pages, pageSize: data.page_size, start: (data.page - 1) * data.page_size, end: Math.min(data.page * data.page_size, data.total), total: data.total, setPage: onPageChange, setPageSize: () => {} };
   useEffect(() => {
     if (!recipientDialogOpen) return;
@@ -52,18 +53,18 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
       setCandidateLoading(true); setCandidateError('');
       void searchMaintenanceRecipients(recipientQuery, controller.signal)
         .then(result => { if (!controller.signal.aborted) { setCandidateResults(result.candidates); setCandidateMore(result.candidates_has_more); setCandidateActive(0); } })
-        .catch(error => { if (!controller.signal.aborted) setCandidateError(t(errorCode(error))); })
+        .catch(error => { if (!controller.signal.aborted) setCandidateError(errorCode(error)); })
         .finally(() => { if (!controller.signal.aborted) setCandidateLoading(false); });
     }, recipientQuery ? 250 : 0);
     return () => { controller.abort(); window.clearTimeout(timer); };
-  }, [recipientDialogOpen, recipientQuery, searchVersion, t]);
+  }, [recipientDialogOpen, recipientQuery, searchVersion]);
   const changeRecipient = async (userId: string, enabled: boolean) => {
     setRecipientActionError('');
     try {
       await onSetRecipient(userId, enabled);
       if (enabled) { setSelectedCandidate(null); setRecipientQuery(''); recipientSearchRef.current?.focus(); }
       setSearchVersion(current => current + 1);
-    } catch (error) { setRecipientActionError(t(errorCode(error))); }
+    } catch (error) { setRecipientActionError(errorCode(error)); }
   };
   const effectiveCount = recipients?.effective_count ?? 0;
   const formatDate = (value: string | null) => {
@@ -75,14 +76,14 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
   return <div className="page-stack maintenance-page" data-testid="maintenance-page">
     <header className="page-heading maintenance-heading">
       <div><p className="eyebrow">{t('maintenance.eyebrow')}</p><h1>{t('maintenance.nav')}</h1><p>{t('maintenance.lead')}</p></div>
-      <div className="maintenance-heading-actions"><button className="button button-secondary" type="button" onClick={() => { setCandidateLoading(true); setRecipientDialogOpen(true); }} data-testid="maintenance-recipients-open"><Bell size={16} aria-hidden="true"/>{t('maintenance.recipientsButton').replace('{count}', String(recipients?.recipients.length ?? data.summary.alert_recipients ?? 0))}</button><button className="button button-secondary" type="button" onClick={onRefresh}><RefreshCw size={16} aria-hidden="true"/>{t('maintenance.refresh')}</button></div>
+      <div className="maintenance-heading-actions"><button className="button button-secondary" type="button" onClick={() => { setCandidateLoading(true); setRecipientDialogOpen(true); }} data-testid="maintenance-recipients-open"><Bell size={16} aria-hidden="true"/>{t('maintenance.recipientsButton').replace('{count}', count(recipients?.recipients.length ?? data.summary.alert_recipients ?? 0))}</button><button className="button button-secondary" type="button" onClick={onRefresh}><RefreshCw size={16} aria-hidden="true"/>{t('maintenance.refresh')}</button></div>
     </header>
 
     <div className="maintenance-summary" role="group" aria-label={t('maintenance.summary')}>
-      <button type="button" aria-pressed={show === 'all'} data-testid="maintenance-summary-venues" onClick={() => onShowChange('all')}><span>{t('maintenance.summaryVenues')}</span><strong>{data.summary.venues}</strong></button>
-      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-venues" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemVenues')}</span><strong>{data.summary.venues_with_problems}</strong></button>
-      <button type="button" aria-pressed={show === 'last_night_problem'} data-testid="maintenance-summary-last-night-problem" onClick={() => onShowChange('last_night_problem')}><span>{t('maintenance.summaryLastNightProblemVenues')}</span><strong>{data.summary.venues_last_night_problem}</strong></button>
-      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-nights" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemNights')}</span><strong>{data.summary.problem_nights}</strong></button>
+      <button type="button" aria-pressed={show === 'all'} data-testid="maintenance-summary-venues" onClick={() => onShowChange('all')}><span>{t('maintenance.summaryVenues')}</span><strong>{count(data.summary.venues)}</strong></button>
+      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-venues" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemVenues')}</span><strong>{count(data.summary.venues_with_problems)}</strong></button>
+      <button type="button" aria-pressed={show === 'last_night_problem'} data-testid="maintenance-summary-last-night-problem" onClick={() => onShowChange('last_night_problem')}><span>{t('maintenance.summaryLastNightProblemVenues')}</span><strong>{count(data.summary.venues_last_night_problem)}</strong></button>
+      <button type="button" aria-pressed={show === 'problem'} data-testid="maintenance-summary-problem-nights" onClick={() => onShowChange('problem')}><span>{t('maintenance.summaryProblemNights')}</span><strong>{count(data.summary.problem_nights)}</strong></button>
     </div>
     {overviewError && <div className="maintenance-inline-error" role="alert"><span>{overviewError}</span><button className="button button-secondary" type="button" onClick={onRefresh}>{t('maintenance.retry')}</button></div>}
     <section className="maintenance-panel" aria-labelledby="maintenance-venues-title">
@@ -97,7 +98,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
       <div aria-busy={loading}>{!loading && !overviewError && data.venues.length ? <div className="maintenance-venue-list">{data.venues.map(venue => <Link className={`maintenance-venue-row ${venue.problem_nights > 0 ? 'maintenance-venue-row-problem' : ''}`} to={`/admin/tenants/${encodeURIComponent(venue.venue_id)}/maintenance`} key={venue.venue_id} data-testid="maintenance-venue-row">
         <span className="maintenance-venue-identity"><strong>{venue.venue_name || venue.venue_id}</strong><small>{venue.timezone}</small></span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.latestNight')}</small>{venue.last_night ? <><span><span className={`maintenance-status maintenance-status-${venue.last_night.problem || venue.last_night.status}`}>{t(`maintenance.status.${venue.last_night.problem || venue.last_night.status}`)}</span><small>{formatDate(venue.last_night.local_date)}</small></span>{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale) && <span className="maintenance-failure-summary">{maintenanceFailureSummary(venue.last_night.failed_tasks, venue.last_night.tasks_total, locale)}</span>}</> : <span>{t('maintenance.noNights')}</span>}</span>
-        <span className="maintenance-venue-metric"><small>{t('maintenance.problemNightsInPeriod')}</small><strong className={venue.problem_nights > 0 ? 'maintenance-danger-text' : ''}>{venue.problem_nights}</strong></span>
+        <span className="maintenance-venue-metric"><small>{t('maintenance.problemNightsInPeriod')}</small><strong className={venue.problem_nights > 0 ? 'maintenance-danger-text' : ''}>{count(venue.problem_nights)}</strong></span>
         <span className="maintenance-venue-metric"><small>{t('maintenance.lastSuccess')}</small><span>{formatDate(venue.last_success_date)}</span></span>
         <span className="maintenance-row-action" aria-hidden="true">{t('maintenance.openVenue')} →</span>
       </Link>)}</div> : !loading && !overviewError && <p className="maintenance-muted maintenance-empty-nights">{query ? t('maintenance.noMatchingVenues') : show !== 'all' ? t('maintenance.noFilteredVenues') : t('maintenance.noVenues')}</p>}</div>
@@ -108,7 +109,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
       <p className="maintenance-muted">{t('maintenance.recipientsLead')}</p>
       {recipientsLoading && <p className="maintenance-muted" role="status"><Clock3 size={16} aria-hidden="true"/>{t('maintenance.loadingRecipients')}</p>}
       {recipientsError && <div className="maintenance-inline-error" role="alert"><span>{recipientsError}</span><button className="button button-secondary" type="button" onClick={onRecipientsRetry}>{t('maintenance.retry')}</button></div>}
-      {(mutationError || recipientActionError) && <p className="maintenance-inline-error" role="alert">{recipientActionError || mutationError}</p>}
+      {(mutationError || recipientActionError) && <p className="maintenance-inline-error" role="alert">{recipientActionError ? t(recipientActionError) : mutationError}</p>}
       {recipients && <>
         {effectiveCount === 0 && <p className="maintenance-empty-alert"><AlertCircle size={18} aria-hidden="true"/>{t('maintenance.noEmail')}</p>}
         {recipients.recipients.length ? <ul className="maintenance-recipient-list">{recipients.recipients.map(person => <li key={person.user_id}><div><strong>{person.name || person.email}</strong><span>{person.email}{!person.effective && ` · ${t('maintenance.inactiveRecipient')}`}</span></div><button className="button button-secondary" type="button" disabled={busy} onClick={() => void changeRecipient(person.user_id, false)} aria-label={`${t('maintenance.remove')} ${person.email}`}>{t('maintenance.remove')}</button></li>)}</ul> : <p className="maintenance-muted">{t('maintenance.noRecipients')}</p>}
@@ -120,7 +121,7 @@ export function MaintenancePage({ data, query, onQueryChange, onPageChange, load
         if (event.key === 'Escape') setSelectedCandidate(null);
       }} placeholder={t('maintenance.searchPeople')} disabled={busy} /></div>
         {candidateLoading && <p className="maintenance-muted" role="status">{t('maintenance.searchingPeople')}</p>}
-        {candidateError && <p className="maintenance-inline-error" role="alert">{candidateError}</p>}
+        {candidateError && <p className="maintenance-inline-error" role="alert">{t(candidateError)}</p>}
         {!candidateLoading && !candidateError && <><div id="maintenance-candidate-results" className="maintenance-candidate-list" role="listbox" aria-label={t('maintenance.searchResults')}>{candidateResults.map((person, index) => <button id={`maintenance-candidate-${person.user_id}`} key={person.user_id} type="button" role="option" aria-selected={selectedCandidate?.user_id === person.user_id} className={candidateActive === index ? 'active' : ''} onMouseEnter={() => setCandidateActive(index)} onClick={() => { setSelectedCandidate(person); setCandidateActive(index); }}><strong>{person.name || person.email}</strong><span>{person.email}</span></button>)}</div>{!candidateResults.length && <p className="maintenance-muted">{recipientQuery ? t('maintenance.noMatchingPeople') : t('maintenance.noCandidates')}</p>}{candidateMore && <p className="maintenance-muted">{t('maintenance.refineSearch')}</p>}</>}
         <button className="button button-primary" type="button" disabled={!selectedCandidate || busy} onClick={() => { if (selectedCandidate) void changeRecipient(selectedCandidate.user_id, true); }}>{t('maintenance.add')}</button>
       </div>

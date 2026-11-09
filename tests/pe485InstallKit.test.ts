@@ -76,7 +76,7 @@ describe('PE-485 firmwares page kit block', () => {
     expect(html).toContain('Kit de instalación inicial');
     expect(html).toContain('data-testid="fw-kit-kit-1"');
     expect(html).toContain(`data-testid="fw-kit-sha-kit-1">${SHA}</dd>`);
-    expect(html).toContain(BASE_SHA); expect(html).toContain(kit.base_image_name!); expect(html).toContain(kit.file_name); expect(html).toContain('>prod<'); expect(html).toContain('3.0 MB');
+    expect(html).toContain(BASE_SHA); expect(html).toContain(kit.base_image_name!); expect(html).toContain(kit.file_name); expect(html).toContain('>prod<'); expect(html).toContain('3,0 MB');
     expect(html).toContain('Instalación inicial desde SD vacía. No es una actualización OTA: descargarlo no firma, no promueve ni autoriza instalar nada.');
     expect(html).toContain('Descargar kit');
     const rel2 = html.slice(html.indexOf('data-testid="fw-row-rel-2"'));

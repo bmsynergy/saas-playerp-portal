@@ -36,7 +36,7 @@ export function PrintFleetPage({ rows, venueId, detailHref }: PrintFleetPageProp
   useEffect(() => { setFilter(EMPTY_FLEET_FILTER); setDateFilter({ from: '', to: '' }); pagination.reset(); }, [venueId]);
 
   return <div className="page-stack staff-page" data-testid="fleet-page">
-    {!isVenue && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{locale === 'es' ? 'Ver dashboard' : 'View dashboard'}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
+    {!isVenue && <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ps.title')}</h1><Link className="staff-action-link" to="/admin/print-servers">{t('ps.viewDashboard')}</Link><p>{t('ps.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Server size={30}/></div></div>}
     {!isVenue && <PrintServersTabs/>}
     <section className="staff-panel" aria-labelledby="fleet-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t(isVenue ? 'ps.venueEyebrow' : 'ps.fleetEyebrow')}</p><h2 id="fleet-list-title">{t(isVenue ? 'ps.venueTitle' : 'ps.fleetTitle')}</h2></div><span className="count-pill">{scopedRows.length}</span></div>

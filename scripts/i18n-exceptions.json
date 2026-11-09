@@ -1,0 +1,332 @@
+[
+  {
+    "file": "src/App.tsx",
+    "text": "invalidLink",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/App.tsx",
+    "text": "staff.invited",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/App.tsx",
+    "text": "staff.recoverySent",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/App.tsx",
+    "text": "staff.updated",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/components/Brand.tsx",
+    "text": "PlayERP",
+    "reason": "Product brand"
+  },
+  {
+    "file": "src/components/FirmwareInstallKit.tsx",
+    "text": "SHA-256",
+    "reason": "Hash algorithm identifier"
+  },
+  {
+    "file": "src/components/LanguageSelector.tsx",
+    "text": "EN",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/components/LanguageSelector.tsx",
+    "text": "ES",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/components/PlatformSubdomainPanel.tsx",
+    "text": "current",
+    "reason": "State code translated by subdomain success render mapping"
+  },
+  {
+    "file": "src/components/PlatformSubdomainPanel.tsx",
+    "text": "subdomain.error.stale",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/components/PlatformSubdomainPanel.tsx",
+    "text": "subdomain.error.changed",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/components/PlatformSubdomainPanel.tsx",
+    "text": "saved",
+    "reason": "State code translated by subdomain success render mapping"
+  },
+  {
+    "file": "src/components/PortalShell.tsx",
+    "text": "EN",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/components/PortalShell.tsx",
+    "text": "ES",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/components/PortalShell.tsx",
+    "text": "PlayERP",
+    "reason": "Product brand"
+  },
+  {
+    "file": "src/components/PrintServerDevicePanel.tsx",
+    "text": "Raspberry Pi 4 2GB",
+    "reason": "Hardware model name"
+  },
+  {
+    "file": "src/components/PrintServerDevicePanel.tsx",
+    "text": "-----BEGIN CERTIFICATE-----",
+    "reason": "PEM input syntax example"
+  },
+  {
+    "file": "src/components/PrintServerLegacyReconcile.tsx",
+    "text": "ab12cd34ef56",
+    "reason": "Example technical identifier"
+  },
+  {
+    "file": "src/components/PsDeviceSetup.tsx",
+    "text": "SHA-256",
+    "reason": "Hash algorithm identifier"
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "· SHA-256",
+    "reason": "Hash algorithm identifier"
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "SHA-256",
+    "reason": "Hash algorithm identifier"
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "Español",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "English",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/lib/psLabel.ts",
+    "text": "@page{size:50mm 30mm;margin:0}html,body{margin:0;padding:0;width:50mm;height:30mm}img{display:block;width:50mm;height:30mm}",
+    "reason": "CSS for physical label printing, not interface text"
+  },
+  {
+    "file": "src/pages/AuthPage.tsx",
+    "text": "PlayERP",
+    "reason": "Product brand"
+  },
+  {
+    "file": "src/pages/AuthPage.tsx",
+    "text": "EN",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/pages/AuthPage.tsx",
+    "text": "ES",
+    "reason": "Language code"
+  },
+  {
+    "file": "src/pages/NewTenantPage.tsx",
+    "text": "tenantNew.error.storage",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/pages/NewTenantPage.tsx",
+    "text": "Español",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/NewTenantPage.tsx",
+    "text": "English",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/OwnerPage.tsx",
+    "text": "emptyDirectory",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/pages/OwnerPage.tsx",
+    "text": "emptyBody",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/pages/OwnerUsersSection.tsx",
+    "text": "English",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/OwnerUsersSection.tsx",
+    "text": "Español",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/PrintFirmwaresPage.tsx",
+    "text": "Raspberry Pi 4 2GB",
+    "reason": "Hardware model name"
+  },
+  {
+    "file": "src/pages/PrintFirmwaresPage.tsx",
+    "text": "MB",
+    "reason": "Standard unit symbol"
+  },
+  {
+    "file": "src/pages/PrintFirmwaresPage.tsx",
+    "text": "SHA-256",
+    "reason": "Hash algorithm identifier"
+  },
+  {
+    "file": "src/pages/PrintServerDetailPage.tsx",
+    "text": "AA:BB:CC:DD:EE:FF",
+    "reason": "MAC address syntax example"
+  },
+  {
+    "file": "src/pages/StaffPage.tsx",
+    "text": "English",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/StaffPage.tsx",
+    "text": "Español",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/TenantReadiness.tsx",
+    "text": "tenantEdit.error.invalidName",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/pages/TenantReadiness.tsx",
+    "text": "tenantNew.error.invalidTimezone",
+    "reason": "Translation key stored or passed as data; translated at render time"
+  },
+  {
+    "file": "src/pages/VenueUsersTab.tsx",
+    "text": "English",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/pages/VenueUsersTab.tsx",
+    "text": "Español",
+    "reason": "Language autonym"
+  },
+  {
+    "file": "src/components/DeviceAdminSummary.tsx",
+    "text": "adminDevice.error.channel_changed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/DeviceAdminSummary.tsx",
+    "text": "otaDevice.channel.changed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/DeviceAdminSummary.tsx",
+    "text": "otaDevice.channel.unchanged",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/DeviceAdminSummary.tsx",
+    "text": "adminDevice.updateChanged",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/DeviceAdminSummary.tsx",
+    "text": "adminDevice.updateQueued",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PrintServerLabel.tsx",
+    "text": "dev.label.reprint",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PrintServerLabel.tsx",
+    "text": "dev.label.unavailable",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PrintServerOtaBlock.tsx",
+    "text": "adminDevice.updateChanged",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PrintServerOtaBlock.tsx",
+    "text": "adminDevice.updateQueued",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PrintServerOtaBlock.tsx",
+    "text": "genericError",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PsDevicePreparation.tsx",
+    "text": "fw.refreshFailed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PsDevicePreparation.tsx",
+    "text": "dev.copyFailed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/SupportData.tsx",
+    "text": "support.saved",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/SupportData.tsx",
+    "text": "support.savedEmailFailed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/pages/PrintChannelsPage.tsx",
+    "text": "pe474.channels.concurrent",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/pages/PrintChannelsPage.tsx",
+    "text": "pe474.channels.changed",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/pages/PrintChannelsPage.tsx",
+    "text": "pe474.channels.unchanged",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/pages/PrintChannelsPage.tsx",
+    "text": "genericError",
+    "reason": "Stores a translation key in feedback state; the component translates it at render time."
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "psStock.reserved.copyError",
+    "reason": "Stores a translation key in feedback state; rendered through t(error) or t(notice)."
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "psStock.fileDownloaded",
+    "reason": "Stores a translation key in feedback state; rendered through t(error) or t(notice)."
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "psStock.emailSent",
+    "reason": "Stores a translation key in feedback state; rendered through t(error) or t(notice)."
+  },
+  {
+    "file": "src/components/PsStockPreparation.tsx",
+    "text": "psStock.emailHeld",
+    "reason": "Stores a translation key in feedback state; rendered through t(error) or t(notice)."
+  }
+]

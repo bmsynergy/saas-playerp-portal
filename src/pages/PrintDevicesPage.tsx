@@ -12,12 +12,11 @@ import { matchesText, matchesUtcDay } from '../lib/adminLists';
 import { PortalDialog } from '../components/PortalDialog';
 import { adminSheetHref } from '../lib/psVenueDevices';
 import { VenueCombobox } from '../components/VenueCombobox';
-import { ManageDeviceDialog } from '../components/ManageDeviceDialog';
+import { ManageDeviceDialog, type DeviceActionResult } from '../components/ManageDeviceDialog';
 import { PsLinkStateBadge } from '../components/PsLinkStateBadge';
 import { PS_LINK_STATES, psLinkStateKey, reportedOr, type PsLinkState } from '../lib/psLink';
 
 type Props = { devices: InventoryDevice[]; venues: OwnerVenue[]; onChanged: () => Promise<unknown> };
-type Result = { ok: boolean; text: string };
 type Code = { serial: string; venue: string; code: string; expires_at: string | null; replaces: boolean };
 
 export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
@@ -26,7 +25,7 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
   const [params, setParams] = useSearchParams();
   const version = params.get('version') ?? '';
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<DeviceActionResult | null>(null);
   const [code, setCode] = useState<Code | null>(null);
   const [copied, setCopied] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -74,7 +73,7 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
       if (preferred && catalog.models.some(item => item.model === preferred.model && item.active && item.archs.includes(preferred.arch))) {
         setForm(current => ({ ...current, model: preferred.model, arch: preferred.arch }));
       }
-    } catch (error) { if (catalogRequest.current === controller && !controller.signal.aborted) setModelsError(t(adminDeviceErrorKey(error))); }
+    } catch (error) { if (catalogRequest.current === controller && !controller.signal.aborted) setModelsError(adminDeviceErrorKey(error)); }
     finally { if (catalogRequest.current === controller && !controller.signal.aborted) setModelsLoading(false); }
   }
   async function create() {
@@ -83,9 +82,9 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
     try {
       const out = await createAdminDevice({ model: form.model, arch: form.arch, label: form.label.trim(), venue_id: null });
       closeAdd(); setReview(false);
-      try { await onChanged(); } catch { setResult({ ok: false, text: `${t('inv.created').replace('{serial}', out.device.serial)} ${t('fw.refreshFailed')}` }); }
+      try { await onChanged(); } catch { setResult({ ok: false, key: 'inv.created', serial: out.device.serial, secondKey: 'fw.refreshFailed' }); }
       navigate(`${adminSheetHref(out.device.id)}${venue?.id?`?fromVenue=${encodeURIComponent(venue.id)}`:''}`, { state: null });
-    } catch (error) { setModelsError(t(adminDeviceErrorKey(error))); }
+    } catch (error) { setModelsError(adminDeviceErrorKey(error)); }
     finally { setBusy(false); }
   }
   function clearVersion() { const next = new URLSearchParams(params); next.delete('version'); setParams(next); }
@@ -100,7 +99,7 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
     <PrintServersTabs/>
     <section className="servers-panel" aria-labelledby="inv-list-title">
       <div className="section-heading"><div><p className="eyebrow">{t('inv.eyebrow')}</p><h2 id="inv-list-title">{t('inv.listTitle')}</h2></div><button type="button" className="button button-primary" data-testid="inv-create" disabled={busy} onClick={() => void openAdd()}><Plus size={16}/>{t('inv.create')}</button></div>
-      <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="inv-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result?.text ?? ''}</span></div>
+      <div className={`ps-result ${result ? (result.ok ? 'ps-result-ok' : 'ps-result-error') : 'ps-result-empty'}`} role="status" aria-live="polite" data-testid="inv-result" data-ok={result ? String(result.ok) : undefined}>{result && (result.ok ? <Check size={18}/> : <AlertTriangle size={18}/>)}<span>{result ? `${t(result.key).replace('{serial}', result.serial ?? '')}${result.secondKey ? ` ${t(result.secondKey)}` : ''}` : ''}</span></div>
       <div className="inv-filter-bar"><AdminListFilters id="devices" filters={filters} set={(key, value) => { set(key, value); pagination.reset(); }} clear={() => { clear(); setAssignment(''); clearVersion(); pagination.reset(); }} clearDisabled={!hasFilters} statuses={[...new Set(devices.map(stateOf))].sort().map(value => ({ value, label: stateLabel(value) }))} afterStatus={extraFilters} dateLabel={t('list.created')} fromLabel={t('inv.createdFrom')} toLabel={t('inv.createdThrough')}/><span className="directory-count">{filtered.length} / {devices.length}</span></div>
       <div data-pagination-list="devices" />
       {filtered.length === 0 ? <div className="inline-empty">{devices.length ? t('list.noMatches') : t('inv.empty')}</div> : <div className="table-scroll"><table className="servers-table fw-table inv-inventory-table"><thead><tr><th scope="col">{t('dev.serial')}</th><th scope="col">{t('ps.hostname')}</th><th scope="col">{t('fw.model')}</th><th scope="col">{t('adminDevice.currentFirmware')}</th><th scope="col">{t('state')}</th><th scope="col">{t('inv.venue')}</th><th scope="col"><span className="sr-only">{t('staff.actions')}</span></th></tr></thead><tbody>
@@ -116,9 +115,9 @@ export function PrintDevicesPage({ devices, venues, onChanged }: Props) {
       </tbody></table></div>}
       <PrintListPagination pagination={pagination} id="devices"/>
     </section>
-    {code && <section className="staff-panel inv-code" role="alertdialog" aria-labelledby="inv-code-title" data-testid="inv-code"><div className="section-heading"><div><p className="eyebrow">{t('inv.codeEyebrow')}</p><h2 id="inv-code-title">{t('inv.codeTitle').replace('{serial}', code.serial).replace('{venue}', code.venue)}</h2></div></div><p className="owner-section-lead">{t(code.replaces ? 'inv.codeReplaces' : 'inv.codeHint')} {t('inv.codeExpires').replace('{time}', date(code.expires_at))} {t('inv.activationSeparate')}</p><p className="ps-mono fw-hash inv-code-value" data-testid="inv-code-value">{code.code}</p><div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => { void navigator.clipboard.writeText(code.code).then(() => setCopied(true)).catch(() => setResult({ ok: false, text: t('dev.copyFailed') })); }}><Copy size={15}/>{t(copied ? 'inv.copied' : 'inv.copy')}</button><button type="button" className="button button-primary" data-testid="inv-code-close" onClick={() => setCode(null)}><Check size={15}/>{t('inv.codeDone')}</button></div></section>}
+    {code && <section className="staff-panel inv-code" role="alertdialog" aria-labelledby="inv-code-title" data-testid="inv-code"><div className="section-heading"><div><p className="eyebrow">{t('inv.codeEyebrow')}</p><h2 id="inv-code-title">{t('inv.codeTitle').replace('{serial}', code.serial).replace('{venue}', code.venue)}</h2></div></div><p className="owner-section-lead">{t(code.replaces ? 'inv.codeReplaces' : 'inv.codeHint')} {t('inv.codeExpires').replace('{time}', date(code.expires_at))} {t('inv.activationSeparate')}</p><p className="ps-mono fw-hash inv-code-value" data-testid="inv-code-value">{code.code}</p><div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => { void navigator.clipboard.writeText(code.code).then(() => setCopied(true)).catch(() => setResult({ ok: false, key: 'dev.copyFailed' })); }}><Copy size={15}/>{t(copied ? 'inv.copied' : 'inv.copy')}</button><button type="button" className="button button-primary" data-testid="inv-code-close" onClick={() => setCode(null)}><Check size={15}/>{t('inv.codeDone')}</button></div></section>}
     {adding && <PortalDialog title={t('inv.create')} titleId="admin-device-add-title" testId="admin-device-add-dialog" onClose={closeAdd} dismissible={!busy} actions={<><button type="button" className="button button-primary" disabled={busy || modelsLoading || !model?.active || !model.archs.includes(form.arch)} onClick={() => review ? void create() : setReview(true)}>{review ? t('staff.confirm') : t('adminDevice.review')}</button><button type="button" className="button button-secondary" disabled={busy} onClick={() => review ? setReview(false) : closeAdd()}>{review ? t('adminDevice.back') : t('staff.cancel')}</button></>}>
-      {modelsLoading ? <p role="status">{t('dev.loading')}</p> : modelsError && !models.length ? <p role="alert" className="form-error">{modelsError}</p> : !review ? <div className="admin-device-form"><label className="field"><span>{t('fw.model')}</span><select value={form.model} onChange={e => { const next = models.find(m => m.model === e.target.value); setForm(f => ({ ...f, model: e.target.value, arch: next?.default_arch ?? '' })); }}><option value="">{t('adminDevice.chooseModel')}</option>{models.filter(m => m.active).map(m => <option key={m.model} value={m.model}>{m.label}</option>)}</select></label><label className="field"><span>{t('fw.arch')}</span><select value={form.arch} onChange={e => setForm(f => ({ ...f, arch: e.target.value }))} disabled={!model}><option value="">{t('adminDevice.chooseArch')}</option>{model?.archs.map(arch => <option key={arch} value={arch}>{arch}</option>)}</select></label><label className="field"><span>{t('adminDevice.label')}</span><input value={form.label} maxLength={80} onChange={e => setForm(f => ({ ...f, label: e.target.value }))}/></label><div className="field"><span>{t('ps469.returnVenue')}</span><VenueCombobox value={venue} onChange={setVenue} testId="inv-add-venue"/></div><p className="owner-section-lead admin-device-wide">{t('ps469.createStock')}</p></div> : <div className="admin-device-review"><p>{t('ps469.createStock')}</p><dl><div><dt>{t('fw.model')}</dt><dd>{model?.label}</dd></div><div><dt>{t('fw.arch')}</dt><dd>{form.arch}</dd></div><div><dt>{t('adminDevice.label')}</dt><dd>{form.label || t('notProvided')}</dd></div><div><dt>{t('ps469.returnVenue')}</dt><dd>{venue?.name ?? t('inv.unassigned')}</dd></div></dl><p>{t('ps469.createStock')}</p></div>}{modelsError && !!models.length && <p role="alert" className="form-error">{modelsError}</p>}
+      {modelsLoading ? <p role="status">{t('dev.loading')}</p> : modelsError && !models.length ? <p role="alert" className="form-error">{t(modelsError)}</p> : !review ? <div className="admin-device-form"><label className="field"><span>{t('fw.model')}</span><select value={form.model} onChange={e => { const next = models.find(m => m.model === e.target.value); setForm(f => ({ ...f, model: e.target.value, arch: next?.default_arch ?? '' })); }}><option value="">{t('adminDevice.chooseModel')}</option>{models.filter(m => m.active).map(m => <option key={m.model} value={m.model}>{m.label}</option>)}</select></label><label className="field"><span>{t('fw.arch')}</span><select value={form.arch} onChange={e => setForm(f => ({ ...f, arch: e.target.value }))} disabled={!model}><option value="">{t('adminDevice.chooseArch')}</option>{model?.archs.map(arch => <option key={arch} value={arch}>{arch}</option>)}</select></label><label className="field"><span>{t('adminDevice.label')}</span><input value={form.label} maxLength={80} onChange={e => setForm(f => ({ ...f, label: e.target.value }))}/></label><div className="field"><span>{t('ps469.returnVenue')}</span><VenueCombobox value={venue} onChange={setVenue} testId="inv-add-venue"/></div><p className="owner-section-lead admin-device-wide">{t('ps469.createStock')}</p></div> : <div className="admin-device-review"><p>{t('ps469.createStock')}</p><dl><div><dt>{t('fw.model')}</dt><dd>{model?.label}</dd></div><div><dt>{t('fw.arch')}</dt><dd>{form.arch}</dd></div><div><dt>{t('adminDevice.label')}</dt><dd>{form.label || t('notProvided')}</dd></div><div><dt>{t('ps469.returnVenue')}</dt><dd>{venue?.name ?? t('inv.unassigned')}</dd></div></dl><p>{t('ps469.createStock')}</p></div>}{modelsError && !!models.length && <p role="alert" className="form-error">{t(modelsError)}</p>}
     </PortalDialog>}
     {manageDevice && <ManageDeviceDialog device={manageDevice} onClose={() => setManageDevice(null)} onChanged={onChanged} onResult={setResult}/>}
   </div>;

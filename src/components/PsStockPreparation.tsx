@@ -82,16 +82,16 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(field);
-    } catch { setCopied(null); setError(t('psStock.reserved.copyError')); }
+    } catch { setCopied(null); setError('psStock.reserved.copyError'); }
   }
   async function issueFile() {
     if (!canFile || busy || (stock?.file && !replaceFile)) return;
     setBusy('file'); setError(''); setNotice(''); setSha('');
     try {
       const result = await downloadStockFile(deviceId);
-      setSha(result.sha256); setReplaceFile(false); setNotice(t('psStock.fileDownloaded'));
+      setSha(result.sha256); setReplaceFile(false); setNotice('psStock.fileDownloaded');
       await status.refetch(); await onChanged();
-    } catch (e) { setError(errorText(e)); } finally { setBusy(null); }
+    } catch (e) { setError(errorCode(e)); } finally { setBusy(null); }
   }
   async function downloadImage() {
     if (!image || busy) return;
@@ -100,7 +100,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
       const result = await getInstallKitDownload(image.id);
       const a = document.createElement('a'); a.href = result.url; a.download = result.filename || image.file_name; a.rel = 'noopener';
       document.body.appendChild(a); a.click(); a.remove();
-    } catch (e) { setError(errorText(e)); } finally { setBusy(null); }
+    } catch (e) { setError(errorCode(e)); } finally { setBusy(null); }
   }
   async function labelImage(action: 'view' | 'download' | 'print') {
     if (!canLabel || busy) return;
@@ -122,14 +122,14 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
         try { const anchor = document.createElement('a'); anchor.href = url; anchor.download = labelFilename(data); document.body.appendChild(anchor); anchor.click(); anchor.remove(); }
         finally { window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
       } else { const controller = new AbortController(); labelPrintRef.current = controller; await printLabelPng(blob, controller.signal); }
-    } catch (e) { if (generation === labelGeneration.current) setError(errorText(e)); }
+    } catch (e) { if (generation === labelGeneration.current) setError(errorCode(e)); }
     finally { setBusy(current => current === 'label' ? null : current); }
   }
   async function prepareEmail() {
     if (!canEmail || !to.trim() || busy) return;
     setBusy('preview'); setError(''); setPreview(null); setPreviewKey(''); setSerialConfirmation('');
     try { const result = await previewDeliveryEmail(deviceId, to.trim(), emailLocale); setPreview(result); setPreviewKey(key); }
-    catch (e) { setError(errorText(e)); } finally { setBusy(null); }
+    catch (e) { setError(errorCode(e)); } finally { setBusy(null); }
   }
   async function sendEmail() {
     if (!canEmail || !preview || previewKey !== key || !preview.sendable || serialConfirmation !== data?.serial || busy) return;
@@ -137,9 +137,9 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
     try {
       const result = await sendDeliveryEmail(deviceId, to.trim(), emailLocale, serialConfirmation);
       setPreview(null); setPreviewKey(''); setSerialConfirmation('');
-      setNotice(result.sent ? t('psStock.emailSent') : t('psStock.emailHeld').replace('{reason}', result.held_reason ?? t('notProvided')));
+      setNotice(result.sent ? 'psStock.emailSent' : 'psStock.emailHeld');
       await status.refetch(); await onChanged();
-    } catch (e) { setError(errorText(e)); } finally { setBusy(null); }
+    } catch (e) { setError(errorCode(e)); } finally { setBusy(null); }
   }
 
   return <section className="detail-panel ps-stock" id="ps-stock-preparation" aria-labelledby="ps-stock-title" data-testid="ps-stock">
@@ -148,12 +148,12 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
     <div className="staff-actions"><button type="button" className="button button-secondary" onClick={() => void refresh()} disabled={!!busy || status.isFetching}><RefreshCw size={15}/>{t('psStock.refresh')}</button></div>
     {status.isLoading && <p role="status">{t('psStock.loading')}</p>}
     {status.isError && <p role="alert" className="form-error">{t('psStock.statusError').replace('{reason}', errorText(status.error))}</p>}
-    {error && <p role="alert" className="form-error"><AlertTriangle size={15}/>{error}</p>}
-    {notice && <p role="status" className="fw-notice">{notice}</p>}
+    {error && <p role="alert" className="form-error"><AlertTriangle size={15}/>{t(error)}</p>}
+    {notice && <p role="status" className="fw-notice">{notice === 'psStock.emailHeld' ? t(notice).replace('{reason}', t('psStock.emailHold.unknown')) : t(notice)}</p>}
     {data && stock && <>
       <div className="ps-stock-summary" data-testid="ps-stock-state">
-        <strong>{t(`psStock.state.${stock.state}`)}</strong>
-        <span>{t(`psStock.next.${stock.next_step ?? 'none'}`)}</span>
+        <strong>{t(`psStock.state.${stock.state}`) === `psStock.state.${stock.state}` ? t('notProvided') : t(`psStock.state.${stock.state}`)}</strong>
+        <span>{t(`psStock.next.${stock.next_step ?? 'none'}`) === `psStock.next.${stock.next_step ?? 'none'}` ? t('psStock.next.unknown') : t(`psStock.next.${stock.next_step ?? 'none'}`)}</span>
       </div>
 <details className="ps600-technical ps-stock-technical" data-testid="ps-stock-technical"><summary>{t('ps600.stockTechnical')}</summary>
       <dl className="fw-release-facts ps-stock-facts">
@@ -213,7 +213,7 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
         <h3>{t('psStock.emailTitle')}</h3><p>{t('psStock.emailDevRule')}</p>
         <div className="ps-stock-mail-fields"><label className="field"><span>{t('psStock.recipient')}</span><input type="email" value={to} onChange={e => { setTo(e.target.value); setPreview(null); setSerialConfirmation(''); }} autoComplete="off" disabled={!!busy}/></label><label className="field"><span>{t('psStock.language')}</span><select value={emailLocale} onChange={e => { setEmailLocale(e.target.value as Locale); setPreview(null); setSerialConfirmation(''); }} disabled={!!busy}><option value="es">Español</option><option value="en">English</option></select></label></div>
         <button type="button" className="button button-secondary" data-testid="ps-stock-preview-email" onClick={() => void prepareEmail()} disabled={!!busy || !to.trim()}><Mail size={15}/>{t('psStock.preview')}</button>
-        {preview && previewKey === key && <div className="ps-stock-mail-preview" data-testid="ps-stock-email-preview"><p><strong>{t('psStock.subject')}</strong> {preview.email?.subject ?? t('notProvided')}</p><pre>{preview.email?.text ?? t('notProvided')}</pre>{!preview.sendable && <p role="status">{t('psStock.emailHeld').replace('{reason}', preview.held_reason ?? t('notProvided'))}</p>}{preview.sendable && <><label className="field"><span>{t('psStock.confirmSerial').replace('{serial}', data.serial)}</span><input value={serialConfirmation} onChange={e => setSerialConfirmation(e.target.value)} autoComplete="off" disabled={!!busy}/></label><button type="button" className="button button-primary" data-testid="ps-stock-send-email" onClick={() => void sendEmail()} disabled={!!busy || serialConfirmation !== data.serial}>{t('psStock.send')}</button></>}</div>}
+        {preview && previewKey === key && <div className="ps-stock-mail-preview" data-testid="ps-stock-email-preview"><p><strong>{t('psStock.subject')}</strong> {preview.email?.subject ?? t('notProvided')}</p><pre>{preview.email?.text ?? t('notProvided')}</pre>{!preview.sendable && <p role="status">{t('psStock.emailHeld').replace('{reason}', t('psStock.emailHold.unknown'))}</p>}{preview.sendable && <><label className="field"><span>{t('psStock.confirmSerial').replace('{serial}', data.serial)}</span><input value={serialConfirmation} onChange={e => setSerialConfirmation(e.target.value)} autoComplete="off" disabled={!!busy}/></label><button type="button" className="button button-primary" data-testid="ps-stock-send-email" onClick={() => void sendEmail()} disabled={!!busy || serialConfirmation !== data.serial}>{t('psStock.send')}</button></>}</div>}
       </div>}
     </>}
   </section>;

@@ -13,7 +13,7 @@ import { PrintServersTabs } from './PrintFirmwaresPage';
 
 // Deployment, progress and history only. Firmware signing and channel management have their own screens.
 type Props = { data: OtaOverview; refreshing: boolean; onRefresh: () => Promise<unknown> };
-type Result = { ok: boolean; text: string; devices?: OtaActionError['devices'] };
+type Result = { ok: boolean; key: string; values?: Record<string, string | number>; devices?: OtaActionError['devices'] };
 const MODELS: Record<string, string> = { 'rpi4-2gb': 'Raspberry Pi 4 2GB' };
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [k, v]) => out.split(`{${k}}`).join(String(v)), text);
 const keyShort = (key: string | null) => key ? `${key.slice(0, 4)}…` : '—';
@@ -21,7 +21,7 @@ function useLabels() {
   const { t, locale } = useLocale();
   return useMemo(() => {
     const f = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
-    const label = (prefix: string, value: string | null) => { if (!value) return t('notProvided'); const k = `${prefix}.${value}`; const out = t(k); return out === k ? value : out; };
+    const label = (prefix: string, value: string | null) => { if (!value) return t('notProvided'); const k = `${prefix}.${value}`; const out = t(k); return out === k ? t('notProvided') : out; };
     return {
       t, locale,
       date: (v: string | null) => { const d = v ? new Date(v) : null; return d && !Number.isNaN(d.getTime()) ? `${f.format(d)} UTC` : t('notProvided'); },
@@ -44,7 +44,7 @@ function Progress({ value }: { value: number | null }) {
 function TargetError({ target }: { target: OtaTarget }) {
   const { t } = useLocale();
   if (!target.error_code && !target.error_detail) return <span className="staff-self-note">{t('ps.none')}</span>;
-  return <span className="fw-cell ps-error-text">{target.status === 'rolled_back' && <strong>{t('ota.restoredBecause')}</strong>}{target.error_code && <span className="ps-mono">{target.error_code}</span>}{target.error_detail && <small className="ps-sub">{target.error_detail}</small>}</span>;
+  return <span className="fw-cell ps-error-text">{target.status === 'rolled_back' && <strong>{t('ota.restoredBecause')}</strong>}{t('ota.error.other')}<Diagnostics id={`target-${target.id}`} value={{ error_code: target.error_code, error_detail: target.error_detail }}/></span>;
 }
 
 const OTA_STATUSES = ['pending','in_progress','committed','rolled_back','failed','rejected','expired','cancelled','superseded'];
@@ -92,8 +92,7 @@ function Events({ target }: { target: OtaTarget }) {
         return <li key={e.id}>
           <time dateTime={e.created_at??undefined}>{l.date(e.created_at)}</time>
           <span><strong>{l.phase(e.phase)}</strong> · {t('list.eventVersion')}: {target.desired_version??t('notProvided')} · {t('list.eventResult')}: {e.status?l.status(e.status):t('notProvided')}{e.progress!==null&&<> · {t('list.generalProgress')}: {e.progress}%</>}</span>
-          {(e.error_code||e.error_detail)&&<span className="ps-error-text">{[e.error_code,e.error_detail].filter(Boolean).join(' — ')}</span>}
-          {detail.human&&<span className="ps-sub">{detail.human}</span>}
+          {(e.error_code||e.error_detail)&&<span className="ps-error-text">{t('ota.error.other')}</span>}
           <Diagnostics id={`event-${e.id}`} value={e}/>
         </li>;
       })}</ol><PrintListPagination id={`events-${targetId}`} pagination={state.pagination} disabled={query.isFetching}/></> : <div className="inline-empty">{t('list.noMatches')}</div>)}
@@ -155,7 +154,7 @@ function Audit() {
   const state=useOtaPage('audit'),l=useLabels(),{t}=l;
   return <section className="servers-panel" aria-labelledby="ota-audit-title"><div className="section-heading"><h2 id="ota-audit-title">{t('ota.auditTitle')}</h2><span className="count-pill">{state.started?state.query.data?.total??'—':'—'}</span></div>
     <PageFilters state={state} kind="audit" id="audit" dateLabel={t('list.created')}/>
-    {state.started&&state.valid&&!state.query.isError&&state.query.data&&<><div data-pagination-list="audit" /><ul className="ota-audit" data-testid="ota-audit">{state.query.data.items.map(a=>{const facts=auditFacts(a.metadata);return <li key={a.id}><time dateTime={a.at??undefined}>{l.date(a.at)}</time><strong>{auditLabel(t,a.action)}</strong><span>{facts.version&&<>{t('list.eventVersion')}: {facts.version} · </>}{facts.group&&<>{facts.group} · </>}{facts.ring&&<>{l.ring(facts.ring)} · </>}{facts.status&&<>{l.status(facts.status)} · </>}{a.actor_email??t('notProvided')}</span>{facts.error&&<span className="ps-error-text">{facts.error}</span>}<Diagnostics id={`audit-${a.id}`} value={a}/></li>;})}</ul><PrintListPagination id="audit" pagination={state.pagination} disabled={state.query.isFetching}/></>}
+    {state.started&&state.valid&&!state.query.isError&&state.query.data&&<><div data-pagination-list="audit" /><ul className="ota-audit" data-testid="ota-audit">{state.query.data.items.map(a=>{const facts=auditFacts(a.metadata);return <li key={a.id}><time dateTime={a.at??undefined}>{l.date(a.at)}</time><strong>{auditLabel(t,a.action)}</strong><span>{facts.version&&<>{t('list.eventVersion')}: {facts.version} · </>}{facts.group&&<>{facts.group} · </>}{facts.ring&&<>{l.ring(facts.ring)} · </>}{facts.status&&<>{l.status(facts.status)} · </>}{a.actor_email??t('notProvided')}</span>{facts.error&&<span className="ps-error-text">{t('ota.error.other')}</span>}<Diagnostics id={`audit-${a.id}`} value={a}/></li>;})}</ul><PrintListPagination id="audit" pagination={state.pagination} disabled={state.query.isFetching}/></>}
   </section>;
 }
 
@@ -186,24 +185,24 @@ export function PrintUpdatesPage({ data, refreshing, onRefresh }: Props) {
   const selectedGroup=data.groups.find(g=>g.id===deploy.group)??null;
   const canDeploy=!busy&&!refreshing&&!firmware.query.isError&&!firmware.query.isFetching&&!!deploy.edition&&(deploy.mode==='group'?!!selectedGroup:deploy.devices.size>0);
   const toggleDevice=(id:string)=>setDeploy(d=>{const devices=new Set(d.devices);if(devices.has(id))devices.delete(id);else devices.add(id);return {...d,devices};});
-  async function run(fn:()=>Promise<string>) {
+  async function run(fn:()=>Promise<{key:string;values?:Record<string,string|number>}>) {
     if(busy)return;setBusy(true);setResult(null);
-    try{setResult({ok:true,text:await fn()});}
-    catch(error){const key=psErrorKey(error);setResult({ok:false,text:t(key)===key?t('ota.error.other'):t(key),devices:error instanceof OtaActionError?error.devices:undefined});}
+    try{setResult({ok:true,...await fn()});}
+    catch(error){const key=psErrorKey(error);setResult({ok:false,key:t(key)===key?'ota.error.other':key,devices:error instanceof OtaActionError?error.devices:undefined});}
     finally{setBusy(false);await onRefresh().catch(()=>{});await firmware.query.refetch().catch(()=>{});}
   }
-  function submitGroup(event:FormEvent) {event.preventDefault();const name=groupForm.name.trim();if(!name)return;void run(async()=>{await createGroup(name,groupForm.ring);setGroupForm(f=>({...f,name:''}));return fill(t('ota.groupCreated'),{name});});}
+  function submitGroup(event:FormEvent) {event.preventDefault();const name=groupForm.name.trim();if(!name)return;void run(async()=>{await createGroup(name,groupForm.ring);setGroupForm(f=>({...f,name:''}));return {key:'ota.groupCreated',values:{name}};});}
   function submitDeploy(event:FormEvent) {
     event.preventDefault();const edition=deploy.edition;if(!canDeploy||!edition)return;
     if(!window.confirm(fill(t('ota.deployConfirm'),{version:edition.version})))return;
     const to=deploy.mode==='group'?{group_id:deploy.group}:{ring:deploy.ring,print_server_ids:[...deploy.devices]};
-    void run(async()=>{const out=await deployEdition(edition.editionId,to);setDeploy(d=>({...d,devices:new Set()}));return fill(t('ota.deployed'),{version:edition.version,n:out.targets});});
+    void run(async()=>{const out=await deployEdition(edition.editionId,to);setDeploy(d=>({...d,devices:new Set()}));return {key:'ota.deployed',values:{version:edition.version,n:out.targets}};});
   }
   return <div className="page-stack staff-page" data-testid="updates-page">
     <div className="page-heading"><div><p className="eyebrow">{t('ps.eyebrow')}</p><h1>{t('ota.title')}</h1><p>{t('pe474.updates.lead')}</p></div><div className="heading-accent" aria-hidden="true"><Rocket size={30}/></div></div>
     <PrintServersTabs/>
-    <div className="pe474-updates-refresh"><button type="button" className="button button-secondary" disabled={refreshing||busy} onClick={()=>void onRefresh().then(()=>setResult(null)).catch(error=>setResult({ok:false,text:t(psErrorKey(error))}))}><RefreshCw size={15}/>{t('refresh')}</button></div>
-    {result&&<div className={`ps-result ${result.ok?'ps-result-ok':'ps-result-error'}`} role={result.ok?'status':'alert'} data-testid="ota-result">{result.ok?<Check size={18}/>:<AlertTriangle size={18}/>}<span>{result.text}{result.devices&&result.devices.length>0&&<ul className="pe474-deploy-errors">{result.devices.map(d=>{const key=`pe474.reason.${d.reason??'unknown'}`,localized=t(key);return <li key={d.print_server_id}><Link to={`/admin/print-servers/channels?q=${encodeURIComponent(d.print_server_id)}`}>{d.print_server_id}</Link>{d.channel&&` · ${t(`ota.ring.${d.channel}`)}`}{d.installed_version&&` · ${t('ota.installed')}: ${d.installed_version}`} · {localized===key?t('pe474.reason.unknown'):localized}</li>;})}</ul>}</span></div>}
+    <div className="pe474-updates-refresh"><button type="button" className="button button-secondary" disabled={refreshing||busy} onClick={()=>void onRefresh().then(()=>setResult(null)).catch(error=>setResult({ok:false,key:psErrorKey(error)}))}><RefreshCw size={15}/>{t('refresh')}</button></div>
+    {result&&<div className={`ps-result ${result.ok?'ps-result-ok':'ps-result-error'}`} role={result.ok?'status':'alert'} data-testid="ota-result">{result.ok?<Check size={18}/>:<AlertTriangle size={18}/>}<span>{fill(t(result.key),result.values??{})}{result.devices&&result.devices.length>0&&<ul className="pe474-deploy-errors">{result.devices.map(d=>{const key=`pe474.reason.${d.reason??'unknown'}`,localized=t(key);return <li key={d.print_server_id}><Link to={`/admin/print-servers/channels?q=${encodeURIComponent(d.print_server_id)}`}>{d.print_server_id}</Link>{d.channel&&` · ${t(`ota.ring.${d.channel}`)}`}{d.installed_version&&` · ${t('ota.installed')}: ${d.installed_version}`} · {localized===key?t('pe474.reason.unknown'):localized}</li>;})}</ul>}</span></div>}
     <section className="staff-panel" aria-labelledby="ota-groups-title">
       <div className="section-heading"><div><p className="eyebrow">{t('ota.groupsEyebrow')}</p><h2 id="ota-groups-title">{t('ota.groupsTitle')}</h2><p className="owner-section-lead">{t('pe474.updates.groupsRule')}</p></div><span className="count-pill">{data.groups.length}</span></div>
       <form className="fw-form ota-group-form" onSubmit={submitGroup} data-testid="ota-group-form"><label className="field"><span>{t('ota.groupName')}</span><input value={groupForm.name} maxLength={80} required disabled={busy} onChange={e=>setGroupForm(f=>({...f,name:e.target.value}))}/></label><label className="field"><span>{t('ota.ring')}</span><select value={groupForm.ring} disabled={busy} onChange={e=>setGroupForm(f=>({...f,ring:e.target.value as Ring}))}>{RINGS.map(r=><option key={r} value={r}>{l.ring(r)}</option>)}</select></label><div className="fw-actions"><button type="submit" className="button button-primary" disabled={busy||!groupForm.name.trim()}><Plus size={16}/>{t('ota.createGroup')}</button></div></form>

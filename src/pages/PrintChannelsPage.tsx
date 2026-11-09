@@ -36,7 +36,7 @@ export function PrintChannelsPage() {
   const statusName = (status: string) => {
     const key = `pe474.channels.status.${status}` as Parameters<typeof t>[0];
     const value = t(key);
-    return value === key ? status : value;
+    return value === key ? t('notProvided') : value;
   };
   const venue: AdminVenueOption | null = page.filters.venue_id ? {
     id: page.filters.venue_id, name: page.venueLabel || page.filters.venue_id,
@@ -50,17 +50,17 @@ export function PrintChannelsPage() {
     if (!change || busy || page.query.isFetching || page.query.isError || change.to === change.row.channel) return;
     const current = page.query.data?.items.find(item => item.print_server_id === change.row.print_server_id);
     if (!current || current.channel !== change.row.channel || current.channel_revision !== change.row.channel_revision) {
-      setChange(null); setNoticeError(true); setNotice(t('pe474.channels.concurrent')); return;
+      setChange(null); setNoticeError(true); setNotice('pe474.channels.concurrent'); return;
     }
     setBusy(true);
     try {
       const result = await setPrintServerChannel(change.row.print_server_id, change.to, change.row.channel, change.row.channel_revision);
-      setChange(null); setNoticeError(false); setNotice(t(result.changed ? 'pe474.channels.changed' : 'pe474.channels.unchanged'));
+      setChange(null); setNoticeError(false); setNotice(result.changed ? 'pe474.channels.changed' : 'pe474.channels.unchanged');
       await invalidatePsViews(cache);
     } catch (err) {
       const key = adminDeviceErrorKey(err), label = t(key);
       setChange(null); setNoticeError(true);
-      setNotice(key === 'adminDevice.error.channel_changed' ? t('pe474.channels.concurrent') : label === key ? t('genericError') : label);
+      setNotice(key === 'adminDevice.error.channel_changed' ? 'pe474.channels.concurrent' : label === key ? 'genericError' : key);
       await page.query.refetch().catch(() => {});
     } finally { setBusy(false); }
   }
@@ -77,7 +77,7 @@ export function PrintChannelsPage() {
       </div>
       {groupId && <p className="fw-notice">{t('pe474.channels.groupFilter')} <button className="staff-action-link" type="button" onClick={() => page.set('group_id', '')}>{t('pe474.channels.clearGroup')}</button></p>}
       {selectedRing && <div className="admin-list-toolbar channels-toolbar"><AdminListFilters id="channels" filters={page.filters} set={page.set} clear={page.clear} clearDisabled={!page.filters.query && !page.filters.status && !page.filters.venue_id && !page.filters.group_id} statuses={['active', 'pending', 'revoked', 'online', 'offline', 'all'].map(value => ({ value, label: statusName(value) }))} afterStatus={<label><span>{t('inv.venue')}</span><VenueCombobox emptyLabel={t('ps.filter.allVenues')} value={venue} onChange={page.setVenue} testId="channels-venue"/></label>}/><span className="directory-count" data-testid="channels-total">{t('pe474.channels.total').replace('{n}', countFormat.format(page.pagination.total))}</span></div>}
-      {notice && <div role={noticeError ? 'alert' : 'status'} className={`ps-result ${noticeError ? 'ps-result-error' : 'ps-result-ok'}`}>{noticeError ? <AlertTriangle size={16}/> : <Check size={16}/>}<span>{notice}</span></div>}
+      {notice && <div role={noticeError ? 'alert' : 'status'} className={`ps-result ${noticeError ? 'ps-result-error' : 'ps-result-ok'}`}>{noticeError ? <AlertTriangle size={16}/> : <Check size={16}/>}<span>{t(notice)}</span></div>}
       <div data-pagination-list="channels" />
       {page.query.isError ? <div role="alert" className="form-error">{t(psErrorKey(page.query.error))}<button className="button button-secondary" type="button" onClick={() => void page.query.refetch()}>{t('refresh')}</button></div>
         : page.query.isPending ? <p role="status" className="inline-empty">{t('dev.loading')}</p>

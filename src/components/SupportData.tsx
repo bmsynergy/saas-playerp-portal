@@ -11,7 +11,7 @@ import { SupportPage } from '../pages/SupportPage';
 import { assignSupport, defaultSupportFilters, getSupportCounts, getSupportDetail, getSupportList, getSupportStaff, noteSupport, prioritizeSupport, replySupport, setSupportStatus, type SupportFilters, type SupportScope } from '../lib/support';
 
 export function SupportRoute({scope,venueId,venues=[]}:{scope:SupportScope;venueId?:string;venues?:OwnerVenue[]}){
- const {session,expire}=useAuth();const {t,locale}=useLocale();
+ const {session,expire}=useAuth();const {t}=useLocale();
  const [filters,setFilters]=useState<SupportFilters>({...defaultSupportFilters});
  const [selected,setSelected]=useState('');const [busy,setBusy]=useState(false);
  const [mutationError,setMutationError]=useState<string|null>(null);const [notice,setNotice]=useState<string|null>(null);
@@ -26,10 +26,10 @@ export function SupportRoute({scope,venueId,venues=[]}:{scope:SupportScope;venue
  const run=async(action:()=>Promise<unknown>)=>{
    if(mutationLock.current)throw new Error('busy');mutationLock.current=true;setBusy(true);setMutationError(null);setNotice(null);
    try{const result=await action() as {email_sent?:boolean;email_error?:string}|null;
-     setNotice(locale==='es'?'Cambio guardado.':'Change saved.');
-     if(result?.email_error)setNotice(locale==='es'?'Cambio guardado, pero no se pudo enviar el correo.':'Change saved, but the email could not be sent.');
+     setNotice('support.saved');
+     if(result?.email_error)setNotice('support.savedEmailFailed');
      await queryClient.invalidateQueries({queryKey:['support']});
-   }catch(error){setMutationError(t(errorCode(error)));if(errorCode(error)==='sessionExpired')void expire();throw error;}
+   }catch(error){setMutationError(errorCode(error));if(errorCode(error)==='sessionExpired')void expire();throw error;}
    finally{mutationLock.current=false;setBusy(false);}
  };
  const change=(patch:Partial<SupportFilters>)=>{setFilters(current=>({...current,...patch,page:patch.page??1}));};
@@ -42,16 +42,17 @@ export function SupportRoute({scope,venueId,venues=[]}:{scope:SupportScope;venue
    onReply={(body,internal)=>run(()=>internal&&scope==='platform'?noteSupport(selected,body):replySupport(selected,body))}
    onStatus={status=>run(()=>setSupportStatus(selected,status))} onAssign={id=>run(()=>assignSupport(selected,id))} onPriority={priority=>run(()=>prioritizeSupport(selected,priority))}
    assignableStaff={staff.data} staffError={staff.error?t(errorCode(staff.error)):null} onStaffRetry={()=>void staff.refetch()}
-   mutationBusy={busy} mutationError={mutationError} mutationNotice={notice}/>;
+   mutationBusy={busy} mutationError={mutationError ? t(mutationError) : null} mutationNotice={notice ? t(notice) : null}/>;
 }
 export function SupportOverview({venues=[],venueId,scope='venue'}:{venues?:OwnerVenue[];venueId?:string;scope?:SupportScope}){
- const {session}=useAuth();const {locale,t}=useLocale();const es=locale==='es';
+ const {session}=useAuth();const {t,locale}=useLocale();
+ const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
  const counts=useQuery({queryKey:['support','counts',session?.user.id,scope,venueId],queryFn:({signal})=>getSupportCounts(scope,venueId,signal),retry:false,gcTime:0,refetchInterval:60000});
  const href=scope==='platform'?'/admin/support':venueId?`/?venue=${venueId}&section=support`:'/?section=support';
- return <section className="panel" style={{padding:24}} aria-label="Support"><div className="section-heading"><h2>Support</h2><Link className="button button-secondary" to={href}>{es?'Ver tickets':'View tickets'}</Link></div>
- {counts.isPending?<p role="status">{es?'Cargando soporte…':'Loading support…'}</p>:counts.isError?<div role="alert">{t(errorCode(counts.error))} <button className="button button-secondary" onClick={()=>void counts.refetch()}>{es?'Reintentar':'Retry'}</button></div>:<>
- <p>{es?'Activos':'Active'}: <strong>{counts.data.totals.active??0}</strong> · {es?'Pendientes de tu respuesta':'Awaiting your reply'}: <strong>{counts.data.totals.pending??0}</strong> · {es?'No leídos':'Unread'}: <strong>{counts.data.totals.unread??0}</strong></p>
- {scope==='venue'&&!venueId&&counts.data.venues.filter(v=>venues.some(venue=>venue.id===v.venue_id)).map(v=><p key={v.venue_id}><Link to={`/?venue=${v.venue_id}&section=support`}>{v.venue_name}</Link> — {v.active} {es?'activos':'active'} · {v.pending} {es?'pendientes':'pending'} · {v.unread} {es?'no leídos':'unread'}</p>)}
+ return <section className="panel" style={{padding:24}} aria-label={t('support.nav')}><div className="section-heading"><h2>{t('support.nav')}</h2><Link className="button button-secondary" to={href}>{t('support.viewCases')}</Link></div>
+ {counts.isPending?<p role="status">{t('support.loading')}</p>:counts.isError?<div role="alert">{t(errorCode(counts.error))} <button className="button button-secondary" onClick={()=>void counts.refetch()}>{t('retry')}</button></div>:<>
+ <p>{t('support.active')}: <strong>{number.format(counts.data.totals.active??0)}</strong> · {t('support.awaitingReply')}: <strong>{number.format(counts.data.totals.pending??0)}</strong> · {t('support.unread')}: <strong>{number.format(counts.data.totals.unread??0)}</strong></p>
+ {scope==='venue'&&!venueId&&counts.data.venues.filter(v=>venues.some(venue=>venue.id===v.venue_id)).map(v=><p key={v.venue_id}><Link to={`/?venue=${v.venue_id}&section=support`}>{v.venue_name}</Link> — {number.format(v.active)} {t('support.activeLower')} · {number.format(v.pending)} {t('support.pendingLower')} · {number.format(v.unread)} {t('support.unreadLower')}</p>)}
  </>}
  </section>;
 }

@@ -1,0 +1,177 @@
+[
+  {
+    "key": "maintenance.status.error",
+    "value": "Error",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "brand",
+    "value": "PlayERP",
+    "reason": "Product name"
+  },
+  {
+    "key": "printServers",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "printServer",
+    "value": "Print Server",
+    "reason": "Product name"
+  },
+  {
+    "key": "serverCount",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "staff.role.super_admin",
+    "value": "Admin",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "dash.issueError",
+    "value": "Error",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "dash.version",
+    "value": "Firmware",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "ps.nav",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "ps.title",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "ps.col.device",
+    "value": "Print Server",
+    "reason": "Product name"
+  },
+  {
+    "key": "ps.col.state",
+    "value": "Print Server",
+    "reason": "Product name"
+  },
+  {
+    "key": "ps.cardTitle",
+    "value": "Print Server",
+    "reason": "Product name"
+  },
+  {
+    "key": "ps.cert.windowsTitle",
+    "value": "Windows",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "ps.cert.androidTitle",
+    "value": "Android",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "ps.printers.registeredAt",
+    "value": "{name} · {venue} · {ps}",
+    "reason": "Data-only interpolation"
+  },
+  {
+    "key": "ps.jobs.error",
+    "value": "Error",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "fw.tab.firmwares",
+    "value": "Firmwares",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "fw.title",
+    "value": "Firmwares",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "fw.devices",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "ota.ring.canary",
+    "value": "Canary",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "ota.ring.general",
+    "value": "General",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "ota.error",
+    "value": "Error",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "firmware.ring.canary",
+    "value": "Canary",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "firmware.ring.general",
+    "value": "General",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "adminDevice.firmwareTitle",
+    "value": "Firmware",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "psm.listTitle",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "psm.col.firmware",
+    "value": "Firmware",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "psm.serverCount",
+    "value": "{count} Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "stockSheet.firmware",
+    "value": "Firmware",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "stockSheet.count",
+    "value": "Total",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "stockSheet.server",
+    "value": "Print Server",
+    "reason": "Product name"
+  },
+  {
+    "key": "psLink.firmware",
+    "value": "Firmware",
+    "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "pe474.channels.servers",
+    "value": "Print Servers",
+    "reason": "Product name"
+  },
+  {
+    "key": "readiness.item.stripe_connect",
+    "value": "Stripe Connect",
+    "reason": "Technical term, platform name or release channel identifier"
+  }
+]

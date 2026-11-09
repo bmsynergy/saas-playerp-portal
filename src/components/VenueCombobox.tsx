@@ -50,7 +50,7 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
     const timer = window.setTimeout(() => {
       void search(query, includeVenueId ?? value?.id ?? undefined, controller.signal)
         .then(found => { if (request.current === current) setItems(found); })
-        .catch(err => { if (request.current === current && !controller.signal.aborted) setError(t(adminDeviceErrorKey(err))); })
+        .catch(err => { if (request.current === current && !controller.signal.aborted) setError(adminDeviceErrorKey(err)); })
         .finally(() => { if (request.current === current) setLoading(false); });
     }, query ? 250 : 0);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -83,7 +83,7 @@ export function VenueCombobox({ value, onChange, disabled, includeVenueId, testI
         {venue?.assigned_device && <small>{t('inv.venueHasDevice').replace('{serial}', venue.assigned_device.serial)}</small>}
       </button>)}
       {loading && <p role="status">{t('dev.loading')}</p>}
-      {error && <p role="alert" className="form-error">{error}</p>}
+      {error && <p role="alert" className="form-error">{t(error)}</p>}
       {!loading && !error && !items.length && query && <p>{t('inv.noVenues')}</p>}
     </div>, document.body)}
   </div>;

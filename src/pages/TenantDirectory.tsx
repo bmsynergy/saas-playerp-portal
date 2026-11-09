@@ -9,7 +9,8 @@ import { useTenantReadinessList } from '../hooks/useTenantReadinessList';
 import type { Lifecycle } from '../lib/tenantOnboarding';
 
 export function TenantDirectory({ canCreate = false }: { canCreate?: boolean }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US');
   const { filters, set, clear } = useAdminListFilters();
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -30,7 +31,7 @@ export function TenantDirectory({ canCreate = false }: { canCreate?: boolean }) 
   };
   return <div className="page-stack">
     <div className="page-heading"><div><p className="eyebrow">{t('staffArea')}</p><h1>{t('tenantDirectory')}</h1><p>{t('directoryLead')}</p></div>{canCreate ? <Link className="button button-primary" to="/admin/tenants/new" data-testid="new-tenant"><Plus size={17}/>{t('tenantNew.button')}</Link> : <div className="heading-accent" aria-hidden="true"><Building2 size={28}/></div>}</div>
-    <section className="directory-panel"><div className="directory-toolbar"><AdminListFilters id="tenants" filters={filters} set={setFilter} clear={() => { clear(); setPage(1); }} searchPlaceholder={t('searchPlaceholder')} statuses={(['setup_incomplete', 'ready', 'active', 'suspended'] as const).map(value => ({ value, label: t(`readiness.lifecycle.${value}`) }))}/>{result && !list.isError && <span className="directory-count">{result.total}</span>}</div>
+    <section className="directory-panel"><div className="directory-toolbar"><AdminListFilters id="tenants" filters={filters} set={setFilter} clear={() => { clear(); setPage(1); }} searchPlaceholder={t('searchPlaceholder')} statuses={(['setup_incomplete', 'ready', 'active', 'suspended'] as const).map(value => ({ value, label: t(`readiness.lifecycle.${value}`) }))}/>{result && !list.isError && <span className="directory-count">{number.format(result.total)}</span>}</div>
       <div data-pagination-list="tenants" />
       {list.isError ? <div className="form-error" role="alert">{t('genericError')} <button type="button" className="text-link" onClick={() => void list.refetch()}>{t('retry')}</button></div>
         : !result ? <div className="inline-empty" role="status"><span className="spinner"/> {t('loadingTitle')}</div>

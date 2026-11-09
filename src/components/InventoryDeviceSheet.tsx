@@ -9,7 +9,7 @@ import { PS_LINK_STATES, type PsLinkState } from '../lib/psLink';
 import './InventoryDeviceSheet.css';
 
 type Props = { sheet: AdminDeviceSheet; compact?: boolean; hideLabel?: boolean };
-type Item = { key: string; primary: string; secondary?: string | null; date?: string | null; facts?: (string | null | undefined)[] };
+type Item = { key: string; primary: string; secondary?: string | null; date?: string | null; facts?: (string | null | undefined)[]; technical?: (string | null | undefined)[] };
 
 export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false }: Props) {
   const { t, locale } = useLocale();
@@ -49,6 +49,8 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
     return translated === key ? t('stockSheet.empty') : translated;
   };
   const facts = (...values: (string | number | null | undefined)[]) => values.filter((value) => value !== null && value !== undefined && value !== '').map(String);
+  const formatNumber = (value: number) => new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US').format(value);
+  const status = (group: string, value: string | null | undefined) => { if (!value) return t('notProvided'); const key = `${group}.${value}`; const translated = t(key); return translated === key ? t(group === 'ps.jobs.source' ? 'stockSheet.unknownSource' : 'stockSheet.unknownStatus') : translated; };
 
   async function labelAction(action: 'preview' | 'download' | 'print') {
     if (!label || !labelIdentity || busy) return;
@@ -70,12 +72,12 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
   }
 
   const printers: Item[] = sheet.printers.items.map((item, index) => ({ key: item.id || `printer-${index}`, primary: item.label || item.model || item.id || t('notProvided'), secondary: item.model, date: item.last_seen_at, facts: facts(item.location, item.is_active ? t('active') : t('inactive')) }));
-  const scans: Item[] = sheet.scans.items.map((item, index) => ({ key: item.command_id || `scan-${index}`, primary: item.status || t('notProvided'), secondary: item.print_server_id, date: item.completed_at || item.requested_at, facts: facts(item.printers_found, item.error_code) }));
-  const jobs: Item[] = sheet.jobs.recent.map((item, index) => ({ key: item.id || `job-${index}`, primary: item.status || t('notProvided'), secondary: item.source_type, date: item.completed_at || item.created_at, facts: facts(item.printer_id, item.venue_id, item.attempts) }));
-  const operations: Item[] = sheet.operations.map((item, index) => ({ key: item.command_id || `operation-${index}`, primary: item.command_type || t('notProvided'), secondary: item.status, date: item.completed_at || item.requested_at, facts: facts(item.error_code) }));
-  const ota: Item[] = sheet.ota.map((item, index) => ({ key: item.target_id || `ota-${index}`, primary: item.desired_version || t('notProvided'), secondary: item.status, date: item.updated_at || item.issued_at, facts: facts(item.from_version, item.installed_version, item.phase, item.error_code) }));
-  const assignments: Item[] = sheet.assignments.map((item, index) => ({ key: item.print_server_id || `assignment-${index}`, primary: item.venue_name || item.venue_id || t('notProvided'), secondary: item.status, date: item.revoked_at || item.enrolled_at || item.created_at, facts: facts(item.print_server_id, item.revoked_reason, item.software_version) }));
-  const audit: Item[] = sheet.audit.map((item, index) => ({ key: item.id || `audit-${index}`, primary: item.action || t('notProvided'), secondary: item.status, date: item.created_at, facts: facts(item.venue_name, item.reason, item.error, item.print_server_id) }));
+  const scans: Item[] = sheet.scans.items.map((item, index) => ({ key: item.command_id || `scan-${index}`, primary: status('ps.scan.status', item.status), secondary: item.print_server_id, date: item.completed_at || item.requested_at, facts: facts(item.printers_found == null ? null : formatNumber(item.printers_found)), technical: facts(item.status, item.error_code) }));
+  const jobs: Item[] = sheet.jobs.recent.map((item, index) => ({ key: item.id || `job-${index}`, primary: status('ps.jobs.status', item.status), secondary: status('ps.jobs.source', item.source_type), date: item.completed_at || item.created_at, facts: facts(item.printer_id, item.venue_id, formatNumber(item.attempts)), technical: facts(item.status, item.source_type) }));
+  const operations: Item[] = sheet.operations.map((item, index) => ({ key: item.command_id || `operation-${index}`, primary: t('stockSheet.operation'), secondary: status('stockSheet.state', item.status), date: item.completed_at || item.requested_at, technical: facts(item.command_type, item.status, item.error_code) }));
+  const ota: Item[] = sheet.ota.map((item, index) => ({ key: item.target_id || `ota-${index}`, primary: item.desired_version || t('notProvided'), secondary: status('ota.status', item.status), date: item.updated_at || item.issued_at, facts: facts(item.from_version, item.installed_version), technical: facts(item.status, item.phase, item.error_code) }));
+  const assignments: Item[] = sheet.assignments.map((item, index) => ({ key: item.print_server_id || `assignment-${index}`, primary: item.venue_name || item.venue_id || t('notProvided'), secondary: status('stockSheet.state', item.status), date: item.revoked_at || item.enrolled_at || item.created_at, facts: facts(item.print_server_id, item.software_version), technical: facts(item.status, item.revoked_reason) }));
+  const audit: Item[] = sheet.audit.map((item, index) => ({ key: item.id || `audit-${index}`, primary: t('stockSheet.auditEvent'), secondary: status('stockSheet.state', item.status), date: item.created_at, facts: facts(item.venue_name, item.print_server_id), technical: facts(item.action, item.status, item.reason, item.error) }));
 
   function historySection(id: string, title: string, items: Item[], emptyReason?: string | null, lead?: string) {
     return <section className="stock-sheet-section" aria-labelledby={`stock-${id}`} data-testid={`stock-sheet-${id}`}>
@@ -84,7 +86,7 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
       {items.length ? <ol className="stock-sheet-records">{items.map(item => <li key={item.key}>
         <div className="stock-sheet-record-head"><strong>{item.primary}</strong>{item.secondary && <span>{item.secondary}</span>}</div>
         {item.date && <time dateTime={item.date}>{date(item.date)}</time>}
-        {!!item.facts?.length && <div className="stock-sheet-record-facts">{item.facts.filter(Boolean).map((fact, index) => <span key={`${item.key}-${index}`} className="ps-mono">{fact}</span>)}</div>}
+        {!!item.facts?.length && <div className="stock-sheet-record-facts">{item.facts.filter(Boolean).map((fact, index) => <span key={`${item.key}-${index}`} className="ps-mono">{fact}</span>)}</div>}{!!item.technical?.filter(Boolean).length && <details><summary>{t('list.diagnostics')}</summary><div className="stock-sheet-record-facts">{item.technical.filter(Boolean).map((fact, index) => <code key={`${item.key}-tech-${index}`}>{fact}</code>)}</div></details>}
       </li>)}</ol> : <p className="stock-sheet-empty">{reason(emptyReason)}</p>}
     </section>;
   }
@@ -96,7 +98,7 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
     </section></>}
     <div className="stock-sheet-grid">
       {!compact && <section className="stock-sheet-section" aria-labelledby="stock-link"><h2 id="stock-link">{t('stockSheet.link')}</h2>
-        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{(PS_LINK_STATES as readonly string[]).includes(sheet.link.state) ? <PsLinkStateBadge state={sheet.link.state as PsLinkState}/> : sheet.link.state}</dd></div></dl>}
+        {sheet.link.state === 'none' ? <p className="stock-sheet-empty">{reason(sheet.link.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.venue')}</dt><dd>{sheet.link.venue_name || t('stockSheet.noCurrentVenue')}</dd></div><div><dt>{t('stockSheet.server')}</dt><dd className="ps-mono">{sheet.link.print_server_id || t('notProvided')}</dd></div><div><dt>{t('stockSheet.status')}</dt><dd>{(PS_LINK_STATES as readonly string[]).includes(sheet.link.state) ? <PsLinkStateBadge state={sheet.link.state as PsLinkState}/> : <><span>{status('stockSheet.state', sheet.link.state)}</span><details><summary>{t('list.diagnostics')}</summary><code>{sheet.link.state}</code></details></>}</dd></div></dl>}
       </section>}
       {!compact && <section className="stock-sheet-section" aria-labelledby="stock-firmware"><h2 id="stock-firmware">{t('stockSheet.firmware')}</h2>
         {sheet.firmware.last_reported_version ? <dl className="dev-facts"><div><dt>{t('stockSheet.lastReported')}</dt><dd className="ps-mono">{sheet.firmware.last_reported_version}</dd></div><div><dt>{t('stockSheet.lastSeen')}</dt><dd>{date(sheet.firmware.last_seen_at)}</dd></div></dl> : <p className="stock-sheet-empty">{reason(sheet.firmware.reason)}</p>}
@@ -125,9 +127,9 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
     <div className="stock-sheet-grid">
       {historySection('printers', 'stockSheet.printers', printers, sheet.printers.reason)}
       {historySection('scans', 'stockSheet.scans', scans, sheet.scans.reason)}
-      {historySection('jobs', 'stockSheet.jobs', jobs, sheet.jobs.reason, `${t('stockSheet.count')}: ${sheet.jobs.total}`)}
+      {historySection('jobs', 'stockSheet.jobs', jobs, sheet.jobs.reason, `${t('stockSheet.count')}: ${formatNumber(sheet.jobs.total)}`)}
       <section className="stock-sheet-section" aria-labelledby="stock-cert"><h2 id="stock-cert">{t('stockSheet.cert')}</h2>
-        {sheet.cert.status === 'none' ? <p className="stock-sheet-empty">{reason(sheet.cert.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.status')}</dt><dd>{sheet.cert.status}</dd></div><div><dt>{t('ps.hostname')}</dt><dd className="ps-mono">{sheet.cert.hostname}</dd></div><div><dt>{t('stockSheet.date')}</dt><dd>{date(sheet.cert.not_after)}</dd></div></dl>}
+        {sheet.cert.status === 'none' ? <p className="stock-sheet-empty">{reason(sheet.cert.reason)}</p> : <dl className="dev-facts"><div><dt>{t('stockSheet.status')}</dt><dd>{status('stockSheet.certStatus', sheet.cert.status)}<details><summary>{t('list.diagnostics')}</summary><code>{sheet.cert.status}</code></details></dd></div><div><dt>{t('ps.hostname')}</dt><dd className="ps-mono">{sheet.cert.hostname}</dd></div><div><dt>{t('stockSheet.date')}</dt><dd>{date(sheet.cert.not_after)}</dd></div></dl>}
       </section>
       {historySection('operations', 'stockSheet.operations', operations)}
       {historySection('ota', 'stockSheet.ota', ota)}

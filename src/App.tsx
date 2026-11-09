@@ -99,13 +99,13 @@ function MaintenanceRoute() {
     if(busy)return;
     setBusy(true);setMutationError(null);
     try{const data=await setMaintenanceRecipient(userId,enabled);queryClient.setQueryData(recipientKey,data);void overview.refetch();}
-    catch(error){setMutationError(t(errorCode(error)));if(errorCode(error)==='sessionExpired')void expire();throw error;}
+    catch(error){setMutationError(errorCode(error));if(errorCode(error)==='sessionExpired')void expire();throw error;}
     finally{setBusy(false);}
   };
   if(overview.isError&&!overview.data)return <StateView kind={errorCode(overview.error)==='accessDenied'?'denied':'error'} onRetry={()=>void overview.refetch()}/>;
   if(!overview.data)return <StateView kind="loading"/>;
   return <MaintenancePage data={overview.data} recipients={recipients.isError?null:recipients.data??null} recipientsLoading={recipients.isPending}
-    recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError} days={days} onDaysChange={value=>{setDays(value);setPage(1);}}
+    recipientsError={recipients.error?t(errorCode(recipients.error)):null} busy={busy} mutationError={mutationError ? t(mutationError) : null} days={days} onDaysChange={value=>{setDays(value);setPage(1);}}
     show={show} onShowChange={changeShow} query={query} onQueryChange={setQuery} onPageChange={setPage} loading={overview.isFetching||query!==search}
     overviewError={overview.error?t(errorCode(overview.error)):null}
     onRefresh={()=>{void overview.refetch();void recipients.refetch();}} onRecipientsRetry={()=>void recipients.refetch()} onSetRecipient={setRecipient}/>;
@@ -562,8 +562,8 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   const hideOldLabel=staff&&!existingPrepared;
   const [confirm,setConfirm]=useState<{deviceId:string;rev:number;venueName:string}|null>(null);
   const [busy,setBusy]=useState(false);
-  const [error,setError]=useState('');
-  const [notice,setNotice]=useState('');
+  const [error,setError]=useState<{cause:unknown;reload?:boolean}|null>(null);
+  const [notice,setNotice]=useState<{key:string;venue?:string}|null>(null);
   const [readFailed,setReadFailed]=useState(false);
   // A later successful poll clears the read warning without another mutation.
   useEffect(() => {
@@ -586,33 +586,33 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
   const available=(staff?ack.available:[]).filter(item=>!item.retired).map(item=>`${item.version}${item.enabled_rings.length?` (${item.enabled_rings.join(', ')})`: ` (${t('ps469.noRing')})`}`).join(', ');
   async function unlink(){
     if(!confirm||busy||confirm.deviceId!==device.device_id)return;
-    setBusy(true);setError('');setNotice('');
+    setBusy(true);setError(null);setNotice(null);
     try {
       await unlinkDevice(confirm.deviceId,confirm.rev);
       if(!alive.current){await onChanged();return;}
       setConfirm(null);
-      setNotice(t('ps469.unlinked'));
+      setNotice({key:'ps469.unlinked'});
       onCanonicalNavigate(`${device.canonical_path}${venue?`?fromVenue=${encodeURIComponent(venue.id)}`:''}`);
       await onChanged();
     } catch(err) {
       setConfirm(null);
-      setError(psLinkErrorText(err,t,t(errorCode(err)))+' '+t('ps469.reloadNext'));
+      setError({cause:err,reload:true});
       await onChanged().catch(()=>undefined);
     } finally {setBusy(false);}
   }
   async function assign(){
     if(!assignVenue||!device.capabilities.assign.allowed||busy||device.venue)return;
-    setBusy(true);setError('');setNotice('');
+    setBusy(true);setError(null);setNotice(null);
     setReadFailed(false);
     try {
       const result = await saveAssignment(() => assignDevice(device.device_id,assignVenue.id), output => {
         const snapshot = assignedDeviceSnapshot(device, output, assignVenue.name);
         queryClient.setQueriesData<ResolvedDevice>({queryKey:['ps-device-resolve']}, current => current?.device_id === device.device_id ? snapshot : current);
-        setNotice(t('ps469.assigned').replace('{venue}',assignVenue.name));
+        setNotice({key:'ps469.assigned',venue:assignVenue.name});
       }, onChanged);
       setReadFailed(result.readFailed);
     }
-    catch(err){setError(psLinkErrorText(err,t,t(errorCode(err))));}
+    catch(err){setError({cause:err});}
     finally {setBusy(false);}
   }
   return <div className="page-stack staff-page ps469-sheet" data-testid="ps-device-sheet" data-device-id={device.device_id}>
@@ -621,8 +621,8 @@ function PsDeviceSheet({device,staff,scope,back,stale,onChanged,onCanonicalNavig
       <div className="ps469-statuses"><span className={`server-status ${runtime?(runtime.online?'server-online':'server-offline'):'server-pending'}`} data-testid="ps-connection-state"><span className="badge-dot"/>{runtime?t(runtime.online?'ps.state.online':'ps.state.offline'):t('ps469.noRuntime')}</span><PsLinkStateBadge state={device.link.state}/></div>
     </header>
     {(readFailed||stale)&&<div className="staff-notice ps-read-warning" role="status" data-testid="ps-assignment-read-warning"><span>{t('psAssignment.readWarning')}</span><button type="button" className="button button-secondary" disabled={busy} onClick={()=>void retryRead()}>{t('psAssignment.readRetry')}</button></div>}
-    {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{error}</p>}
-    {notice&&<p className="staff-notice" role="status">{notice}</p>}
+    {error&&<p className="form-error" role="alert" data-testid="ps-unlink-error"><AlertTriangle size={17}/>{psLinkErrorText(error.cause,t,t(errorCode(error.cause)))}{error.reload && ` ${t('ps469.reloadNext')}`}</p>}
+    {notice&&<p className="staff-notice" role="status">{t(notice.key).replace('{venue}',notice.venue??'')}</p>}
     <nav className="ps469-sections" aria-label={t('ps469.sections')}>
       <a href="#ps469-overview">{t('ps469.summary')}</a>
       {setup&&<a href="#ps469-installation">{t('ps600.installation')}</a>}

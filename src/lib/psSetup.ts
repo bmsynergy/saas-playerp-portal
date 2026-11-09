@@ -32,5 +32,5 @@ export function pickBootableImage(kits: InstallKit[]): InstallKit | null {
   return kits.filter(kit => kit.kind === 'bootable_image').sort((a, b) => at(b) - at(a))[0] ?? null;
 }
 
-export const setupFileSize = (bytes: number | null, missing: string) => bytes === null ? missing : `${(bytes / 1048576).toFixed(1)} MB`;
+export const setupFileSize = (bytes: number | null, missing: string, locale: 'en' | 'es' = 'en') => bytes === null ? missing : `${new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(bytes / 1048576)} MB`;
 export const shaCommand = (fileName: string) => `shasum -a 256 ${fileName}`;
