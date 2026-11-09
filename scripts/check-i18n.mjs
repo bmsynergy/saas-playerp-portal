@@ -95,7 +95,7 @@ export function audit() {
   }
   const sharedValues=JSON.parse(fs.readFileSync(path.join(root,'scripts/i18n-shared-values.json'),'utf8'));
   for (const [key,value] of Object.entries(en)) {
-    if (value===es[key] && /[a-z]{3}/i.test(value) && !sharedValues.some(e=>e.key===key&&e.value===value&&e.reason?.trim())) problems.push(`main: identical EN/ES copy needs translation or a documented technical-name exception: ${key}`);
+    if (value===es[key] && /[a-z]{2}/i.test(value) && !sharedValues.some(e=>e.key===key&&e.value===value&&e.reason?.trim())) problems.push(`main: identical EN/ES copy needs translation or a documented technical-name exception: ${key}`);
   }
   for (const entry of sharedValues) if (en[entry.key]!==entry.value || es[entry.key]!==entry.value) problems.push(`Stale shared-value exception: ${entry.key}`);
   const exceptions = JSON.parse(fs.readFileSync(path.join(root,'scripts/i18n-exceptions.json'),'utf8'));

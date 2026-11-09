@@ -173,5 +173,30 @@
     "key": "readiness.item.stripe_connect",
     "value": "Stripe Connect",
     "reason": "Technical term, platform name or release channel identifier"
+  },
+  {
+    "key": "ps.deviceIdentifier",
+    "value": "ID: {id}",
+    "reason": "Identifier abbreviation and runtime data"
+  },
+  {
+    "key": "ps.no",
+    "value": "No",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "dev.onlineNo",
+    "value": "No",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "legacy.no",
+    "value": "No",
+    "reason": "Same spelling in English and Spanish"
+  },
+  {
+    "key": "legacy.wifi.title",
+    "value": "Wi-Fi",
+    "reason": "Wireless protocol name"
   }
 ]

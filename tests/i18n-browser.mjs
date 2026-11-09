@@ -60,6 +60,7 @@ async function capture(page,name){
  assert(!body.includes('UNTRANSLATED_BACKEND_SENTINEL'));
  const visibleKeys=Object.keys(dictionaries.en).filter(key=>key.includes('.')&&body.split(/\s+/).includes(key));
  assert.deepEqual(visibleKeys,[],'visible translation keys');
+ await page.evaluate(()=>window.scrollTo(0,0));
  const file=`${name}.png`;await page.screenshot({path:`${out}/${file}`,fullPage:true});report.screenshots.push(file);
 }
 async function switchScope(page,scope,lang){await page.locator('.account-trigger').click();await page.locator('.account-popover').getByRole('link',{name:dictionaries[lang][scope==='owner'?'switchOwner':'switchAdmin'],exact:true}).click();}

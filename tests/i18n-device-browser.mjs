@@ -76,6 +76,7 @@ try{
   await expect(diag.locator('details')).toHaveCount(0);
   await page.locator('a[href="#ps469-overview"]').click();
   const measures=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.equal(measures.width,measures.scrollWidth);
+  await page.evaluate(()=>window.scrollTo(0,0));
   const shot=`${role}-${lang}-${width}.png`;await page.screenshot({path:`${out}/${shot}`,fullPage:true});
   report.views.push({role,lang,...measures,about:true,diagnosticDisclosure:true,portalUrl:s.url,adminControls:role==='admin',screenshot:shot});
   const other=lang==='es'?'en':'es';
