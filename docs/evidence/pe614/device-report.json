@@ -1,0 +1,173 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "kind": "Synthetic intercepted fixtures; no LAN validation or real backend writes",
+  "views": [
+    {
+      "role": "owner",
+      "lang": "en",
+      "width": 390,
+      "scrollWidth": 390,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": false,
+      "screenshot": "owner-en-390.png"
+    },
+    {
+      "role": "owner",
+      "lang": "en",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": false
+    },
+    {
+      "role": "owner",
+      "lang": "es",
+      "width": 390,
+      "scrollWidth": 390,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": false
+    },
+    {
+      "role": "owner",
+      "lang": "es",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": false,
+      "screenshot": "owner-es-1440.png"
+    },
+    {
+      "role": "admin",
+      "lang": "en",
+      "width": 390,
+      "scrollWidth": 390,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": true
+    },
+    {
+      "role": "admin",
+      "lang": "en",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": true,
+      "screenshot": "admin-en-1440.png"
+    },
+    {
+      "role": "admin",
+      "lang": "es",
+      "width": 390,
+      "scrollWidth": 390,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": true,
+      "screenshot": "admin-es-390.png"
+    },
+    {
+      "role": "admin",
+      "lang": "es",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "about": true,
+      "diagnosticDisclosure": true,
+      "portalUrl": "https://playerp-ps-test6034.local:8443/",
+      "adminControls": true
+    }
+  ],
+  "states": [
+    {
+      "role": "owner",
+      "width": 390,
+      "from": "en",
+      "to": "es",
+      "withoutReload": true
+    },
+    {
+      "role": "owner",
+      "width": 1440,
+      "from": "en",
+      "to": "es",
+      "withoutReload": true
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "from": "es",
+      "to": "en",
+      "withoutReload": true
+    },
+    {
+      "role": "owner",
+      "width": 1440,
+      "from": "es",
+      "to": "en",
+      "withoutReload": true
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "from": "en",
+      "to": "es",
+      "withoutReload": true
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "unknownNextStep": "localized fallback"
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "from": "en",
+      "to": "es",
+      "withoutReload": true
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "unknownNextStep": "localized fallback"
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "from": "es",
+      "to": "en",
+      "withoutReload": true
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "unknownNextStep": "localized fallback"
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "from": "es",
+      "to": "en",
+      "withoutReload": true
+    },
+    {
+      "role": "admin",
+      "width": 1440,
+      "unknownNextStep": "localized fallback"
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "pass": true,
+  "tested_commit": "939e41d0a3621c65f3ee06b910f199a988fcf1e3",
+  "captured_at": "2026-11-09T02:05:00Z"
+}

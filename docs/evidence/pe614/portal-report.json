@@ -1,0 +1,29 @@
+{
+  "origin": "https://playerp.dev.bmore.app",
+  "backend": "Synthetic intercepted Auth/API responses; real deployed frontend when origin is DEV. No live permission or backend mutation claims.",
+  "checks": [
+    "Admin EN→ES without reload; explicit lang URL, reload, 1440px navigation",
+    "Staff full EN/ES, confirmation dialogs and date formatting 1440px",
+    "Support thread, user data preserved, error and success retranslate 1440px",
+    "Owner EN/ES, locale numbers, navigation/reload and owner↔admin persistence 1440px",
+    "Support empty/error states retranslate 1440px",
+    "Admin EN→ES without reload; explicit lang URL, reload, 390px navigation",
+    "Staff full EN/ES, confirmation dialogs and date formatting 390px",
+    "Support thread, user data preserved, error and success retranslate 390px",
+    "Owner EN/ES, locale numbers, navigation/reload and owner↔admin persistence 390px",
+    "Support empty/error states retranslate 390px",
+    "Support-only role retains translated access"
+  ],
+  "screenshots": [
+    "staff-1440-en.png",
+    "staff-390-es.png",
+    "owner-support-1440-es.png",
+    "owner-support-390-en.png"
+  ],
+  "errors": [],
+  "unexpected": [],
+  "passed": true,
+  "tested_commit": "939e41d0a3621c65f3ee06b910f199a988fcf1e3",
+  "captured_at": "2026-11-09T02:05:00Z",
+  "captured_screenshot_count": 23
+}
