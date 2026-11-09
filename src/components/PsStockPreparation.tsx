@@ -106,12 +106,16 @@ export function PsStockPreparation({ deviceId, onChanged }: Props) {
     if (!canLabel || busy) return;
     const generation = labelGeneration.current, requestedDevice = deviceId;
     setBusy('label'); setError('');
+    // An old preview is no longer authoritative once a fresh credential read starts.
+    labelPrintRef.current?.abort();
+    if (labelUrlRef.current) URL.revokeObjectURL(labelUrlRef.current);
+    labelUrlRef.current = null; setLabelUrl(null); setLabel(null);
     try {
       const freshStatus = await status.refetch();
       const fresh = freshStatus.data?.stock;
       if (freshStatus.isError || !fresh?.label_ready || !fresh.checks.credentials_confirmed_by_device || !['validated_in_stock', 'validated_assigned'].includes(fresh.state)) throw new Error('label_unavailable');
       const current = await getStockLabel(requestedDevice);
-      const data: LabelData = { deviceId: requestedDevice, serial: current.serial, ssid: current.ssid, password: current.psk, appliedAt: null, confirmation: 'stock_rpc' };
+      const data: LabelData = { deviceId: requestedDevice, serial: current.serial, ssid: current.ssid, password: current.psk, appliedAt: null, adminCode: current.admin_code, adminCodeAppliedAt: null, confirmation: 'stock_rpc' };
       const blob = await generateLabelPng(data, locale);
       if (generation !== labelGeneration.current || requestedDevice !== deviceId) return;
       if (action === 'view') {

@@ -24,13 +24,14 @@ export function PrintServerLabel({ venueId, printServerId = null, userId, sheet,
   const data = state?.ready && state.label ? state.label : null;
   const fingerprint = data ? labelFingerprint(data) : null;
   // A sheet update or rotation hides a preview during render, before effects run.
-  const scope = JSON.stringify([userId, venueId, printServerId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, pendingWifi, accessLost, sheetUnavailable, locale]);
+  const scope = JSON.stringify([userId, venueId, printServerId, sheet?.device?.id, sheet?.credentialAccess, sheet?.appliedWifi?.ssid, sheet?.appliedWifi?.psk, sheet?.appliedWifi?.applied_at, sheet?.appliedAdminCode?.code, sheet?.appliedAdminCode?.applied_at, pendingWifi, accessLost, sheetUnavailable, locale]);
   const sheetAllows = !!sheet?.credentialAccess && !!sheet.device && sheet.device.id === data?.deviceId
-    && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt;
+    && sheet.appliedWifi?.ssid === data?.ssid && sheet.appliedWifi?.psk === data?.password && sheet.appliedWifi?.applied_at === data?.appliedAt && sheet.appliedAdminCode?.code === data?.adminCode && sheet.appliedAdminCode?.applied_at === data?.adminCodeAppliedAt;
   const ready = !!data && !accessLost && !sheetUnavailable && sheetAllows && !wifiPending && !labelQuery.isError && !labelQuery.isPending && !stale;
   const latestWifi = sheet ? latestRotation(sheet.rotations, 'wifi') : null;
-  const replacementReady = ready && latestWifi?.status === 'applied' && !!sheet?.appliedWifi
-    && !!latestWifi.requested_at && Date.parse(sheet.appliedWifi.applied_at) >= Date.parse(latestWifi.requested_at);
+  const latestCode = sheet ? latestRotation(sheet.rotations, 'admin_code') : null;
+  const replacementReady = ready && ((latestCode?.status === 'applied' && !!sheet?.appliedAdminCode && !!latestCode.requested_at && Date.parse(sheet.appliedAdminCode.applied_at) >= Date.parse(latestCode.requested_at)) || latestWifi?.status === 'applied' && !!sheet?.appliedWifi
+    && !!latestWifi.requested_at && Date.parse(sheet.appliedWifi.applied_at) >= Date.parse(latestWifi.requested_at));
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);
   const mounted = useRef(false);

@@ -1,8 +1,8 @@
 import { labelText } from '../locales/label';
 import QRCode from 'qrcode';
-import { confirmedAt, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from './psDevice';
+import { confirmedAt, validAdminCode, validRecoveryWifi, wifiQrPayload, type DeviceSheet } from './psDevice';
 
-export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string | null; confirmation?: 'stock_rpc' };
+export type LabelData = { deviceId: string; serial: string; ssid: string; password: string; appliedAt: string | null; adminCode: string; adminCodeAppliedAt: string | null; confirmation?: 'stock_rpc' };
 export const LABEL_WIDTH = 590;
 export const LABEL_HEIGHT = 354;
 export const LABEL_PPM = 11800; // 590 × 354 pixels are exactly 50 × 30 mm.
@@ -10,17 +10,17 @@ export const LABEL_MARGIN = 20;
 export const LABEL_STEPS = labelText;
 
 function validLabel(d: LabelData): boolean {
-  return !/pse_|pst_|PRIVATE\s+KEY/i.test(d.ssid + d.password) && !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && (d.confirmation === 'stock_rpc' || !!confirmedAt(d.appliedAt));
+  return !/pse_|pst_|sb_secret_|sb_publishable_|PRIVATE\s+KEY/i.test(d.ssid + d.password + d.adminCode) && validAdminCode(d.adminCode) && !!d.deviceId && /^PS-[A-Z0-9]{8}$/.test(d.serial) && validRecoveryWifi(d.ssid, d.password) && (d.confirmation === 'stock_rpc' || (!!confirmedAt(d.appliedAt) && !!confirmedAt(d.adminCodeAppliedAt)));
 }
 export function labelDataFromSheet(sheet: DeviceSheet): LabelData | null {
-  const d = sheet.device, w = sheet.appliedWifi;
-  if (!sheet.credentialAccess || !d || !w || d.status !== 'assigned') return null;
-  const label = { deviceId: d.id, serial: d.serial, ssid: w.ssid, password: w.psk, appliedAt: w.applied_at };
+  const d = sheet.device, w = sheet.appliedWifi, a = sheet.appliedAdminCode;
+  if (!sheet.credentialAccess || !d || !w || !a || d.status !== 'assigned') return null;
+  const label = { deviceId: d.id, serial: d.serial, ssid: w.ssid, password: w.psk, appliedAt: w.applied_at, adminCode: a.code, adminCodeAppliedAt: a.applied_at };
   return validLabel(label) ? label : null;
 }
-// In-memory comparison only. Never persist or log this value: it contains the human Wi-Fi secret.
+// In-memory comparison only. Never persist or log this value: it contains the human Wi-Fi and maintenance secrets.
 export function labelFingerprint(data: LabelData): string {
-  return JSON.stringify([data.deviceId, data.serial, data.ssid, data.password, data.appliedAt, data.confirmation]);
+  return JSON.stringify([data.deviceId, data.serial, data.ssid, data.password, data.appliedAt, data.adminCode, data.adminCodeAppliedAt, data.confirmation]);
 }
 export function labelFilename(data: LabelData): string {
   if (!validLabel(data)) throw new Error('label_unavailable');
@@ -103,10 +103,12 @@ export async function generateLabelPng(data: LabelData, language: 'en' | 'es' = 
   // Text stays clear of the four-module quiet zone, which reaches the right/bottom edge.
   const textWidth = quietX - left - 12;
   if (textWidth <= 0) throw new Error('label_does_not_fit');
-  line(copy.password, 146, '16px Arial, sans-serif', left, textWidth);
-  line(data.password, 205, 'bold 52px monospace', left, textWidth);
-  line(copy.connect, 256, '16px Arial, sans-serif', left, textWidth);
-  line(copy.open, 278, '16px Arial, sans-serif', left, textWidth);
+  line(copy.password, 143, '16px Arial, sans-serif', left, textWidth);
+  line(data.password, 190, 'bold 48px monospace', left, textWidth);
+  line(copy.maintenance, 218, '16px Arial, sans-serif', left, textWidth);
+  line(data.adminCode, 246, 'bold 24px monospace', left, textWidth);
+  line(copy.connect, 274, '16px Arial, sans-serif', left, textWidth);
+  line(copy.open, 295, '16px Arial, sans-serif', left, textWidth);
   line('http://10.77.0.1', 329, 'bold 26px Arial, sans-serif', left, textWidth);
   ctx.imageSmoothingEnabled = false;
   for (let row = 0; row < qr.modules.size; row++) {

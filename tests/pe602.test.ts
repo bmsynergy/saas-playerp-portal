@@ -57,7 +57,7 @@ describe('PE-602 label credential boundary', () => {
   });
   it('requires applied confirmation or successful stock RPC confirmation; refuses technical material', async () => {
     const { labelFilename } = await import('../src/lib/psLabel');
-    const d = { deviceId:'fixture', serial:'PS-TEST602A', ssid:'Test WiFi', password:'0123456789', appliedAt:null };
+    const d = { deviceId:'fixture', serial:'PS-TEST602A', ssid:'Test WiFi', password:'0123456789', appliedAt:null, adminCode:'TEST1-TEST2', adminCodeAppliedAt:null };
     expect(() => labelFilename(d)).toThrow('label_unavailable');
     expect(labelFilename({...d, confirmation:'stock_rpc'})).toBe('PS-TEST602A-50x30mm.png');
     for (const ssid of ['pse_test','pst_test','PRIVATE KEY']) expect(() => labelFilename({...d, ssid, confirmation:'stock_rpc'})).toThrow();

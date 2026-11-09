@@ -1,0 +1,38 @@
+{
+  "origin": "http://127.0.0.1:18799",
+  "backend": "All backend/auth requests intercepted; zero real mutations or device operations",
+  "checks": [
+    "en: stock preview and PNG download; missing maintenance code produces no partial label; device unconfirmed disables all label actions; no print called",
+    "es: stock preview and PNG download; missing maintenance code produces no partial label; device unconfirmed disables all label actions; no print called"
+  ],
+  "downloads": [
+    {
+      "file": "stock-en.png",
+      "filename": "PS-TEST602A-50x30mm.png",
+      "header": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "qr": "exact Wi-Fi fixture payload decoded"
+    },
+    {
+      "file": "stock-es.png",
+      "filename": "PS-TEST602A-50x30mm.png",
+      "header": "89504e470d0a1a0a",
+      "width": 590,
+      "height": 354,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "qr": "exact Wi-Fi fixture payload decoded"
+    }
+  ],
+  "errors": [],
+  "unexpected": []
+}

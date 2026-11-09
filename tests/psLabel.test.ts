@@ -28,7 +28,7 @@ describe('PE-411 applied-only credentials and label boundary', () => {
       expect(sheet.appliedWifi).toBeNull(); expect(sheet.appliedAdminCode).toBeNull(); expect(labelDataFromSheet(sheet)).toBeNull();
     }
     const wifiOnly = projectDeviceSheet({...r,wifi:{...r.wifi,admin_code_applied_at:null}});
-    expect(wifiOnly.appliedAdminCode).toBeNull(); expect(labelDataFromSheet(wifiOnly)).not.toBeNull();
+    expect(wifiOnly.appliedAdminCode).toBeNull(); expect(labelDataFromSheet(wifiOnly)).toBeNull();
     const codeOnly = projectDeviceSheet({...r,wifi:{...r.wifi,wifi_applied_at:null}});
     expect(codeOnly.appliedAdminCode).not.toBeNull(); expect(labelDataFromSheet(codeOnly)).toBeNull();
   });
@@ -40,12 +40,14 @@ describe('PE-411 applied-only credentials and label boundary', () => {
     }
     const next=labelDataFromSheet(projectDeviceSheet({...r,wifi:{...r.wifi,psk:'9876543210',wifi_applied_at:'2026-01-02T00:00:00Z'}}))!;
     expect(labelFingerprint(next)).not.toBe(labelFingerprint(original));
+    const rotatedCode = labelDataFromSheet(projectDeviceSheet({...r, wifi:{...r.wifi,admin_code:'TEST1-TEST2',admin_code_applied_at:'2026-01-02T00:00:00Z'}}))!;
+    expect(labelFingerprint(rotatedCode)).not.toBe(labelFingerprint(original));
   });
   it('blocks absent/stock devices and malformed essential fields without truncating a 32-byte SSID', () => {
     const r=raw(), label=labelDataFromSheet(projectDeviceSheet(r))!;
     expect(new TextEncoder().encode(label.ssid)).toHaveLength(32);
     expect(labelFilename(label)).toBe('PS-XXXXXXXX-50x30mm.png');
-    expect(label).not.toHaveProperty('admin_code'); expect(label).not.toHaveProperty('code');
+    expect(label.adminCode).toBe(r.wifi.admin_code); expect(label.adminCodeAppliedAt).toBe(at);
     for (const wifi of [{...r.wifi,ssid:'W'.repeat(33)},{...r.wifi,ssid:'x\n'},{...r.wifi,ssid:'é'.repeat(17)},{...r.wifi,psk:'12345'},{...r.wifi,psk:'12345ABCDE'}]) {
       expect(labelDataFromSheet(projectDeviceSheet({...r,wifi}))).toBeNull();
     }

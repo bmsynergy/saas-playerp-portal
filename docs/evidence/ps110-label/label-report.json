@@ -1,0 +1,1510 @@
+{
+  "pass": true,
+  "physicalCamera": "Pending Beny: digital decode and 203dpi resampling do not prove thermal scanning",
+  "overflowBlocks": {
+    "ssid": true,
+    "maintenanceCode": true
+  },
+  "results": [
+    {
+      "file": "label-en-canonical.png",
+      "locale": "en",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 22,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "PlayERP-Setup-TEST607A",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 503.314453125,
+          "left": 23,
+          "right": 523.4365234375,
+          "top": 82,
+          "bottom": 118
+        },
+        {
+          "value": "Password",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 21,
+          "right": 89.3515625,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Maintenance code",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 130.7578125,
+          "left": 21,
+          "right": 150.859375,
+          "top": 206,
+          "bottom": 218
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Connect to Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 119.140625,
+          "left": 20,
+          "right": 138.5859375,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Open in browser",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 117.390625,
+          "left": 20,
+          "right": 138.0625,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-en-ascii32.png",
+      "locale": "en",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+          "x": 20,
+          "y": 110,
+          "font": "bold 28px monospace",
+          "width": 539.4375,
+          "left": 20,
+          "right": 559.580078125,
+          "top": 89,
+          "bottom": 110
+        },
+        {
+          "value": "Password",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 21,
+          "right": 89.3515625,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Maintenance code",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 130.7578125,
+          "left": 21,
+          "right": 150.859375,
+          "top": 206,
+          "bottom": 218
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Connect to Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 119.140625,
+          "left": 20,
+          "right": 138.5859375,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Open in browser",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 117.390625,
+          "left": 20,
+          "right": 138.0625,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-en-escaped32.png",
+      "locale": "en",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 164,
+      "qrIncludingQuietPixels": 196,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "qrVersion": 6,
+      "errorCorrection": "M",
+      "integerScale": 4,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;",
+          "x": 20,
+          "y": 110,
+          "font": "bold 28px monospace",
+          "width": 539.4375,
+          "left": 21,
+          "right": 553.580078125,
+          "top": 89,
+          "bottom": 114
+        },
+        {
+          "value": "Password",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 21,
+          "right": 89.3515625,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Maintenance code",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 130.7578125,
+          "left": 21,
+          "right": 150.859375,
+          "top": 206,
+          "bottom": 218
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Connect to Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 119.140625,
+          "left": 20,
+          "right": 138.5859375,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Open in browser",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 117.390625,
+          "left": 20,
+          "right": 138.0625,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-en-utf8-2byte.png",
+      "locale": "en",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "éééééééééééééééé",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 366.046875,
+          "left": 21,
+          "right": 385.1689453125,
+          "top": 80,
+          "bottom": 111
+        },
+        {
+          "value": "Password",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 21,
+          "right": 89.3515625,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Maintenance code",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 130.7578125,
+          "left": 21,
+          "right": 150.859375,
+          "top": 206,
+          "bottom": 218
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Connect to Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 119.140625,
+          "left": 20,
+          "right": 138.5859375,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Open in browser",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 117.390625,
+          "left": 20,
+          "right": 138.0625,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-en-utf8-3byte.png",
+      "locale": "en",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 30,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "中中中中中中中中中中",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 380,
+          "left": 21,
+          "right": 396,
+          "top": 78,
+          "bottom": 115
+        },
+        {
+          "value": "Password",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 70.25,
+          "left": 21,
+          "right": 89.3515625,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Maintenance code",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 130.7578125,
+          "left": 21,
+          "right": 150.859375,
+          "top": 206,
+          "bottom": 218
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Connect to Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 119.140625,
+          "left": 20,
+          "right": 138.5859375,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Open in browser",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 117.390625,
+          "left": 20,
+          "right": 138.0625,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-es-canonical.png",
+      "locale": "es",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 22,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:PlayERP-Setup-TEST607A;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "PlayERP-Setup-TEST607A",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 503.314453125,
+          "left": 23,
+          "right": 523.4365234375,
+          "top": 82,
+          "bottom": 118
+        },
+        {
+          "value": "Clave",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 20,
+          "right": 61.0078125,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Código de mantenimiento",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 182.3359375,
+          "left": 20,
+          "right": 202.4375,
+          "top": 206,
+          "bottom": 221
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Conéctate al Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 131.59375,
+          "left": 20,
+          "right": 151.0390625,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Abre en el navegador",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 153,
+          "left": 20,
+          "right": 173.671875,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-es-ascii32.png",
+      "locale": "es",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+          "x": 20,
+          "y": 110,
+          "font": "bold 28px monospace",
+          "width": 539.4375,
+          "left": 20,
+          "right": 559.580078125,
+          "top": 89,
+          "bottom": 110
+        },
+        {
+          "value": "Clave",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 20,
+          "right": 61.0078125,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Código de mantenimiento",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 182.3359375,
+          "left": 20,
+          "right": 202.4375,
+          "top": 206,
+          "bottom": 221
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Conéctate al Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 131.59375,
+          "left": 20,
+          "right": 151.0390625,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Abre en el navegador",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 153,
+          "left": 20,
+          "right": 173.671875,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-es-escaped32.png",
+      "locale": "es",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 164,
+      "qrIncludingQuietPixels": 196,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;\\,\\:\\\"\\\\\\;;P:0123456789;;",
+      "qrVersion": 6,
+      "errorCorrection": "M",
+      "integerScale": 4,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;,:\"\\;",
+          "x": 20,
+          "y": 110,
+          "font": "bold 28px monospace",
+          "width": 539.4375,
+          "left": 21,
+          "right": 553.580078125,
+          "top": 89,
+          "bottom": 114
+        },
+        {
+          "value": "Clave",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 20,
+          "right": 61.0078125,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Código de mantenimiento",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 182.3359375,
+          "left": 20,
+          "right": 202.4375,
+          "top": 206,
+          "bottom": 221
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Conéctate al Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 131.59375,
+          "left": 20,
+          "right": 151.0390625,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Abre en el navegador",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 153,
+          "left": 20,
+          "right": 173.671875,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-es-utf8-2byte.png",
+      "locale": "es",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 32,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:éééééééééééééééé;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "éééééééééééééééé",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 366.046875,
+          "left": 21,
+          "right": 385.1689453125,
+          "top": 80,
+          "bottom": 111
+        },
+        {
+          "value": "Clave",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 20,
+          "right": 61.0078125,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Código de mantenimiento",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 182.3359375,
+          "left": 20,
+          "right": 202.4375,
+          "top": 206,
+          "bottom": 221
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Conéctate al Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 131.59375,
+          "left": 20,
+          "right": 151.0390625,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Abre en el navegador",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 153,
+          "left": 20,
+          "right": 173.671875,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    },
+    {
+      "file": "label-es-utf8-3byte.png",
+      "locale": "es",
+      "maintenanceCode": "TEST1-TEST2",
+      "ssidBytes": 30,
+      "width": 590,
+      "height": 354,
+      "physicalMm": [
+        50,
+        30
+      ],
+      "qrBlackPixels": 165,
+      "qrIncludingQuietPixels": 205,
+      "pHYs": [
+        11800,
+        11800,
+        1
+      ],
+      "decoded300": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "decoded203": "WIFI:T:WPA;S:中中中中中中中中中中;P:0123456789;;",
+      "qrVersion": 4,
+      "errorCorrection": "M",
+      "integerScale": 5,
+      "quietZone": 4,
+      "quietZonePixelCheck": true,
+      "safeMargin": 20,
+      "texts": [
+        {
+          "value": "PlayERP",
+          "x": 20,
+          "y": 43,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 106.9453125,
+          "left": 21,
+          "right": 126.603515625,
+          "top": 24,
+          "bottom": 48
+        },
+        {
+          "value": "PS-TEST607A",
+          "x": 424.3037109375,
+          "y": 43,
+          "font": "bold 22px monospace",
+          "width": 145.6962890625,
+          "left": 425.3037109375,
+          "right": 569.7548828125,
+          "top": 27,
+          "bottom": 43
+        },
+        {
+          "value": "Wi-Fi",
+          "x": 20,
+          "y": 68,
+          "font": "16px Arial, sans-serif",
+          "width": 37.3125,
+          "left": 20,
+          "right": 56.7578125,
+          "top": 56,
+          "bottom": 68
+        },
+        {
+          "value": "中中中中中中中中中中",
+          "x": 20,
+          "y": 110,
+          "font": "bold 38px monospace",
+          "width": 380,
+          "left": 21,
+          "right": 396,
+          "top": 78,
+          "bottom": 115
+        },
+        {
+          "value": "Clave",
+          "x": 20,
+          "y": 143,
+          "font": "16px Arial, sans-serif",
+          "width": 40.90625,
+          "left": 20,
+          "right": 61.0078125,
+          "top": 131,
+          "bottom": 143
+        },
+        {
+          "value": "0123456789",
+          "x": 20,
+          "y": 190,
+          "font": "bold 48px monospace",
+          "width": 288.984375,
+          "left": 22,
+          "right": 306.0859375,
+          "top": 154,
+          "bottom": 191
+        },
+        {
+          "value": "Código de mantenimiento",
+          "x": 20,
+          "y": 218,
+          "font": "16px Arial, sans-serif",
+          "width": 182.3359375,
+          "left": 20,
+          "right": 202.4375,
+          "top": 206,
+          "bottom": 221
+        },
+        {
+          "value": "TEST1-TEST2",
+          "x": 20,
+          "y": 246,
+          "font": "bold 24px monospace",
+          "width": 158.94140625,
+          "left": 21,
+          "right": 177.4921875,
+          "top": 228,
+          "bottom": 246
+        },
+        {
+          "value": "Conéctate al Wi-Fi",
+          "x": 20,
+          "y": 274,
+          "font": "16px Arial, sans-serif",
+          "width": 131.59375,
+          "left": 20,
+          "right": 151.0390625,
+          "top": 262,
+          "bottom": 274
+        },
+        {
+          "value": "Abre en el navegador",
+          "x": 20,
+          "y": 295,
+          "font": "16px Arial, sans-serif",
+          "width": 153,
+          "left": 20,
+          "right": 173.671875,
+          "top": 283,
+          "bottom": 298
+        },
+        {
+          "value": "http://10.77.0.1",
+          "x": 20,
+          "y": 329,
+          "font": "bold 26px Arial, sans-serif",
+          "width": 180.6162109375,
+          "left": 21,
+          "right": 200.15625,
+          "top": 310,
+          "bottom": 334
+        }
+      ]
+    }
+  ]
+}

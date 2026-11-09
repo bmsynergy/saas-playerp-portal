@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Eye, EyeOff, Printer } from 'lucide-react';
 import type { AdminDeviceSheet } from '../lib/psAdminDeviceSheet';
-import { generateLabelPng, labelFilename, printLabel, type LabelData } from '../lib/psLabel';
+import { generateLabelPng, labelFilename, printLabel, labelFingerprint, type LabelData } from '../lib/psLabel';
 import { useLocale } from '../locales';
 import { InventoryDeviceIdentity } from './InventoryDeviceIdentity';
 import { PsLinkStateBadge } from './PsLinkStateBadge';
@@ -23,13 +23,13 @@ export function InventoryDeviceSheet({ sheet, compact = false, hideLabel = false
   const device = sheet.device;
   const wifi = sheet.credentials.wifi;
   const adminCode = sheet.credentials.admin_code;
-  const label: LabelData | null = sheet.label.ready && sheet.label.label && wifi &&
+  const label: LabelData | null = sheet.label.ready && sheet.label.label && wifi && adminCode?.code && adminCode.applied_at && !sheet.credentials.pending_change &&
     sheet.label.label.device_id === device.id && sheet.label.label.serial === device.serial &&
     sheet.label.label.ssid === wifi.ssid && sheet.label.label.psk === wifi.psk &&
     sheet.label.label.wifi_applied_at === wifi.applied_at
-    ? { deviceId: device.id, serial: device.serial, ssid: wifi.ssid, password: wifi.psk, appliedAt: wifi.applied_at }
+    ? { deviceId: device.id, serial: device.serial, ssid: wifi.ssid, password: wifi.psk, appliedAt: wifi.applied_at, adminCode: adminCode.code, adminCodeAppliedAt: adminCode.applied_at }
     : null;
-  const labelIdentity = label ? JSON.stringify([label.deviceId, label.serial, label.ssid, label.password, label.appliedAt, locale]) : null;
+  const labelIdentity = label ? JSON.stringify([labelFingerprint(label), locale]) : null;
   currentIdentity.current = labelIdentity;
 
   useEffect(() => {

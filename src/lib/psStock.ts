@@ -1,3 +1,4 @@
+import { validAdminCode } from './psDevice';
 import { supabase } from './supabase';
 import { SUPABASE_URL, SUPABASE_PUBLIC_KEY } from './config';
 import { PortalError } from './errors';
@@ -8,7 +9,7 @@ export type StockStatus = { ok:true; device_id:string; serial:string; model:stri
     credential:{print_server_id:string;enrolled_at:string;permanent:boolean;credential_hint_present:boolean}|null;
     reported:{hostname:string|null;firmware_version:string|null;setup_url:string|null;last_status_at:string|null;last_seen_at:string|null};
     file:{file_id:string;instance_id:string;issued_at:string;expires_at:string;sha256:string;bytes:number;superseded_at:string|null;consumed_by_device:boolean}|null}};
-export type StockLabel = {device_id:string;serial:string;ssid:string;psk:string;local_address:string;wifi_qr:string};
+export type StockLabel = {device_id:string;serial:string;ssid:string;psk:string;admin_code:string;local_address:string;wifi_qr:string};
 export type DeliveryEmailResult = {ok:true;mode?:'preview'|'send';sent:boolean;sendable?:boolean;held?:boolean;held_reason?:string|null;email?:{to:string;subject:string;text?:string;html?:string}};
 type Raw=Record<string,any>;
 function checked(value:unknown):Raw {
@@ -42,9 +43,9 @@ export function projectStockStatus(data:Raw,id:string):StockStatus {
 export async function getStockStatus(id:string):Promise<StockStatus>{return projectStockStatus(await rpc('ps_admin_stock_status',id),id);}
 export async function getStockLabel(id:string):Promise<StockLabel>{
   const {label}=await rpc('ps_admin_stock_label',id);
-  if(!label||label.device_id!==id||!['serial','ssid','psk','local_address','wifi_qr'].every(key=>typeof label[key]==='string'&&label[key]))throw new PortalError('genericError');
-  // Closed projection: maintenance credentials never reach the label view.
-  return {device_id:id,serial:label.serial,ssid:label.ssid,psk:label.psk,local_address:label.local_address,wifi_qr:label.wifi_qr};
+  if(!label||!validAdminCode(label.admin_code)||/pse_|pst_|sb_secret_|sb_publishable_|PRIVATE\s+KEY/i.test(label.admin_code)||label.device_id!==id||!['serial','ssid','psk','local_address','wifi_qr'].every(key=>typeof label[key]==='string'&&label[key]))throw new PortalError('genericError');
+  // Closed projection: only human credentials from the confirmed stock RPC reach the label view.
+  return {device_id:id,serial:label.serial,ssid:label.ssid,psk:label.psk,admin_code:label.admin_code,local_address:label.local_address,wifi_qr:label.wifi_qr};
 }
 export async function verifyStockFile(data:Raw,id:string):Promise<Uint8Array>{
   if(data.device_id!==id||data.filename!=='playerp-device.json'||typeof data.content!=='string'||typeof data.sha256!=='string')throw new PortalError('genericError');

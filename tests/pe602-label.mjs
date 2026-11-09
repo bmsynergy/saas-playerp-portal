@@ -5,7 +5,7 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { PNG } from 'pngjs';
 import QRCode from 'qrcode';
 import jsQR from 'jsqr';
-const out = 'docs/evidence/pe607';
+const out = 'docs/evidence/ps110-label';
 await mkdir(out, { recursive: true });
 const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/home/coredev/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell', args: ['--no-sandbox'] });
 const fixtures = [
@@ -21,7 +21,7 @@ try {
   await p.route(url => !url.href.startsWith('http://127.0.0.1:18799'), r => r.abort());
   await p.goto('http://127.0.0.1:18799');
   for (const locale of ['en', 'es']) for (const [name, ssid] of fixtures) {
-    const input = { deviceId: 'fixture', serial: 'PS-TEST607A', ssid, password: '0123456789', appliedAt: '2026-01-01T00:00:00Z' };
+    const input = { deviceId: 'fixture', serial: 'PS-TEST607A', ssid, password: '0123456789', appliedAt: '2026-01-01T00:00:00Z', adminCode: 'TEST1-TEST2', adminCodeAppliedAt: '2026-01-01T00:00:00Z' };
     const result = await p.evaluate(async ({ input, locale }) => {
       const m = await import('/src/lib/psLabel.ts');
       const texts = [], rectangles = [], original = CanvasRenderingContext2D.prototype.fillText, rect = CanvasRenderingContext2D.prototype.fillRect;
@@ -78,14 +78,24 @@ try {
     const wifi = text.find(t => t.value === 'Wi-Fi'), caption = text.find(t => t.value === (locale === 'en' ? 'Password' : 'Clave'));
     assert(wifi && caption && fontSize(wifi) === 16 && fontSize(caption) === 16);
     assert(wifi.top > brand.bottom && ssidText[0].top > wifi.bottom && caption.top > ssidText[0].bottom);
+    const maintenance = text.find(t => t.value === (locale === 'en' ? 'Maintenance code' : 'Código de mantenimiento'));
+    const code = text.find(t => t.value === input.adminCode);
+    assert(maintenance && code, 'localized maintenance caption and readable value');
+    assert(maintenance.top > password.bottom && code.top > maintenance.bottom, 'maintenance separate from Wi-Fi password');
+    assert(fontSize(maintenance) >= 16 && fontSize(code) >= 24 && /bold|700/.test(code.font));
     const url = text.find(t => t.value === 'http://10.77.0.1');
     const steps = (locale === 'en' ? ['Connect to Wi-Fi', 'Open in browser'] : ['Conéctate al Wi-Fi', 'Abre en el navegador']).map(value => text.find(t => t.value === value));
     assert(url && steps.every(Boolean));
-    assert(steps[0].top > password.bottom && steps[1].top > steps[0].bottom && url.top > steps[1].bottom);
+    assert(steps[0].top > code.bottom && steps[1].top > steps[0].bottom && url.top > steps[1].bottom);
     assert(steps.every(t => fontSize(t) < fontSize(url)));
     assert(Math.abs(url.bottom - (first.y + qr.modules.size * scale)) <= 4, 'URL aligned with black QR bottom');
     assert(text.filter(t => t.top >= caption.top).every(t => t.right < x0), 'lower text only in left column, outside quiet zone');
-    assert(!text.some(t => /Power off|90|Apaga|maintenance|mantenimiento|pse_|pst_/.test(t.value)));
+    assert(!text.some(t => /Power off|90|Apaga|pse_|pst_/i.test(t.value)));
+    assert(!payload.includes(input.adminCode) && !/pst_|pse_|SUPABASE|SERVICE_ROLE|PRIVATE KEY/i.test(payload), 'QR contains Wi-Fi only');
+    for (let i = 0; i < text.length; i++) for (let j = i + 1; j < text.length; j++) {
+      const a = text[i], b = text[j];
+      assert(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top, `text overlap: ${a.value} / ${b.value}`);
+    }
     for (let y = 0; y < 354; y++) for (let x = 0; x < 590; x++) {
       const i = (y * 590 + x) * 4, v = png.data[i];
       assert((v === 0 || v === 255) && v === png.data[i + 1] && v === png.data[i + 2] && png.data[i + 3] === 255);
@@ -94,20 +104,28 @@ try {
     const file = `label-${locale}-${name}.png`;
     await writeFile(`${out}/${file}`, bytes);
     await writeFile(`${out}/label-${locale}-${name}-203-simulation.png`, Buffer.from(result.scaled));
-    const entry = { file, locale, ssidBytes: Buffer.byteLength(ssid), width: 590, height: 354, physicalMm: [590 / 11800 * 1000, 354 / 11800 * 1000], qrBlackPixels: qr.modules.size * scale, qrIncludingQuietPixels: size, pHYs: phys[0], decoded300: payload, decoded203: payload, qrVersion: qr.version, errorCorrection: 'M', integerScale: scale, quietZone: 4, quietZonePixelCheck: true, safeMargin: 20, texts: text };
+    const entry = { file, locale, maintenanceCode: input.adminCode, ssidBytes: Buffer.byteLength(ssid), width: 590, height: 354, physicalMm: [590 / 11800 * 1000, 354 / 11800 * 1000], qrBlackPixels: qr.modules.size * scale, qrIncludingQuietPixels: size, pHYs: phys[0], decoded300: payload, decoded203: payload, qrVersion: qr.version, errorCorrection: 'M', integerScale: scale, quietZone: 4, quietZonePixelCheck: true, safeMargin: 20, texts: text };
     results.push(entry);
     console.log(`PASS ${locale}/${name}: 590x354 pHYs=11800; QR M v${qr.version} ${scale}px/module quiet=4; exact decode 300dpi + simulated203dpi; full SSID, single-line >=24px / password>=48px, margin20.`);
   }
   const blocked = await p.evaluate(async () => {
     const m = await import('/src/lib/psLabel.ts'), original = CanvasRenderingContext2D.prototype.measureText;
     CanvasRenderingContext2D.prototype.measureText = function(value) { return value === 'PlayERP-Setup-TEST607A' ? { width: 9999 } : original.call(this, value); };
-    try { await m.generateLabelPng({ deviceId: 'fixture', serial: 'PS-TEST607A', ssid: 'PlayERP-Setup-TEST607A', password: '0123456789', appliedAt: '2026-01-01T00:00:00Z' }); return false; }
+    try { await m.generateLabelPng({ deviceId: 'fixture', serial: 'PS-TEST607A', ssid: 'PlayERP-Setup-TEST607A', password: '0123456789', appliedAt: '2026-01-01T00:00:00Z', adminCode: 'TEST1-TEST2', adminCodeAppliedAt: '2026-01-01T00:00:00Z' }); return false; }
     catch (e) { return e.message === 'label_does_not_fit'; }
     finally { CanvasRenderingContext2D.prototype.measureText = original; }
   });
   assert(blocked, 'SSID that does not fit at minimum font blocks instead of clipping');
+  const codeBlocked = await p.evaluate(async () => {
+    const m = await import('/src/lib/psLabel.ts');
+    try {
+      await m.generateLabelPng({ deviceId: 'fixture', serial: 'PS-TEST607A', ssid: 'PlayERP-Setup-TEST607A', password: '0123456789', appliedAt: '2026-01-01T00:00:00Z', adminCode: 'A'.repeat(64), adminCodeAppliedAt: '2026-01-01T00:00:00Z' });
+      return false;
+    } catch (e) { return e.message === 'label_does_not_fit'; }
+  });
+  assert(codeBlocked, 'maintenance value that cannot fit blocks instead of printing partially');
   const source = await readFile('src/lib/psLabel.ts', 'utf8');
   assert(source.includes('@page{size:50mm 30mm;margin:0}'));
-  await writeFile(`${out}/label-report.json`, JSON.stringify({ pass: true, physicalCamera: 'Pending Beny: digital decode and 203dpi resampling do not prove thermal scanning', overflowBlocks: blocked, results }, null, 2) + '\n');
-  console.log('PASS overflow label_does_not_fit; nominal CSS 50x30mm. 10 synthetic PNGs; physical print/camera still pending Beny.');
+  await writeFile(`${out}/label-report.json`, JSON.stringify({ pass: true, physicalCamera: 'Pending Beny: digital decode and 203dpi resampling do not prove thermal scanning', overflowBlocks: { ssid: blocked, maintenanceCode: codeBlocked }, results }, null, 2) + '\n');
+  console.log('PASS overflow label_does_not_fit; nominal CSS 50x30mm. 10 synthetic PNGs with separate maintenance code; physical print/camera still pending Beny.');
 } finally { await b.close(); }
